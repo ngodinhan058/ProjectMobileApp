@@ -1,26 +1,38 @@
 import React from 'react';
-import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList } from 'react-native';
+import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import CategoriesItem from '../components/CategoryItem';
+import SaleItem from '../components/SaleItem';
+import NewItem from '../components/NewItem';
 
 const featuredProducts = [
-  { id: '1', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
-  { id: '2', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
-  { id: '3', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless0', price: '1.500.000', rating: '4.6', review: '86' },
+  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+  { id: '3', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
 ];
 
 const bestSellers = [
-  { id: '1', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
-  { id: '2', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
+  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
+  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
+];
+const saleProducts = [
+  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
+  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
+];
+const news = [
+  { id: '1', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: require('../assets/new1.png') },
+  { id: '2', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: require('../assets/new2.png') },
+
 ];
 
 const banners = [
-  { id: '1', image: require('../../assets/banner.png') },
-  { id: '2', image: require('../../assets/banner.png') },
+  { id: '1', image: require('../assets/banner.png') },
+  { id: '2', image: require('../assets/banner.png') },
 ];
+
 const categories = [
-  { id: '1', name: 'Laptop', image: require('../../assets/btn_1.png') },
-  { id: '2', name: 'Iphone', image: require('../../assets/btn_2.png') },
+  { id: '1', name: 'Laptop', image: require('../assets/btn_1.png') },
+  { id: '2', name: 'Iphone', image: require('../assets/btn_2.png') },
 ];
 
 
@@ -35,11 +47,11 @@ const HomeScreen = () => {
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
             <TextInput style={styles.searchInput} placeholder="Search Product Name" />
-            <Image source={require('../../assets/iconSeach.png')} style={styles.icon} />
+            <Image source={require('../assets/iconSeach.png')} style={styles.icon} />
           </View>
           {/* Lọc */}
           <View style={styles.filter}>
-            <Image source={require('../../assets/filter.png')} style={styles.iconCenter} />
+            <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
           </View>
           {/* Banner chính (Có thể vuốt ngang) */}
           <FlatList
@@ -61,8 +73,8 @@ const HomeScreen = () => {
 
           }}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.textBold}>Categories</Text>
-              <Text style={styles.seeAll}>See All</Text>
+              <Text style={styles.textBold}>Danh Mục</Text>
+              <Text style={styles.seeAll}>Xem Tất Cả</Text>
             </View>
           </View>
           {/* Xuất Danh mục sản phẩm */}
@@ -81,8 +93,8 @@ const HomeScreen = () => {
       <View style={styles.containerPro}>
         <View style={styles.greySection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Featured Product</Text>
-            <Text style={styles.seeAll}>See All</Text>
+            <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
+            <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
           <FlatList
             horizontal
@@ -94,14 +106,12 @@ const HomeScreen = () => {
           />
 
           {/* Banner phụ */}
-          <View style={styles.subBanner}>
-            <Text>CO2 - Cable Multifunction</Text>
-          </View>
+          <Image source={require('../assets/banner2.png')} style={{ width: 370, height: 180, marginBottom: 10 }} />
 
           {/* Best Sellers */}
           <View style={styles.sectionHeader}>
-            <Text>Best Sellers</Text>
-            <Text style={styles.seeAll}>See All</Text>
+            <Text style={styles.textBold}>Đã Bán Nhiều Nhất</Text>
+            <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
           <FlatList
             horizontal
@@ -111,6 +121,76 @@ const HomeScreen = () => {
             showsHorizontalScrollIndicator={false}
             style={styles.productList}
           />
+
+          {/* Banner phụ 2 */}
+          <Image source={require('../assets/banner3.png')} style={{ width: 380, height: 190, marginBottom: 10 }} />
+
+          {/* New Arrivals */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.textBold}>Sản Phẩm Mới</Text>
+            <Text style={styles.seeAll}>Xem Tất Cả</Text>
+          </View>
+          <FlatList
+            horizontal
+            data={bestSellers}
+            renderItem={({ item }) => <ProductItem {...item} />}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            style={styles.productList}
+          />
+          {/* Top Rated Product */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.textBold}>Lượt Đánh Giá Cao Nhất</Text>
+            <Text style={styles.seeAll}>Xem Tất Cả</Text>
+          </View>
+          <FlatList
+            horizontal
+            data={bestSellers}
+            renderItem={({ item }) => <ProductItem {...item} />}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            style={styles.productList}
+          />
+          {/* Special Offers */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.textBold}>Giảm Giá Đặc Biệt</Text>
+            <Text style={styles.seeAll}>Xem Tất Cả</Text>
+          </View>
+          <FlatList
+            horizontal
+            data={saleProducts}
+            renderItem={({ item }) => <SaleItem {...item} />}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            style={styles.productList}
+          />
+          {/* News */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.textBold}>Bản Tin Mới</Text>
+          </View>
+          {news.map((news) => (
+            <NewItem
+              key={news.id}
+              title={news.title}
+              description={news.description}
+              date={news.date}
+              image={news.image}
+
+            />
+          ))}
+          <TouchableOpacity
+            style={{
+              padding: 15,
+              marginVertical: 25,
+              borderRadius: 10,
+              borderWidth: 1, 
+              borderColor: '#000', 
+              borderStyle: 'solid', 
+              alignItems: 'center',
+            }}
+          >
+            <Text>Xem Tất Cả Bản Tin</Text>
+            </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -206,10 +286,13 @@ const styles = StyleSheet.create({
   },
   textBold: {
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
+    marginBottom: 10,
   },
   seeAll: {
     color: '#3669c9',
+    marginBottom: 10,
+    fontSize: 17,
   },
   productList: {
     marginBottom: 20,
@@ -220,6 +303,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     alignItems: 'center',
+  },
+  seeAllButton: {
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#007bff',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  seeAllText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

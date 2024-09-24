@@ -4,23 +4,23 @@ import ProductItem from '../components/ProductItem';
 import CategoriesItem from '../components/CategoryItem';
 
 const featuredProducts = [
-  { id: '1', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
-  { id: '2', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
-  { id: '3', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+  { id: '3', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
 ];
 
 const bestSellers = [
-  { id: '1', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
-  { id: '2', image: require('../../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
+  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
+  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
 ];
 
 const banners = [
-  { id: '1', image: require('../../assets/banner.png') },
-  { id: '2', image: require('../../assets/banner.png') },
+  { id: '1', image: require('../assets/banner.png') },
+  { id: '2', image: require('../assets/banner.png') },
 ];
 const categories = [
-  { id: '1', name: 'Laptop', image: require('../../assets/btn_1.png') },
-  { id: '2', name: 'Iphone', image: require('../../assets/btn_2.png') },
+  { id: '1', name: 'Laptop', image: require('../assets/btn_1.png') },
+  { id: '2', name: 'Iphone', image: require('../assets/btn_2.png') },
 ];
 
 
@@ -35,11 +35,11 @@ const HomeScreen = () => {
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
             <TextInput style={styles.searchInput} placeholder="Search Product Name" />
-            <Image source={require('../../assets/iconSeach.png')} style={styles.icon} />
+            <Image source={require('../assets/iconSeach.png')} style={styles.icon} />
           </View>
           {/* Lọc */}
           <View style={styles.filter}>
-            <Image source={require('../../assets/filter.png')} style={styles.iconCenter} />
+            <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
           </View>
           {/* Banner chính (Có thể vuốt ngang) */}
          

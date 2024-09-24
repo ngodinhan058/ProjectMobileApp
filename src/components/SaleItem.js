@@ -1,23 +1,28 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 
-const ProductItem = ({ image, name, price, rating, review }) => {
-  // Hàm để giới hạn mô tả, cắt chuỗi sau 17 ký tự
-  const truncateName = (text) => {
-    return text.length > 17 ? text.substring(0, 17) + '...' : text;
-  };
+const SaleItem = ({ image, name, salePrice, originalPrice, rating, reviews }) => {
+    const truncateName = (text) => {
+        return text.length > 17 ? text.substring(0, 17) + '...' : text;
+      };
   return (
     <View style={styles.container}>
+      {/* Nhãn SALE */}
+      <View style={styles.saleLabel}>
+        <Text style={styles.saleText}>SALE</Text>
+      </View>
+
       <Image source={image} style={styles.image} />
       <Text style={styles.name}>{truncateName(name)}</Text>
-      <Text style={styles.price}>{price} ₫</Text>
+      <Text style={styles.salePrice}>{salePrice}</Text>
+      <Text style={styles.originalPrice}>{originalPrice}</Text>
+
       <View style={styles.rate}>
         <Text style={styles.rating}>
             <Image source={require('../assets/star.png')} style={styles.icon}/> {rating}</Text>
-        <Text style={styles.review}>{review} Review</Text>
+        <Text style={styles.review}>{reviews} Review</Text>
         <Text style={styles.heart}><Image source={require('../assets/heart.png')}/></Text>
       </View>
-      
     </View>
   );
 };
@@ -36,6 +41,21 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
+  saleLabel: {
+    backgroundColor: 'red',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 5,
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  saleText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   image: {
     width: 125,
     height: 125,
@@ -47,9 +67,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-  price: {
+  salePrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: 'red',
+  },
+  originalPrice: {
     fontSize: 14,
+    color: '#888',
+    textDecorationLine: 'line-through',
+    marginBottom: 10,
   },
   rate:{
     position: 'relative',
@@ -77,4 +104,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProductItem;
+export default SaleItem;
