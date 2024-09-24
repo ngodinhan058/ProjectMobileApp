@@ -42,19 +42,7 @@ const HomeScreen = () => {
             <Image source={require('../../assets/filter.png')} style={styles.iconCenter} />
           </View>
           {/* Banner chính (Có thể vuốt ngang) */}
-          <FlatList
-            horizontal
-            data={banners}
-            renderItem={({ item }) => (
-              <View style={styles.banner}>
-                <Image source={item.image} style={styles.bannerImage} />
-              </View>
-            )}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-            style={styles.bannerCarousel}
-          />
+         
 
           {/* Danh mục sản phẩm */}
           <View style={{

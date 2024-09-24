@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './src/screens/HomeScreen';
+import LoginScreen from './src/screens/LoginScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,7 +29,7 @@ export default function App() {
         })}
       >
         <Tab.Screen name="Mega Mall" component={HomeScreen} />
-        <Tab.Screen name="Wishlist" component={HomeScreen} />
+        <Tab.Screen name="Wishlist" component={LoginScreen} />
         <Tab.Screen name="Order" component={HomeScreen} />
         <Tab.Screen name="Login" component={HomeScreen} />
       </Tab.Navigator>
