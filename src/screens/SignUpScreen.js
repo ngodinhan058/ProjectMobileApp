@@ -3,46 +3,41 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Alert }
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const LoginScreen = ({ navigation }) => {
+const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 
   useEffect(() => {
-    if (email.trim() !== '' && password.length >= 8) {
+    // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
+    if (email.trim() !== '') {
       setIsButtonEnabled(true);
     } else {
       setIsButtonEnabled(false);
     }
-  }, [email, password]);
+  }, [email]);
 
-  const handleLogin = () => {
-    if (email === 'an' && password === '12345678') {
-      Alert.alert('Thành công', 'Đăng nhập thành công!');
-    } else {
-      Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
-    }
-  };
 
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
       enableOnAndroid={true}  // Kích hoạt hỗ trợ trên Android
       extraHeight={150}  // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-200}  // Tùy chỉnh thêm khoảng cách cuộn
+      extraScrollHeight={-280}  // Tùy chỉnh thêm khoảng cách cuộn
       keyboardShouldPersistTaps="handled"  // Xử lý khi nhấn ngoài input
     >
-      <View style={styles.innerContainer}>
+      <View style={{flex: 1,}}>
+        {/* Nút quay lại */}
         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={20} color="#000" />
         </Pressable>
 
-        <Text style={styles.title}>Chào Mừng Bạn Quay Lại</Text>
+        {/* Tiêu đề */}
+        <Text style={styles.title}>Đăng Ký Tài Khoản</Text>
         <Text style={styles.titleBold}>Mega Mall</Text>
         <Text style={styles.subtitle}>Nhập Email/Tên Đăng Nhập, và Mật khẩu để đăng nhập</Text>
 
-        <Text style={styles.label}>Tên Đăng Nhập/ Email</Text>
+        {/* Input Email/Phone */}
+        <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
           placeholder="Tên Đăng Nhập/ Gmail"
@@ -51,24 +46,9 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={setEmail}
         />
 
-        <Text style={styles.label}>Mật Khẩu</Text>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.inputPassword}
-            placeholder="Mật Khẩu"
-            placeholderTextColor="#C4C4C4"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <Pressable
-            style={styles.eyeButton}
-            onPress={() => setShowPassword(!showPassword)}
-          >
-            <Icon name={showPassword ? "eye" : "eye-slash"} size={20} color="#C4C4C4" />
-          </Pressable>
-        </View>
 
+
+        {/* Nút Sign In và Cancel */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[
@@ -76,21 +56,22 @@ const LoginScreen = ({ navigation }) => {
               { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
             ]}
             disabled={!isButtonEnabled}
-            onPress={handleLogin}
+            onPress={() => navigation.navigate('VerificationScreen')} // Gọi hàm đăng nhập khi nhấn nút
           >
-            <Text style={styles.signInText}>Đăng Nhập</Text>
+            <Text style={styles.signInText}>Tiếp tục</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton}>
             <Text style={styles.cancelText} onPress={() => navigation.goBack()}>Cancel</Text>
           </TouchableOpacity>
         </View>
 
+        {/* SignIn */}
         <View style={styles.footerContainer}>
           <TouchableOpacity>
-            <Text style={styles.footerText}>Quên Mật Khẩu</Text>
+            <Text style={styles.footerText}>Đã có tài khoản?</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUpSceen')}>
-            <Text style={{ color: '#3669c9', fontSize: 14, fontWeight: 'bold' }}>Sign Up</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+            <Text style={{ color: '#3669c9', fontSize: 14, fontWeight: 'bold' }}>Đăng Nhập</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -105,9 +86,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 40,
     backgroundColor: '#FFF',
-  },
-  innerContainer: {
-    flex: 1,
   },
   backButton: {
     marginVertical: 20,
@@ -161,6 +139,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
   },
+  eyeText: {
+    fontSize: 30,
+    color: '#999',
+  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -187,14 +169,18 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: '60%',
+    marginTop: '98%',
+    justifyContent: 'center'
   },
   footerText: {
     fontSize: 14,
     color: '#000',
     fontWeight: 'bold',
+    marginRight: 10,
+  },
+  signUpText: {
+    fontSize: 14,
+    color: '#0066FF',
   },
 });
-
-export default LoginScreen;
+export default SignUpScreen;
