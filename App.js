@@ -7,7 +7,10 @@ import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen'; 
 import VerificationScreen from './src/screens/VerificationScreen'; 
-import PasswordScreen from './src/screens/PasswordScreen'; 
+import VerificationForgotScreen from './src/screens/VerificationForgotScreen'; 
+import PasswordScreen from './src/screens/PasswordScreen';
+import UpdatePassScreen from './src/screens/UpdatePassScreen';
+import ResetPassScreen from './src/screens/ResetPassScreen';  
 
 import Header from './src/components/Header';
 
@@ -21,6 +24,9 @@ function LoginStack() {
       <Stack.Screen name="SignUpSceen" component={SignUpScreen} />
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
       <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
+      <Stack.Screen name="ResetPassScreen" component={ResetPassScreen} />
+      <Stack.Screen name="VerificationForgotScreen" component={VerificationForgotScreen} />
+      <Stack.Screen name="UpdatePassScreen" component={UpdatePassScreen} />
     </Stack.Navigator>
   );
 }

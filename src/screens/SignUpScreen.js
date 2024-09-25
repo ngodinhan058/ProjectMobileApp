@@ -5,16 +5,17 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 
   useEffect(() => {
     // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
-    if (email.trim() !== '') {
+    if (email.trim() !== '' && userName.trim() !== '') {
       setIsButtonEnabled(true);
     } else {
       setIsButtonEnabled(false);
     }
-  }, [email]);
+  }, [email, userName]);
 
 
   return (
@@ -25,7 +26,7 @@ const SignUpScreen = ({ navigation }) => {
       extraScrollHeight={-280}  // Tùy chỉnh thêm khoảng cách cuộn
       keyboardShouldPersistTaps="handled"  // Xử lý khi nhấn ngoài input
     >
-      <View style={{flex: 1,}}>
+      <View style={{ flex: 1, }}>
         {/* Nút quay lại */}
         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={20} color="#000" />
@@ -35,15 +36,23 @@ const SignUpScreen = ({ navigation }) => {
         <Text style={styles.title}>Đăng Ký Tài Khoản</Text>
         <Text style={styles.titleBold}>Mega Mall</Text>
         <Text style={styles.subtitle}>Nhập Email/Tên Đăng Nhập, và Mật khẩu để đăng nhập</Text>
-
-        {/* Input Email/Phone */}
-        <Text style={styles.label}>Email</Text>
+        {/* Input username*/}
+        <Text style={styles.label}>Tên Đăng Nhập</Text>
         <TextInput
           style={styles.input}
-          placeholder="Tên Đăng Nhập/ Gmail"
+          placeholder="Nhập Tên Đăng Nhập"
           placeholderTextColor="#C4C4C4"
           value={email}
           onChangeText={setEmail}
+        />
+        {/* Input Email*/}
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nhập Email"
+          placeholderTextColor="#C4C4C4"
+          value={userName}
+          onChangeText={setUserName}
         />
 
 

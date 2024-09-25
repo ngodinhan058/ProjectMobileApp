@@ -5,8 +5,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 
 
-const PasswordScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
+const UpdatePassScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [passwordAgain, setPasswordAgain] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -14,22 +13,21 @@ const PasswordScreen = ({ navigation }) => {
 
   useEffect(() => {
     // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
-    if (email.trim() !== '' && password.length >= 8) {
+    if (password.length >= 8 && passwordAgain.length >= 8) {
       setIsButtonEnabled(true);
     } else {
       setIsButtonEnabled(false);
     }
-  }, [email, password]);
+  }, [password, passwordAgain]);
 
-  // Hàm giả lập đăng nhập
+//   // Hàm giả lập đăng nhập
   const handleLogin = () => {
-    // Kiểm tra thông tin đăng nhập (giả)
     if (password === passwordAgain) {
       // Đăng nhập thành công
-      Alert.alert('Thành công', 'Đăng nhập thành công!');
+      Alert.alert('Thành công', 'Thay đổi mật khẩu thành công!');
     } else {
       // Đăng nhập thất bại
-      Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
+      Alert.alert('Thất bại', 'Mật khẩu không trùng. Vui lòng thử lại.');
     }
   };
 
@@ -48,27 +46,8 @@ const PasswordScreen = ({ navigation }) => {
       </Pressable>
 
       {/* Tiêu đề */}
-      <Text style={styles.title}>Thông Tin & Mật Khẩu</Text>
+      <Text style={styles.title}>Cập Nhập Mật Khẩu</Text>
       <Text style={styles.subtitle}>Hoàn thành dữ liệu cuối cùng sau đây để vào ứng dụng Mega Mall</Text>
-
-      {/* Input Fullname*/}
-      <Text style={styles.label}>Tên Đầy Đủ</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Nhập Tên Đầy Đủ"
-        placeholderTextColor="#C4C4C4"
-        value={email}
-        onChangeText={setEmail}
-      />
-      {/* Input Address*/}
-      <Text style={styles.label}>Địa Chỉ</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Nhập Địa Chỉ"
-        placeholderTextColor="#C4C4C4"
-        value={email}
-        onChangeText={setEmail}
-      />
 
       {/* Input Password */}
       <Text style={styles.label}>Mật Khẩu</Text>
@@ -89,6 +68,7 @@ const PasswordScreen = ({ navigation }) => {
         </Pressable>
       </View>
       <Text style={{color: '#C4C4C4'}}><Icon name="info-circle" size={15} color="#C4C4C4" /> Mật khẩu phải có 8 ký tự trở lên</Text>
+
       {/* Input Again Password */}
       <Text style={styles.label}>Nhập Lại Mật Khẩu</Text>
       <View style={styles.passwordContainer}>
@@ -235,4 +215,4 @@ const styles = StyleSheet.create({
     color: '#0066FF',
   },
 });
-export default PasswordScreen;
+export default UpdatePassScreen;
