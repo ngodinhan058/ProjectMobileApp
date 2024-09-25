@@ -1,23 +1,34 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
 
 const ProductItem = ({ image, name, price, rating, review }) => {
-  // Hàm để giới hạn mô tả, cắt chuỗi sau 17 ký tự
+  const [loading, setLoading] = useState(true); // Track the loading state
+
   const truncateName = (text) => {
     return text.length > 17 ? text.substring(0, 17) + '...' : text;
   };
+
   return (
     <View style={styles.container}>
-      <Image source={image} style={styles.image} />
+      {loading && ( // Show the loading indicator while the image is loading
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
+      )}
+      <Image
+        source={image}
+        style={styles.image}
+        onLoad={() => setLoading(false)} // Once the image loads, hide the loading indicator
+      />
       <Text style={styles.name}>{truncateName(name)}</Text>
       <Text style={styles.price}>{price} ₫</Text>
       <View style={styles.rate}>
         <Text style={styles.rating}>
-            <Image source={require('../assets/star.png')} style={styles.icon}/> {rating}</Text>
+          <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
+        </Text>
         <Text style={styles.review}>{review} Review</Text>
-        <Text style={styles.heart}><Image source={require('../assets/heart.png')}/></Text>
+        <Text style={styles.heart}>
+          <Image source={require('../assets/heart.png')} />
+        </Text>
       </View>
-      
     </View>
   );
 };
@@ -35,6 +46,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
+    position: 'relative', // Ensure the loading animation and image stack correctly
+  },
+  loadingIndicator: {
+    position: 'absolute', // Center the loading indicator over the image
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -25 }, { translateY: -25 }],
+    zIndex: 1,
   },
   image: {
     width: 125,
@@ -51,7 +70,7 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 14,
   },
-  rate:{
+  rate: {
     position: 'relative',
     width: 131,
     height: 15,
@@ -62,18 +81,18 @@ const styles = StyleSheet.create({
   review: {
     position: 'absolute',
     fontSize: 12,
-    left: '30%'
+    left: '30%',
   },
-  heart:{
+  heart: {
     position: 'absolute',
     bottom: 0,
-    right:0,
-    width:15,
-    height:15,
+    right: 0,
+    width: 15,
+    height: 15,
   },
-  icon:{
-    width:12,
-    height:12,
+  icon: {
+    width: 12,
+    height: 12,
   },
 });
 

@@ -5,11 +5,38 @@ import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
 
+// const featuredProducts = [
+//   { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless0', price: '1.500.000', rating: '4.6', review: '86' },
+//   { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+//   { id: '3', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+// ];
 const featuredProducts = [
-  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless0', price: '1.500.000', rating: '4.6', review: '86' },
-  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
-  { id: '3', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
+  { 
+    id: '1', 
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, 
+    name: 'TMA-2 HD Wireless0', 
+    price: '1.500.000', 
+    rating: '4.6', 
+    review: '86' 
+  },
+  { 
+    id: '2', 
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, 
+    name: 'TMA-2 HD Wireless', 
+    price: '1.500.000', 
+    rating: '4.6', 
+    review: '86' 
+  },
+  { 
+    id: '3', 
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, 
+    name: 'TMA-2 HD Wireless', 
+    price: '1.500.000', 
+    rating: '4.6', 
+    review: '86' 
+  },
 ];
+
 
 const bestSellers = [
   { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
