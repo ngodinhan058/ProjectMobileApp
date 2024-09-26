@@ -4,6 +4,7 @@ import ProductItem from '../components/ProductItem';
 import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
+import { useNavigation } from '@react-navigation/native';
 
 
 const featuredProducts = [
@@ -18,7 +19,7 @@ const featuredProducts = [
   {
     id: '2',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 FHD Wireless',
+    name: 'TMA-2 HD Wireless',
     price: '1.500.000',
     rating: '4.6',
     review: '86'
@@ -26,7 +27,7 @@ const featuredProducts = [
   {
     id: '3',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-20 HD Wireless',
+    name: 'TMA-2 HD Wireless',
     price: '1.500.000',
     rating: '4.6',
     review: '86'
@@ -83,6 +84,13 @@ const HomeScreen = () => {
     ).start();
   }, [shimmerAnim]);
 
+  {/* Search lấy dữ liệu để chuyển trang*/ }
+  const navigation = useNavigation();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = () => {
+    navigation.navigate('SearchScreen', { query: searchQuery });
+  };
   return (
     <ScrollView>
       {/* Bắt đầu phần với background #fff */}
@@ -92,8 +100,13 @@ const HomeScreen = () => {
           <View style={styles.line}></View>
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
-            <TextInput style={styles.searchInput} placeholder="Search Product Name" />
-            <Image source={require('../assets/iconSeach.png')} style={styles.icon} />
+            <TextInput style={styles.searchInput} placeholder="Search Product Name" value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch}/>
+            <TouchableOpacity onPress={handleSearch}>
+          <Image
+            source={require('../assets/iconSeach.png')}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
           </View>
           {/* Lọc */}
           <View style={styles.filter}>
@@ -316,7 +329,7 @@ const styles = StyleSheet.create({
     height: 20,
     position: 'absolute',
     left: '70%',
-    top: 15,
+    top: -35,
   },
   whiteSection: {
     backgroundColor: '#fff',

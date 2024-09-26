@@ -12,6 +12,7 @@ import PasswordScreen from './src/screens/PasswordScreen';
 import UpdatePassScreen from './src/screens/UpdatePassScreen';
 import ResetPassScreen from './src/screens/ResetPassScreen';  
 import WishListScreen from './src/screens/WishListScreen';  
+import SearchScreen from './src/screens/SearchScreen';  
 
 import Header from './src/components/Header';
 
@@ -28,9 +29,32 @@ function LoginStack() {
       <Stack.Screen name="ResetPassScreen" component={ResetPassScreen} />
       <Stack.Screen name="VerificationForgotScreen" component={VerificationForgotScreen} />
       <Stack.Screen name="UpdatePassScreen" component={UpdatePassScreen} />
+      <Stack.Screen name="SearchScreen" component={SearchScreen} />
     </Stack.Navigator>
   );
 }
+function HomeStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="SearchScreen" component={SearchScreen} />
+      
+    </Stack.Navigator>
+  );
+}
+function OrderStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}> 
+    </Stack.Navigator>
+  );
+}
+function WistStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    </Stack.Navigator>
+  );
+}
+
 
 export default function App() {
   return (
@@ -56,7 +80,7 @@ export default function App() {
       >
         <Tab.Screen 
           name="Mega Mall" 
-          component={HomeScreen} 
+          component={HomeStack} 
           options={{
             header: () => <Header />,  // Hiển thị Header chỉ trên HomeScreen
           }} 
