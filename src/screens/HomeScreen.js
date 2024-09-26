@@ -1,39 +1,35 @@
-import React from 'react';
-import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity, Animated, Easing } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
 
-// const featuredProducts = [
-//   { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless0', price: '1.500.000', rating: '4.6', review: '86' },
-//   { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
-//   { id: '3', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6', review: '86' },
-// ];
+
 const featuredProducts = [
-  { 
-    id: '1', 
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, 
-    name: 'TMA-2 HD Wireless0', 
-    price: '1.500.000', 
-    rating: '4.6', 
-    review: '86' 
+  {
+    id: '1',
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    name: 'TMA-2 HD Wireless0',
+    price: '1.500.000',
+    rating: '4.6',
+    review: '86'
   },
-  { 
-    id: '2', 
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, 
-    name: 'TMA-2 HD Wireless', 
-    price: '1.500.000', 
-    rating: '4.6', 
-    review: '86' 
+  {
+    id: '2',
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    name: 'TMA-2 HD Wireless',
+    price: '1.500.000',
+    rating: '4.6',
+    review: '86'
   },
-  { 
-    id: '3', 
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, 
-    name: 'TMA-2 HD Wireless', 
-    price: '1.500.000', 
-    rating: '4.6', 
-    review: '86' 
+  {
+    id: '3',
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    name: 'TMA-2 HD Wireless',
+    price: '1.500.000',
+    rating: '4.6',
+    review: '86'
   },
 ];
 
@@ -43,27 +39,50 @@ const bestSellers = [
   { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
 ];
 const saleProducts = [
-  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
-  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
+  { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
+  { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
 ];
 const news = [
-  { id: '1', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: require('../assets/new1.png') },
-  { id: '2', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: require('../assets/new2.png') },
+  { id: '1', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+  { id: '2', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
 
 ];
-
 const banners = [
-  { id: '1', image: require('../assets/banner.png') },
-  { id: '2', image: require('../assets/banner.png') },
+  { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+  { id: '2', image: { uri: 'https://as1.ftcdn.net/v2/jpg/04/65/46/52/1000_F_465465254_1pN9MGrA831idD6zIBL7q8rnZZpUCQTy.jpg' }, },
 ];
 
 const categories = [
-  { id: '1', name: 'Laptop', image: require('../assets/btn_1.png') },
-  { id: '2', name: 'Iphone', image: require('../assets/btn_2.png') },
+  { id: '1', name: 'Laptop', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+  { id: '2', name: 'Iphone', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
 ];
 
 
 const HomeScreen = () => {
+  {/* Loading Banner */ }
+  const [loading, setLoading] = useState(true);
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Bắt đầu hiệu ứng shimmer khi component được mount
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmerAnim, {
+          toValue: 0,
+          duration: 1000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [shimmerAnim]);
+
   return (
     <ScrollView>
       {/* Bắt đầu phần với background #fff */}
@@ -80,24 +99,59 @@ const HomeScreen = () => {
           <View style={styles.filter}>
             <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
           </View>
-          {/* Banner chính (Có thể vuốt ngang) */}
-          <FlatList
-            horizontal
-            data={banners}
-            renderItem={({ item }) => (
-              <View style={styles.banner}>
-                <Image source={item.image} style={styles.bannerImage} />
-              </View>
-            )}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-            style={styles.bannerCarousel}
-          />
-
+          {/* Banner chính */}
+          {loading ? (
+            // Skeleton with shimmer effect while loading
+            <View>
+              {/* <Image
+                source={image}
+                onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
+              /> */}
+               <FlatList
+                horizontal
+                data={banners}
+                renderItem={({ item }) => (
+                  <View style={styles.banner}>
+                    <Image source={item.image} style={{backgroundColor: '#fff',}} onLoad={() => setLoading(false)}/>
+                  </View>
+                )}
+                keyExtractor={(item) => item.id}
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                style={styles.bannerCarousel}
+              />
+              <Animated.View style={[styles.skeletonText, {
+                backgroundColor: shimmerAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
+                })
+              }]} />
+              <Animated.View style={[styles.skeletonTextSmall, {
+                backgroundColor: shimmerAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
+                })
+              }]} />
+            </View>
+          ) : (
+            <>
+              <FlatList
+                horizontal
+                data={banners}
+                renderItem={({ item }) => (
+                  <View style={styles.banner}>
+                    <Image source={item.image} style={styles.bannerImage} />
+                  </View>
+                )}
+                keyExtractor={(item) => item.id}
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                style={styles.bannerCarousel}
+              />
+            </>
+          )}
           {/* Danh mục sản phẩm */}
           <View style={{
-
           }}>
             <View style={styles.sectionHeader}>
               <Text style={styles.textBold}>Danh Mục</Text>
@@ -210,14 +264,14 @@ const HomeScreen = () => {
               padding: 15,
               marginVertical: 25,
               borderRadius: 10,
-              borderWidth: 1, 
-              borderColor: '#000', 
-              borderStyle: 'solid', 
+              borderWidth: 1,
+              borderColor: '#000',
+              borderStyle: 'solid',
               alignItems: 'center',
             }}
           >
             <Text>Xem Tất Cả Bản Tin</Text>
-            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -342,6 +396,21 @@ const styles = StyleSheet.create({
   seeAllText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+
+  skeletonText: {
+    height: 20,
+    width: '60%',
+    borderRadius: 4,
+    marginBottom: 20,
+    marginLeft: '20%',
+  },
+  skeletonTextSmall: {
+    height: 15,
+    width: '40%',
+    borderRadius: 4,
+    marginBottom: 20,
+    marginLeft: '20%',
   },
 });
 
