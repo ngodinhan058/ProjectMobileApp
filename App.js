@@ -11,6 +11,7 @@ import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
 import PasswordScreen from './src/screens/PasswordScreen';
 import UpdatePassScreen from './src/screens/UpdatePassScreen';
 import ResetPassScreen from './src/screens/ResetPassScreen';  
+import WishListScreen from './src/screens/WishListScreen';  
 
 import Header from './src/components/Header';
 
@@ -62,9 +63,9 @@ export default function App() {
         />
         <Tab.Screen 
           name="Wishlist" 
-          component={HomeScreen} 
+          component={WishListScreen} 
           options={{
-            headerShown: false,  // Không hiển thị Header ở màn hình khác
+            header: () => <Header />,  
           }} 
         />
         <Tab.Screen 
