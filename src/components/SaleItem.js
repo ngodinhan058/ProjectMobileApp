@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing } from 'react-native';
 
-const ProductItem = ({ image, name, price, rating, review }) => {
+const SaleItem = ({ image, name, salePrice, originalPrice, rating, reviews }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const shimmerAnim = useRef(new Animated.Value(0)).current; // Shimmer animation value
 
@@ -34,9 +34,8 @@ const ProductItem = ({ image, name, price, rating, review }) => {
       {loading ? (
         // Skeleton with shimmer effect while loading
         <View>
-           <Image
+          <Image
             source={image}
-            style={styles.image}
             onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
           />
           <Animated.View style={[styles.skeletonImage, { backgroundColor: shimmerAnim.interpolate({
@@ -53,30 +52,32 @@ const ProductItem = ({ image, name, price, rating, review }) => {
           })}]} />
         </View>
       ) : (
-        <View>
-          <Image
-            source={image}
-            style={styles.image}
-          />
+        <>
+          {/* Nhãn SALE */}
+          <View style={styles.saleLabel}>
+            <Text style={styles.saleText}>SALE</Text>
+          </View>
+
+          <Image source={image} style={styles.image} />
           <Text style={styles.name}>{truncateName(name)}</Text>
-          <Text style={styles.price}>{price} ₫</Text>
+          <Text style={styles.salePrice}>{salePrice}</Text>
+          <Text style={styles.originalPrice}>{originalPrice}</Text>
+
           <View style={styles.rate}>
             <Text style={styles.rating}>
               <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
             </Text>
-            <Text style={styles.review}>{review} Review</Text>
-            <Text style={styles.heart}>
-              <Image source={require('../assets/heart.png')} />
-            </Text>
+            <Text style={styles.review}>{reviews} Review</Text>
+            <Text style={styles.heart}><Image source={require('../assets/heart.png')} /></Text>
           </View>
-        </View>
+        </>
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-   // Style khi đang loading (skeleton)
+  // Style khi đang loading (skeleton)
   skeletonImage: {
     width: 125,
     height: 125,
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     width: '60%',
     borderRadius: 4,
   },
-   // Style khi hết loading
+  // Style khi hết loading
   container: {
     width: 156,
     padding: 10,
@@ -113,14 +114,42 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
+  saleLabel: {
+    backgroundColor: 'red',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 5,
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  saleText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  image: {
+    width: 125,
+    height: 125,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
   name: {
     height: 40,
     fontSize: 14,
     fontWeight: 'bold',
   },
-  price: {
+  salePrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: 'red',
+  },
+  originalPrice: {
     fontSize: 14,
+    color: '#888',
+    textDecorationLine: 'line-through',
+    marginBottom: 10,
   },
   rate: {
     position: 'relative',
@@ -148,4 +177,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProductItem;
+export default SaleItem;
