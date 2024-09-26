@@ -18,7 +18,7 @@ const featuredProducts = [
   {
     id: '2',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
+    name: 'TMA-2 FHD Wireless',
     price: '1.500.000',
     rating: '4.6',
     review: '86'
@@ -26,7 +26,7 @@ const featuredProducts = [
   {
     id: '3',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
+    name: 'TMA-20 HD Wireless',
     price: '1.500.000',
     rating: '4.6',
     review: '86'
@@ -49,7 +49,7 @@ const news = [
 ];
 const banners = [
   { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-  { id: '2', image: { uri: 'https://as1.ftcdn.net/v2/jpg/04/65/46/52/1000_F_465465254_1pN9MGrA831idD6zIBL7q8rnZZpUCQTy.jpg' }, },
+
 ];
 
 const categories = [
@@ -101,25 +101,11 @@ const HomeScreen = () => {
           </View>
           {/* Banner chính */}
           {loading ? (
-            // Skeleton with shimmer effect while loading
             <View>
-              {/* <Image
-                source={image}
-                onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
-              /> */}
-               <FlatList
-                horizontal
-                data={banners}
-                renderItem={({ item }) => (
-                  <View style={styles.banner}>
-                    <Image source={item.image} style={{backgroundColor: '#fff',}} onLoad={() => setLoading(false)}/>
-                  </View>
-                )}
-                keyExtractor={(item) => item.id}
-                showsHorizontalScrollIndicator={false}
-                pagingEnabled
-                style={styles.bannerCarousel}
-              />
+              <View style={styles.banner}>
+                <Image source={banners.image} onLoad={() => setLoading(false)} />
+              </View>
+
               <Animated.View style={[styles.skeletonText, {
                 backgroundColor: shimmerAnim.interpolate({
                   inputRange: [0, 1],
