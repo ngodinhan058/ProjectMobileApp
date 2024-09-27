@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
-const ProductItem = ({id, image, name, price, rating, review, navigation }) => {
+const ProductItem = ({ id, image, name, price, rating, review }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const shimmerAnim = useRef(new Animated.Value(0)).current; // Shimmer animation value
+
+  const navigation = useNavigation();
 
   const truncateName = (text) => {
     return text.length > 17 ? text.substring(0, 17) + '...' : text;
@@ -59,7 +62,19 @@ const ProductItem = ({id, image, name, price, rating, review, navigation }) => {
           }]} />
         </View>
       ) : (
-        <TouchableOpacity onPress={() => navigation.navigate('ProductDetailScreen', {id, image, name, price, rating, review})}>
+        <TouchableOpacity
+          onPress={() => {
+            const currentRoute = navigation.getState().routes[navigation.getState().index].name;
+
+            if (currentRoute === 'ProductDetailScreen') {
+              // Nếu đang ở ProductDetailScreen, dùng replace
+              navigation.replace('ProductDetailScreen', { image, name, price, rating, review });
+            } else {
+              // Nếu không, dùng navigate
+              navigation.navigate('ProductDetailScreen', { image, name, price, rating, review });
+            }
+          }}
+        >
           <View>
             <Image
               source={image}
@@ -76,6 +91,7 @@ const ProductItem = ({id, image, name, price, rating, review, navigation }) => {
             </View>
           </View>
         </TouchableOpacity>
+
 
       )}
     </View>
@@ -112,13 +128,13 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
-    marginRight: 10,
+    marginHorizontal:2,
     marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOpacity: 0.5,
+    shadowRadius: 1710,
+    elevation: 4,
   },
   name: {
     height: 40,

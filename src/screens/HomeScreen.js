@@ -13,24 +13,24 @@ const featuredProducts = [
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
     name: 'TMA-2 HD Wireless0',
     price: '1.500.000',
-    rating: '4.6',
-    review: '86'
+    rating: '4.0',
+    review: '860'
   },
   {
     id: '2',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
+    name: 'TMA-2 HD Wireless2',
     price: '1.500.000',
-    rating: '4.6',
-    review: '86'
+    rating: '2.6',
+    review: '6'
   },
   {
     id: '3',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
     name: 'TMA-2 HD Wireless',
     price: '1.500.000',
-    rating: '4.6',
-    review: '86'
+    rating: '0.6',
+    review: '106'
   },
 ];
 
@@ -50,6 +50,7 @@ const news = [
 ];
 const banners = [
   { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+  { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' }, },
 
 ];
 
@@ -63,6 +64,7 @@ const HomeScreen = () => {
   {/* Loading Banner */ }
   const [loading, setLoading] = useState(true);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
@@ -85,7 +87,7 @@ const HomeScreen = () => {
   }, [shimmerAnim]);
 
   {/* Search lấy dữ liệu để chuyển trang*/ }
-  const navigation = useNavigation();
+ 
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = () => {
@@ -153,8 +155,8 @@ const HomeScreen = () => {
           <View style={{
           }}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.textBold}>Danh Mục</Text>
-              <Text style={styles.seeAll}>Xem Tất Cả</Text>
+              <Text style={styles.textBold}>Danh Mục Sản Phẩm</Text>
+              <Text style={styles.seeAll}></Text>
             </View>
           </View>
           {/* Xuất Danh mục sản phẩm */}
@@ -179,7 +181,7 @@ const HomeScreen = () => {
           <FlatList
             horizontal
             data={featuredProducts}
-            renderItem={({ item }) => <ProductItem {...item} navigation={navigation}/>}
+            renderItem={({ item }) => <ProductItem {...item} />}
             keyExtractor={(item) => item.id}
             showsHorizontalScrollIndicator={false}
             style={styles.productList}
@@ -267,7 +269,7 @@ const HomeScreen = () => {
               borderColor: '#000',
               borderStyle: 'solid',
               alignItems: 'center',
-            }}
+            }}  onPress={() => navigation.navigate('NewsScreen')}
           >
             <Text>Xem Tất Cả Bản Tin</Text>
           </TouchableOpacity>

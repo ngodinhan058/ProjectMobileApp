@@ -14,7 +14,7 @@ const featuredProducts = [
   },
   {
     id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
     name: 'TMA-2 HD Wireless',
     price: '1.500.000',
     rating: '4.6',
@@ -30,7 +30,7 @@ const featuredProducts = [
   },
   {
     id: '4',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
     name: 'TMA-2 HD Wireless',
     price: '1.500.000',
     rating: '4.6',
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     paddingHorizontal: 20,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fff',
   },
   searchBar: {
     position: 'relative',
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     borderWidth: 5,
-    borderColor: '#fff'
+    borderColor: '#fafafa'
   },
   filter: {
     position: 'absolute',
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     right: 0,
     borderWidth: 5,
-    borderColor: '#fff'
+    borderColor: '#fafafa'
   },
   iconCenter: {
     width: 20,
