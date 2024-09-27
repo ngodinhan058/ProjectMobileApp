@@ -18,7 +18,7 @@ const featuredProducts = [
   },
   {
     id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
     name: 'TMA-2 HD Wireless',
     price: '1.500.000',
     rating: '4.6',
@@ -179,7 +179,7 @@ const HomeScreen = () => {
           <FlatList
             horizontal
             data={featuredProducts}
-            renderItem={({ item }) => <ProductItem {...item} />}
+            renderItem={({ item }) => <ProductItem {...item} navigation={navigation}/>}
             keyExtractor={(item) => item.id}
             showsHorizontalScrollIndicator={false}
             style={styles.productList}

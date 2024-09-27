@@ -13,6 +13,7 @@ import UpdatePassScreen from './src/screens/UpdatePassScreen';
 import ResetPassScreen from './src/screens/ResetPassScreen';  
 import WishListScreen from './src/screens/WishListScreen';  
 import SearchScreen from './src/screens/SearchScreen';  
+import ProductDetailScreen from './src/screens/ProductDetailScreen';  
 
 import Header from './src/components/Header';
 
@@ -38,6 +39,7 @@ function HomeStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
+      <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
       
     </Stack.Navigator>
   );

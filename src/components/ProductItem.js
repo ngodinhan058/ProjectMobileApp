@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const ProductItem = ({ image, name, price, rating, review }) => {
+const ProductItem = ({id, image, name, price, rating, review, navigation }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const shimmerAnim = useRef(new Animated.Value(0)).current; // Shimmer animation value
 
@@ -35,47 +35,55 @@ const ProductItem = ({ image, name, price, rating, review }) => {
       {loading ? (
         // Skeleton with shimmer effect while loading
         <View>
-           <Image
+          <Image
             source={image}
             onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
           />
-          <Animated.View style={[styles.skeletonImage, { backgroundColor: shimmerAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
-          })}]} />
-          <Animated.View style={[styles.skeletonText, { backgroundColor: shimmerAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['#e0e0e0', '#f0f0f0'],
-          })}]} />
-          <Animated.View style={[styles.skeletonTextSmall, { backgroundColor: shimmerAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['#e0e0e0', '#f0f0f0'],
-          })}]} />
+          <Animated.View style={[styles.skeletonImage, {
+            backgroundColor: shimmerAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
+            })
+          }]} />
+          <Animated.View style={[styles.skeletonText, {
+            backgroundColor: shimmerAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['#e0e0e0', '#f0f0f0'],
+            })
+          }]} />
+          <Animated.View style={[styles.skeletonTextSmall, {
+            backgroundColor: shimmerAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['#e0e0e0', '#f0f0f0'],
+            })
+          }]} />
         </View>
       ) : (
-        <View>
-          <Image
-            source={image}
-            style={styles.image}
-          />
-          <Text style={styles.name}>{truncateName(name)}</Text>
-          <Text style={styles.price}>{price} ₫</Text>
-          <View style={styles.rate}>
-            <Text style={styles.rating}>
-              <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
-            </Text>
-            <Text style={styles.review}>{review} Review</Text>
-            <Text style={styles.heart}><Icon name="heart-outline" size={18} color="#000" /></Text>
-
+        <TouchableOpacity onPress={() => navigation.navigate('ProductDetailScreen', {id, image, name, price, rating, review})}>
+          <View>
+            <Image
+              source={image}
+              style={styles.image}
+            />
+            <Text style={styles.name}>{truncateName(name)}</Text>
+            <Text style={styles.price}>{price} ₫</Text>
+            <View style={styles.rate}>
+              <Text style={styles.rating}>
+                <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
+              </Text>
+              <Text style={styles.review}>{review} Review</Text>
+              <Text style={styles.heart}><Icon name="heart-outline" size={18} color="#000" /></Text>
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
+
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-   // Style khi đang loading (skeleton)
+  // Style khi đang loading (skeleton)
   skeletonImage: {
     width: 150,
     height: 140,
@@ -98,7 +106,7 @@ const styles = StyleSheet.create({
     width: '60%',
     borderRadius: 4,
   },
-   // Style khi hết loading
+  // Style khi hết loading
   container: {
     width: 171,
     padding: 10,
@@ -138,7 +146,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -3,
     right: 0,
-    
+
   },
   icon: {
     width: 12,

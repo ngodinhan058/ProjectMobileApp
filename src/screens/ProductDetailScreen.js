@@ -8,14 +8,16 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-function ProductDetail({ navigation }) {
+
+function ProductDetailScreen({  route  }) {
+  const { image, name, price, rating, review } = route.params;
   return (
     <ScrollView>
       <View style={styles.productDetailContainer}>
         {/* Product Image */}
         <View style={styles.productImgContainer}>
           <Image
-            source={require('../assets/new1.png')}
+            source={image}
             style={styles.productImg}
           />
           <Text style={styles.numberOfImage}>1/5 Foto</Text>
@@ -23,7 +25,7 @@ function ProductDetail({ navigation }) {
 
         {/* Product info */}
         <View style={styles.productInfo}>
-          <View style={{}}>
+          <View style={{image}}>
             <Text style={styles.productName}>TMA-2HD Wireless</Text>
           </View>
 
@@ -331,8 +333,7 @@ function ProductDetail({ navigation }) {
 const styles = StyleSheet.create({
   productDetailContainer: {
     flex: 1,
-    padding: 10,
-    fontFamily: 'DMSSans',
+    padding: 20,
   },
   productImgContainer: {
     flexDirection: 'row',
@@ -428,4 +429,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProductDetail;
+export default ProductDetailScreen;
