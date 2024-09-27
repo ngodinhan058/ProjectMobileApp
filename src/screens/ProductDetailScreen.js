@@ -293,7 +293,7 @@ function ProductDetailScreen({ route, navigation }) {
                 }}
               >
                 <Text style={{ textAlign: 'center', fontWeight: '600' }}>
-                  Added
+                  Thêm yêu thích
                 </Text>
                 <Image
                   style={{ width: 20, height: 20 }}
@@ -321,7 +321,7 @@ function ProductDetailScreen({ route, navigation }) {
                   color: '#fff',
                 }}
               >
-                Add To Cart
+                Thêm vào giỏ hàng
               </Text>
             </TouchableOpacity>
           </View>

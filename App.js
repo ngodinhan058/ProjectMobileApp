@@ -14,6 +14,7 @@ import ResetPassScreen from './src/screens/ResetPassScreen';
 import WishListScreen from './src/screens/WishListScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import ProductDetailScreen from './src/screens/ProductDetailScreen';
+import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import NewsScreen from './src/screens/NewsScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 
@@ -45,6 +46,7 @@ function HomeStack() {
       <Stack.Screen name="WishListScreen" component={WishListScreen} />
       <Stack.Screen name="NewsScreen" component={NewsScreen} />
       <Stack.Screen name="NewsDetailScreen" component={NewsDetailScreen} />
+      <Stack.Screen name="AddedProductToWishlist" component={AddedProductToWishlist} />
     </Stack.Navigator>
   );
 }

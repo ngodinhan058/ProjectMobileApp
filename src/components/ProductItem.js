@@ -66,12 +66,12 @@ const ProductItem = ({ id, image, name, price, rating, review }) => {
           onPress={() => {
             const currentRoute = navigation.getState().routes[navigation.getState().index].name;
 
-            if (currentRoute === 'ProductDetailScreen') {
+            if (currentRoute === 'AddedProductToWishlist') {
               // Nếu đang ở ProductDetailScreen, dùng replace
-              navigation.replace('ProductDetailScreen', { image, name, price, rating, review });
+              navigation.replace('AddedProductToWishlist', { image, name, price, rating, review });
             } else {
               // Nếu không, dùng navigate
-              navigation.navigate('ProductDetailScreen', { image, name, price, rating, review });
+              navigation.navigate('AddedProductToWishlist', { image, name, price, rating, review });
             }
           }}
         >
