@@ -281,9 +281,20 @@ function ProductDetail({ navigation }) {
                     borderRadius: 10,
                   }}
                 >
-                  <Text style={{ textAlign: 'center', fontWeight: '600' }}>
-                    See All Review
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text style={{ textAlign: 'center', fontWeight: '600' }}>
+                      Added
+                    </Text>
+                    <Image
+                      style={{ width: 20, height: 20 }}
+                      source={require('../assets/heart.png')}
+                    />
+                  </View>
                 </TouchableOpacity>
               </View>
 
@@ -291,15 +302,21 @@ function ProductDetail({ navigation }) {
                 <TouchableOpacity
                   style={{
                     width: '100%',
-                    backgroundColor: '#fff',
+                    backgroundColor: '#3669C9',
                     borderColor: '#ccc',
                     borderWidth: 1,
                     padding: 20,
                     borderRadius: 10,
                   }}
                 >
-                  <Text style={{ textAlign: 'center', fontWeight: '600' }}>
-                    See All Review
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontWeight: '600',
+                      color: '#fff',
+                    }}
+                  >
+                    Add To Cart
                   </Text>
                 </TouchableOpacity>
               </View>
