@@ -37,7 +37,6 @@ const ProductItem = ({ image, name, price, rating, review }) => {
         <View>
            <Image
             source={image}
-            style={styles.image}
             onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
           />
           <Animated.View style={[styles.skeletonImage, { backgroundColor: shimmerAnim.interpolate({
