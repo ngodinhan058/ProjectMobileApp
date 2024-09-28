@@ -49,6 +49,7 @@ function ProductDetailScreen({ route, navigation }) {
           <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
             <Icon name="angle-left" size={35} color="#000" />
           </Pressable>
+          <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
           <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
             <Icon name="share" size={25} color="#000" />
           </Pressable>
@@ -343,19 +344,23 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   iconHeader: {
-    position: 'relative',
-
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingBottom: 10,
+  },
+  textHeader: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    textAlign: 'center',
+    flex: 1,
   },
   backButton: {
-
-    marginBottom: 10,
-    fontWeight: 'bold'
+    marginRight: 10,
   },
   shareButton: {
-    position: 'absolute',
-    marginTop: 8,
-    fontWeight: 'bold',
-    right: 0,
+    marginLeft: 10,
   },
   productImgContainer: {
     flexDirection: 'row',
