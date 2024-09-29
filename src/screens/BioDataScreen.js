@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet, Button, Pressable, Image,TouchableWithoutFeedback  } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet, Button, Pressable, Image, TouchableWithoutFeedback } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -76,20 +76,20 @@ const BiodataScreen = ({ navigation }) => {
 
       {/* Gender Selection Modal */}
       <Modal visible={isGenderModalVisible} transparent={true} animationType="slide">
-  <TouchableWithoutFeedback onPress={() => setIsGenderModalVisible(false)}>
-    <View style={styles.modalContainer}>
-      <FlatList
-        data={genderOptions}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.optionButton} onPress={() => handleGenderSelect(item)}>
-            <Text style={styles.optionText}>{item}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
-  </TouchableWithoutFeedback>
-</Modal>
+        <TouchableWithoutFeedback onPress={() => setIsGenderModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <FlatList
+              data={genderOptions}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.optionButton} onPress={() => handleGenderSelect(item)}>
+                  <Text style={styles.optionText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* Date of Birth */}
       <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
@@ -142,11 +142,11 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 2,
     borderColor: '#fff'
-},
+  },
   avatarContainer: {
-    justifyContent:'space-between',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    
+
   },
   avatarCircle: {
     width: 100,
@@ -156,12 +156,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  nameText:{
+  nameText: {
     fontWeight: 'bold',
     marginTop: 20,
     fontSize: 20,
   },
-  emailText:{
+  emailText: {
     fontWeight: 'bold',
     marginBottom: 30,
     color: '#ABABAB',

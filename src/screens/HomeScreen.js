@@ -5,6 +5,7 @@ import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
 import { useNavigation } from '@react-navigation/native';
+import Filter from '../components/Filter';
 
 
 const featuredProducts = [
@@ -87,12 +88,13 @@ const HomeScreen = () => {
   }, [shimmerAnim]);
 
   {/* Search lấy dữ liệu để chuyển trang*/ }
- 
+
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = () => {
     navigation.navigate('SearchScreen', { query: searchQuery });
   };
+  
   return (
     <ScrollView>
       {/* Bắt đầu phần với background #fff */}
@@ -102,18 +104,19 @@ const HomeScreen = () => {
           <View style={styles.line}></View>
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
-            <TextInput style={styles.searchInput} placeholder="Search Product Name" value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch}/>
+            <TextInput style={styles.searchInput} placeholder="Search Product Name" value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} />
             <TouchableOpacity onPress={handleSearch}>
-          <Image
-            source={require('../assets/iconSeach.png')}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
+              <Image
+                source={require('../assets/iconSeach.png')}
+                style={styles.icon}
+              />
+            </TouchableOpacity>
           </View>
-          {/* Lọc */}
-          <View style={styles.filter}>
+          {/* Lọc 
+          <TouchableOpacity style={styles.filter} onPress={toggleFilterModal}>
             <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
-          </View>
+          </TouchableOpacity > */}
+          
           {/* Banner chính */}
           {loading ? (
             <View>
@@ -170,7 +173,7 @@ const HomeScreen = () => {
         </View>
       </View>
 
-
+    
       {/* Sản phẩm nổi bật */}
       <View style={styles.containerPro}>
         <View style={styles.greySection}>
@@ -269,7 +272,7 @@ const HomeScreen = () => {
               borderColor: '#000',
               borderStyle: 'solid',
               alignItems: 'center',
-            }}  onPress={() => navigation.navigate('NewsScreen')}
+            }} onPress={() => navigation.navigate('NewsScreen')}
           >
             <Text>Xem Tất Cả Bản Tin</Text>
           </TouchableOpacity>
@@ -302,7 +305,7 @@ const styles = StyleSheet.create({
     background: '#fff',
   },
   searchInput: {
-    width: '80%',
+    width: '100%',
     height: 50,
     backgroundColor: '#FAFAFA',
     borderRadius: 10,
@@ -330,7 +333,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     position: 'absolute',
-    left: '70%',
+    left: '90%',
     top: -35,
   },
   whiteSection: {
