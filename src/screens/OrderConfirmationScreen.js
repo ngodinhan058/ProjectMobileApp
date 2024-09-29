@@ -117,14 +117,7 @@ function OrderConfirmationScreen({ navigation }) {
           <View
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
           >
-            <Text>Subtotal</Text>
-            <Text>$147.45</Text>
-          </View>
-
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-          >
-            <Text>Subtotal</Text>
+            <Text>Shipping</Text>
             <Text>$147.45</Text>
           </View>
 
