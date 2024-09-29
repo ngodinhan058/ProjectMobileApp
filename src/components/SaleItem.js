@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+
 
 const SaleItem = ({ image, name, salePrice, originalPrice, rating, reviews }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
@@ -68,7 +70,7 @@ const SaleItem = ({ image, name, salePrice, originalPrice, rating, reviews }) =>
               <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
             </Text>
             <Text style={styles.review}>{reviews} Review</Text>
-            <Text style={styles.heart}><Image source={require('../assets/heart.png')} /></Text>
+            <Text style={styles.heart}><Icon name="heart-outline" size={18} color="#000" /></Text>
           </View>
         </>
       )}
@@ -79,14 +81,14 @@ const SaleItem = ({ image, name, salePrice, originalPrice, rating, reviews }) =>
 const styles = StyleSheet.create({
   // Style khi đang loading (skeleton)
   skeletonImage: {
-    width: 125,
-    height: 125,
+    width: 150,
+    height: 140,
     borderRadius: 10,
     marginBottom: 10,
   },
   image: {
-    width: 125,
-    height: 125,
+    width: 150,
+    height: 140,
     marginBottom: 10,
   },
   skeletonText: {
@@ -102,7 +104,7 @@ const styles = StyleSheet.create({
   },
   // Style khi hết loading
   container: {
-    width: 156,
+    width: 171,
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -129,12 +131,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  image: {
-    width: 125,
-    height: 125,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
   name: {
     height: 40,
     fontSize: 14,
@@ -153,7 +149,7 @@ const styles = StyleSheet.create({
   },
   rate: {
     position: 'relative',
-    width: 131,
+    width: '100%',
     height: 15,
   },
   rating: {
@@ -162,14 +158,13 @@ const styles = StyleSheet.create({
   review: {
     position: 'absolute',
     fontSize: 12,
-    left: '30%',
+    left: '32%',
   },
   heart: {
     position: 'absolute',
-    bottom: 0,
+    bottom: -3,
     right: 0,
-    width: 15,
-    height: 15,
+    
   },
   icon: {
     width: 12,
