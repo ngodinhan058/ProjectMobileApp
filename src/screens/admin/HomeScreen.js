@@ -79,7 +79,7 @@ const HomeAdminScreen = ({ navigation }) => {
             />
 
             {/* Add Button */}
-            <TouchableOpacity style={styles.addButton}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductScreen')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
         </View>

@@ -123,7 +123,7 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButton, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddProductScreen')}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>

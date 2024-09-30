@@ -21,6 +21,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
 import HomeAdminScreen from './src/screens/admin/HomeScreen';
 import DetailScreen from './src/screens/admin/DetailScreen';
+import AddProductScreen from './src/screens/admin/AddProductScreen';
 
 import Header from './src/components/Header';
 
@@ -43,6 +44,7 @@ function LoginStack() {
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
       <Stack.Screen name="DetailScreen" component={DetailScreen} />
+      <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
       
 
       
