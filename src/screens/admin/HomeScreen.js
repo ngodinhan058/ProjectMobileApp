@@ -5,27 +5,47 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const HomeAdminScreen = ({ navigation }) => {
     const products = [
-        { id: '1', code: '#HWDSF776567DS', status: 'On the way - 00/00/0000' },
-        { id: '2', code: '#HWDSF776567DS', status: 'On the way - 00/00/0000' },
-        { id: '3', code: '#HWDSF776567DS', status: 'On the way - 00/00/0000' },
-        { id: '4', code: '#HWDSF776567DS', status: 'On the way - 00/00/0000' },
-        { id: '5', code: '#HWDSF776567DS', status: 'On the way - 00/00/0000' },
+        {
+            id: '1', name: '#HWDSF776567DS', price: '1.500.000', quantity: 500, rating: '4.0',
+            review: '860', sale: 80, category: 1, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+        },
+        {
+            id: '2', name: '#Ha5s1d56sa7DS', price: '1.000.000', quantity: 500, rating: '3.0',
+            review: '860', sale: 0, category: 2, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+        },
+        {
+            id: '3', name: '#HADSAF776567DS', price: '500.000', quantity: 500, rating: '3.0',
+            review: '860', sale: 50, category: 3, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+        },
 
     ];
 
     const renderProduct = ({ item }) => (
-        <TouchableOpacity style={styles.productItem}>
-            <View style={{ borderWidth: 2, borderColor: '#ededed', borderRadius: 40,
-                width: 40, height: 40, marginRight: 10,
-             }}>
-                <Image source={require('../../assets/box.png')} style={styles.productIcon} />
+        <TouchableOpacity
+            style={styles.productItem}
+            onPress={() => navigation.navigate('DetailScreen', {
+                image: item.image,
+                name: item.name,
+                price: item.price,
+                rating: item.rating,
+                quantity: item.quantity,
+                sale: item.sale,
+            })}
+        >
+
+            <View style={{
+
+                marginRight: 20,
+            }}>
+                <Image source={item.image} style={styles.productIcon} />
             </View>
 
             <View style={styles.productDetails}>
-                <Text style={styles.productCode}>{item.code}</Text>
-                <Text style={styles.productStatus}>{item.status}</Text>
+                <Text style={styles.productCode}>{item.name}</Text>
+                <Text style={styles.productCode}>Giá: {item.price} ₫</Text>
+                <Text style={styles.productStatus}>Số Lượng Tồn: {item.quantity}</Text>
             </View>
-            <Pressable onPress={() => navigation.goBack()}>
+            <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
             </Pressable>
         </TouchableOpacity>
@@ -119,11 +139,11 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     productIcon: {
-        width: 25,
-        height: 25,
+        width: 55,
+        height: 55,
         marginLeft: 5,
         marginTop: 5,
-       
+
     },
     productDetails: {
         flex: 1,
@@ -132,6 +152,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+
     productStatus: {
         fontSize: 14,
         color: '#888',
