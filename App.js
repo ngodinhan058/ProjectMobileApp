@@ -19,6 +19,7 @@ import NewsScreen from './src/screens/NewsScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
+import HomeAdminScreen from './src/screens/admin/HomeScreen';
 
 import Header from './src/components/Header';
 
@@ -28,7 +29,8 @@ const Stack = createStackNavigator();
 function LoginStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LoginScreen" component={ProfileScreen} />
+      <Stack.Screen name="LoginScreen" component={HomeAdminScreen} />
+      {/* <Stack.Screen name="LoginScreen" component={LoginScreen} /> */}
       <Stack.Screen name="SignUpSceen" component={SignUpScreen} />
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
       <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
@@ -37,7 +39,10 @@ function LoginStack() {
       <Stack.Screen name="UpdatePassScreen" component={UpdatePassScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
       {/* đã login */}
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
+      
+
       
     </Stack.Navigator>
   );
@@ -45,6 +50,7 @@ function LoginStack() {
 function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
