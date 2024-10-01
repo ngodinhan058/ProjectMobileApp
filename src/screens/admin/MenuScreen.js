@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const MenuScreen = ({ navigation }) => {
-    const [selectedItem, setSelectedItem] = useState('');
+    const [selectedItem, setSelectedItem] = useState('Product List');
     const flatListRef = useRef(null);
 
     const menuItems = [
@@ -26,10 +26,8 @@ const MenuScreen = ({ navigation }) => {
     const handleSelectItem = (item) => {
         setSelectedItem(item);
         // Tự động điều hướng sau 1 giây nếu mục được chọn
-        setTimeout(() => {
-            // Điều hướng tới màn hình tương ứng
-            navigation.navigate(item.replace(' ', ''));
-        }, 1000); // Thời gian chờ 1 giây
+        navigation.navigate(item.replace(' ', ''));
+        
     };
 
     const handleScroll = (event) => {
@@ -93,8 +91,8 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     listContainer: {
-        height: 200, // Đảm bảo danh sách được hiển thị đầy đủ trong vùng cuộn
-        marginTop: 200,
+        height: 500,
+        lineHeight: 500,
         justifyContent: 'center', // Đảm bảo các mục nằm giữa
     },
     menuItem: {

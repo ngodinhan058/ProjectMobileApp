@@ -19,16 +19,18 @@ import NewsScreen from './src/screens/NewsScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
-import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
-import DetailScreen from './src/screens/admin/product/DetailProductScreen';
 {/* Admin */}
 import MenuScreen from './src/screens/admin/MenuScreen';
 {/* AdminProduct */}
 import AddProductScreen from './src/screens/admin/product/AddProductScreen';
 import EditProductScreen from './src/screens/admin/product/EditProductScreen';
+import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
+import DetailScreen from './src/screens/admin/product/DetailProductScreen';
 {/* AdminPost*/}
 import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
 import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
+{/* AdminCategory*/}
+import CategoryList from './src/screens/admin/category/HomeScreen';
 
 import Header from './src/components/Header';
 
@@ -38,7 +40,8 @@ const Stack = createStackNavigator();
 function LoginStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LoginScreen" component={HomeAdminScreen} />
+      <Stack.Screen name="ProductList" component={HomeAdminScreen} />
+      
       {/* <Stack.Screen name="LoginScreen" component={LoginScreen} /> */}
       <Stack.Screen name="SignUpSceen" component={SignUpScreen} />
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
@@ -50,14 +53,21 @@ function LoginStack() {
       {/* đã login */}
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
+      {/* Admin Menu */}
       <Stack.Screen name="MenuScreen" component={MenuScreen} />
       {/* Admin Product */}
+  
       <Stack.Screen name="DetailScreen" component={DetailScreen} />
       <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
       <Stack.Screen name="EditProductScreen" component={EditProductScreen} />
       {/* Admin Post */}
       <Stack.Screen name="AddPostScreen" component={AddPostScreen} />
       <Stack.Screen name="EditPostScreen" component={EditPostScreen} />
+      {/* Admin Category */}
+      <Stack.Screen name="CategoryList" component={CategoryList} />
+      {/* <Stack.Screen name="DetailScreen" component={DetailScreen} />
+      <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
+      <Stack.Screen name="EditProductScreen" component={EditProductScreen} /> */}
 
       
 
