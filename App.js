@@ -19,9 +19,12 @@ import NewsScreen from './src/screens/NewsScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
-import HomeAdminScreen from './src/screens/admin/HomeScreen';
-import DetailScreen from './src/screens/admin/DetailScreen';
-import AddProductScreen from './src/screens/admin/AddProductScreen';
+import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
+import DetailScreen from './src/screens/admin/product/DetailProductScreen';
+import AddProductScreen from './src/screens/admin/product/AddProductScreen';
+import EditProductScreen from './src/screens/admin/product/EditProductScreen';
+import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
+import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 
 import Header from './src/components/Header';
 
@@ -43,8 +46,14 @@ function LoginStack() {
       {/* đã login */}
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
+      {/* Admin Product */}
       <Stack.Screen name="DetailScreen" component={DetailScreen} />
       <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
+      <Stack.Screen name="EditProductScreen" component={EditProductScreen} />
+      {/* Admin Post */}
+      <Stack.Screen name="AddPostScreen" component={AddPostScreen} />
+      <Stack.Screen name="EditPostScreen" component={EditPostScreen} />
+
       
 
       

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    Button,
     Modal,
     TouchableOpacity,
     StyleSheet,
@@ -10,12 +9,27 @@ import {
     Image,
     TextInput,
     Pressable,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+const AddProductScreen = ({ route, navigation }) => {
 
-const EditProductScreen = ({ navigation }) => {
+    const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
+
+    const { query } = route.params || {}; // Kiểm tra xem `query` có tồn tại hay không
+    const [searchQuery, setSearchQuery] = useState(''); // Lưu trữ trạng thái cho thanh tìm kiếm
+
+    // Lọc các danh mục theo thanh tìm kiếm
+    const filteredCategories = categories.filter(category =>
+        category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const handleSearch = (value) => {
+        setSearchQuery(value);
+    };
+
     const [productName, setProductName] = useState('');
     const [productPrice, setProductPrice] = useState('');
     const [productQuantity, setProductQuantity] = useState('');
@@ -24,8 +38,6 @@ const EditProductScreen = ({ navigation }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
-
-    const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
 
     const handleSelect = (value) => {
         setSelectedValue(value);
@@ -40,25 +52,26 @@ const EditProductScreen = ({ navigation }) => {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Sửa Thông Tin Sản Phẩm</Text>
-                   
+                    <Text style={styles.textHeader}>Thêm Thông Tin Sản Phẩm</Text>
                 </View>
 
                 {/* Icon Image */}
                 <View style={styles.imageContainer}>
                     <Image
-                        source={require('../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
+                        source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
                         style={styles.imageIcon}
                     />
                 </View>
-
+                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('AddPostScreen')}>
+                    <Text style={styles.buttonText}>Thêm Post</Text>
+                </TouchableOpacity>
                 {/* Product Form */}
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
                     {/* Product Name */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Add Product name"
+                        placeholder="Thêm Tên Sản Phẩm"
                         value={productName}
                         onChangeText={setProductName}
                     />
@@ -66,7 +79,7 @@ const EditProductScreen = ({ navigation }) => {
                     {/* Product Price */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Add Product price"
+                        placeholder="Thêm Giá Sản Phẩm"
                         value={productPrice}
                         onChangeText={setProductPrice}
                         keyboardType="numeric"
@@ -75,7 +88,7 @@ const EditProductScreen = ({ navigation }) => {
                     {/* Product Quantity */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Add Product quantity"
+                        placeholder="Thêm Số Lượng Sản Phẩm"
                         value={productQuantity}
                         onChangeText={setProductQuantity}
                         keyboardType="numeric"
@@ -84,12 +97,11 @@ const EditProductScreen = ({ navigation }) => {
                     {/* Product Sale */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Add Product sale"
+                        placeholder="Thêm Giảm Giá Sản Phẩm"
                         value={productSale}
                         onChangeText={setProductSale}
                         keyboardType="numeric"
                     />
-
 
                     {/* Product Category */}
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
@@ -105,23 +117,39 @@ const EditProductScreen = ({ navigation }) => {
                         transparent={true}
                         visible={modalVisible}
                         onRequestClose={() => setModalVisible(false)}>
-                        <View style={styles.modalView}>
-                            <FlatList
-                                data={categories}
-                                keyExtractor={(item) => item}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity onPress={() => handleSelect(item)} style={styles.modalItem}>
-                                        <Text style={styles.modalText}>{item}</Text>
+                        {/* TouchableWithoutFeedback để đóng modal khi bấm bên ngoài */}
+                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+                            <View style={styles.modalOverlay}>
+                                <View style={styles.modalView}>
+                                    <View style={styles.searchBar}>
+                                        <TextInput
+                                            style={styles.searchInput}
+                                            placeholder="Tìm kiếm danh mục"
+                                            value={searchQuery}
+                                            onChangeText={handleSearch}
+                                        />
+                                       
+                                    </View>
+                                    <FlatList
+                                        data={filteredCategories}
+                                        keyExtractor={(item) => item}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity onPress={() => handleSelect(item)} style={styles.modalItem}>
+                                                <Text style={styles.modalText}>{item}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    />
+                                    <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}>
+                                        <Text style={styles.buttonText}>Đóng</Text>
                                     </TouchableOpacity>
-                                )}
-                            />
-                            <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}><Text style={styles.buttonText}>Đóng</Text></TouchableOpacity>
-                        </View>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </Modal>
 
                     {/* Add/Edit Button */}
                     <TouchableOpacity style={styles.button} onPress={() => alert('Product Added/Edited')}>
-                        <Text style={styles.buttonText}>Sửa</Text>
+                        <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -147,16 +175,12 @@ const styles = StyleSheet.create({
         fontSize: 18,
         textAlign: 'center',
         flex: 1,
-      },
+    },
     backButton: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#000',
         marginRight: 10,
-    },
-    headerText: {
-        fontSize: 22,
-        fontWeight: 'bold',
     },
     imageContainer: {
         justifyContent: 'center',
@@ -179,13 +203,6 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         paddingHorizontal: 10,
     },
-    pickerContainer: {
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 20,
-        justifyContent: 'center',
-    },
     label: {
         fontSize: 16,
         marginBottom: 10,
@@ -200,6 +217,7 @@ const styles = StyleSheet.create({
     selectedValue: {
         fontSize: 16,
     },
+
     modalView: {
         position: 'absolute',
         width: '90%',
@@ -207,7 +225,6 @@ const styles = StyleSheet.create({
         padding: 30,
         backgroundColor: 'white',
         borderRadius: 20,
-        top: '40%',
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
@@ -217,7 +234,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        height: 300
+        height: 400
     },
     modalItem: {
         padding: 10,
@@ -236,12 +253,51 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
+    buttonPost: {
+        width: '40%',
+        backgroundColor: '#3669c9',
+        paddingVertical: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginVertical: 10,
+        marginLeft: '60%'
+    },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
 
     },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Làm nền modal tối
+    },
+    searchBar: {
+        position: 'relative',
+        flexDirection: 'row',
+        marginBottom: 20,
+    },
+    searchInput: {
+        flex: 1,
+        height: 50,
+        backgroundColor: '#FAFAFA',
+        borderRadius: 10,
+        padding: 10,
+    },
+    icon: {
+        width: 20,
+        height: 20,
+        marginLeft: 10,
+    },
+    iconCenter: {
+        width: 20,
+        height: 20,
+        position: 'absolute',
+        alignContent: 'center',
+        top: 15,
+    },
+
 });
 
-export default EditProductScreen;
+export default AddProductScreen;

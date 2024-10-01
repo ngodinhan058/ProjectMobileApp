@@ -91,7 +91,7 @@ function DetailScreen({ route, navigation }) {
 
                         <View style={styles.SoldProductInfo}>
                             <View style={styles.productStar}>
-                                <Image source={require('../../assets/star.png')} />
+                                <Image source={require('../../../assets/star.png')} />
                                 <Text>{rating}</Text>
                             </View>
                             <View>
@@ -123,7 +123,7 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButton, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddProductScreen')}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditProductScreen')}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
