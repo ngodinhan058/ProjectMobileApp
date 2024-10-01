@@ -21,8 +21,12 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
 import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
 import DetailScreen from './src/screens/admin/product/DetailProductScreen';
+{/* Admin */}
+import MenuScreen from './src/screens/admin/MenuScreen';
+{/* AdminProduct */}
 import AddProductScreen from './src/screens/admin/product/AddProductScreen';
 import EditProductScreen from './src/screens/admin/product/EditProductScreen';
+{/* AdminPost*/}
 import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
 import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 
@@ -46,6 +50,7 @@ function LoginStack() {
       {/* đã login */}
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
+      <Stack.Screen name="MenuScreen" component={MenuScreen} />
       {/* Admin Product */}
       <Stack.Screen name="DetailScreen" component={DetailScreen} />
       <Stack.Screen name="AddProductScreen" component={AddProductScreen} />

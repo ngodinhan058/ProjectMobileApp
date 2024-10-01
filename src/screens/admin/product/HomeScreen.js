@@ -63,7 +63,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
             {/* Product List Title */}
             <View style={{ position: 'relative', marginBottom: 30 }}>
-                <Pressable style={styles.menuIcon} onPress={() => navigation.navigate('ProfileScreen')}>
+                <Pressable style={styles.menuIcon} onPress={() => navigation.navigate('MenuScreen')}>
                     <Icon name="bars" size={15} color="#000" style={{ marginLeft: 9, marginTop: 6, }} />
                 </Pressable>
                 <Text style={styles.productListTitle}>Product List</Text>
