@@ -37,6 +37,11 @@ import DetailCategoryScreen from './src/screens/admin/category/DetailCategoryScr
 {/* AdminInventory*/}
 import InventoryList from './src/screens/admin/inventory/HomeScreen';
 import DetailInventoryScreen from './src/screens/admin/inventory/DetailInventoryScreen';
+{/* AdminUser */}
+import HomeUserScreen from './src/screens/admin/user/HomeScreen';
+import AddUserScreen from './src/screens/admin/user/AddUserScreen';
+import EditUserScreen from './src/screens/admin/user/EditUserScreen';
+import DetailUserScreen from './src/screens/admin/user/DetailUserScreen';
 {/* Success, Fail */}
 import SuccessScreen from './src/screens/admin/SuccessScreen';
 
@@ -76,10 +81,14 @@ function LoginStack() {
       <Stack.Screen name="DetailCategoryScreen" component={DetailCategoryScreen} />
       <Stack.Screen name="AddCategoryScreen" component={AddCategoryScreen} />
       <Stack.Screen name="EditCategoryScreen" component={EditCategoryScreen} />
-      
       {/* Admin Invetory */}
       <Stack.Screen name="InventoryList" component={InventoryList} />
       <Stack.Screen name="DetailInventoryScreen" component={DetailInventoryScreen} />
+      {/* Admin User */}
+      <Stack.Screen name="UserList" component={HomeUserScreen} />
+      <Stack.Screen name="AddUserScreen" component={AddUserScreen} />
+      <Stack.Screen name="EditUserScreen" component={EditUserScreen} />
+      <Stack.Screen name="DetailUserScreen" component={DetailUserScreen} />
       {/* Success, Fail */}
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
