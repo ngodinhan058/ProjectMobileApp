@@ -122,7 +122,7 @@ function DetailScreen({ route, navigation }) {
             </TouchableOpacity>
 
             {/* Các nút con */}
-            <Animated.View style={[styles.subButton, { bottom: position2 }]}>
+            <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
                 <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditProductScreen')}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
@@ -251,6 +251,16 @@ const styles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
         backgroundColor: '#ff5757',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    subButtonPen: {
+        position: 'absolute',
+        right: 35,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#3669c9',
         justifyContent: 'center',
         alignItems: 'center',
     },

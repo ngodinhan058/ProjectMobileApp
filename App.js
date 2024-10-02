@@ -31,6 +31,12 @@ import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
 import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 {/* AdminCategory*/}
 import CategoryList from './src/screens/admin/category/HomeScreen';
+{/* AdminInventory*/}
+import InventoryList from './src/screens/admin/inventory/HomeScreen';
+import DetailInventoryScreen from './src/screens/admin/inventory/DetailInventoryScreen';
+{/* Success, Fail */}
+import SuccessScreen from './src/screens/admin/SuccessScreen';
+
 
 import Header from './src/components/Header';
 
@@ -56,7 +62,7 @@ function LoginStack() {
       {/* Admin Menu */}
       <Stack.Screen name="MenuScreen" component={MenuScreen} />
       {/* Admin Product */}
-  
+
       <Stack.Screen name="DetailScreen" component={DetailScreen} />
       <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
       <Stack.Screen name="EditProductScreen" component={EditProductScreen} />
@@ -68,10 +74,11 @@ function LoginStack() {
       {/* <Stack.Screen name="DetailScreen" component={DetailScreen} />
       <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
       <Stack.Screen name="EditProductScreen" component={EditProductScreen} /> */}
-
-      
-
-      
+      {/* Admin Invetory */}
+      <Stack.Screen name="InventoryList" component={InventoryList} />
+      <Stack.Screen name="DetailInventoryScreen" component={DetailInventoryScreen} />
+      {/* Success, Fail */}
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
   );
 }

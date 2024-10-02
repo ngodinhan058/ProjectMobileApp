@@ -19,8 +19,8 @@ const MenuScreen = ({ navigation }) => {
         'Product List',
         'Category List',
         'Shipper List',
-        'Customer List',
-        'Staff List'
+        'User List',
+        'Inventory List'
     ];
 
     const handleSelectItem = (item) => {

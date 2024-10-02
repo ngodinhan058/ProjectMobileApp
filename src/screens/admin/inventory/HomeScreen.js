@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon5 from 'react-native-vector-icons/FontAwesome5';
 
 
 const HomeAdminScreen = ({ navigation }) => {
@@ -23,28 +24,21 @@ const HomeAdminScreen = ({ navigation }) => {
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('DetailScreen', {
-                image: item.image,
-                name: item.name,
-                price: item.price,
-                rating: item.rating,
-                quantity: item.quantity,
-                sale: item.sale,
-            })}
+            onPress={() => navigation.navigate('DetailInventoryScreen')}
         >
 
             <View style={{
 
                 marginRight: 20,
             }}>
-                <Image source={item.image} style={styles.productIcon} />
+                <Image source={require('../../../assets/box.png')} style={styles.productIcon} />
             </View>
 
             <View style={styles.productDetails}>
                 <Text style={styles.productCode}>{item.name}</Text>
-                <Text style={styles.productStatus}>Số Lượng Tồn: {item.quantity}</Text>
+                <Text style={styles.productStatus}>Tổng Số Lượng sản phẩm: {item.quantity}</Text>
                 <View style={styles.line}></View>
-                <Text style={styles.productCode}>Giá: {item.price} ₫</Text>
+                <Text style={styles.productCode}>Tổng Giá: {item.price} ₫</Text>
             </View>
             <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
@@ -57,7 +51,7 @@ const HomeAdminScreen = ({ navigation }) => {
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.welcomeContainer}>
-                    <Text style={styles.welcomeText}>Hi Admin!</Text>
+                    <Text style={styles.welcomeText}>Hi Tồn Kho!</Text>
                     <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
                 </View>
                 <TouchableOpacity
@@ -69,10 +63,11 @@ const HomeAdminScreen = ({ navigation }) => {
 
             {/* Product List Title */}
             <View style={{ position: 'relative', marginBottom: 30 }}>
-                <Pressable style={styles.menuIcon} onPress={() => navigation.navigate('MenuScreen')}>
+                <TouchableOpacity style={styles.menuIcon} onPress={() => navigation.navigate('MenuScreen')}>
                     <Icon name="bars" size={15} color="#000" style={{ marginLeft: 9, marginTop: 6, }} />
-                </Pressable>
-                <Text style={styles.productListTitle}>Product List</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.productListTitle}>Danh Sách Xác Nhận</Text>
 
             </View>
 
@@ -84,10 +79,6 @@ const HomeAdminScreen = ({ navigation }) => {
                 style={styles.productList}
             />
 
-            {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductScreen')}>
-                <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
         </View>
     );
 };
@@ -98,17 +89,17 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#fff',
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 30,
-
-    },
     line: {
         width: '95%',
         height: 1,
         backgroundColor: '#ededed',
         marginVertical: 10,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 30,
+
     },
     menuButton: {
         marginRight: 10,
@@ -135,7 +126,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
-        left: '35%'
+        left: '23%'
 
     },
     productList: {
@@ -151,8 +142,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     productIcon: {
-        width: 55,
-        height: 55,
+        width: 40,
+        height: 40,
         marginLeft: 5,
         marginTop: 5,
 
@@ -163,6 +154,7 @@ const styles = StyleSheet.create({
     productCode: {
         fontSize: 16,
         fontWeight: 'bold',
+
     },
 
     productStatus: {
