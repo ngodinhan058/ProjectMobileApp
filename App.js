@@ -31,6 +31,9 @@ import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
 import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 {/* AdminCategory*/}
 import CategoryList from './src/screens/admin/category/HomeScreen';
+import AddCategoryScreen from './src/screens/admin/category/AddCategoryScreen';
+import EditCategoryScreen from './src/screens/admin/category/EditCategoryScreen';
+import DetailCategoryScreen from './src/screens/admin/category/DetailCategoryScreen';
 {/* AdminInventory*/}
 import InventoryList from './src/screens/admin/inventory/HomeScreen';
 import DetailInventoryScreen from './src/screens/admin/inventory/DetailInventoryScreen';
@@ -62,7 +65,6 @@ function LoginStack() {
       {/* Admin Menu */}
       <Stack.Screen name="MenuScreen" component={MenuScreen} />
       {/* Admin Product */}
-
       <Stack.Screen name="DetailScreen" component={DetailScreen} />
       <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
       <Stack.Screen name="EditProductScreen" component={EditProductScreen} />
@@ -71,9 +73,10 @@ function LoginStack() {
       <Stack.Screen name="EditPostScreen" component={EditPostScreen} />
       {/* Admin Category */}
       <Stack.Screen name="CategoryList" component={CategoryList} />
-      {/* <Stack.Screen name="DetailScreen" component={DetailScreen} />
-      <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
-      <Stack.Screen name="EditProductScreen" component={EditProductScreen} /> */}
+      <Stack.Screen name="DetailCategoryScreen" component={DetailCategoryScreen} />
+      <Stack.Screen name="AddCategoryScreen" component={AddCategoryScreen} />
+      <Stack.Screen name="EditCategoryScreen" component={EditCategoryScreen} />
+      
       {/* Admin Invetory */}
       <Stack.Screen name="InventoryList" component={InventoryList} />
       <Stack.Screen name="DetailInventoryScreen" component={DetailInventoryScreen} />
