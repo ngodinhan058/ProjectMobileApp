@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
         height: 50,
         borderWidth: 2,
         borderColor: '#000',
-        borderRadius: 4,
+        borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 8,
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
         width: 150,
         height: 50,
         borderWidth: 4,
-        borderRadius: 4,
+        borderRadius: 10,
         borderColor: '#3669c9'
     },
     tickCheckedBox:{
