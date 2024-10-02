@@ -10,11 +10,11 @@ const HomeAdminScreen = ({ navigation }) => {
             image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
         {
-            id: '2', name: '#HWDSF776567DS',
+            id: '2', name: '#1',
             image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
         {
-            id: '3', name: '#HWDSF776567DS',
+            id: '3', name: '#2',
             image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
         
@@ -24,15 +24,13 @@ const HomeAdminScreen = ({ navigation }) => {
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('', {
+            onPress={() => navigation.navigate('DetailCategoryScreen', {
                 image: item.image,
                 name: item.name,
                
             })}
         >
-
             <View style={{
-
                 marginRight: 20,
             }}>
                 <Image source={item.image} style={styles.productIcon} />
@@ -76,7 +74,7 @@ const HomeAdminScreen = ({ navigation }) => {
             />
 
             {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('')}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddCategoryScreen')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
         </View>
