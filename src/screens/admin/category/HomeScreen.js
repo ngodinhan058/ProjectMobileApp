@@ -6,30 +6,28 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 const HomeAdminScreen = ({ navigation }) => {
     const products = [
         {
-            id: '1', name: '#HWDSF776567DS', price: '1.500.000', quantity: 500, rating: '4.0',
-            review: '860', sale: 80, category: 1, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+            id: '1', name: '#HWDSF776567DS',
+            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
         {
-            id: '2', name: '#Ha5s1d56sa7DS', price: '1.000.000', quantity: 500, rating: '3.0',
-            review: '860', sale: 0, category: 2, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+            id: '2', name: '#HWDSF776567DS',
+            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
         {
-            id: '3', name: '#HADSAF776567DS', price: '500.000', quantity: 500, rating: '3.0',
-            review: '860', sale: 50, category: 3, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+            id: '3', name: '#HWDSF776567DS',
+            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
+        
 
     ];
 
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('DetailScreen', {
+            onPress={() => navigation.navigate('', {
                 image: item.image,
                 name: item.name,
-                price: item.price,
-                rating: item.rating,
-                quantity: item.quantity,
-                sale: item.sale,
+               
             })}
         >
 
@@ -42,8 +40,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
             <View style={styles.productDetails}>
                 <Text style={styles.productCode}>{item.name}</Text>
-                <Text style={styles.productCode}>Giá: {item.price} ₫</Text>
-                <Text style={styles.productStatus}>Số Lượng Tồn: {item.quantity}</Text>
+                
             </View>
             <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
@@ -79,7 +76,7 @@ const HomeAdminScreen = ({ navigation }) => {
             />
 
             {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductScreen')}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
         </View>
