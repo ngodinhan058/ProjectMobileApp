@@ -110,6 +110,7 @@ function DetailScreen({ route, navigation }) {
                     </View>
 
                     {/* Description user */}
+                    <Text style={styles.userName}>Căn Cước Công Dân: </Text>
                     <View>
                         <Text style={styles.descriptionuserTitle}>Số CCCD: {number_id}</Text>
                         
@@ -133,7 +134,7 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EdituserScreen')}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditUserScreen')}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
@@ -224,7 +225,6 @@ const styles = StyleSheet.create({
         color: '#3A9B7A',
     },
     descriptionuserTitle: {
-        fontWeight: '800',
         fontSize: 16,
         paddingTop: 10,
     },

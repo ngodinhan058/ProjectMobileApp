@@ -16,7 +16,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const AddUserScreen = ({ route, navigation }) => {
 
-    const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
+    const categories = ['Admin', 'Inventory', 'Shipper', 'Customer'];
 
     const { query } = route.params || {}; // Kiểm tra xem `query` có tồn tại hay không
     const [searchQuery, setSearchQuery] = useState(''); // Lưu trữ trạng thái cho thanh tìm kiếm
@@ -30,10 +30,10 @@ const AddUserScreen = ({ route, navigation }) => {
         setSearchQuery(value);
     };
 
-    const [UserName, setUserName] = useState('');
-    const [UserPrice, setUserPrice] = useState('');
-    const [UserQuantity, setUserQuantity] = useState('');
-    const [UserSale, setUserSale] = useState('');
+    const [userEmail, setUserEmail] = useState('');
+    const [userPass, setUserPass] = useState('');
+    const [userAddress, setUserAddress] = useState('');
+    const [userPhone, setUserPhone] = useState('');
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedValue, setSelectedValue] = useState('Chọn loại Người Dùng');
@@ -61,51 +61,59 @@ const AddUserScreen = ({ route, navigation }) => {
                         style={styles.imageIcon}
                     />
                 </View>
-                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('AddPostScreen')}>
-                    <Text style={styles.buttonText}>Thêm Post</Text>
+                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('')}>
+                    <Text style={styles.buttonText}>Thêm CCCD</Text>
                 </TouchableOpacity>
                 {/* User Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Tên Người Dùng:</Text>
-                    {/* User Name */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Thêm Tên Người Dùng"
-                        value={UserName}
-                        onChangeText={setUserName}
-                    />
+                    <Text style={styles.label}>Email Người Dùng:</Text>
                      {/* User Email */}
                      <TextInput
                         style={styles.input}
                         placeholder="Thêm Email Người Dùng"
-                        value={UserEmail}
+                        value={userEmail}
                         onChangeText={setUserEmail}
                     />
-                    <Text style={styles.label}>Giá Người Dùng:</Text>
-                    {/* User Price */}
+                    {/* <Text style={styles.label}>Tên Đầu Người Dùng:</Text>
+                     User First Name 
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Giá Người Dùng"
+                        placeholder="Tên Đầu Người Dùng"
                         value={UserPrice}
                         onChangeText={setUserPrice}
-                        keyboardType="numeric"
                     />
-                    <Text style={styles.label}>Số Lượng Người Dùng:</Text>
-                    {/* User Quantity */}
+                     <Text style={styles.label}>Tên Sau Người Dùng:</Text>
+                    User Last Name 
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Số Lượng Người Dùng"
-                        value={UserQuantity}
-                        onChangeText={setUserQuantity}
-                        keyboardType="numeric"
+                        placeholder="Tên Sau Người Dùng"
+                        value={UserPrice}
+                        onChangeText={setUserPrice}
+                    /> */}
+                    <Text style={styles.label}>Mật Khẩu Người Dùng:</Text>
+                    {/* User Pass */}
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Thêm Mật Khẩu Người Dùng"
+                        value={userPass}
+                        onChangeText={setUserPass}
                     />
-                    <Text style={styles.label}>Giảm Giá Người Dùng:</Text>
+                    <Text style={styles.label}>Địa Chỉ Người Dùng:</Text>
                     {/* User Sale */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Giảm Giá Người Dùng"
-                        value={UserSale}
-                        onChangeText={setUserSale}
+                        placeholder="Thêm Địa Chỉ Người Dùng"
+                        value={userAddress}
+                        onChangeText={setUserAddress}
+                       
+                    />
+                    {/* User Sale */}
+                    <Text style={styles.label}>Số Điện Thoại Người Dùng:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Thêm Số Điện Thoại Người Dùng"
+                        value={userPhone}
+                        onChangeText={setUserPhone}
                         keyboardType="numeric"
                     />
 
@@ -130,7 +138,7 @@ const AddUserScreen = ({ route, navigation }) => {
                                     <View style={styles.searchBar}>
                                         <TextInput
                                             style={styles.searchInput}
-                                            placeholder="Tìm kiếm danh mục"
+                                            placeholder="Tìm Kiếm Quền"
                                             value={searchQuery}
                                             onChangeText={handleSearch}
                                         />
@@ -154,7 +162,7 @@ const AddUserScreen = ({ route, navigation }) => {
                     </Modal>
 
                     {/* Add/Edit Button */}
-                    <TouchableOpacity style={styles.button} onPress={() => alert('User Added/Edited')}>
+                    <TouchableOpacity style={styles.button} onPress={() => alert('User Added')}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>

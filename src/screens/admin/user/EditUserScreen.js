@@ -14,9 +14,9 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const EditProductScreen = ({ route, navigation }) => {
+const EditUserScreen = ({ route, navigation }) => {
 
-    const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
+    const categories = ['Admin', 'Inventory', 'Shipper', 'Customer'];
 
     const { query } = route.params || {}; // Kiểm tra xem `query` có tồn tại hay không
     const [searchQuery, setSearchQuery] = useState(''); // Lưu trữ trạng thái cho thanh tìm kiếm
@@ -30,14 +30,13 @@ const EditProductScreen = ({ route, navigation }) => {
         setSearchQuery(value);
     };
 
-    const [productName, setProductName] = useState('');
-    const [productPrice, setProductPrice] = useState('');
-    const [productQuantity, setProductQuantity] = useState('');
-    const [productSale, setProductSale] = useState('');
-    const [productDetails, setProductDetails] = useState('');
+    const [userEmail, setUserEmail] = useState('');
+    const [userPass, setUserPass] = useState('');
+    const [userAddress, setUserAddress] = useState('');
+    const [userPhone, setUserPhone] = useState('');
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
+    const [selectedValue, setSelectedValue] = useState('Chọn loại Người Dùng');
 
     const handleSelect = (value) => {
         setSelectedValue(value);
@@ -62,49 +61,64 @@ const EditProductScreen = ({ route, navigation }) => {
                         style={styles.imageIcon}
                     />
                 </View>
-                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('EditPostScreen')}>
+                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('')}>
                     <Text style={styles.buttonText}>Sửa Post</Text>
                 </TouchableOpacity>
                 {/* Product Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Tên Sản Phẩm:</Text>
-                    {/* Product Name */}
-                    <TextInput
+                    <Text style={styles.label}>Email Người Dùng:</Text>
+                     {/* User Email */}
+                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Tên Sản Phẩm"
-                        value={productName}
-                        onChangeText={setProductName}
+                        placeholder="Sửa Email Người Dùng"
+                        value={userEmail}
+                        onChangeText={setUserEmail}
                     />
-                    <Text style={styles.label}>Giá Sản Phẩm:</Text>
-                    {/* Product Price */}
+                    {/* <Text style={styles.label}>Tên Đầu Người Dùng:</Text>
+                     User First Name 
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Giá Sản Phẩm"
-                        value={productPrice}
-                        onChangeText={setProductPrice}
-                        keyboardType="numeric"
+                        placeholder="Tên Đầu Người Dùng"
+                        value={UserPrice}
+                        onChangeText={setUserPrice}
                     />
-                    <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-                    {/* Product Quantity */}
+                     <Text style={styles.label}>Tên Sau Người Dùng:</Text>
+                    User Last Name 
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Số Lượng Sản Phẩm"
-                        value={productQuantity}
-                        onChangeText={setProductQuantity}
-                        keyboardType="numeric"
+                        placeholder="Tên Sau Người Dùng"
+                        value={UserPrice}
+                        onChangeText={setUserPrice}
+                    /> */}
+                    <Text style={styles.label}>Mật Khẩu Người Dùng:</Text>
+                    {/* User Pass */}
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Sửa Mật Khẩu Người Dùng"
+                        value={userPass}
+                        onChangeText={setUserPass}
                     />
-                    <Text style={styles.label}>Giảm Giá Sản Phẩm:</Text>
-                    {/* Product Sale */}
+                    <Text style={styles.label}>Địa Chỉ Người Dùng:</Text>
+                    {/* User Sale */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Giảm Giá Sản Phẩm"
-                        value={productSale}
-                        onChangeText={setProductSale}
+                        placeholder="Sửa Địa Chỉ Người Dùng"
+                        value={userAddress}
+                        onChangeText={setUserAddress}
+                       
+                    />
+                    {/* User Sale */}
+                    <Text style={styles.label}>Số Điện Thoại Người Dùng:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Sửa Số Điện Thoại Người Dùng"
+                        value={userPhone}
+                        onChangeText={setUserPhone}
                         keyboardType="numeric"
                     />
 
-                    {/* Product Category */}
-                    <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
+                    {/* User Category */}
+                    <Text style={styles.label}>Quyền Người Dùng:</Text>
                     <TouchableOpacity
                         style={styles.dropdown}
                         onPress={() => setModalVisible(true)}>
@@ -124,7 +138,7 @@ const EditProductScreen = ({ route, navigation }) => {
                                     <View style={styles.searchBar}>
                                         <TextInput
                                             style={styles.searchInput}
-                                            placeholder="Tìm kiếm danh mục"
+                                            placeholder="Tìm Kiếm Quền"
                                             value={searchQuery}
                                             onChangeText={handleSearch}
                                         />
@@ -148,7 +162,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     </Modal>
 
                     {/* Add/Edit Button */}
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Product Added/Edited')}>
+                    <TouchableOpacity style={styles.button} onPress={() => alert('User Edited')}>
                         <Text style={styles.buttonText}>Sửa</Text>
                     </TouchableOpacity>
                 </View>
@@ -300,4 +314,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default EditProductScreen;
+export default EditUserScreen;

@@ -32,7 +32,6 @@ const HomeAdminScreen = ({ navigation }) => {
             style={styles.productItem}
             onPress={() => navigation.navigate('DetailUserScreen', {
                 image: item.image,
-                name: item.name,
                 email: item.email,
                 first_name: item.first_name,
                 last_name: item.last_name,
