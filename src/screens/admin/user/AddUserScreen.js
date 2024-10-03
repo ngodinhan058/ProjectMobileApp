@@ -14,7 +14,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const AddProductScreen = ({ route, navigation }) => {
+const AddUserScreen = ({ route, navigation }) => {
 
     const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
 
@@ -30,14 +30,13 @@ const AddProductScreen = ({ route, navigation }) => {
         setSearchQuery(value);
     };
 
-    const [productName, setProductName] = useState('');
-    const [productPrice, setProductPrice] = useState('');
-    const [productQuantity, setProductQuantity] = useState('');
-    const [productSale, setProductSale] = useState('');
-    const [productDetails, setProductDetails] = useState('');
+    const [UserName, setUserName] = useState('');
+    const [UserPrice, setUserPrice] = useState('');
+    const [UserQuantity, setUserQuantity] = useState('');
+    const [UserSale, setUserSale] = useState('');
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
+    const [selectedValue, setSelectedValue] = useState('Chọn loại Người Dùng');
 
     const handleSelect = (value) => {
         setSelectedValue(value);
@@ -52,7 +51,7 @@ const AddProductScreen = ({ route, navigation }) => {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Thêm Thông Tin Sản Phẩm</Text>
+                    <Text style={styles.textHeader}>Thêm Thông Tin Người Dùng</Text>
                 </View>
 
                 {/* Icon Image */}
@@ -65,46 +64,53 @@ const AddProductScreen = ({ route, navigation }) => {
                 <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('AddPostScreen')}>
                     <Text style={styles.buttonText}>Thêm Post</Text>
                 </TouchableOpacity>
-                {/* Product Form */}
+                {/* User Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Tên Sản Phẩm:</Text>
-                    {/* Product Name */}
+                    <Text style={styles.label}>Tên Người Dùng:</Text>
+                    {/* User Name */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Tên Sản Phẩm"
-                        value={productName}
-                        onChangeText={setProductName}
+                        placeholder="Thêm Tên Người Dùng"
+                        value={UserName}
+                        onChangeText={setUserName}
                     />
-                    <Text style={styles.label}>Giá Sản Phẩm:</Text>
-                    {/* Product Price */}
+                     {/* User Email */}
+                     <TextInput
+                        style={styles.input}
+                        placeholder="Thêm Email Người Dùng"
+                        value={UserEmail}
+                        onChangeText={setUserEmail}
+                    />
+                    <Text style={styles.label}>Giá Người Dùng:</Text>
+                    {/* User Price */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Giá Sản Phẩm"
-                        value={productPrice}
-                        onChangeText={setProductPrice}
+                        placeholder="Thêm Giá Người Dùng"
+                        value={UserPrice}
+                        onChangeText={setUserPrice}
                         keyboardType="numeric"
                     />
-                    <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-                    {/* Product Quantity */}
+                    <Text style={styles.label}>Số Lượng Người Dùng:</Text>
+                    {/* User Quantity */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Số Lượng Sản Phẩm"
-                        value={productQuantity}
-                        onChangeText={setProductQuantity}
+                        placeholder="Thêm Số Lượng Người Dùng"
+                        value={UserQuantity}
+                        onChangeText={setUserQuantity}
                         keyboardType="numeric"
                     />
-                    <Text style={styles.label}>Giảm Giá Sản Phẩm:</Text>
-                    {/* Product Sale */}
+                    <Text style={styles.label}>Giảm Giá Người Dùng:</Text>
+                    {/* User Sale */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Giảm Giá Sản Phẩm"
-                        value={productSale}
-                        onChangeText={setProductSale}
+                        placeholder="Thêm Giảm Giá Người Dùng"
+                        value={UserSale}
+                        onChangeText={setUserSale}
                         keyboardType="numeric"
                     />
 
-                    {/* Product Category */}
-                    <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
+                    {/* User Category */}
+                    <Text style={styles.label}>Quyền Người Dùng:</Text>
                     <TouchableOpacity
                         style={styles.dropdown}
                         onPress={() => setModalVisible(true)}>
@@ -148,7 +154,7 @@ const AddProductScreen = ({ route, navigation }) => {
                     </Modal>
 
                     {/* Add/Edit Button */}
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Product Added/Edited')}>
+                    <TouchableOpacity style={styles.button} onPress={() => alert('User Added/Edited')}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
@@ -300,4 +306,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default AddProductScreen;
+export default AddUserScreen;

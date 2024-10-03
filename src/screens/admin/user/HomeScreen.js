@@ -7,21 +7,21 @@ const HomeAdminScreen = ({ navigation }) => {
     const products = [
         {
             id: '1' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', class: require('../../../assets/diamond.png') , number_id: '079203000000',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../../../assets/diamond.png') , number_id: '079203000000',
             id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
-            id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'Customer',
+            id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'Khách Hàng',
         },
         {
             id: '2' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', class: require('../../../assets/silver.png') , number_id: '079203000000',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../../../assets/silver.png') , number_id: '079203000000',
             id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
-            id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'Customer',
+            id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'Khách Hàng',
         },
         {
             id: '3' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', class: require('../../../assets/bronze.png') , number_id: '079203000000',
-            id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
-            id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'Customer',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png') , number_id: '079203000000',
+            id_image_front: require('../../../assets/silver.png'),
+            id_image_back: require('../../../assets/silver.png'), role: 'Khách Hàng',
         },
        
 
@@ -30,7 +30,7 @@ const HomeAdminScreen = ({ navigation }) => {
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('', {
+            onPress={() => navigation.navigate('DetailUserScreen', {
                 image: item.image,
                 name: item.name,
                 email: item.email,
@@ -41,8 +41,10 @@ const HomeAdminScreen = ({ navigation }) => {
                 pass: item.pass,
                 birthday: item.birthday,
                 address: item.address,
+                phone: item.phone,
                 money: item.money,
-                class: item.class,
+                role: item.role,
+                rank: item.rank,
                 number_id: item.number_id,
             })}
         >
@@ -55,7 +57,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
             <View style={styles.productDetails}>
                 <Text style={styles.productCode}>{item.first_name}&#160;{item.last_name}</Text>
-                <Image source={item.class} style={styles.classIcon} />
+                <Image source={item.rank} style={styles.rankIcon} />
                 <Text style={styles.productStatus}>Email: {item.email}</Text>
                 <View style={styles.line}></View>
                 <Text style={styles.productCode}>Ví Tiền: {item.money} ₫</Text>
@@ -99,7 +101,7 @@ const HomeAdminScreen = ({ navigation }) => {
             />
 
             {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('')}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddUserScreen')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
         </View>
@@ -171,7 +173,7 @@ const styles = StyleSheet.create({
         marginTop: 5,
 
     },
-    classIcon: {
+    rankIcon: {
         position: 'absolute',
         width: 25,
         height: 25,
