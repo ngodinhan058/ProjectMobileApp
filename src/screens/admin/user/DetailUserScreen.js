@@ -153,8 +153,6 @@ const styles = StyleSheet.create({
         padding: 20,
         height: '100%',
         backgroundColor: '#fff',
-        paddingHorizontal: 20,
-        paddingVertical: 50,
     },
     iconHeader: {
         flexDirection: 'row',

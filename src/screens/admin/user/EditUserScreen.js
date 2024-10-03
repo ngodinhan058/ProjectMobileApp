@@ -173,7 +173,7 @@ const EditUserScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
+        paddingHorizontal: 20,
         flex: 1,
         backgroundColor: '#fff',
     },

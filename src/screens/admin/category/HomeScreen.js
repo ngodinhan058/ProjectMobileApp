@@ -55,16 +55,6 @@ const HomeAdminScreen = ({ navigation }) => {
                     <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
                 </View>
             </View>
-
-            {/* Product List Title */}
-            <View style={{ position: 'relative', marginBottom: 30 }}>
-                <Pressable style={styles.menuIcon} onPress={() => navigation.navigate('MenuScreen')}>
-                    <Icon name="bars" size={15} color="#000" style={{ marginLeft: 9, marginTop: 6, }} />
-                </Pressable>
-                <Text style={styles.productListTitle}>Category List</Text>
-
-            </View>
-
             {/* Product List */}
             <FlatList
                 data={products}
@@ -90,7 +80,7 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 30,
+        marginBottom: 30,
 
     },
     menuButton: {

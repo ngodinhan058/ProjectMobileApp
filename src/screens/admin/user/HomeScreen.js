@@ -81,16 +81,6 @@ const HomeAdminScreen = ({ navigation }) => {
                     <Image source={require('../../../assets/right_from_bracket.png')} style={{ width: 30, height: 30, marginLeft: 115 }} />
                 </TouchableOpacity>
             </View>
-
-            {/* Product List Title */}
-            <View style={{ position: 'relative', marginBottom: 30 }}>
-                <Pressable style={styles.menuIcon} onPress={() => navigation.navigate('MenuScreen')}>
-                    <Icon name="bars" size={15} color="#000" style={{ marginLeft: 9, marginTop: 6, }} />
-                </Pressable>
-                <Text style={styles.productListTitle}>User List</Text>
-
-            </View>
-
             {/* Product List */}
             <FlatList
                 data={products}
@@ -116,7 +106,7 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 30,
+        marginBottom: 30,
 
     },
     line: {

@@ -92,7 +92,7 @@ function DetailScreen({ navigation }) {
 
             <View style={styles.productDetails}>
                 <Text style={styles.productCode}>{item.name}</Text>
-                <Text style={styles.productStatus}>Số Lượng Tồn: {item.quantity}</Text>
+                <Text style={styles.productStatus}>Số Lượng: {item.quantity} cái</Text>
                 <View style={styles.line}></View>
                 <Text style={styles.productCode}>Giá: {item.price} ₫</Text>
             </View>
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: '#fff',
         paddingHorizontal: 20,
-        paddingVertical: 50,
+       
     },
     line: {
         width: '95%',
