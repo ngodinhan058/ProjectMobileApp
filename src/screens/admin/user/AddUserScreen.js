@@ -61,7 +61,7 @@ const AddUserScreen = ({ route, navigation }) => {
                         style={styles.imageIcon}
                     />
                 </View>
-                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('')}>
+                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('AddIdCardScreen')}>
                     <Text style={styles.buttonText}>Thêm CCCD</Text>
                 </TouchableOpacity>
                 {/* User Form */}

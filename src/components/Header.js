@@ -1,16 +1,22 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const Header = () => {
+  const navigation = useNavigation();
   return (
     <View style={styles.headerContainer}>
       {/* Logo */}
       <Text style={styles.logo}>Mega Mall</Text>
-      
+
       {/* Icon thông báo và giỏ hàng */}
       <View style={styles.iconsContainer}>
-        <Image source={require('../assets/bell.png')} style={styles.icon} />
-        <Image source={require('../assets/cart.png')} style={styles.icon} />
+        <TouchableOpacity>
+          <Image source={require('../assets/bell.png')} style={styles.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('AddToCartScreen')}>
+          <Image source={require('../assets/cart.png')} style={styles.icon} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -27,7 +33,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#dcdcdc',
     paddingTop: 50,
-    
+
   },
   logo: {
     fontSize: 18,

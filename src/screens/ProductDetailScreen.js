@@ -251,7 +251,7 @@ function ProductDetailScreen({ route, navigation }) {
               padding: 15,
               marginVertical: 20,
               borderRadius: 10,
-            }}
+            }} onPress={() => navigation.navigate('ReviewProductScreen')}
           >
             <Text style={{ textAlign: 'center', fontWeight: '600' }}>
               See All Review

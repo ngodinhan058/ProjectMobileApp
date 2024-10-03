@@ -61,8 +61,8 @@ const EditUserScreen = ({ route, navigation }) => {
                         style={styles.imageIcon}
                     />
                 </View>
-                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('')}>
-                    <Text style={styles.buttonText}>Sửa Post</Text>
+                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('EditIdCardScreen')}>
+                    <Text style={styles.buttonText}>Sửa CCCD</Text>
                 </TouchableOpacity>
                 {/* Product Form */}
                 <View style={styles.formContainer}>

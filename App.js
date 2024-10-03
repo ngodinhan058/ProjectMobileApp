@@ -16,10 +16,12 @@ import WishListScreen from './src/screens/WishListScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
+import ReviewProductScreen from './src/screens/ReviewProductScreen';
 import NewsScreen from './src/screens/NewsScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
+import AddToCartScreen from './src/screens/AddToCartScreen';
 {/* Admin */ }
 import MenuScreen from './src/screens/admin/MenuScreen';
 {/* AdminProduct */ }
@@ -27,9 +29,6 @@ import AddProductScreen from './src/screens/admin/product/AddProductScreen';
 import EditProductScreen from './src/screens/admin/product/EditProductScreen';
 import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
 import DetailScreen from './src/screens/admin/product/DetailProductScreen';
-{/* AdminPost*/ }
-import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
-import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 {/* AdminCategory*/ }
 import CategoryList from './src/screens/admin/category/HomeScreen';
 import AddCategoryScreen from './src/screens/admin/category/AddCategoryScreen';
@@ -43,6 +42,12 @@ import HomeUserScreen from './src/screens/admin/user/HomeScreen';
 import AddUserScreen from './src/screens/admin/user/AddUserScreen';
 import EditUserScreen from './src/screens/admin/user/EditUserScreen';
 import DetailUserScreen from './src/screens/admin/user/DetailUserScreen';
+{/* AdminPost*/ }
+import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
+import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
+{/* AdminUserIdCard*/ }
+import AddIdCardScreen from './src/screens/admin/user/idcard/AddIdCardScreen';
+import EditIdCardScreen from './src/screens/admin/user/idcard/EditIdCardScreen';
 {/* Success, Fail */ }
 import SuccessScreen from './src/screens/admin/SuccessScreen';
 
@@ -67,6 +72,7 @@ function LoginStack() {
       {/* đã login */}
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
+      
     </Stack.Navigator>
 
   );
@@ -81,6 +87,8 @@ function HomeStack() {
       <Stack.Screen name="NewsScreen" component={NewsScreen} />
       <Stack.Screen name="NewsDetailScreen" component={NewsDetailScreen} />
       <Stack.Screen name="AddedProductToWishlist" component={AddedProductToWishlist} />
+      <Stack.Screen name="AddToCartScreen" component={AddToCartScreen} />
+      <Stack.Screen name="ReviewProductScreen" component={ReviewProductScreen} />
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
   );
@@ -121,6 +129,9 @@ function UserAdmin() {
       <Stack.Screen name="AddUserScreen" component={AddUserScreen} />
       <Stack.Screen name="EditUserScreen" component={EditUserScreen} />
       <Stack.Screen name="DetailUserScreen" component={DetailUserScreen} />
+      {/* Admin IdCard */}
+      <Stack.Screen name="AddIdCardScreen" component={AddIdCardScreen} />
+      <Stack.Screen name="EditIdCardScreen" component={EditIdCardScreen} />
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
   );
@@ -132,6 +143,7 @@ function InventoryAdmin() {
       <Stack.Screen name="InventoryList" component={InventoryList} />
       <Stack.Screen name="DetailInventoryScreen" component={DetailInventoryScreen} />
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
+      <Stack.Screen name="DetailScreen" component={DetailScreen} />
     </Stack.Navigator>
   );
 }
