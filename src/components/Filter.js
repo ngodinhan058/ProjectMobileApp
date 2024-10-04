@@ -5,7 +5,7 @@ import MultiSlider from '@ptomasroos/react-native-multi-slider';
 const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     const [selectedCategories, setSelectedCategories] = useState({
         Phone: false,
-        Headphone: true,
+        Headphone: false,
         Computer: false,
         Laptop: false,
         Laptop1: false,

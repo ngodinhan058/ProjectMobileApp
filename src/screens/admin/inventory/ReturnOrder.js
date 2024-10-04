@@ -1,44 +1,44 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon5 from 'react-native-vector-icons/FontAwesome5';
 
 
-const HomeAdminScreen = ({ navigation }) => {
+const ReturnOrderScreen = ({ navigation }) => {
     const products = [
         {
-            id: '1', name: '#HWDSF776567DS',
-            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+            id: '1', name: '#HWDSF776567DS', price: '1.500.000', quantity: 500, rating: '4.0',
+            review: '860', sale: 80, category: 1, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
         {
-            id: '2', name: '#1',
-            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+            id: '2', name: '#Ha5s1d56sa7DS', price: '1.000.000', quantity: 500, rating: '3.0',
+            review: '860', sale: 0, category: 2, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
         {
-            id: '3', name: '#2',
-            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+            id: '3', name: '#HADSAF776567DS', price: '500.000', quantity: 500, rating: '3.0',
+            review: '860', sale: 50, category: 3, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
-        
 
     ];
 
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('DetailCategoryScreen', {
-                image: item.image,
-                name: item.name,
-               
-            })}
+            onPress={() => navigation.navigate('DetailInventoryScreen')}
         >
+
             <View style={{
+
                 marginRight: 20,
             }}>
-                <Image source={item.image} style={styles.productIcon} />
+                <Image source={require('../../../assets/box.png')} style={styles.productIcon} />
             </View>
 
             <View style={styles.productDetails}>
                 <Text style={styles.productCode}>{item.name}</Text>
-                
+                <Text style={styles.productStatus}>Tổng Số Lượng sản phẩm: {item.quantity}</Text>
+                <View style={styles.line}></View>
+                <Text style={styles.productCode}>Tổng Giá: {item.price} ₫</Text>
             </View>
             <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
@@ -51,10 +51,12 @@ const HomeAdminScreen = ({ navigation }) => {
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.welcomeContainer}>
-                    <Text style={styles.welcomeText}>Hi Admin!</Text>
+                    <Text style={styles.welcomeText}>Hi Tồn Kho!</Text>
                     <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
                 </View>
-                <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('LoginScreen')}
+                >
                     <Image source={require('../../../assets/right_from_bracket.png')} style={{ width: 30, height: 30, marginLeft: 115 }} />
                 </TouchableOpacity>
             </View>
@@ -66,10 +68,6 @@ const HomeAdminScreen = ({ navigation }) => {
                 style={styles.productList}
             />
 
-            {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddCategoryScreen')}>
-                <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
         </View>
     );
 };
@@ -79,6 +77,12 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         backgroundColor: '#fff',
+    },
+    line: {
+        width: '95%',
+        height: 1,
+        backgroundColor: '#ededed',
+        marginVertical: 10,
     },
     header: {
         flexDirection: 'row',
@@ -111,7 +115,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
-        left: '35%'
+        left: '23%'
 
     },
     productList: {
@@ -127,8 +131,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     productIcon: {
-        width: 55,
-        height: 55,
+        width: 40,
+        height: 40,
         marginLeft: 5,
         marginTop: 5,
 
@@ -139,6 +143,7 @@ const styles = StyleSheet.create({
     productCode: {
         fontSize: 16,
         fontWeight: 'bold',
+
     },
 
     productStatus: {
@@ -166,4 +171,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HomeAdminScreen;
+export default ReturnOrderScreen;

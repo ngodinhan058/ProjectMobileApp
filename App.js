@@ -150,10 +150,10 @@ function InventoryAdmin() {
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Product List" component={ProductAdmin} />
-      <Drawer.Screen name="Category List" component={CategoryAdmin} />
-      <Drawer.Screen name="User List" component={UserAdmin} />
-      <Drawer.Screen name="Inventory List" component={InventoryAdmin} />
+      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
+      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
+      <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
+      <Drawer.Screen name="Danh Sách Sản Phẩm Tồn Kho" component={InventoryAdmin} />
     </Drawer.Navigator>
   );
 }
@@ -218,7 +218,7 @@ export default function App() {
         />
         <Tab.Screen
           name="Login"
-          component={LoginStack}
+          component={AdminDrawerNavigator}
           options={{
             headerShown: false,
             tabBarStyle: { display: 'none' },  // Ẩn Bottom Navigation trên Login và SignUp
