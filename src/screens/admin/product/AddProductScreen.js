@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import * as ImagePicker from 'expo-image-picker'; // Thêm import này
 
 const AddProductScreen = ({ route, navigation }) => {
 
@@ -38,11 +39,64 @@ const AddProductScreen = ({ route, navigation }) => {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
+    const [selectedImage, setSelectedImage] = useState(null); // Trạng thái lưu trữ hình ảnh
+    const [imageModalVisible, setImageModalVisible] = useState(false);
 
     const handleSelect = (value) => {
         setSelectedValue(value);
         setModalVisible(false);
     };
+
+    const openImagePicker = async (option) => {
+        if (option === 'library') {
+            // Kiểm tra trạng thái quyền truy cập thư viện ảnh
+            const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                // Nếu chưa cấp quyền, yêu cầu quyền truy cập
+                const notificationResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (!notificationResult.granted) {
+                    alert('Quyền truy cập thư viện ảnh bị từ chối! Vui lòng kích hoạt quyền trong cài đặt.');
+                    return;
+                }
+            }
+    
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+            });
+    
+            if (!result.canceled) {
+                setSelectedImage(result.assets[0].uri); // Lưu đường dẫn hình ảnh đã chọn
+            }
+        } else if (option === 'camera') {
+            // Kiểm tra trạng thái quyền truy cập máy ảnh
+            const { status } = await ImagePicker.getCameraPermissionsAsync();
+            if (status !== 'granted') {
+                // Nếu chưa cấp quyền, yêu cầu quyền truy cập
+                const notificationResult = await ImagePicker.requestCameraPermissionsAsync();
+                if (!notificationResult.granted) {
+                    alert('Quyền truy cập máy ảnh bị từ chối! Vui lòng kích hoạt quyền trong cài đặt.');
+                    return;
+                }
+            }
+    
+            let result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+            });
+    
+            if (!result.canceled) {
+                setSelectedImage(result.assets[0].uri); // Lưu đường dẫn hình ảnh chụp được
+            }
+        }
+    
+        setImageModalVisible(false); // Đóng modal sau khi chọn ảnh
+    };
+    
+
 
     return (
         <View style={styles.container}>
@@ -54,21 +108,53 @@ const AddProductScreen = ({ route, navigation }) => {
                     </Pressable>
                     <Text style={styles.textHeader}>Thêm Thông Tin Sản Phẩm</Text>
                 </View>
-
                 {/* Icon Image */}
                 <View style={styles.imageContainer}>
-                    <Image
-                        source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
-                        style={styles.imageIcon}
-                    />
+
+
+                    <TouchableOpacity onPress={() => setImageModalVisible(true)}>
+                        {selectedImage ? (
+                            <Image
+                                source={{ uri: selectedImage }} // Hiển thị hình ảnh đã chọn
+                                style={styles.imageIcon}
+                            />
+                        ) : (
+                            <Image
+                                source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
+                                style={styles.imageIcon}
+                            />
+                        )}
+                    </TouchableOpacity>
                 </View>
+                {/* Modal chọn thư viện hoặc camera */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={imageModalVisible}
+                    onRequestClose={() => setImageModalVisible(false)}>
+                    <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.modalView}>
+                                <TouchableOpacity onPress={() => openImagePicker('camera')} style={styles.modalItem}>
+                                    <Text style={styles.modalText}>Chụp ảnh</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => openImagePicker('library')} style={styles.modalItem}>
+                                    <Text style={styles.modalText}>Chọn từ thư viện</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setImageModalVisible(false)} style={styles.button}>
+                                    <Text style={styles.buttonText}>Đóng</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
                 <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('AddPostScreen')}>
                     <Text style={styles.buttonText}>Thêm Post</Text>
                 </TouchableOpacity>
+
                 {/* Product Form */}
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
-                    {/* Product Name */}
                     <TextInput
                         style={styles.input}
                         placeholder="Thêm Tên Sản Phẩm"
@@ -76,7 +162,6 @@ const AddProductScreen = ({ route, navigation }) => {
                         onChangeText={setProductName}
                     />
                     <Text style={styles.label}>Giá Sản Phẩm:</Text>
-                    {/* Product Price */}
                     <TextInput
                         style={styles.input}
                         placeholder="Thêm Giá Sản Phẩm"
@@ -85,7 +170,6 @@ const AddProductScreen = ({ route, navigation }) => {
                         keyboardType="numeric"
                     />
                     <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-                    {/* Product Quantity */}
                     <TextInput
                         style={styles.input}
                         placeholder="Thêm Số Lượng Sản Phẩm"
@@ -94,7 +178,6 @@ const AddProductScreen = ({ route, navigation }) => {
                         keyboardType="numeric"
                     />
                     <Text style={styles.label}>Giảm Giá Sản Phẩm:</Text>
-                    {/* Product Sale */}
                     <TextInput
                         style={styles.input}
                         placeholder="Thêm Giảm Giá Sản Phẩm"
@@ -117,7 +200,6 @@ const AddProductScreen = ({ route, navigation }) => {
                         transparent={true}
                         visible={modalVisible}
                         onRequestClose={() => setModalVisible(false)}>
-                        {/* TouchableWithoutFeedback để đóng modal khi bấm bên ngoài */}
                         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                             <View style={styles.modalOverlay}>
                                 <View style={styles.modalView}>
@@ -128,7 +210,6 @@ const AddProductScreen = ({ route, navigation }) => {
                                             value={searchQuery}
                                             onChangeText={handleSearch}
                                         />
-                                       
                                     </View>
                                     <FlatList
                                         data={filteredCategories}
@@ -192,6 +273,11 @@ const styles = StyleSheet.create({
         height: 140,
         marginVertical: 20,
     },
+    imageSelectIcon: {
+        width: 200,
+        height: 140,
+
+    },
     formContainer: {
         flex: 1,
     },
@@ -217,7 +303,6 @@ const styles = StyleSheet.create({
     selectedValue: {
         fontSize: 16,
     },
-
     modalView: {
         position: 'absolute',
         width: '90%',
@@ -266,7 +351,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
-
     },
     modalOverlay: {
         flex: 1,
@@ -285,19 +369,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
     },
-    icon: {
-        width: 20,
-        height: 20,
-        marginLeft: 10,
-    },
-    iconCenter: {
-        width: 20,
-        height: 20,
-        position: 'absolute',
-        alignContent: 'center',
-        top: 15,
-    },
-
 });
 
 export default AddProductScreen;

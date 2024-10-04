@@ -138,6 +138,16 @@ function UserAdmin() {
     </Stack.Navigator>
   );
 }
+function AdminDrawerNavigator() {
+  return (
+    <Drawer.Navigator>
+      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
+      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
+      <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
+      <Drawer.Screen name="Danh Sách Sản Phẩm Tồn Kho" component={InventoryAdmin} />
+    </Drawer.Navigator>
+  );
+}
 {/* Admin Invetory */ }
 function InventoryAdmin() {
   return (
@@ -159,16 +169,6 @@ function InventoryReturnOrder() {
     </Stack.Navigator>
   );
 }
-function AdminDrawerNavigator() {
-  return (
-    <Drawer.Navigator>
-      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
-      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
-      <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
-      <Drawer.Screen name="Danh Sách Sản Phẩm Tồn Kho" component={InventoryAdmin} />
-    </Drawer.Navigator>
-  );
-}
 function InventoryDrawerNavigator() {
   return (
     <Drawer.Navigator>
@@ -181,12 +181,14 @@ function InventoryDrawerNavigator() {
 
 
 
+
+
 export default function App() {
   return (
     <NavigationContainer>
 
-      {/* <AdminDrawerNavigator /> */}
-      <InventoryDrawerNavigator />
+      <AdminDrawerNavigator />
+      {/* <InventoryDrawerNavigator /> */}
       {/* <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {

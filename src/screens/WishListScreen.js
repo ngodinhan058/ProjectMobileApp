@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ProductItem from '../components/ProductItem';
+import Filter from '../components/Filter';
+
 
 const featuredProducts = [
   {
@@ -15,7 +17,7 @@ const featuredProducts = [
   {
     id: '2',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
+    name: 'Macbook',
     price: '1.500.000',
     rating: '4.6',
     review: '86'
@@ -23,7 +25,7 @@ const featuredProducts = [
   {
     id: '3',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
+    name: 'Wireless',
     price: '1.500.000',
     rating: '4.6',
     review: '86'
@@ -38,34 +40,72 @@ const featuredProducts = [
   },
 
 ];
-const WishListScreen = () => {
+
+const WishListScreen = ({ route, navigation }) => {
+  // Kiểm tra nếu route.params tồn tại và lấy giá trị query, nếu không có thì để là chuỗi rỗng
+  const { query = '' } = route?.params || {}; 
+
+  const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const handleSearch = () => {
+    navigation.replace('SearchScreen', { query: searchQuery });
+  };
+
+  const toggleFilterModal = () => {
+    setIsFilterModalVisible(!isFilterModalVisible);
+  };
+
+  const handleApplyFilters = (filters) => {
+    setAppliedFilters(filters);
+  };
+
+  const handleResetFilters = () => {
+    setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
+  };
 
   return (
     <View style={styles.container}>
-      <View>
-        {/* Thanh tìm kiếm */}
-        <View style={styles.searchBar}>
-          <TextInput style={styles.searchInput} placeholder="Search Product Name" />
-          <Image source={require('../assets/iconSeach.png')} style={styles.icon} />
-        </View>
+      <View style={styles.searchBar}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search Product Name"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch}
+        />
+        <TouchableOpacity onPress={handleSearch}>
+          <Image
+            source={require('../assets/iconSeach.png')}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+
         {/* Lọc */}
-        <View style={styles.filter}>
+        <TouchableOpacity style={styles.filter} onPress={toggleFilterModal}>
           <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
-        </View>
+        </TouchableOpacity>
       </View>
+
+      <Filter
+        isVisible={isFilterModalVisible}
+        onClose={toggleFilterModal}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+      />
 
       {/* Danh sách sản phẩm dạng lưới */}
       <FlatList
-        data={featuredProducts}
+        data={featuredProducts}  // Sử dụng dữ liệu sản phẩm giả định
         renderItem={({ item }) => <ProductItem {...item} />}
         keyExtractor={(item) => item.id}
-        numColumns={2} // Hiển thị 2 cột
+        numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.listContent}
       />
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -95,8 +135,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
     borderRadius: 10,
     alignItems: 'center',
-    marginVertical: 10,
-    marginTop: 30,
     right: 0,
     borderWidth: 5,
     borderColor: '#fafafa'
@@ -113,7 +151,7 @@ const styles = StyleSheet.create({
     height: 20,
     position: 'absolute',
     left: '70%',
-    top: 15,
+    top: -35,
   },
   listContent: {
     paddingVertical: 10,

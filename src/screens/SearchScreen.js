@@ -4,12 +4,39 @@ import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
 
 const featuredProducts = [
-    { id: '1', name: 'TMA-2 HD Wireless', price: '1.500.000' },
-    { id: '2', name: 'MacBook Pro 2021', price: '35.000.000' },
-    { id: '3', name: 'iPhone 13', price: '20.000.000' },
-    { id: '4', name: 'iPhone 13', price: '20.000.000' },
-    { id: '5', name: 'iPhone 13', price: '20.000.000' },
-
+    {
+      id: '1',
+      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+      name: 'TMA-2 HD Wireless0',
+      price: '1.500.000',
+      rating: '4.6',
+      review: '86'
+    },
+    {
+      id: '2',
+      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
+      name: 'Macbook',
+      price: '1.500.000',
+      rating: '4.6',
+      review: '86'
+    },
+    {
+      id: '3',
+      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+      name: 'Wireless',
+      price: '1.500.000',
+      rating: '4.6',
+      review: '86'
+    },
+    {
+      id: '4',
+      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
+      name: 'TMA-2 HD Wireless',
+      price: '1.500.000',
+      rating: '4.6',
+      review: '86'
+    },
+  
 ];
 
 const SearchScreen = ({ navigation, route }) => {
@@ -59,7 +86,7 @@ const SearchScreen = ({ navigation, route }) => {
 
                 <TextInput
                     style={styles.searchInput}
-                    placeholder={query}
+                    placeholder="Search Product Name"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     onSubmitEditing={handleSearch}
