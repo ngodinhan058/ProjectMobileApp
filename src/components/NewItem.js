@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const NewItem = ({ title, description, date, image }) => {
   const [loading, setLoading] = useState(true); // Theo dõi trạng thái loading
   const shimmerAnim = useRef(new Animated.Value(0)).current; // Giá trị animation cho shimmer
+
+  const navigation = useNavigation();
 
   // Hàm để giới hạn mô tả, cắt chuỗi sau 30 ký tự
   const truncateDescription = (text) => {
@@ -43,12 +46,12 @@ const NewItem = ({ title, description, date, image }) => {
     });
 
     return (
-      
+
       <View style={styles.skeletonContainer}>
         <Image
-            source={image}
-            onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
-          />
+          source={image}
+          onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
+        />
         <View style={styles.skeletonTextContainer}>
           <Animated.View style={[styles.skeletonTitle, { backgroundColor: shimmerBackground }]} />
           <Animated.View style={[styles.skeletonDescription, { backgroundColor: shimmerBackground }]} />
@@ -56,21 +59,35 @@ const NewItem = ({ title, description, date, image }) => {
         </View>
         <Animated.View style={[styles.skeletonImage, { backgroundColor: shimmerBackground }]} />
       </View>
+
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Nội dung bài viết */}
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{truncateDescription(description)}</Text>
-        <Text style={styles.date}>{date}</Text>
-      </View>
+    <TouchableOpacity
+      onPress={() => {
+        const currentRoute = navigation.getState().routes[navigation.getState().index].name;
+        if (currentRoute === 'NewsDetailScreen') {
 
-      {/* Hình ảnh bài viết */}
-      <Image source={image} style={styles.image} />
-    </View>
+          navigation.replace('NewsDetailScreen', { title, description, date, image });
+        } else {
+
+          navigation.navigate('NewsDetailScreen', { title, description, date, image });
+        }
+      }}
+    >
+      <View style={styles.container}>
+        {/* Nội dung bài viết */}
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.description}>{truncateDescription(description)}</Text>
+          <Text style={styles.date}>{date}</Text>
+        </View>
+
+        {/* Hình ảnh bài viết */}
+        <Image source={image} style={styles.image} />
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -88,6 +105,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
+
   },
   skeletonTextContainer: {
     flex: 1,
@@ -130,9 +148,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOpacity: 0.5,
+    shadowRadius: 1710,
+    elevation: 4,
+    marginVertical: 10,
+    marginHorizontal: 2,
   },
   textContainer: {
     flex: 1,

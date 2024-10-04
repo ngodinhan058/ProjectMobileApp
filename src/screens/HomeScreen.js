@@ -4,6 +4,8 @@ import ProductItem from '../components/ProductItem';
 import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
+import { useNavigation } from '@react-navigation/native';
+import Filter from '../components/Filter';
 
 
 const featuredProducts = [
@@ -12,24 +14,24 @@ const featuredProducts = [
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
     name: 'TMA-2 HD Wireless0',
     price: '1.500.000',
-    rating: '4.6',
-    review: '86'
+    rating: '4.0',
+    review: '860'
   },
   {
     id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
+    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
+    name: 'TMA-2 HD Wireless2',
     price: '1.500.000',
-    rating: '4.6',
-    review: '86'
+    rating: '2.6',
+    review: '6'
   },
   {
     id: '3',
     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
     name: 'TMA-2 HD Wireless',
     price: '1.500.000',
-    rating: '4.6',
-    review: '86'
+    rating: '0.6',
+    review: '106'
   },
 ];
 
@@ -49,7 +51,8 @@ const news = [
 ];
 const banners = [
   { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-  { id: '2', image: { uri: 'https://as1.ftcdn.net/v2/jpg/04/65/46/52/1000_F_465465254_1pN9MGrA831idD6zIBL7q8rnZZpUCQTy.jpg' }, },
+  { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' }, },
+
 ];
 
 const categories = [
@@ -62,6 +65,7 @@ const HomeScreen = () => {
   {/* Loading Banner */ }
   const [loading, setLoading] = useState(true);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
@@ -83,6 +87,14 @@ const HomeScreen = () => {
     ).start();
   }, [shimmerAnim]);
 
+  {/* Search lấy dữ liệu để chuyển trang*/ }
+
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = () => {
+    navigation.navigate('SearchScreen', { query: searchQuery });
+  };
+  
   return (
     <ScrollView>
       {/* Bắt đầu phần với background #fff */}
@@ -92,34 +104,26 @@ const HomeScreen = () => {
           <View style={styles.line}></View>
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
-            <TextInput style={styles.searchInput} placeholder="Search Product Name" />
-            <Image source={require('../assets/iconSeach.png')} style={styles.icon} />
+            <TextInput style={styles.searchInput} placeholder="Search Product Name" value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} />
+            <TouchableOpacity onPress={handleSearch}>
+              <Image
+                source={require('../assets/iconSeach.png')}
+                style={styles.icon}
+              />
+            </TouchableOpacity>
           </View>
-          {/* Lọc */}
-          <View style={styles.filter}>
+          {/* Lọc 
+          <TouchableOpacity style={styles.filter} onPress={toggleFilterModal}>
             <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
-          </View>
+          </TouchableOpacity > */}
+          
           {/* Banner chính */}
           {loading ? (
-            // Skeleton with shimmer effect while loading
             <View>
-              {/* <Image
-                source={image}
-                onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
-              /> */}
-               <FlatList
-                horizontal
-                data={banners}
-                renderItem={({ item }) => (
-                  <View style={styles.banner}>
-                    <Image source={item.image} style={{backgroundColor: '#fff',}} onLoad={() => setLoading(false)}/>
-                  </View>
-                )}
-                keyExtractor={(item) => item.id}
-                showsHorizontalScrollIndicator={false}
-                pagingEnabled
-                style={styles.bannerCarousel}
-              />
+              <View style={styles.banner}>
+                <Image source={banners.image} onLoad={() => setLoading(false)} />
+              </View>
+
               <Animated.View style={[styles.skeletonText, {
                 backgroundColor: shimmerAnim.interpolate({
                   inputRange: [0, 1],
@@ -154,8 +158,8 @@ const HomeScreen = () => {
           <View style={{
           }}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.textBold}>Danh Mục</Text>
-              <Text style={styles.seeAll}>Xem Tất Cả</Text>
+              <Text style={styles.textBold}>Danh Mục Sản Phẩm</Text>
+              <Text style={styles.seeAll}></Text>
             </View>
           </View>
           {/* Xuất Danh mục sản phẩm */}
@@ -169,7 +173,7 @@ const HomeScreen = () => {
         </View>
       </View>
 
-
+    
       {/* Sản phẩm nổi bật */}
       <View style={styles.containerPro}>
         <View style={styles.greySection}>
@@ -268,7 +272,7 @@ const HomeScreen = () => {
               borderColor: '#000',
               borderStyle: 'solid',
               alignItems: 'center',
-            }}
+            }} onPress={() => navigation.navigate('NewsScreen')}
           >
             <Text>Xem Tất Cả Bản Tin</Text>
           </TouchableOpacity>
@@ -301,7 +305,7 @@ const styles = StyleSheet.create({
     background: '#fff',
   },
   searchInput: {
-    width: '80%',
+    width: '100%',
     height: 50,
     backgroundColor: '#FAFAFA',
     borderRadius: 10,
@@ -329,8 +333,8 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     position: 'absolute',
-    left: '70%',
-    top: 15,
+    left: '90%',
+    top: -35,
   },
   whiteSection: {
     backgroundColor: '#fff',

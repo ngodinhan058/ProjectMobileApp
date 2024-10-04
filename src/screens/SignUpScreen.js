@@ -29,7 +29,7 @@ const SignUpScreen = ({ navigation }) => {
       <View style={{ flex: 1, }}>
         {/* Nút quay lại */}
         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={20} color="#000" />
+          <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
 
         {/* Tiêu đề */}
