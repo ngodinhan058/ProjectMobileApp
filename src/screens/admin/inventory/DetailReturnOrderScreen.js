@@ -25,7 +25,7 @@ function DetailScreen({ navigation }) {
                 onRequestClose={onClose}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Xác Nhận Đóng Gói và Chuyển Sang Shipper Phải Không</Text>
+                        <Text style={styles.modalText}>Xác Nhận Hàng Đã Về An Toàn??</Text>
                         <View style={styles.buttonContainer}>
                             {/* Nút NO */}
                             <TouchableOpacity style={styles.noButton} onPress={onClose}>

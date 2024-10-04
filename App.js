@@ -37,6 +37,8 @@ import DetailCategoryScreen from './src/screens/admin/category/DetailCategoryScr
 {/* AdminInventory*/ }
 import InventoryList from './src/screens/admin/inventory/HomeScreen';
 import DetailInventoryScreen from './src/screens/admin/inventory/DetailInventoryScreen';
+import ReturnOrder from './src/screens/admin/inventory/ReturnOrder';
+import DetailReturnOrderScreen from './src/screens/admin/inventory/DetailReturnOrderScreen';
 {/* AdminUser */ }
 import HomeUserScreen from './src/screens/admin/user/HomeScreen';
 import AddUserScreen from './src/screens/admin/user/AddUserScreen';
@@ -143,7 +145,17 @@ function InventoryAdmin() {
       <Stack.Screen name="InventoryList" component={InventoryList} />
       <Stack.Screen name="DetailInventoryScreen" component={DetailInventoryScreen} />
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
-      <Stack.Screen name="DetailScreen" component={DetailScreen} />
+
+    </Stack.Navigator>
+  );
+}
+{/* Admin Invetory ReturnOrder*/ }
+function InventoryReturnOrder() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ReturnOrder" component={ReturnOrder} />
+      <Stack.Screen name="DetailReturnOrderScreen" component={DetailReturnOrderScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
   );
 }
@@ -157,6 +169,14 @@ function AdminDrawerNavigator() {
     </Drawer.Navigator>
   );
 }
+function InventoryDrawerNavigator() {
+  return (
+    <Drawer.Navigator>
+      <Drawer.Screen name="Danh Sách Sản Phẩm Tồn Kho" component={InventoryAdmin} />
+      <Drawer.Screen name="Danh Sách Sản Phẩm Trả Về" component={InventoryReturnOrder} />
+    </Drawer.Navigator>
+  );
+}
 
 
 
@@ -166,7 +186,8 @@ export default function App() {
     <NavigationContainer>
 
       {/* <AdminDrawerNavigator /> */}
-      <Tab.Navigator
+      <InventoryDrawerNavigator />
+      {/* <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
@@ -218,13 +239,14 @@ export default function App() {
         />
         <Tab.Screen
           name="Login"
-          component={AdminDrawerNavigator}
+          component={LoginStack}
           options={{
             headerShown: false,
             tabBarStyle: { display: 'none' },  // Ẩn Bottom Navigation trên Login và SignUp
           }}
         />
-      </Tab.Navigator>
+      </Tab.Navigator> */}
+      
 
     </NavigationContainer>
   );
