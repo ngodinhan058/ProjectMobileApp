@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import UploadImage from '../../../components/Up_Image_Multi';
 
 const EditProductScreen = ({ route, navigation }) => {
 
@@ -32,7 +33,7 @@ const EditProductScreen = ({ route, navigation }) => {
 
     const [productName, setProductName] = useState('');
     const [productPrice, setProductPrice] = useState('');
-    const [productQuantity, setProductQuantity] = useState('');
+    const [productQuantity, setProductQuantity] = useState('0');
     const [productSale, setProductSale] = useState('');
     const [productDetails, setProductDetails] = useState('');
 
@@ -56,12 +57,7 @@ const EditProductScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Icon Image */}
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
-                        style={styles.imageIcon}
-                    />
-                </View>
+                <UploadImage />
                 <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('EditPostScreen')}>
                     <Text style={styles.buttonText}>Sửa Post</Text>
                 </TouchableOpacity>
@@ -84,15 +80,25 @@ const EditProductScreen = ({ route, navigation }) => {
                         onChangeText={setProductPrice}
                         keyboardType="numeric"
                     />
-                    <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-                    {/* Product Quantity */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Sửa Số Lượng Sản Phẩm"
-                        value={productQuantity}
-                        onChangeText={setProductQuantity}
-                        keyboardType="numeric"
-                    />
+                    <View style={styles.quantityContainer}>
+                        <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
+                        <View style={styles.quantityWrapper}>
+                            <TouchableOpacity style={styles.quantityPlus} onPress={() => setProductQuantity((prev) => parseInt(prev) + 1)}>
+                                <Text style={styles.buttonIcon}>▲</Text>
+                            </TouchableOpacity>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Thêm Số Lượng Sản Phẩm"
+                                value={productQuantity.toString()}
+                                onChangeText={setProductQuantity}
+                                keyboardType="numeric"
+                            />
+
+                            <TouchableOpacity style={styles.quantityMinus} onPress={() => setProductQuantity((prev) => Math.max(0, parseInt(prev) - 1))}>
+                                <Text style={styles.buttonIcon}>▼</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                     <Text style={styles.label}>Giảm Giá Sản Phẩm:</Text>
                     {/* Product Sale */}
                     <TextInput
@@ -195,13 +201,35 @@ const styles = StyleSheet.create({
     formContainer: {
         flex: 1,
     },
+    quantityContainer: {
+        marginBottom: 20,
+    },
+
+    quantityPlus: {
+        position: 'absolute', 
+        right: 10,
+        top: 0,
+        zIndex: 99,
+    },
+    quantityMinus: {
+        position: 'absolute',
+        right: 10,
+        bottom: 15,
+        zIndex: 99,
+    },
     input: {
+        position: 'relative',
         height: 50,
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
+    },
+    buttonIcon: {
+        color: '#3669c9',
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     label: {
         fontSize: 16,
