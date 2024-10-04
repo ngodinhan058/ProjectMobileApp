@@ -45,6 +45,24 @@ const HomeAdminScreen = ({ navigation }) => {
             id_image_front: require('../../../assets/silver.png'),
             id_image_back: require('../../../assets/silver.png'), role: 'shipper',
         },
+        {
+            id: '7' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../../../assets/diamond.png') , number_id: '079203000000',
+            id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
+            id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
+        },
+        {
+            id: '8' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../../../assets/silver.png') , number_id: '079203000000',
+            id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
+            id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
+        },
+        {
+            id: '9' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png') , number_id: '079203000000',
+            id_image_front: require('../../../assets/silver.png'),
+            id_image_back: require('../../../assets/silver.png'), role: 'customer',
+        },
 
     ];
 

@@ -19,7 +19,7 @@ const SuccessScreen = ({ navigation }) => {
             {/* Nút quay lại */}
             <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => navigation.replace('InventoryList')}
+                onPress={() => navigation.goBack()}
             >
                 <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>

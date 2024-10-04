@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Icon5 from 'react-native-vector-icons/FontAwesome5';
 
 
-const HomeAdminScreen = ({ navigation }) => {
+const ReturnOrderScreen = ({ navigation }) => {
     const products = [
         {
             id: '1', name: '#HWDSF776567DS', price: '1.500.000', quantity: 500, date: "14-11-2999", image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
@@ -15,13 +15,14 @@ const HomeAdminScreen = ({ navigation }) => {
         {
             id: '3', name: '#HWDSF776567DS', price: '1.500.000', quantity: 500, date: "14-11-2999", image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
+        
 
     ];
 
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('DetailInventoryScreen')}
+            onPress={() => navigation.navigate('DetailReturnOrderScreen')}
         >
 
             <View style={{
@@ -169,4 +170,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HomeAdminScreen;
+export default ReturnOrderScreen;

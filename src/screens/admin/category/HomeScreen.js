@@ -54,6 +54,9 @@ const HomeAdminScreen = ({ navigation }) => {
                     <Text style={styles.welcomeText}>Hi Admin!</Text>
                     <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
                 </View>
+                <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+                    <Image source={require('../../../assets/right_from_bracket.png')} style={{ width: 30, height: 30, marginLeft: 115 }} />
+                </TouchableOpacity>
             </View>
             {/* Product List */}
             <FlatList
