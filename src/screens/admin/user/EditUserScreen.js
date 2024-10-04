@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    Button,
     Modal,
     TouchableOpacity,
     StyleSheet,
@@ -15,21 +14,14 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const EditPostScreen = ({ route, navigation }) => {
-    const [postName, setPostName] = useState('');
-    const [postPrice, setPostPrice] = useState('');
-    const [postQuantity, setPostQuantity] = useState('');
-    const [postSale, setPostSale] = useState('');
+const EditUserScreen = ({ route, navigation }) => {
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [addModalVisible, setAddModalVisible] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
-    const [newCategoryName, setNewCategoryName] = useState('');
-    const [newCategoryType, setNewCategoryType] = useState('');
+    const categories = ['Admin', 'Inventory', 'Shipper', 'Customer'];
 
-    const [categories, setCategories] = useState(['Apple', 'Vivo', 'Samsung', 'Xiaomi']);
-    const [searchQuery, setSearchQuery] = useState('');
+    const { query } = route.params || {}; // Kiểm tra xem `query` có tồn tại hay không
+    const [searchQuery, setSearchQuery] = useState(''); // Lưu trữ trạng thái cho thanh tìm kiếm
 
+    // Lọc các danh mục theo thanh tìm kiếm
     const filteredCategories = categories.filter(category =>
         category.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -38,18 +30,17 @@ const EditPostScreen = ({ route, navigation }) => {
         setSearchQuery(value);
     };
 
+    const [userEmail, setUserEmail] = useState('');
+    const [userPass, setUserPass] = useState('');
+    const [userAddress, setUserAddress] = useState('');
+    const [userPhone, setUserPhone] = useState('');
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedValue, setSelectedValue] = useState('Chọn loại Người Dùng');
+
     const handleSelect = (value) => {
         setSelectedValue(value);
         setModalVisible(false);
-    };
-
-    const handleAddCategory = () => {
-        // if (newCategoryName && newCategoryType) {
-        //     setCategories([...categories, `${newCategoryName} (${newCategoryType})`]);
-        //     setNewCategoryName('');
-        //     setNewCategoryType('');
-        // }
-        setAddModalVisible(false);
     };
 
     return (
@@ -60,89 +51,104 @@ const EditPostScreen = ({ route, navigation }) => {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Sửa Thông Tin Post</Text>
+                    <Text style={styles.textHeader}>Sửa Thông Tin Sản Phẩm</Text>
                 </View>
 
                 {/* Icon Image */}
                 <View style={styles.imageContainer}>
                     <Image
-                        source={require('../../../../assets/upload_image_icon.png')}
+                        source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
                         style={styles.imageIcon}
                     />
                 </View>
-
-                {/* Post Form */}
+                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('EditIdCardScreen')}>
+                    <Text style={styles.buttonText}>Sửa CCCD</Text>
+                </TouchableOpacity>
+                {/* Product Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Tên Post</Text>
+                    <Text style={styles.label}>Email Người Dùng:</Text>
+                     {/* User Email */}
+                     <TextInput
+                        style={styles.input}
+                        placeholder="Sửa Email Người Dùng"
+                        value={userEmail}
+                        onChangeText={setUserEmail}
+                    />
+                    {/* <Text style={styles.label}>Tên Đầu Người Dùng:</Text>
+                     User First Name 
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Tên Post"
-                        value={postName}
-                        onChangeText={setPostName}
+                        placeholder="Tên Đầu Người Dùng"
+                        value={UserPrice}
+                        onChangeText={setUserPrice}
                     />
-
-                    <Text style={styles.label}>Slug Post</Text>
+                     <Text style={styles.label}>Tên Sau Người Dùng:</Text>
+                    User Last Name 
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Slug Post"
-                        value={postPrice}
-                        onChangeText={setPostPrice}
-                    />
-
-                    <Text style={styles.label}>Loại Post</Text>
+                        placeholder="Tên Sau Người Dùng"
+                        value={UserPrice}
+                        onChangeText={setUserPrice}
+                    /> */}
+                    <Text style={styles.label}>Mật Khẩu Người Dùng:</Text>
+                    {/* User Pass */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Loại Post"
-                        value={postQuantity}
-                        onChangeText={setPostQuantity}
+                        placeholder="Sửa Mật Khẩu Người Dùng"
+                        value={userPass}
+                        onChangeText={setUserPass}
                     />
-
-                    <Text style={styles.label}>Chi Tiết Post</Text>
+                    <Text style={styles.label}>Địa Chỉ Người Dùng:</Text>
+                    {/* User Sale */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Chi Tiết Post"
-                        value={postSale}
-                        onChangeText={setPostSale}
+                        placeholder="Sửa Địa Chỉ Người Dùng"
+                        value={userAddress}
+                        onChangeText={setUserAddress}
+                       
+                    />
+                    {/* User Sale */}
+                    <Text style={styles.label}>Số Điện Thoại Người Dùng:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Sửa Số Điện Thoại Người Dùng"
+                        value={userPhone}
+                        onChangeText={setUserPhone}
+                        keyboardType="numeric"
                     />
 
-                    {/* Post Category */}
-                    <Text style={styles.label}>Post Status</Text>
+                    {/* User Category */}
+                    <Text style={styles.label}>Quyền Người Dùng:</Text>
                     <TouchableOpacity
                         style={styles.dropdown}
                         onPress={() => setModalVisible(true)}>
                         <Text style={styles.selectedValue}>{selectedValue}</Text>
                     </TouchableOpacity>
 
-                    {/* Modal chọn category */}
+                    {/* Modal */}
                     <Modal
                         animationType="fade"
                         transparent={true}
                         visible={modalVisible}
                         onRequestClose={() => setModalVisible(false)}>
+                        {/* TouchableWithoutFeedback để đóng modal khi bấm bên ngoài */}
                         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                             <View style={styles.modalOverlay}>
                                 <View style={styles.modalView}>
                                     <View style={styles.searchBar}>
                                         <TextInput
                                             style={styles.searchInput}
-                                            placeholder="Tìm kiếm/ Sửa Status"
+                                            placeholder="Tìm Kiếm Quền"
                                             value={searchQuery}
                                             onChangeText={handleSearch}
                                         />
-                                        <TouchableOpacity
-                                            style={styles.filter}
-                                            onPress={() => setAddModalVisible(true)}>
-                                            <Text style={styles.iconCenter}><Icon name="pencil" size={20} color="#3669c9" /></Text>
-                                        </TouchableOpacity>
+                                       
                                     </View>
-
                                     <FlatList
                                         data={filteredCategories}
                                         keyExtractor={(item) => item}
                                         renderItem={({ item }) => (
-                                            <TouchableOpacity
-                                                onPress={() => handleSelect(item)}
-                                                style={styles.modalItem}>
+                                            <TouchableOpacity onPress={() => handleSelect(item)} style={styles.modalItem}>
                                                 <Text style={styles.modalText}>{item}</Text>
                                             </TouchableOpacity>
                                         )}
@@ -155,39 +161,8 @@ const EditPostScreen = ({ route, navigation }) => {
                         </TouchableWithoutFeedback>
                     </Modal>
 
-                    {/* Modal Sửa category mới */}
-                    <Modal
-                        animationType="fade"
-                        transparent={true}
-                        visible={addModalVisible}
-                        onRequestClose={() => setAddModalVisible(false)}>
-                        <TouchableWithoutFeedback onPress={() => setAddModalVisible(false)}>
-                            <View style={styles.modalOverlay}>
-                                <View style={styles.addModalView}>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Tên Category"
-                                        value={newCategoryName}
-                                        onChangeText={setNewCategoryName}
-                                    />
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Loại Category"
-                                        value={newCategoryType}
-                                        onChangeText={setNewCategoryType}
-                                    />
-                                    <TouchableOpacity style={styles.button} onPress={handleAddCategory}>
-                                        <Text style={styles.buttonText}>Sửa</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.button} onPress={() => setAddModalVisible(false)}>
-                                        <Text style={styles.buttonText}>Đóng</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </Modal>
-
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Post Added/Edited')}>
+                    {/* Add/Edit Button */}
+                    <TouchableOpacity style={styles.button} onPress={() => alert('User Edited')}>
                         <Text style={styles.buttonText}>Sửa</Text>
                     </TouchableOpacity>
                 </View>
@@ -256,11 +231,7 @@ const styles = StyleSheet.create({
     selectedValue: {
         fontSize: 16,
     },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-    },
+
     modalView: {
         position: 'absolute',
         width: '90%',
@@ -279,29 +250,11 @@ const styles = StyleSheet.create({
         elevation: 5,
         height: 400
     },
-    addModalView: {
-        position: 'absolute',
-        width: '90%',
-        marginHorizontal: 20,
-        padding: 30,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        height: 300,
-    },
     modalItem: {
         padding: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
         width: '100%',
-        
     },
     modalText: {
         fontSize: 16,
@@ -314,10 +267,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
+    buttonPost: {
+        width: '40%',
+        backgroundColor: '#3669c9',
+        paddingVertical: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginVertical: 10,
+        marginLeft: '60%'
+    },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
+
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Làm nền modal tối
     },
     searchBar: {
         position: 'relative',
@@ -331,19 +299,19 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
     },
-    filter: {
-        position: 'absolute',
-        width: 50,
-        height: 50,
-        backgroundColor: '#fafafa',
-        borderRadius: 10,
-        alignItems: 'center',
-        right: 0,
+    icon: {
+        width: 20,
+        height: 20,
+        marginLeft: 10,
     },
     iconCenter: {
-        fontSize: 35,
-        color: '#3669c9',
+        width: 20,
+        height: 20,
+        position: 'absolute',
+        alignContent: 'center',
+        top: 15,
     },
+
 });
 
-export default EditPostScreen;
+export default EditUserScreen;

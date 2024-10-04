@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
+    Button,
     Modal,
     TouchableOpacity,
     StyleSheet,
@@ -13,10 +14,20 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-const AddCategoryScreen = ({ route, navigation }) => {
-    const [categoryName, setcategoryName] = useState('');
-    const [categorySlug, setcategorySlug] = useState('');
+
+const AddIdCardScreen = ({ route, navigation }) => {
+    const [CCCDNumber, setCCCDNumber] = useState('');
+
+    const [dateOfBirth, setDateOfBirth] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    const onDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || dateOfBirth;
+        setShowDatePicker(false);
+        setDateOfBirth(currentDate);
+    };
 
     return (
         <View style={styles.container}>
@@ -26,37 +37,56 @@ const AddCategoryScreen = ({ route, navigation }) => {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Thêm Thông Tin Danh Mục</Text>
+                    <Text style={styles.textHeader}>Thêm Thông Tin CCCD</Text>
                 </View>
 
-                {/* Icon Image */}
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
-                        style={styles.imageIcon}
-                    />
-                </View>
-                
-                {/* Category Form */}
+
+
+                {/* CCCD Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Tên Danh Mục:</Text>
-                    {/* Category Name */}
+                    <Text style={styles.label}>Số CCCD:</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Tên Danh Mục"
-                        value={categoryName}
-                        onChangeText={setcategoryName}
+                        placeholder="Thêm Số CCCD"
+                        value={CCCDNumber}
+                        onChangeText={setCCCDNumber}
                     />
-                    {/* Category Slug */}
-                    <Text style={styles.label}>Slug Danh Mục:</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Thêm Slug Danh Mục"
-                        value={categorySlug}
-                        onChangeText={setcategorySlug}
-                    />
-                    {/* Add/Edit Button */}
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Category Added')}>
+
+                    <Text style={styles.label}>Ngày Cấp CCCD:</Text>
+                    {/* Date of Birth */}
+                    <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                        <Text style={{ lineHeight: 45 }}>{dateOfBirth ? dateOfBirth.toDateString() : 'Thêm Ngày Cấp'}</Text>
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={dateOfBirth}
+                            mode="date"
+                            display="default"
+                            onChange={onDateChange}
+
+                        />
+                    )}
+                    <Text style={styles.label}>Hình Mặt Trước CCCD:</Text>
+                    {/* Icon Image */}
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={require('../../../../assets/upload_image_icon.png')}
+                            style={styles.imageIcon}
+                        />
+                    </View>
+                    <Text style={styles.label}>Hình Mặt Sau CCCD:</Text>
+                    {/* Icon Image */}
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={require('../../../../assets/upload_image_icon.png')}
+                            style={styles.imageIcon}
+                        />
+                    </View>
+
+
+
+                    <TouchableOpacity style={styles.button} onPress={() => alert('CCCD Added/Edited')}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
@@ -126,33 +156,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 
-    modalView: {
-        position: 'absolute',
-        width: '90%',
-        marginHorizontal: 20,
-        padding: 30,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        height: 400
-    },
-    modalItem: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        width: '100%',
-    },
-    modalText: {
-        fontSize: 16,
-    },
+
     button: {
         width: '100%',
         backgroundColor: '#3669c9',
@@ -161,25 +165,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
-    buttonPost: {
-        width: '40%',
-        backgroundColor: '#3669c9',
-        paddingVertical: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginVertical: 10,
-        marginLeft: '60%'
-    },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
-
-    },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Làm nền modal tối
     },
     searchBar: {
         position: 'relative',
@@ -193,19 +182,19 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
     },
-    icon: {
-        width: 20,
-        height: 20,
-        marginLeft: 10,
+    filter: {
+        position: 'absolute',
+        width: 50,
+        height: 50,
+        backgroundColor: '#fafafa',
+        borderRadius: 10,
+        alignItems: 'center',
+        right: 0,
     },
     iconCenter: {
-        width: 20,
-        height: 20,
-        position: 'absolute',
-        alignContent: 'center',
-        top: 15,
+        fontSize: 35,
+        color: '#3669c9',
     },
-
 });
 
-export default AddCategoryScreen;
+export default AddIdCardScreen;

@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
@@ -15,29 +16,39 @@ import WishListScreen from './src/screens/WishListScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
+import ReviewProductScreen from './src/screens/ReviewProductScreen';
 import NewsScreen from './src/screens/NewsScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
-{/* Admin */}
+import AddToCartScreen from './src/screens/AddToCartScreen';
+{/* Admin */ }
 import MenuScreen from './src/screens/admin/MenuScreen';
-{/* AdminProduct */}
+{/* AdminProduct */ }
 import AddProductScreen from './src/screens/admin/product/AddProductScreen';
 import EditProductScreen from './src/screens/admin/product/EditProductScreen';
 import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
 import DetailScreen from './src/screens/admin/product/DetailProductScreen';
-{/* AdminPost*/}
-import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
-import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
-{/* AdminCategory*/}
+{/* AdminCategory*/ }
 import CategoryList from './src/screens/admin/category/HomeScreen';
 import AddCategoryScreen from './src/screens/admin/category/AddCategoryScreen';
 import EditCategoryScreen from './src/screens/admin/category/EditCategoryScreen';
 import DetailCategoryScreen from './src/screens/admin/category/DetailCategoryScreen';
-{/* AdminInventory*/}
+{/* AdminInventory*/ }
 import InventoryList from './src/screens/admin/inventory/HomeScreen';
 import DetailInventoryScreen from './src/screens/admin/inventory/DetailInventoryScreen';
-{/* Success, Fail */}
+{/* AdminUser */ }
+import HomeUserScreen from './src/screens/admin/user/HomeScreen';
+import AddUserScreen from './src/screens/admin/user/AddUserScreen';
+import EditUserScreen from './src/screens/admin/user/EditUserScreen';
+import DetailUserScreen from './src/screens/admin/user/DetailUserScreen';
+{/* AdminPost*/ }
+import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
+import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
+{/* AdminUserIdCard*/ }
+import AddIdCardScreen from './src/screens/admin/user/idcard/AddIdCardScreen';
+import EditIdCardScreen from './src/screens/admin/user/idcard/EditIdCardScreen';
+{/* Success, Fail */ }
 import SuccessScreen from './src/screens/admin/SuccessScreen';
 
 
@@ -45,13 +56,12 @@ import Header from './src/components/Header';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
 function LoginStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ProductList" component={HomeAdminScreen} />
-      
-      {/* <Stack.Screen name="LoginScreen" component={LoginScreen} /> */}
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="SignUpSceen" component={SignUpScreen} />
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
       <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
@@ -62,33 +72,14 @@ function LoginStack() {
       {/* đã login */}
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
-      {/* Admin Menu */}
-      <Stack.Screen name="MenuScreen" component={MenuScreen} />
-      {/* Admin Product */}
-      <Stack.Screen name="DetailScreen" component={DetailScreen} />
-      <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
-      <Stack.Screen name="EditProductScreen" component={EditProductScreen} />
-      {/* Admin Post */}
-      <Stack.Screen name="AddPostScreen" component={AddPostScreen} />
-      <Stack.Screen name="EditPostScreen" component={EditPostScreen} />
-      {/* Admin Category */}
-      <Stack.Screen name="CategoryList" component={CategoryList} />
-      <Stack.Screen name="DetailCategoryScreen" component={DetailCategoryScreen} />
-      <Stack.Screen name="AddCategoryScreen" component={AddCategoryScreen} />
-      <Stack.Screen name="EditCategoryScreen" component={EditCategoryScreen} />
       
-      {/* Admin Invetory */}
-      <Stack.Screen name="InventoryList" component={InventoryList} />
-      <Stack.Screen name="DetailInventoryScreen" component={DetailInventoryScreen} />
-      {/* Success, Fail */}
-      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
+
   );
 }
 function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
@@ -96,7 +87,74 @@ function HomeStack() {
       <Stack.Screen name="NewsScreen" component={NewsScreen} />
       <Stack.Screen name="NewsDetailScreen" component={NewsDetailScreen} />
       <Stack.Screen name="AddedProductToWishlist" component={AddedProductToWishlist} />
+      <Stack.Screen name="AddToCartScreen" component={AddToCartScreen} />
+      <Stack.Screen name="ReviewProductScreen" component={ReviewProductScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
+  );
+}
+{/* Admin Product */ }
+function ProductAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ProductList" component={HomeAdminScreen} />
+      <Stack.Screen name="DetailScreen" component={DetailScreen} />
+      <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
+      <Stack.Screen name="EditProductScreen" component={EditProductScreen} />
+      {/* Admin Post */}
+      <Stack.Screen name="AddPostScreen" component={AddPostScreen} />
+      <Stack.Screen name="EditPostScreen" component={EditPostScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
+
+    </Stack.Navigator>
+  );
+}
+{/* Admin Category */ }
+function CategoryAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="CategoryList" component={CategoryList} />
+      <Stack.Screen name="DetailCategoryScreen" component={DetailCategoryScreen} />
+      <Stack.Screen name="AddCategoryScreen" component={AddCategoryScreen} />
+      <Stack.Screen name="EditCategoryScreen" component={EditCategoryScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
+    </Stack.Navigator>
+  );
+}
+{/* Admin User */ }
+function UserAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="UserList" component={HomeUserScreen} />
+      <Stack.Screen name="AddUserScreen" component={AddUserScreen} />
+      <Stack.Screen name="EditUserScreen" component={EditUserScreen} />
+      <Stack.Screen name="DetailUserScreen" component={DetailUserScreen} />
+      {/* Admin IdCard */}
+      <Stack.Screen name="AddIdCardScreen" component={AddIdCardScreen} />
+      <Stack.Screen name="EditIdCardScreen" component={EditIdCardScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
+    </Stack.Navigator>
+  );
+}
+{/* Admin Invetory */ }
+function InventoryAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="InventoryList" component={InventoryList} />
+      <Stack.Screen name="DetailInventoryScreen" component={DetailInventoryScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
+      <Stack.Screen name="DetailScreen" component={DetailScreen} />
+    </Stack.Navigator>
+  );
+}
+function AdminDrawerNavigator() {
+  return (
+    <Drawer.Navigator>
+      <Drawer.Screen name="Product List" component={ProductAdmin} />
+      <Drawer.Screen name="Category List" component={CategoryAdmin} />
+      <Drawer.Screen name="User List" component={UserAdmin} />
+      <Drawer.Screen name="Inventory List" component={InventoryAdmin} />
+    </Drawer.Navigator>
   );
 }
 
@@ -106,6 +164,8 @@ function HomeStack() {
 export default function App() {
   return (
     <NavigationContainer>
+
+      {/* <AdminDrawerNavigator /> */}
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
@@ -147,7 +207,7 @@ export default function App() {
           options={{
             header: () => <Header />,
           }}
-          
+
         />
         <Tab.Screen
           name="Order"
