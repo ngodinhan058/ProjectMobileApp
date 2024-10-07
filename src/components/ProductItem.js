@@ -3,8 +3,9 @@ import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } fro
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 
-const ProductItem = ({ id, image, name, price, rating, review }) => {
+const ProductItem = ({ id, image, name, price, rating, review, like: initialLike }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
+  const [liked, setLiked] = useState(initialLike);
   const shimmerAnim = useRef(new Animated.Value(0)).current; // Shimmer animation value
 
   const navigation = useNavigation();
@@ -12,7 +13,9 @@ const ProductItem = ({ id, image, name, price, rating, review }) => {
   const truncateName = (text) => {
     return text.length > 17 ? text.substring(0, 17) + '...' : text;
   };
-
+  const toggleLike = () => {
+    setLiked(!liked); // Chuyển đổi trạng thái like
+  };
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
     Animated.loop(
@@ -87,7 +90,11 @@ const ProductItem = ({ id, image, name, price, rating, review }) => {
                 <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
               </Text>
               <Text style={styles.review}>{review} Review</Text>
-              <Text style={styles.heart}><Icon name="heart-outline" size={18} color="#000" /></Text>
+              <TouchableOpacity onPress={toggleLike}>
+                <Text style={styles.heart}>
+                  <Icon name={liked ? "heart" : "heart-outline"} size={18} color="#3669c9" />
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </TouchableOpacity>
@@ -128,7 +135,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
-    marginHorizontal:2,
+    marginHorizontal: 2,
     marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

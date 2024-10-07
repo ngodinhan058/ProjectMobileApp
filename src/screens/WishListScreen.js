@@ -50,7 +50,9 @@ const WishListScreen = ({ route, navigation }) => {
   const handleSearch = () => {
     navigation.replace('SearchScreen', { query: searchQuery });
   };
-
+  const filteredProducts = featuredProducts.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+);
   const toggleFilterModal = () => {
     setIsFilterModalVisible(!isFilterModalVisible);
   };
@@ -95,7 +97,7 @@ const WishListScreen = ({ route, navigation }) => {
 
       {/* Danh sách sản phẩm dạng lưới */}
       <FlatList
-        data={featuredProducts}  // Sử dụng dữ liệu sản phẩm giả định
+        data={filteredProducts}  // Sử dụng dữ liệu sản phẩm giả định
         renderItem={({ item }) => <ProductItem {...item} />}
         keyExtractor={(item) => item.id}
         numColumns={2}
