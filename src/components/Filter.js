@@ -57,6 +57,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     };
 
     // Hiển thị 4 mục đầu tiên hoặc tất cả tùy thuộc vào trạng thái
+    // Object.keys(selectedCategories) chỉ sài cho dạng bảng
     const categoriesToShow = isExpanded
         ? Object.keys(selectedCategories) // Hiển thị tất cả nếu mở rộng
         : Object.keys(selectedCategories).slice(0, 4); // Chỉ hiển thị 4 mục đầu tiên

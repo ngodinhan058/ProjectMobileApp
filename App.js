@@ -76,11 +76,6 @@ function LoginStack() {
       <Stack.Screen name="ResetPassScreen" component={ResetPassScreen} />
       <Stack.Screen name="VerificationForgotScreen" component={VerificationForgotScreen} />
       <Stack.Screen name="UpdatePassScreen" component={UpdatePassScreen} />
-      <Stack.Screen name="SearchScreen" component={SearchScreen} />
-      {/* đã login */}
-      {/* <Stack.Screen name="ProfileScreen" component={ProfileScreen} /> */}
-      <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
-
     </Stack.Navigator>
 
   );
@@ -90,6 +85,17 @@ function HaveLoginStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
+
+      <Stack.Screen name="SearchScreen" component={SearchScreen} />
+      <Stack.Screen name="StartSearchScreen" component={StartSearchScreen} />
+      <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
+      <Stack.Screen name="WishListScreen" component={WishListScreen} />
+      <Stack.Screen name="NewsScreen" component={NewsScreen} />
+      <Stack.Screen name="NewsDetailScreen" component={NewsDetailScreen} />
+      <Stack.Screen name="AddedProductToWishlist" component={AddedProductToWishlist} />
+      <Stack.Screen name="AddToCartScreen" component={AddToCartScreen} />
+      <Stack.Screen name="ReviewProductScreen" component={ReviewProductScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
 
   );
