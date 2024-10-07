@@ -13,7 +13,7 @@ import * as Progress from 'react-native-progress';
 
 function ReviewProductScreen({ navigation }) {
   return (
-    <ScrollView style={{ padding: 20, backgroundColor: '#fff' }}>
+    <ScrollView style={{ width: '100%', padding: 20, backgroundColor: '#fff' }}>
       <View style={{ flexDirection: 'row', gap: 20 }}>
         <View>
           <View style={{ flexDirection: 'row' }}>

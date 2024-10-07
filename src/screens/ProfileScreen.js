@@ -73,25 +73,25 @@ const ProfileScreen = ({ navigation }) => {
                     <Text style={styles.sectionTitle}>My Order</Text>
                     <View style={styles.orderOptionContainer}>
                         <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
-                            <Icon name="credit-card" size={30} style={styles.icon} />
+                            <Image source={require('../assets/pay.png')} style={styles.icon} />
                             <Text style={styles.text}>Pay</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
-                            <Icon name="truck" size={30} style={styles.icon} />
+                            <Image source={require('../assets/ship.png')} style={styles.icon} />
                             <Text style={styles.text}>Ship</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
-                            <IconI name="cube-outline" size={30} style={styles.icon} />
+                            <Image source={require('../assets/box_pro.png')} style={styles.icon} />
                             <Text style={styles.text}>Đang giao</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
-                            <Icon name="comment" size={30} style={styles.icon} />
+                            <Image source={require('../assets/review.png')} style={styles.icon} />
                             <Text style={styles.text}>Đánh Giá</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
-                            <Icon name="undo" size={30} style={styles.icon} />
+                            <Image source={require('../assets/undo.png')} style={styles.icon} />
                             <Text style={styles.text}>Trả Hàng</Text>
                         </TouchableOpacity>
                     </View>
@@ -101,9 +101,9 @@ const ProfileScreen = ({ navigation }) => {
             </View>
 
             {/* Sản phẩm bạn có thể thích */}
-            
+
             <View style={styles.suggestionsSection}>
-            <Text style={styles.sectionTitle}>Có thể bạn thích:</Text>
+                <Text style={styles.sectionTitle}>Có thể bạn thích:</Text>
 
                 <View style={styles.productGrid}>
                     {featuredProducts.map((product, index) => (
@@ -128,10 +128,10 @@ const styles = StyleSheet.create({
     productGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
         marginTop: 5,
-      },
-      
+    },
+
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
@@ -230,6 +230,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     icon: {
+        width: 30,
+        height: 30,
         marginBottom: 10,
     },
     text: {
