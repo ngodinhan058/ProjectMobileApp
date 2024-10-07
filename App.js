@@ -14,6 +14,7 @@ import PasswordScreen from './src/screens/PasswordScreen';
 import UpdatePassScreen from './src/screens/UpdatePassScreen';
 import ResetPassScreen from './src/screens/ResetPassScreen';
 import WishListScreen from './src/screens/WishListScreen';
+import StartSearchScreen from './src/screens/StartSearchScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
@@ -89,8 +90,6 @@ function HaveLoginStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
-      <Stack.Screen name="SearchScreen" component={SearchScreen} />
-
     </Stack.Navigator>
 
   );
@@ -100,6 +99,7 @@ function HomeStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
+      <Stack.Screen name="StartSearchScreen" component={StartSearchScreen} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
       <Stack.Screen name="WishListScreen" component={WishListScreen} />
       <Stack.Screen name="NewsScreen" component={NewsScreen} />

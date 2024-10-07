@@ -107,8 +107,8 @@ const HomeScreen = () => {
           <View style={styles.line}></View>
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
-            <TextInput style={styles.searchInput} placeholder="Search Product Name" value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} />
-            <TouchableOpacity onPress={handleSearch}>
+            <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
+            <Text style={styles.searchInput}>Search Product Name</Text>
               <Image
                 source={require('../assets/iconSeach.png')}
                 style={styles.icon}
@@ -307,8 +307,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
     backgroundColor: '#FAFAFA',
+    color: '#999999',
     borderRadius: 10,
-    padding: 10,
+    lineHeight: 50,
+    paddingLeft: 10,
   },
   filter: {
     position: 'absolute',
@@ -333,7 +335,7 @@ const styles = StyleSheet.create({
     height: 20,
     position: 'absolute',
     left: '90%',
-    top: -35,
+    top: 15,
   },
   whiteSection: {
     backgroundColor: '#fff',
