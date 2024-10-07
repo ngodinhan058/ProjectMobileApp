@@ -13,16 +13,15 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import * as ImagePicker from 'expo-image-picker'; // Thêm import này
+import UploadImage from '../../../components/Up_Image_Multi';
+
 
 const AddProductScreen = ({ route, navigation }) => {
 
     const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
 
-    const { query } = route.params || {}; // Kiểm tra xem `query` có tồn tại hay không
-    const [searchQuery, setSearchQuery] = useState(''); // Lưu trữ trạng thái cho thanh tìm kiếm
-
-    // Lọc các danh mục theo thanh tìm kiếm
+    const { query } = route.params || {};
+    const [searchQuery, setSearchQuery] = useState('');
     const filteredCategories = categories.filter(category =>
         category.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -33,69 +32,18 @@ const AddProductScreen = ({ route, navigation }) => {
 
     const [productName, setProductName] = useState('');
     const [productPrice, setProductPrice] = useState('');
-    const [productQuantity, setProductQuantity] = useState('');
+    const [productQuantity, setProductQuantity] = useState('0');
     const [productSale, setProductSale] = useState('');
     const [productDetails, setProductDetails] = useState('');
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
-    const [selectedImage, setSelectedImage] = useState(null); // Trạng thái lưu trữ hình ảnh
-    const [imageModalVisible, setImageModalVisible] = useState(false);
+
 
     const handleSelect = (value) => {
         setSelectedValue(value);
         setModalVisible(false);
     };
-
-    const openImagePicker = async (option) => {
-        if (option === 'library') {
-            // Kiểm tra trạng thái quyền truy cập thư viện ảnh
-            const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                // Nếu chưa cấp quyền, yêu cầu quyền truy cập
-                const notificationResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-                if (!notificationResult.granted) {
-                    alert('Quyền truy cập thư viện ảnh bị từ chối! Vui lòng kích hoạt quyền trong cài đặt.');
-                    return;
-                }
-            }
-    
-            let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 1,
-            });
-    
-            if (!result.canceled) {
-                setSelectedImage(result.assets[0].uri); // Lưu đường dẫn hình ảnh đã chọn
-            }
-        } else if (option === 'camera') {
-            // Kiểm tra trạng thái quyền truy cập máy ảnh
-            const { status } = await ImagePicker.getCameraPermissionsAsync();
-            if (status !== 'granted') {
-                // Nếu chưa cấp quyền, yêu cầu quyền truy cập
-                const notificationResult = await ImagePicker.requestCameraPermissionsAsync();
-                if (!notificationResult.granted) {
-                    alert('Quyền truy cập máy ảnh bị từ chối! Vui lòng kích hoạt quyền trong cài đặt.');
-                    return;
-                }
-            }
-    
-            let result = await ImagePicker.launchCameraAsync({
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 1,
-            });
-    
-            if (!result.canceled) {
-                setSelectedImage(result.assets[0].uri); // Lưu đường dẫn hình ảnh chụp được
-            }
-        }
-    
-        setImageModalVisible(false); // Đóng modal sau khi chọn ảnh
-    };
-    
 
 
     return (
@@ -108,51 +56,17 @@ const AddProductScreen = ({ route, navigation }) => {
                     </Pressable>
                     <Text style={styles.textHeader}>Thêm Thông Tin Sản Phẩm</Text>
                 </View>
-                {/* Icon Image */}
-                <View style={styles.imageContainer}>
-
-
-                    <TouchableOpacity onPress={() => setImageModalVisible(true)}>
-                        {selectedImage ? (
-                            <Image
-                                source={{ uri: selectedImage }} // Hiển thị hình ảnh đã chọn
-                                style={styles.imageIcon}
-                            />
-                        ) : (
-                            <Image
-                                source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
-                                style={styles.imageIcon}
-                            />
-                        )}
-                    </TouchableOpacity>
-                </View>
-                {/* Modal chọn thư viện hoặc camera */}
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={imageModalVisible}
-                    onRequestClose={() => setImageModalVisible(false)}>
-                    <TouchableWithoutFeedback onPress={() => setImageModalVisible(false)}>
-                        <View style={styles.modalOverlay}>
-                            <View style={styles.modalView}>
-                                <TouchableOpacity onPress={() => openImagePicker('camera')} style={styles.modalItem}>
-                                    <Text style={styles.modalText}>Chụp ảnh</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => openImagePicker('library')} style={styles.modalItem}>
-                                    <Text style={styles.modalText}>Chọn từ thư viện</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setImageModalVisible(false)} style={styles.button}>
-                                    <Text style={styles.buttonText}>Đóng</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </TouchableWithoutFeedback>
-                </Modal>
                 <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('AddPostScreen')}>
                     <Text style={styles.buttonText}>Thêm Post</Text>
                 </TouchableOpacity>
 
-                {/* Product Form */}
+                {/* Icon Image */}
+                <UploadImage />
+
+
+
+
+                {/* Form sản phẩm */}
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
                     <TextInput
@@ -169,14 +83,26 @@ const AddProductScreen = ({ route, navigation }) => {
                         onChangeText={setProductPrice}
                         keyboardType="numeric"
                     />
-                    <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Thêm Số Lượng Sản Phẩm"
-                        value={productQuantity}
-                        onChangeText={setProductQuantity}
-                        keyboardType="numeric"
-                    />
+                    <View style={styles.quantityContainer}>
+                        <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
+                        <View style={styles.quantityWrapper}>
+                            <TouchableOpacity style={styles.quantityPlus} onPress={() => setProductQuantity((prev) => parseInt(prev) + 1)}>
+                                <Text style={styles.buttonIcon}>▲</Text>
+                            </TouchableOpacity>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Thêm Số Lượng Sản Phẩm"
+                                value={productQuantity.toString()}
+                                onChangeText={setProductQuantity}
+                                keyboardType="numeric"
+                            />
+
+                            <TouchableOpacity style={styles.quantityMinus} onPress={() => setProductQuantity((prev) => Math.max(0, parseInt(prev) - 1))}>
+                                <Text style={styles.buttonIcon}>▼</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
                     <Text style={styles.label}>Giảm Giá Sản Phẩm:</Text>
                     <TextInput
                         style={styles.input}
@@ -186,7 +112,7 @@ const AddProductScreen = ({ route, navigation }) => {
                         keyboardType="numeric"
                     />
 
-                    {/* Product Category */}
+                    {/* Danh mục sản phẩm */}
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
                     <TouchableOpacity
                         style={styles.dropdown}
@@ -264,30 +190,50 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     imageContainer: {
+        position: 'relative',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 5,
     },
-    imageIcon: {
-        width: 155,
-        height: 140,
-        marginVertical: 20,
+    selectedImagesContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
-    imageSelectIcon: {
-        width: 200,
-        height: 140,
 
-    },
     formContainer: {
         flex: 1,
     },
+    quantityContainer: {
+        marginBottom: 20,
+    },
+
+    quantityPlus: {
+        position: 'absolute', 
+        right: 10,
+        top: 0,
+        zIndex: 99,
+    },
+    quantityMinus: {
+        position: 'absolute',
+        right: 10,
+        bottom: 15,
+        zIndex: 99,
+    },
     input: {
+        position: 'relative',
         height: 50,
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
+    },
+    buttonIcon: {
+        color: '#3669c9',
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     label: {
         fontSize: 16,
@@ -352,10 +298,11 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
+    
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Làm nền modal tối
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     searchBar: {
         position: 'relative',
