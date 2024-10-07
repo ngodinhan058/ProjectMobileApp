@@ -15,7 +15,8 @@ const featuredProducts = [
     name: 'TMA-2 HD Wireless0',
     price: '1.500.000',
     rating: '4.0',
-    review: '860'
+    review: '860',
+    like: true,
   },
   {
     id: '2',
@@ -23,7 +24,8 @@ const featuredProducts = [
     name: 'TMA-2 HD Wireless2',
     price: '1.500.000',
     rating: '2.6',
-    review: '6'
+    review: '6',
+    like: false,
   },
   {
     id: '3',
@@ -31,7 +33,8 @@ const featuredProducts = [
     name: 'TMA-2 HD Wireless',
     price: '1.500.000',
     rating: '0.6',
-    review: '106'
+    review: '106',
+    like: true,
   },
 ];
 
@@ -104,18 +107,14 @@ const HomeScreen = () => {
           <View style={styles.line}></View>
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
-            <TextInput style={styles.searchInput} placeholder="Search Product Name" value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} />
-            <TouchableOpacity onPress={handleSearch}>
+            <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
+            <Text style={styles.searchInput}>Search Product Name</Text>
               <Image
                 source={require('../assets/iconSeach.png')}
                 style={styles.icon}
               />
             </TouchableOpacity>
           </View>
-          {/* Lọc 
-          <TouchableOpacity style={styles.filter} onPress={toggleFilterModal}>
-            <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
-          </TouchableOpacity > */}
           
           {/* Banner chính */}
           {loading ? (
@@ -308,8 +307,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
     backgroundColor: '#FAFAFA',
+    color: '#999999',
     borderRadius: 10,
-    padding: 10,
+    lineHeight: 50,
+    paddingLeft: 10,
   },
   filter: {
     position: 'absolute',
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
     height: 20,
     position: 'absolute',
     left: '90%',
-    top: -35,
+    top: 15,
   },
   whiteSection: {
     backgroundColor: '#fff',

@@ -15,6 +15,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import UploadImage from '../../../../components/Up_Image';
 
 const EditIdCardScreen = ({ route, navigation }) => {
     const [CCCDNumber, setCCCDNumber] = useState('');
@@ -68,20 +69,10 @@ const EditIdCardScreen = ({ route, navigation }) => {
                     )}
                     <Text style={styles.label}>Hình Mặt Trước CCCD:</Text>
                     {/* Icon Image */}
-                    <View style={styles.imageContainer}>
-                        <Image
-                            source={require('../../../../assets/upload_image_icon.png')}
-                            style={styles.imageIcon}
-                        />
-                    </View>
+                    <UploadImage />
                     <Text style={styles.label}>Hình Mặt Sau CCCD:</Text>
                     {/* Icon Image */}
-                    <View style={styles.imageContainer}>
-                        <Image
-                            source={require('../../../../assets/upload_image_icon.png')}
-                            style={styles.imageIcon}
-                        />
-                    </View>
+                    <UploadImage />
 
 
 
