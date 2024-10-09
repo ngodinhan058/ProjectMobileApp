@@ -20,6 +20,8 @@
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/stack": "^6.4.1",
     "expo": "~51.0.28",
+    "expo-image-picker": "~15.0.7",
+    "expo-linking": "~6.3.1",
     "expo-status-bar": "~1.12.1",
     "ProjectMobile": "file:",
     "react": "18.2.0",
@@ -38,9 +40,7 @@
     "react-native-skeleton-placeholder": "^5.2.4",
     "react-native-tab-view": "^3.5.2",
     "react-native-vector-icons": "^10.2.0",
-    "rn-range-slider": "^2.2.2",
-    "expo-image-picker": "~15.0.7",
-    "expo-linking": "~6.3.1"
+    "rn-range-slider": "^2.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
