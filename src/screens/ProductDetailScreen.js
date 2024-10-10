@@ -8,7 +8,6 @@ import {
   Button,
   TouchableOpacity,
   FlatList,
-  Pressable,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -46,13 +45,13 @@ function ProductDetailScreen({ route, navigation }) {
     <ScrollView>
       <View style={styles.productDetailContainer}>
         <View style={styles.iconHeader}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Icon name="angle-left" size={35} color="#000" />
-          </Pressable>
+          </TouchableOpacity>
           <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
-          <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.shareButton} onPress={() => navigation.goBack()}>
             <Icon name="share" size={25} color="#000" />
-          </Pressable>
+          </TouchableOpacity>
         </View>
 
         {/* Product Image */}
