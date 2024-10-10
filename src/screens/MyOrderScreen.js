@@ -209,16 +209,35 @@ function MyOrderScreen({ route, navigation }) {
           </ScrollView>
         </View>
 
-        <View>
+        <View
+          style={{
+            padding: 10,
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            marginHorizontal: 2,
+            marginBottom: 10,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 4,
+          }}
+        >
           <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              margin: 10,
+            }}
           >
             <Text>00/00/0000</Text>
             <Text style={{ color: '#3669C9' }}>Chuẩn bị hàng</Text>
           </View>
 
           <View>
-            <View style={{ flexDirection: 'row' }}>
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            >
               <Image
                 source={require('../assets/headphone.png')}
                 style={{ width: 80, height: 80 }}
@@ -244,6 +263,437 @@ function MyOrderScreen({ route, navigation }) {
                 </View>
                 <Text>1.500.000d</Text>
               </View>
+            </View>
+          </View>
+
+          <View>
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            >
+              <Image
+                source={require('../assets/headphone.png')}
+                style={{ width: 80, height: 80 }}
+              />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 60,
+                }}
+              >
+                <View>
+                  <Text>Tai Nghe Sieu Ngau</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text>Mau: den</Text>
+                    <Text>x1</Text>
+                  </View>
+                </View>
+                <Text>1.500.000d</Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              gap: 10,
+              alignItems: 'center',
+            }}
+          >
+            <Text>Tong</Text>
+            <Text
+              style={{
+                color: '#3669C9',
+                fontWeight: 700,
+                fontSize: 24,
+              }}
+            >
+              3.000.000d
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <View style={{ margin: 10 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  padding: 16,
+                  borderRadius: 1000,
+                  maxWidth: 300,
+                  width: 100,
+                  backgroundColor: '#fff',
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#ccc',
+                  }}
+                >
+                  Huy don
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ margin: 10 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#3669C9',
+                  padding: 16,
+                  borderRadius: 50,
+                }}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}
+                >
+                  Mua lai
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <View
+          style={{
+            padding: 10,
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            marginHorizontal: 2,
+            marginBottom: 10,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 4,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              margin: 10,
+            }}
+          >
+            <Text>00/00/0000</Text>
+            <Text style={{ color: '#3669C9' }}>Chuẩn bị hàng</Text>
+          </View>
+
+          <View>
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            >
+              <Image
+                source={require('../assets/headphone.png')}
+                style={{ width: 80, height: 80 }}
+              />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 60,
+                }}
+              >
+                <View>
+                  <Text>Tai Nghe Sieu Ngau</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text>Mau: den</Text>
+                    <Text>x1</Text>
+                  </View>
+                </View>
+                <Text>1.500.000d</Text>
+              </View>
+            </View>
+          </View>
+
+          <View>
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            >
+              <Image
+                source={require('../assets/headphone.png')}
+                style={{ width: 80, height: 80 }}
+              />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 60,
+                }}
+              >
+                <View>
+                  <Text>Tai Nghe Sieu Ngau</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text>Mau: den</Text>
+                    <Text>x1</Text>
+                  </View>
+                </View>
+                <Text>1.500.000d</Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              gap: 10,
+              alignItems: 'center',
+            }}
+          >
+            <Text>Tong</Text>
+            <Text
+              style={{
+                color: '#3669C9',
+                fontWeight: 700,
+                fontSize: 24,
+              }}
+            >
+              3.000.000d
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <View style={{ margin: 10 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  padding: 16,
+                  borderRadius: 1000,
+                  maxWidth: 300,
+                  width: 100,
+                  backgroundColor: '#fff',
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#ccc',
+                  }}
+                >
+                  Huy don
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ margin: 10 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#3669C9',
+                  padding: 16,
+                  borderRadius: 50,
+                }}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}
+                >
+                  Xac Nhan Thanh Toan
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <View
+          style={{
+            padding: 10,
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            marginHorizontal: 2,
+            marginBottom: 10,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 4,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              margin: 10,
+            }}
+          >
+            <Text>00/00/0000</Text>
+            <Text style={{ color: '#3669C9' }}>Chuẩn bị hàng</Text>
+          </View>
+
+          <View>
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            >
+              <Image
+                source={require('../assets/headphone.png')}
+                style={{ width: 80, height: 80 }}
+              />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 60,
+                }}
+              >
+                <View>
+                  <Text>Tai Nghe Sieu Ngau</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text>Mau: den</Text>
+                    <Text>x1</Text>
+                  </View>
+                </View>
+                <Text>1.500.000d</Text>
+              </View>
+            </View>
+          </View>
+
+          <View>
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            >
+              <Image
+                source={require('../assets/headphone.png')}
+                style={{ width: 80, height: 80 }}
+              />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 60,
+                }}
+              >
+                <View>
+                  <Text>Tai Nghe Sieu Ngau</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text>Mau: den</Text>
+                    <Text>x1</Text>
+                  </View>
+                </View>
+                <Text>1.500.000d</Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              gap: 10,
+              alignItems: 'center',
+            }}
+          >
+            <Text>Tong</Text>
+            <Text
+              style={{
+                color: '#3669C9',
+                fontWeight: 700,
+                fontSize: 24,
+              }}
+            >
+              3.000.000d
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <View style={{ margin: 10 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  padding: 16,
+                  borderRadius: 1000,
+                  maxWidth: 300,
+                  width: 100,
+                  backgroundColor: '#fff',
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#ccc',
+                  }}
+                >
+                  Huy don
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ margin: 10 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#3669C9',
+                  padding: 16,
+                  borderRadius: 50,
+                }}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}
+                >
+                  Mua lai
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
