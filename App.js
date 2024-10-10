@@ -6,6 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './src/screens/HomeScreen';
+import ProductByCateScreen from './src/screens/ProductByCateScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import VerificationScreen from './src/screens/VerificationScreen';
@@ -86,16 +87,6 @@ function HaveLoginStack() {
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
 
-      <Stack.Screen name="SearchScreen" component={SearchScreen} />
-      <Stack.Screen name="StartSearchScreen" component={StartSearchScreen} />
-      <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
-      <Stack.Screen name="WishListScreen" component={WishListScreen} />
-      <Stack.Screen name="NewsScreen" component={NewsScreen} />
-      <Stack.Screen name="NewsDetailScreen" component={NewsDetailScreen} />
-      <Stack.Screen name="AddedProductToWishlist" component={AddedProductToWishlist} />
-      <Stack.Screen name="AddToCartScreen" component={AddToCartScreen} />
-      <Stack.Screen name="ReviewProductScreen" component={ReviewProductScreen} />
-      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
 
   );
@@ -104,6 +95,7 @@ function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="ProductByCateScreen" component={ProductByCateScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
       <Stack.Screen name="StartSearchScreen" component={StartSearchScreen} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
@@ -278,8 +270,8 @@ function InventoryDrawerNavigator() {
 export default function App() {
   return (
     <NavigationContainer>
-      {/* <HaveLoginHome /> */}
-      <AdminDrawerNavigator />
+      <HaveLoginHome />
+      {/* <AdminDrawerNavigator /> */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <Tab.Navigator
         screenOptions={({ route }) => ({
