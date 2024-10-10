@@ -60,7 +60,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     {/* Category Name */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Tên Danh Mục"
+                        placeholder="Sửa Tên Danh Mục"
                         value={categoryName}
                         onChangeText={setcategoryName}
                     />
@@ -68,14 +68,14 @@ const EditProductScreen = ({ route, navigation }) => {
                     <Text style={styles.label}>Slug Danh Mục:</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Slug Danh Mục"
+                        placeholder="Sửa Slug Danh Mục"
                         value={categorySlug}
                         onChangeText={setcategorySlug}
                     />
                      {/* Category Releaase */}
                      <Text style={styles.label}>Ngày Tạo Danh Mục:</Text>
                     <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-                        <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Thêm Ngày Tạo Danh Mục'}</Text>
+                        <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Sửa Ngày Tạo Danh Mục'}</Text>
                     </TouchableOpacity>
                     {showDatePicker && (
                         <DateTimePicker
@@ -88,7 +88,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     {/* Category Parent */}
                     <Text style={styles.label}>Parent Danh Mục:</Text>
                     <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
-                        <Text>Thêm Parent Danh Mục</Text>
+                        <Text>Sửa Parent Danh Mục</Text>
                     </TouchableOpacity>
                     {/* Filter Modal Component */}
                     <SelectorInCategory
@@ -98,7 +98,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     />
                     {/* Add/Edit Button */}
                     <TouchableOpacity style={styles.button} onPress={() => alert('Category Added')}>
-                        <Text style={styles.buttonText}>Thêm</Text>
+                        <Text style={styles.buttonText}>Sửa</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>

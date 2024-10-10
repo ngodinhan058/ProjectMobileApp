@@ -244,7 +244,7 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
     // Recursive function to render categories and children
     const renderCategories = (categories, level = 0) => {
         return categories.map((category) => (
-            <View key={category.name} >
+            <View key={category.name} style={{ paddingLeft: level * 5 }}>
                 <View style={{ flexDirection: 'row' }} >
                     {/* Expand/Collapse button if there are children */}
                     {category.childrens.length > 0 && (
@@ -320,15 +320,16 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
 
                     <View style={styles.line}></View>
 
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-                            <Text>Reset</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.applyButton} onPress={() => alert('Applied')}>
-                            <Text style={styles.applyText}>Apply</Text>
-                        </TouchableOpacity>
-                    </View>
+
                 </ScrollView>
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+                        <Text>Reset</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.applyButton} onPress={() => alert('Applied')}>
+                        <Text style={styles.applyText}>Apply</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </Modal>
     );
@@ -407,6 +408,9 @@ const styles = StyleSheet.create({
         marginRight: 8,
         marginVertical: 5,
     },
+    centeredCheckbox: {
+        alignItems: 'center', // Căn giữa cho danh mục cha
+    },
     checkboxText: {
         position: 'absolute',
         fontSize: 16,
@@ -416,7 +420,8 @@ const styles = StyleSheet.create({
         height: 50,
         borderWidth: 4,
         borderRadius: 10,
-        borderColor: '#3669c9'
+        borderColor: '#3669c9',
+        // justifyContent: 'space-between'
     },
     tickCheckedBox: {
         position: 'absolute',
@@ -441,5 +446,6 @@ const styles = StyleSheet.create({
         marginRight: 5
     },
 });
+
 
 export default SelectorInCategory;
