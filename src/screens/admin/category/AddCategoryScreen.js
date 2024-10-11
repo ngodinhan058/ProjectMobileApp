@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import UploadImage from '../../../components/Up_Image';
 
 const AddCategoryScreen = ({ route, navigation }) => {
     const [categoryName, setcategoryName] = useState('');
@@ -30,12 +31,7 @@ const AddCategoryScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Icon Image */}
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
-                        style={styles.imageIcon}
-                    />
-                </View>
+                <UploadImage />
                 
                 {/* Category Form */}
                 <View style={styles.formContainer}>
