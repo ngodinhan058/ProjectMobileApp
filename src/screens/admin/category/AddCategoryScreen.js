@@ -14,11 +14,33 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import SelectorInCategory from '../../../components/SelectorInCategory';
+
+
 
 const AddCategoryScreen = ({ route, navigation }) => {
     const [categoryName, setcategoryName] = useState('');
     const [categorySlug, setcategorySlug] = useState('');
 
+    const [dateOfBirth, setDateOfBirth] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const onDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || dateOfBirth;
+        setShowDatePicker(false);
+        setDateOfBirth(currentDate);
+    };
+
+    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+
+    const toggleFilterModal = () => {
+        setIsFilterModalVisible(!isFilterModalVisible);
+    };
+
+   
+    const handleResetFilters = () => {
+        setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
+    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -32,7 +54,7 @@ const AddCategoryScreen = ({ route, navigation }) => {
 
                 {/* Icon Image */}
                 <UploadImage />
-                
+
                 {/* Category Form */}
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Danh Mục:</Text>
@@ -50,6 +72,30 @@ const AddCategoryScreen = ({ route, navigation }) => {
                         placeholder="Thêm Slug Danh Mục"
                         value={categorySlug}
                         onChangeText={setcategorySlug}
+                    />
+                    {/* Category Releaase */}
+                    <Text style={styles.label}>Ngày Tạo Danh Mục:</Text>
+                    <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                        <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Thêm Ngày Tạo Danh Mục'}</Text>
+                    </TouchableOpacity>
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={dateOfBirth}
+                            mode="date"
+                            display="default"
+                            onChange={onDateChange}
+                        />
+                    )}
+                    {/* Category Parent */}
+                    <Text style={styles.label}>Parent Danh Mục:</Text>
+                    <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
+                        <Text>Thêm Parent Danh Mục</Text>
+                    </TouchableOpacity>
+                    {/* Filter Modal Component */}
+                    <SelectorInCategory
+                        isVisible={isFilterModalVisible}
+                        onClose={toggleFilterModal}
+                        onReset={handleResetFilters}
                     />
                     {/* Add/Edit Button */}
                     <TouchableOpacity style={styles.button} onPress={() => alert('Category Added')}>
@@ -106,6 +152,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
+        justifyContent: 'center'
     },
     label: {
         fontSize: 16,
