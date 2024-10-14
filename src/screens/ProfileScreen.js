@@ -70,25 +70,24 @@ const ProfileScreen = ({ navigation }) => {
                 </View>
                 {/* Đơn hàng của tôi */}
                 <View style={styles.orderSection}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={styles.sectionTitle}>Đơn Hàng Của Tôi</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('MyOrderScreen')}>
-                            <Text style={{ fontSize: 12, marginRight: 10 }}>Xem Tất Cả</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <Text style={styles.sectionTitle}>Đơn Hàng Của Tôi</Text>
+
                     <View style={styles.line} ></View>
                     <View style={styles.orderOptionContainer}>
-                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('MyOrderConfirmScreen')}>
+                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('MyOrderScreen', { initialRoute: "" })}>
                             <Image source={require('../assets/pay.png')} style={styles.icon} />
                             <Text style={styles.text}>Pay</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('GettingOrderedScreen')}>
+                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('MyOrderScreen', { initialRoute: "preparing" })}>
                             <Image source={require('../assets/ship.png')} style={styles.icon} />
                             <Text style={styles.text}>Ship</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('WatingShipmentScreen')}>
+                        <TouchableOpacity
+                            style={styles.orderOption}
+                            onPress={() => navigation.navigate('MyOrderScreen', { initialRoute: "shipping" })}
+                        >
                             <Image source={require('../assets/box_pro.png')} style={styles.icon} />
                             <Text style={styles.text}>Đang giao</Text>
                         </TouchableOpacity>

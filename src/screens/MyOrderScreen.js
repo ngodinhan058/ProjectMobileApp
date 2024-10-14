@@ -3,156 +3,305 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, S
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useWindowDimensions } from 'react-native';
+import OrderItem from '../components/OrderItem';
 
-const MyOrderScreen = ({ navigation }) => {
+const MyOrderScreen = ({ route, navigation }) => {
   const layout = useWindowDimensions();  // Lấy thông tin kích thước màn hình
 
-  // Dữ liệu sản phẩm (users) với các vai trò khác nhau
-  const products = [
+  
+  
+  const orders = [
     {
-      id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../assets/diamond.png'), number_id: '079203000000',
-      id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
-      id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
+      id: 'order1',
+      date: '01/10/2024',
+      status: 'Chờ Xác Nhận',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
     {
-      id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../assets/silver.png'), number_id: '079203000000',
-      id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
-      id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
+      id: 'order7',
+      date: '01/10/2024',
+      status: 'Chờ Xác Nhận',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
     {
-      id: '3', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../assets/bronze.png'), number_id: '079203000000',
-      id_image_front: require('../assets/silver.png'),
-      id_image_back: require('../assets/silver.png'), role: 'customer',
+      id: 'order2',
+      date: '01/10/2024',
+      status: 'Chuẩn Bị Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
     {
-      id: '4', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Sếp', first_name: 'Phạm Thị', money: '200', rank: require('../assets/bronze.png'), number_id: '079203000000',
-      id_image_front: require('../assets/silver.png'),
-      id_image_back: require('../assets/silver.png'), role: 'staff',
+      id: 'order3',
+      date: '01/10/2024',
+      status: 'Đang Giao Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
     {
-      id: '5', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Shipper', first_name: 'Phạm Thị', money: '200', rank: require('../assets/bronze.png'), number_id: '079203000000',
-      id_image_front: require('../assets/silver.png'),
-      id_image_back: require('../assets/silver.png'), role: 'shipper',
+      id: 'order4',
+      date: '01/10/2024',
+      status: 'Đã Giao Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
     {
-      id: '6', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Shipper 1', first_name: 'Phạm Thị', money: '200', rank: require('../assets/bronze.png'), number_id: '079203000000',
-      id_image_front: require('../assets/silver.png'),
-      id_image_back: require('../assets/silver.png'), role: 'shipper',
+      id: 'order5',
+      date: '01/10/2024',
+      status: 'Đã Huỷ',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
     {
-      id: '7', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../assets/diamond.png'), number_id: '079203000000',
-      id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
-      id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
-    },
-    {
-      id: '8', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../assets/silver.png'), number_id: '079203000000',
-      id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
-      id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
-    },
-    {
-      id: '9', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-      birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../assets/bronze.png'), number_id: '079203000000',
-      id_image_front: require('../assets/silver.png'),
-      id_image_back: require('../assets/silver.png'), role: 'customer',
+      id: 'order6',
+      date: '01/10/2024',
+      status: 'Trả Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
 
+    // Thêm các đơn hàng với status khác
   ];
-
-
   const flatListRef = useRef(null);
-
-  // Lọc danh sách người dùng theo role
-  const filterByRole = (role) => {
-    return products.filter((item) => item.role === role);
+  // Lọc danh sách người dùng theo status
+  const filterByStatus = (status) => {
+    return orders.filter((order) => order.status === status);
   };
+  const getItemLayout = (data, index) => ({
+    length: 20, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
+    offset: 200 * index, // Offset dựa trên index của item
+    index, 
+  });
+  
+  const handleScrollToIndexFailed = (info) => {
+    const wait = new Promise(resolve => setTimeout(resolve, 500));
+    wait.then(() => {
+      flatListRef.current?.scrollToIndex({ index: info.highestMeasuredFrameIndex, animated: true });
+    });
+  };
+  
+  
 
-  // Render từng sản phẩm (người dùng)
-  const renderProduct = ({ item }) => (
-
-    <TouchableOpacity
-      style={styles.productItem}
-      onPress={() => navigation.navigate('DetailUserScreen', {
-        image: item.image,
-        email: item.email,
-        first_name: item.first_name,
-        last_name: item.last_name,
-        id_image_front: item.id_image_front,
-        id_image_back: item.id_image_back,
-        pass: item.pass,
-        birthday: item.birthday,
-        address: item.address,
-        phone: item.phone,
-        money: item.money,
-        role: item.role,
-        rank: item.rank,
-        number_id: item.number_id,
-      })}
-    >
-      <View style={{ marginRight: 20 }}>
-        <Image source={item.image} style={styles.productIcon} />
-      </View>
-      <View style={styles.productDetails}>
-        <Text style={styles.productCode}>{item.first_name}&#160;{item.last_name}</Text>
-        <Image source={item.rank} style={styles.rankIcon} />
-        <Text style={styles.productStatus}>Email: {item.email}</Text>
-        <View style={styles.line}></View>
-        <Text style={styles.productCode}>Ví Tiền: {item.money} ₫</Text>
-      </View>
-      <Pressable>
-        <Icon name="angle-right" size={25} color="#000" />
-      </Pressable>
-    </TouchableOpacity>
-  );
-
-  // Các Scene tương ứng với mỗi tab (mỗi role)
-  const CustomerRoute = () => (
+  const PendingConfirmationRoute = () => (
     <FlatList
-      data={filterByRole('customer')}
-      renderItem={renderProduct}
+      data={filterByStatus('Chờ Xác Nhận')}
+      renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.id}
-      style={styles.productList}
+      style={{ marginTop: 40 }}
     />
   );
 
-  const StaffRoute = () => (
+  const PreparingRoute = () => (
     <FlatList
-      data={filterByRole('staff')}
-      renderItem={renderProduct}
+      data={filterByStatus('Chuẩn Bị Hàng')}
+      renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.id}
-      style={styles.productList}
+      style={{ marginTop: 40 }}
+    />
+  ); 
+
+  const ShippingRoute = () => (
+    <FlatList
+      data={filterByStatus('Đang Giao Hàng')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+       style={{ marginTop: 40 }}
     />
   );
-
-  const ShipperRoute = () => (
+  const SuccessRoute = () => (
     <FlatList
-      data={filterByRole('shipper')}
-      renderItem={renderProduct}
+      data={filterByStatus('Đã Giao Hàng')}
+      renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.id}
-      style={styles.productList}
+       style={{ marginTop: 40 }}
+    />
+  );
+  const cancelRoute = () => (
+    <FlatList
+      data={filterByStatus('Đã Huỷ')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+       style={{ marginTop: 40 }}
+    />
+  );
+  const returnRoute = () => (
+    <FlatList
+      data={filterByStatus('Trả Hàng')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+       style={{ marginTop: 40 }}
     />
   );
 
   // State để quản lý tab hiện tại
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: 'customer', title: 'Customer' },
-    { key: 'staff', title: 'Staff' },
-    { key: 'shipper', title: 'Shipper' },
-    { key: 'staff1', title: 'Staff' },
-    { key: 'shipper2', title: 'Shipper' },
-    { key: 'staff3', title: 'Staff' },
-    { key: 'shipper4', title: 'Shipper' },
+    { key: 'pending', title: 'Chờ Xác Nhận' },
+    { key: 'preparing', title: 'Chờ Lấy Hàng' },
+    { key: 'shipping', title: 'Chờ Giao Hàng' },
+    { key: 'success', title: 'Đã Giao Hàng' },
+    { key: 'cancel', title: 'Đã Huỷ' },
+    { key: 'return', title: 'Trả Hàng' },
 
   ]);
-
+  useEffect(() => {
+    const {initialRoute} = route.params;
+    if (initialRoute !== null) {
+      const tabIndex = routes.findIndex(r => r.key === initialRoute);
+      console.log("test",initialRoute);
+      if (tabIndex !== -1) {
+        setIndex(tabIndex);
+      }
+    }
+  }, [route.params]);
   useEffect(() => {
     // Cuộn đến tab được chọn
     if (flatListRef.current) {
@@ -163,46 +312,49 @@ const MyOrderScreen = ({ navigation }) => {
       });
     }
   }, [index]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeText}>Hi Admin!</Text>
-          <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-          <Image source={require('../assets/right_from_bracket.png')} style={{ width: 30, height: 30, marginLeft: 115 }} />
-        </TouchableOpacity>
-      </View>
+       <View style={styles.iconHeader}>
+                <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <Icon name="angle-left" size={35} color="#000" />
+                </Pressable>
+                <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
+
+            </View>
 
       {/* Tab View */}
       <TabView
         navigationState={{ index, routes }}
         renderScene={SceneMap({
-          customer: CustomerRoute,
-          staff: StaffRoute,
-          shipper: ShipperRoute,
-          staff1: StaffRoute,
-          shipper2: ShipperRoute,
-          staff3: StaffRoute,
-          shipper4: ShipperRoute,
+          pending: PendingConfirmationRoute,
+          preparing: PreparingRoute,
+          shipping: ShippingRoute,
+          success: SuccessRoute,
+          cancel: cancelRoute,
+          return: returnRoute,
         })}
         onIndexChange={setIndex}
-        initialLayout={{ width: 300 }} // Thay đổi theo layout của bạn
         renderTabBar={(props) => (
           <FlatList
+            style={{ position: 'absolute', zIndex: 99 }}
             ref={flatListRef}
             data={props.navigationState.routes}
             horizontal
             showsHorizontalScrollIndicator={false}
             renderItem={({ item, index: tabIndex }) => (
-              <TouchableOpacity onPress={() => props.jumpTo(item.key)} style={{ paddingHorizontal: 20 }}>
-                <Text style={{ color: tabIndex === props.navigationState.index ? '#3669c9' : '#000' }}>
+              <TouchableOpacity onPress={() => props.jumpTo(item.key)} style={{ paddingHorizontal: 10, }}>
+                <Text style={{
+                  color: tabIndex === props.navigationState.index ? '#fff' : '#000', width: 'auto', height: 30, backgroundColor: tabIndex === props.navigationState.index ? '#3669c9' : '#fafafa',
+                  paddingHorizontal: 20, lineHeight: 28, borderRadius: 30,
+                }}>
                   {item.title}
                 </Text>
               </TouchableOpacity>
             )}
             keyExtractor={(item) => item.key}
+            getItemLayout={getItemLayout} // Cung cấp getItemLayout
+            onScrollToIndexFailed={handleScrollToIndexFailed} // Xử lý khi scroll thất bại
           />
         )}
       />
@@ -217,7 +369,24 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
+    paddingTop: 50,
   },
+  iconHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingBottom: 20,
+},
+textHeader: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    textAlign: 'center',
+    flex: 1,
+},
+backButton: {
+    marginRight: 10,
+},
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -239,7 +408,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 50,
   },
   productItem: {
     flexDirection: 'row',
@@ -249,6 +418,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     marginBottom: 10,
+
   },
   productIcon: {
     width: 55,
@@ -273,21 +443,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
-  addButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#3669c9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addButtonText: {
-    fontSize: 40,
-    color: '#fff',
-  },
+
 });
 
 export default MyOrderScreen;

@@ -9,12 +9,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
-import CancelOrderScreen from './src/screens/CancelOrderScreen';
 import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
-import GettingOrderedScreen from './src/screens/GettingOrderedScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
-import MyOrderConfirmScreen from './src/screens/MyOrderConfirmScreen';
 import MyOrderScreen from './src/screens/MyOrderScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import NewsScreen from './src/screens/NewsScreen';
@@ -26,15 +23,12 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import ResetPassScreen from './src/screens/ResetPassScreen';
 import RejectOrderConfirmationScreen from './src/screens/RejectOrderConfirmationScreen';
 import ReviewProductScreen from './src/screens/ReviewProductScreen';
-import ReturnOrderScreen from './src/screens/ReturnOrderScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import StartSearchScreen from './src/screens/StartSearchScreen';
-import SuccessShipmentScreen from './src/screens/SuccessShipmentScreen';
 import UpdatePassScreen from './src/screens/UpdatePassScreen';
 import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
 import VerificationScreen from './src/screens/VerificationScreen';
-import WatingShipmentScreen from './src/screens/WatingShipmentScreen';
 import WishListScreen from './src/screens/WishListScreen';
 
 {/* Admin */ }
@@ -102,12 +96,7 @@ function HaveLoginStack() {
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
       <Stack.Screen name="MyOrderScreen" component={MyOrderScreen} />
-      <Stack.Screen name="MyOrderConfirmScreen" component={MyOrderConfirmScreen} />
-      <Stack.Screen name="GettingOrderedScreen" component={GettingOrderedScreen} />
-      <Stack.Screen name="WatingShipmentScreen" component={WatingShipmentScreen} />
-      <Stack.Screen name="SuccessShipmentScreen" component={SuccessShipmentScreen} />
-      <Stack.Screen name="CancelOrderScreen" component={CancelOrderScreen} />
-      <Stack.Screen name="ReturnOrderScreen" component={ReturnOrderScreen} />
+
 
     </Stack.Navigator>
 
