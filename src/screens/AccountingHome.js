@@ -47,7 +47,7 @@ const featuredProducts = [
   },
 ];
 
-function DetailConfirmedReturnOrderedScreen({ route, navigation }) {
+function AccountHomeScreen({ route, navigation }) {
   return (
     <View style={{ flex: 1, flexDirection: 'column' }}>
       <StatusBar hidden={true} />
@@ -502,4 +502,4 @@ function DetailConfirmedReturnOrderedScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default DetailConfirmedReturnOrderedScreen;
+export default AccountHomeScreen;
