@@ -70,16 +70,17 @@ function MyOrderConfirmScreen({ route, navigation }) {
               <View style={{ margin: 10 }}>
                 <TouchableOpacity
                   style={{
+                    backgroundColor: '#FFF7F3',
                     padding: 16,
                     borderRadius: 50,
-                    backgroundColor: '#FFF7F3',
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('MyOrderScreen')}
                 >
                   <Text
                     style={{
                       textAlign: 'center',
                       fontWeight: '600',
+                     
                     }}
                   >
                     All
@@ -89,11 +90,11 @@ function MyOrderConfirmScreen({ route, navigation }) {
               <View style={{ margin: 10 }}>
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#3669C9',
+                    backgroundColor: '#3669c9',
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('MyOrderConfirmScreen')}
                 >
                   <Text
                     style={{
@@ -113,7 +114,7 @@ function MyOrderConfirmScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('GettingOrderedScreen')}
                 >
                   <Text
                     style={{
@@ -133,7 +134,7 @@ function MyOrderConfirmScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('WatingShipmentScreen')}
                 >
                   <Text
                     style={{
@@ -153,7 +154,7 @@ function MyOrderConfirmScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('SuccessShipmentScreen')}
                 >
                   <Text
                     style={{
@@ -173,7 +174,7 @@ function MyOrderConfirmScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('CancelOrderScreen')}
                 >
                   <Text
                     style={{
@@ -193,7 +194,7 @@ function MyOrderConfirmScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('ReturnOrderScreen')}
                 >
                   <Text
                     style={{

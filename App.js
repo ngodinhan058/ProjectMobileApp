@@ -26,6 +26,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import ResetPassScreen from './src/screens/ResetPassScreen';
 import RejectOrderConfirmationScreen from './src/screens/RejectOrderConfirmationScreen';
 import ReviewProductScreen from './src/screens/ReviewProductScreen';
+import ReturnOrderScreen from './src/screens/ReturnOrderScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import StartSearchScreen from './src/screens/StartSearchScreen';
@@ -106,6 +107,7 @@ function HaveLoginStack() {
       <Stack.Screen name="WatingShipmentScreen" component={WatingShipmentScreen} />
       <Stack.Screen name="SuccessShipmentScreen" component={SuccessShipmentScreen} />
       <Stack.Screen name="CancelOrderScreen" component={CancelOrderScreen} />
+      <Stack.Screen name="ReturnOrderScreen" component={ReturnOrderScreen} />
 
     </Stack.Navigator>
 

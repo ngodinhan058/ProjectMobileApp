@@ -116,7 +116,7 @@ const SearchScreen = ({ navigation, route }) => {
                                             alignItems: 'center',
                                         }}>
                                             <Image
-                                                source={require('../assets/search.png')}
+                                                source={require('../assets/iconSeach.png')}
                                                 style={styles.clock}
                                             />
                                             <Text style={styles.suggestionText}>{item.name}</Text>
