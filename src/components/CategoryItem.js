@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const CategoryItem = ({ image, name }) => {
   const [loading, setLoading] = useState(true);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
-
+  const navigation = useNavigation();
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
     Animated.loop(
@@ -26,27 +27,31 @@ const CategoryItem = ({ image, name }) => {
   }, [shimmerAnim]);
   return (
     <View>
-       {loading ? (
+      {loading ? (
         // Skeleton with shimmer effect while loading
         <View>
           <Image
             source={image}
             onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
           />
-          <Animated.View style={[styles.skeletonItem, { backgroundColor: shimmerAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
-          })}]} />
-          
+          <Animated.View style={[styles.skeletonItem, {
+            backgroundColor: shimmerAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
+            })
+          }]} />
+
         </View>
       ) : (
         <>
-      <View style={styles.categoryItem}>
-        <Image source={image} style={styles.categoryImage} />
-      </View>
-      <Text style={styles.categoryName}>{name}</Text>
-      </>
-    )}
+          <TouchableOpacity onPress={() => navigation.navigate('ProductByCateScreen',{ image, name })}>
+            <View style={styles.categoryItem}>
+              <Image source={image} style={styles.categoryImage} />
+            </View>
+            <Text style={styles.categoryName}>{name}</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 };

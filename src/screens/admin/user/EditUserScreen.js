@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import UploadImage from '../../../components/Up_Image';
 
 const EditUserScreen = ({ route, navigation }) => {
 
@@ -31,6 +32,8 @@ const EditUserScreen = ({ route, navigation }) => {
     };
 
     const [userEmail, setUserEmail] = useState('');
+    const [userFront, setUserFront] = useState('');
+    const [userBack, setUserBack] = useState('');
     const [userPass, setUserPass] = useState('');
     const [userAddress, setUserAddress] = useState('');
     const [userPhone, setUserPhone] = useState('');
@@ -42,7 +45,7 @@ const EditUserScreen = ({ route, navigation }) => {
         setSelectedValue(value);
         setModalVisible(false);
     };
-
+    
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -55,12 +58,7 @@ const EditUserScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Icon Image */}
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={require('../../../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
-                        style={styles.imageIcon}
-                    />
-                </View>
+                <UploadImage />
                 <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('EditIdCardScreen')}>
                     <Text style={styles.buttonText}>Sửa CCCD</Text>
                 </TouchableOpacity>
@@ -74,22 +72,22 @@ const EditUserScreen = ({ route, navigation }) => {
                         value={userEmail}
                         onChangeText={setUserEmail}
                     />
-                    {/* <Text style={styles.label}>Tên Đầu Người Dùng:</Text>
-                     User First Name 
+                    <Text style={styles.label}>Tên Đầu Người Dùng:</Text>
+                     {/* User First Name  */}
                     <TextInput
                         style={styles.input}
                         placeholder="Tên Đầu Người Dùng"
-                        value={UserPrice}
-                        onChangeText={setUserPrice}
+                        value={userFront}
+                        onChangeText={setUserFront}
                     />
                      <Text style={styles.label}>Tên Sau Người Dùng:</Text>
-                    User Last Name 
+                    {/* User Last Name  */}
                     <TextInput
                         style={styles.input}
                         placeholder="Tên Sau Người Dùng"
-                        value={UserPrice}
-                        onChangeText={setUserPrice}
-                    /> */}
+                        value={userBack}
+                        onChangeText={setUserBack}
+                    />
                     <Text style={styles.label}>Mật Khẩu Người Dùng:</Text>
                     {/* User Pass */}
                     <TextInput

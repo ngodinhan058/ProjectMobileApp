@@ -64,30 +64,31 @@ const NewItem = ({ title, description, date, image }) => {
   }
 
   return (
+    <View style={styles.container}>
     <TouchableOpacity
       onPress={() => {
         const currentRoute = navigation.getState().routes[navigation.getState().index].name;
         if (currentRoute === 'NewsDetailScreen') {
-
           navigation.replace('NewsDetailScreen', { title, description, date, image });
         } else {
-
           navigation.navigate('NewsDetailScreen', { title, description, date, image });
         }
       }}
     >
-      <View style={styles.container}>
+      <View style={styles.rowContainer}>
         {/* Nội dung bài viết */}
         <View style={styles.textContainer}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.description}>{truncateDescription(description)}</Text>
           <Text style={styles.date}>{date}</Text>
         </View>
-
+  
         {/* Hình ảnh bài viết */}
         <Image source={image} style={styles.image} />
       </View>
     </TouchableOpacity>
+  </View>
+  
   );
 };
 
@@ -140,19 +141,21 @@ const styles = StyleSheet.create({
 
   // Style khi hết loading
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     padding: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
     marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 1710,
-    elevation: 4,
+    shadowOpacity: 0.1,  // Giảm độ bóng để nhẹ hơn
+    shadowRadius: 4,
+    elevation: 2,
     marginVertical: 10,
     marginHorizontal: 2,
+  },
+  rowContainer: {
+    flexDirection: 'row',  // Căn nội dung và hình ảnh theo hàng ngang
+    alignItems: 'center',  // Căn giữa theo chiều dọc
   },
   textContainer: {
     flex: 1,
@@ -166,15 +169,15 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: '#666',
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: 4,  // Giảm margin để tiết kiệm không gian
   },
   date: {
     fontSize: 12,
     color: '#aaa',
+    marginTop: 6,  // Thêm khoảng cách nhỏ giữa description và date
   },
   image: {
-    width: 100,
+    width: 100,  // Điều chỉnh kích thước ảnh nhỏ hơn
     height: 100,
     borderRadius: 10,
   },

@@ -74,7 +74,7 @@ function MyOrderScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('MyOrderScreen')}
                 >
                   <Text
                     style={{
@@ -94,7 +94,7 @@ function MyOrderScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('MyOrderConfirmScreen')}
                 >
                   <Text
                     style={{
@@ -113,7 +113,7 @@ function MyOrderScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('GettingOrderedScreen')}
                 >
                   <Text
                     style={{
@@ -133,7 +133,7 @@ function MyOrderScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('WatingShipmentScreen')}
                 >
                   <Text
                     style={{
@@ -153,7 +153,7 @@ function MyOrderScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('SuccessShipmentScreen')}
                 >
                   <Text
                     style={{
@@ -173,7 +173,7 @@ function MyOrderScreen({ route, navigation }) {
                     padding: 16,
                     borderRadius: 50,
                   }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
+                  onPress={() => navigation.navigate('')}
                 >
                   <Text
                     style={{

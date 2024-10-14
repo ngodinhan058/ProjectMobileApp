@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 const featuredProducts = [
@@ -41,10 +41,11 @@ const featuredProducts = [
 
 ];
 
+
 const WishListScreen = ({ route, navigation }) => {
   // Kiểm tra nếu route.params tồn tại và lấy giá trị query, nếu không có thì để là chuỗi rỗng
   const { query = '' } = route?.params || {}; 
-
+ const { image, name } = route.params;
   const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const handleSearch = () => {
@@ -67,6 +68,13 @@ const WishListScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+         <View style={styles.iconHeader}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Icon name="angle-left" size={35} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.textHeader}>Danh Mục {name}</Text>
+          
+        </View>
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
@@ -115,6 +123,25 @@ const styles = StyleSheet.create({
     height: '100%',
     paddingHorizontal: 20,
     backgroundColor: '#fff',
+  },
+  iconHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingTop: 10,
+  },
+  textHeader: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    textAlign: 'center',
+    flex: 1,
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  shareButton: {
+    marginLeft: 10,
   },
   searchBar: {
     position: 'relative',

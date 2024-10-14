@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import UploadImage from '../../../../components/Up_Image_Multi';
 
 const AddPostScreen = ({ route, navigation }) => {
     const [postName, setPostName] = useState('');
@@ -64,12 +65,7 @@ const AddPostScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Icon Image */}
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={require('../../../../assets/upload_image_icon.png')}
-                        style={styles.imageIcon}
-                    />
-                </View>
+                <UploadImage />
 
                 {/* Post Form */}
                 <View style={styles.formContainer}>

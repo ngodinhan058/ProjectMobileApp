@@ -1,27 +1,41 @@
 import React from 'react';
+import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity, Animated, Easing } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/Ionicons';
+
+import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
+import AddToCartScreen from './src/screens/AddToCartScreen';
+import BioDataScreen from './src/screens/BioDataScreen';
+import CancelOrderScreen from './src/screens/CancelOrderScreen';
+import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
+import GettingOrderedScreen from './src/screens/GettingOrderedScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
-import SignUpScreen from './src/screens/SignUpScreen';
-import VerificationScreen from './src/screens/VerificationScreen';
-import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
-import PasswordScreen from './src/screens/PasswordScreen';
-import UpdatePassScreen from './src/screens/UpdatePassScreen';
-import ResetPassScreen from './src/screens/ResetPassScreen';
-import WishListScreen from './src/screens/WishListScreen';
-import SearchScreen from './src/screens/SearchScreen';
-import ProductDetailScreen from './src/screens/ProductDetailScreen';
-import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
-import ReviewProductScreen from './src/screens/ReviewProductScreen';
-import NewsScreen from './src/screens/NewsScreen';
+import MyOrderConfirmScreen from './src/screens/MyOrderConfirmScreen';
+import MyOrderScreen from './src/screens/MyOrderScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
+import NewsScreen from './src/screens/NewsScreen';
+import OrderConfirmationScreen from './src/screens/OrderConfirmationScreen';
+import PasswordScreen from './src/screens/PasswordScreen';
+import ProductByCateScreen from './src/screens/ProductByCateScreen';
+import ProductDetailScreen from './src/screens/ProductDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import BioDataScreen from './src/screens/BioDataScreen';
-import AddToCartScreen from './src/screens/AddToCartScreen';
+import ResetPassScreen from './src/screens/ResetPassScreen';
+import RejectOrderConfirmationScreen from './src/screens/RejectOrderConfirmationScreen';
+import ReviewProductScreen from './src/screens/ReviewProductScreen';
+import SearchScreen from './src/screens/SearchScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
+import StartSearchScreen from './src/screens/StartSearchScreen';
+import SuccessShipmentScreen from './src/screens/SuccessShipmentScreen';
+import UpdatePassScreen from './src/screens/UpdatePassScreen';
+import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
+import VerificationScreen from './src/screens/VerificationScreen';
+import WatingShipmentScreen from './src/screens/WatingShipmentScreen';
+import WishListScreen from './src/screens/WishListScreen';
+
 {/* Admin */ }
 import MenuScreen from './src/screens/admin/MenuScreen';
 {/* AdminProduct */ }
@@ -59,6 +73,10 @@ import Header from './src/components/Header';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
+const user = [
+  { id: '1', name: 'Ngô Định An', image: { uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389' }, },
+
+];
 
 function LoginStack() {
   return (
@@ -70,11 +88,25 @@ function LoginStack() {
       <Stack.Screen name="ResetPassScreen" component={ResetPassScreen} />
       <Stack.Screen name="VerificationForgotScreen" component={VerificationForgotScreen} />
       <Stack.Screen name="UpdatePassScreen" component={UpdatePassScreen} />
-      <Stack.Screen name="SearchScreen" component={SearchScreen} />
-      {/* đã login */}
+    </Stack.Navigator>
+
+  );
+}
+function HaveLoginStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {/* <Stack.Screen name="CompletedOrderConfirmationScreen" component={CompletedOrderConfirmationScreen} /> */}
+      {/* <Stack.Screen name="RejectOrderConfirmationScreen" component={RejectOrderConfirmationScreen} /> */}
+      {/* <Stack.Screen name="OrderConfirmationScreen" component={OrderConfirmationScreen} /> */}
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
-      
+      <Stack.Screen name="MyOrderScreen" component={MyOrderScreen} />
+      <Stack.Screen name="MyOrderConfirmScreen" component={MyOrderConfirmScreen} />
+      <Stack.Screen name="GettingOrderedScreen" component={GettingOrderedScreen} />
+      <Stack.Screen name="WatingShipmentScreen" component={WatingShipmentScreen} />
+      <Stack.Screen name="SuccessShipmentScreen" component={SuccessShipmentScreen} />
+      <Stack.Screen name="CancelOrderScreen" component={CancelOrderScreen} />
+
     </Stack.Navigator>
 
   );
@@ -83,7 +115,9 @@ function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="ProductByCateScreen" component={ProductByCateScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
+      <Stack.Screen name="StartSearchScreen" component={StartSearchScreen} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
       <Stack.Screen name="WishListScreen" component={WishListScreen} />
       <Stack.Screen name="NewsScreen" component={NewsScreen} />
@@ -93,6 +127,81 @@ function HomeStack() {
       <Stack.Screen name="ReviewProductScreen" component={ReviewProductScreen} />
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
+  );
+}
+function HaveLoginHome() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          let checkProfile;
+
+          if (route.name === 'Mega Mall') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Wishlist') {
+            iconName = focused ? 'heart' : 'heart-outline';
+          } else if (route.name === 'Order') {
+            iconName = focused ? 'bag' : 'bag-outline';
+          } else if (route.name === user[0].name) {
+            checkProfile = focused ? <View style={{ width: 32, height: 32, borderWidth: 2, borderColor: '#3669c9', alignItems: 'center', justifyContent: 'center', borderRadius: 20 }}>
+              <Image
+                source={user[0].image} // Sử dụng image từ mảng banners
+                style={{ width: 23, height: 23, borderRadius: 20 }}
+              />
+            </View> : <Image
+              source={user[0].image} // Sử dụng image từ mảng banners
+              style={{ width: 25, height: 25, borderRadius: 25 }}
+            />
+            return checkProfile
+
+          }
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen
+        name="Mega Mall"
+        component={HomeStack}
+        options={{
+          header: () => <Header />,  // Hiển thị Header chỉ trên HomeScreen
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            // Ngăn hành vi mặc định khi bấm vào tab
+            e.preventDefault();
+            // Điều hướng về màn hình Home trong HomeStack bất kể đang ở đâu
+            navigation.navigate('Home');
+          },
+        })}
+      />
+
+      <Tab.Screen
+        name="Wishlist"
+        component={WishListScreen}
+        options={{
+          header: () => <Header />,
+        }}
+
+      />
+      <Tab.Screen
+        name="Order"
+        component={HomeScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Tab.Screen
+        name={user[0].name}
+        component={HaveLoginStack}
+        options={{
+          headerShown: false,
+
+        }}
+      />
+    </Tab.Navigator>
+
   );
 }
 {/* Admin Product */ }
@@ -138,6 +247,15 @@ function UserAdmin() {
     </Stack.Navigator>
   );
 }
+function AdminDrawerNavigator() {
+  return (
+    <Drawer.Navigator>
+      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
+      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
+      <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
+    </Drawer.Navigator>
+  );
+}
 {/* Admin Invetory */ }
 function InventoryAdmin() {
   return (
@@ -159,16 +277,6 @@ function InventoryReturnOrder() {
     </Stack.Navigator>
   );
 }
-function AdminDrawerNavigator() {
-  return (
-    <Drawer.Navigator>
-      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
-      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
-      <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
-      <Drawer.Screen name="Danh Sách Sản Phẩm Tồn Kho" component={InventoryAdmin} />
-    </Drawer.Navigator>
-  );
-}
 function InventoryDrawerNavigator() {
   return (
     <Drawer.Navigator>
@@ -178,15 +286,12 @@ function InventoryDrawerNavigator() {
   );
 }
 
-
-
-
 export default function App() {
   return (
     <NavigationContainer>
-
+      <HaveLoginHome />
       {/* <AdminDrawerNavigator /> */}
-      <InventoryDrawerNavigator />
+      {/* <InventoryDrawerNavigator /> */}
       {/* <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
@@ -246,7 +351,7 @@ export default function App() {
           }}
         />
       </Tab.Navigator> */}
-      
+
 
     </NavigationContainer>
   );
