@@ -17,7 +17,7 @@ function OrderConfirmationScreen({ navigation }) {
           <View
             style={{
               backgroundColor: '#FFC120',
-              borderRadius: '100%',
+              borderRadius: 50,
               justifyContent: 'center',
               alignItems: 'center',
               width: 50,

@@ -5,26 +5,37 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/Ionicons';
-import HomeScreen from './src/screens/HomeScreen';
-import ProductByCateScreen from './src/screens/ProductByCateScreen';
-import LoginScreen from './src/screens/LoginScreen';
-import SignUpScreen from './src/screens/SignUpScreen';
-import VerificationScreen from './src/screens/VerificationScreen';
-import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
-import PasswordScreen from './src/screens/PasswordScreen';
-import UpdatePassScreen from './src/screens/UpdatePassScreen';
-import ResetPassScreen from './src/screens/ResetPassScreen';
-import WishListScreen from './src/screens/WishListScreen';
-import StartSearchScreen from './src/screens/StartSearchScreen';
-import SearchScreen from './src/screens/SearchScreen';
-import ProductDetailScreen from './src/screens/ProductDetailScreen';
+
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
-import ReviewProductScreen from './src/screens/ReviewProductScreen';
-import NewsScreen from './src/screens/NewsScreen';
-import NewsDetailScreen from './src/screens/NewsDetailScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
-import BioDataScreen from './src/screens/BioDataScreen';
 import AddToCartScreen from './src/screens/AddToCartScreen';
+import BioDataScreen from './src/screens/BioDataScreen';
+import CancelOrderScreen from './src/screens/CancelOrderScreen';
+import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
+import GettingOrderedScreen from './src/screens/GettingOrderedScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import MyOrderConfirmScreen from './src/screens/MyOrderConfirmScreen';
+import MyOrderScreen from './src/screens/MyOrderScreen';
+import NewsDetailScreen from './src/screens/NewsDetailScreen';
+import NewsScreen from './src/screens/NewsScreen';
+import OrderConfirmationScreen from './src/screens/OrderConfirmationScreen';
+import PasswordScreen from './src/screens/PasswordScreen';
+import ProductByCateScreen from './src/screens/ProductByCateScreen';
+import ProductDetailScreen from './src/screens/ProductDetailScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import ResetPassScreen from './src/screens/ResetPassScreen';
+import RejectOrderConfirmationScreen from './src/screens/RejectOrderConfirmationScreen';
+import ReviewProductScreen from './src/screens/ReviewProductScreen';
+import SearchScreen from './src/screens/SearchScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
+import StartSearchScreen from './src/screens/StartSearchScreen';
+import SuccessShipmentScreen from './src/screens/SuccessShipmentScreen';
+import UpdatePassScreen from './src/screens/UpdatePassScreen';
+import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
+import VerificationScreen from './src/screens/VerificationScreen';
+import WatingShipmentScreen from './src/screens/WatingShipmentScreen';
+import WishListScreen from './src/screens/WishListScreen';
+
 {/* Admin */ }
 import MenuScreen from './src/screens/admin/MenuScreen';
 {/* AdminProduct */ }
@@ -84,8 +95,17 @@ function LoginStack() {
 function HaveLoginStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {/* <Stack.Screen name="CompletedOrderConfirmationScreen" component={CompletedOrderConfirmationScreen} /> */}
+      {/* <Stack.Screen name="RejectOrderConfirmationScreen" component={RejectOrderConfirmationScreen} /> */}
+      {/* <Stack.Screen name="OrderConfirmationScreen" component={OrderConfirmationScreen} /> */}
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
+      <Stack.Screen name="MyOrderScreen" component={MyOrderScreen} />
+      <Stack.Screen name="MyOrderConfirmScreen" component={MyOrderConfirmScreen} />
+      <Stack.Screen name="GettingOrderedScreen" component={GettingOrderedScreen} />
+      <Stack.Screen name="WatingShipmentScreen" component={WatingShipmentScreen} />
+      <Stack.Screen name="SuccessShipmentScreen" component={SuccessShipmentScreen} />
+      <Stack.Screen name="CancelOrderScreen" component={CancelOrderScreen} />
 
     </Stack.Navigator>
 
@@ -110,7 +130,6 @@ function HomeStack() {
   );
 }
 function HaveLoginHome() {
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
