@@ -126,6 +126,34 @@ const MyOrderScreen = ({ route, navigation }) => {
     {
       id: 'order4',
       date: '01/10/2024',
+      status: 'Đã Giao Hàng, Hãy Xác Nhận',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
+    },
+    {
+      id: 'order7',
+      date: '01/10/2024',
       status: 'Đã Giao Hàng',
       products: [
         {
@@ -212,9 +240,10 @@ const MyOrderScreen = ({ route, navigation }) => {
   ];
   const flatListRef = useRef(null);
   // Lọc danh sách người dùng theo status
-  const filterByStatus = (status) => {
-    return orders.filter((order) => order.status === status);
+  const filterByStatus = (statuses) => {
+    return orders.filter((order) => statuses.includes(order.status));
   };
+  
   const getItemLayout = (data, index) => ({
     length: 30, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
     offset: 150 * index, // Offset dựa trên index của item
@@ -248,14 +277,19 @@ const MyOrderScreen = ({ route, navigation }) => {
     />
   ); 
 
-  const ShippingRoute = () => (
-    <FlatList
-      data={filterByStatus('Đang Giao Hàng')}
-      renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.id}
-       style={{ marginTop: 40 }}
-    />
-  );
+  const ShippingRoute = () => {
+    const shippingData = filterByStatus(['Đang Giao Hàng', 'Đã Giao Hàng, Hãy Xác Nhận']);
+  
+    return (
+      <FlatList
+        data={shippingData}
+        renderItem={({ item }) => <OrderItem order={item} />}
+        keyExtractor={(item) => item.id}
+        style={{ marginTop: 40 }}
+      />
+    );
+  };
+  
   const SuccessRoute = () => (
     <FlatList
       data={filterByStatus('Đã Giao Hàng')}
@@ -319,7 +353,7 @@ const MyOrderScreen = ({ route, navigation }) => {
                 <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Icon name="angle-left" size={35} color="#000" />
                 </Pressable>
-                <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
+                <Text style={styles.textHeader}>Đơn Hàng Của Tôi</Text>
 
             </View>
 

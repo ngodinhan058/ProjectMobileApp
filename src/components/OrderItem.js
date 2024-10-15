@@ -80,7 +80,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
             <View style={styles.button}>
               <TouchableOpacity
                 style={styles.cancelButton}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
+                onPress={() => navigation.navigate('')}
               >
                 <Text style={styles.cancelText}>Hủy đơn</Text>
               </TouchableOpacity>
@@ -89,12 +89,13 @@ const OrderItem = ({ order }) => { // Nhận order từ props
         ) : order.status === "Đang Giao Hàng" ? (
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={() => navigation.navigate('TrackingScreen')} // Điều hướng tới trang theo dõi giao hàng
+            <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => navigation.navigate('')}
               >
-                <Text style={styles.confirmText}>Theo dõi đơn hàng</Text>
+                <Text style={styles.cancelText}>Hủy đơn</Text>
               </TouchableOpacity>
+             
             </View>
           </View>
         ) : order.status === "Chờ Xác Nhận" ? (
@@ -102,7 +103,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
             <View style={styles.button}>
               <TouchableOpacity
                 style={styles.cancelButton}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
+                onPress={() => navigation.navigate('')}
               >
                 <Text style={styles.cancelText}>Hủy đơn</Text>
               </TouchableOpacity>
@@ -110,9 +111,75 @@ const OrderItem = ({ order }) => { // Nhận order từ props
             <View style={styles.button}>
               <TouchableOpacity
                 style={styles.confirmButton}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
+                onPress={() => navigation.navigate('')}
               >
                 <Text style={styles.confirmText}>Xác nhận</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : order.status === "Đang Giao Hàng" ? (
+          <View style={styles.buttonContainer}>
+            <View style={styles.button}>
+            <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => navigation.navigate('')} 
+              >
+                <Text style={styles.confirmText}>Xác Nhận Thanh Toán</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : order.status === "Đã Giao Hàng, Hãy Xác Nhận" ? (
+          <View style={styles.buttonContainer}>
+             <View style={styles.button}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => navigation.navigate('')}
+              >
+                <Text style={styles.cancelText}>Trả Hàng</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.button}>
+            <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => navigation.navigate('')} 
+              >
+                <Text style={styles.confirmText}>Xác Nhận Thanh Toán</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : order.status === "Đã Giao Hàng" ? (
+          <View style={styles.buttonContainer}>
+             
+            <View style={styles.button}>
+            <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => navigation.navigate('')} 
+              >
+                <Text style={styles.confirmText}>Đánh Giá</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : order.status === "Đã Huỷ" ? (
+          <View style={styles.buttonContainer}>
+             
+            <View style={styles.button}>
+            <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => navigation.navigate('')} 
+              >
+                <Text style={styles.confirmText}>Mua Lại</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : order.status === "Trả Hàng" ? (
+          <View style={styles.buttonContainer}>
+             
+            <View style={styles.button}>
+            <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => navigation.navigate('')} 
+              >
+                <Text style={styles.confirmText}>Chi Tiết Hoàn Tiền</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -209,7 +276,7 @@ const styles = StyleSheet.create({
   cancelText: {
     textAlign: 'center',
     fontWeight: '600',
-    color: '#ccc',
+    color: '#aaa',
   },
   confirmButton: {
     backgroundColor: '#3669C9',
