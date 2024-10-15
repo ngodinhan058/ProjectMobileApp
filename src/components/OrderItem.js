@@ -58,13 +58,13 @@ const OrderItem = ({ order }) => { // Nhận order từ props
 
           <View style={styles.productDetails}>
             <View>
-              <Text>{truncateName(product.name)}</Text>
+              <Text style={{ fontWeight: 'bold' }}>{truncateName(product.name)}</Text>
               <View style={styles.productInfo}>
                 <Text>Màu: {product.color}</Text>
                 <Text>x{product.quantity}</Text>
               </View>
             </View>
-            <Text>{product.price}đ</Text>
+            <View style={{ marginRight: 10, }}><Text>{product.price}đ</Text></View>
           </View>
         </View>
       ))}
@@ -74,24 +74,51 @@ const OrderItem = ({ order }) => { // Nhận order từ props
         <Text style={styles.totalPrice}>{order.total}đ</Text>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <View style={styles.button}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => navigation.navigate('ReviewProductScreen')}
-          >
-            <Text style={styles.cancelText}>Hủy đơn</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.button}>
-          <TouchableOpacity
-            style={styles.confirmButton}
-            onPress={() => navigation.navigate('ReviewProductScreen')}
-          >
-            <Text style={styles.confirmText}>Xác nhận</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {
+        order.status === "Chuẩn Bị Hàng" ? (
+          <View style={styles.buttonContainer}>
+            <View style={styles.button}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text style={styles.cancelText}>Hủy đơn</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : order.status === "Đang Giao Hàng" ? (
+          <View style={styles.buttonContainer}>
+            <View style={styles.button}>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => navigation.navigate('TrackingScreen')} // Điều hướng tới trang theo dõi giao hàng
+              >
+                <Text style={styles.confirmText}>Theo dõi đơn hàng</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : order.status === "Chờ Xác Nhận" ? (
+          <View style={styles.buttonContainer}>
+            <View style={styles.button}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text style={styles.cancelText}>Hủy đơn</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.button}>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => navigation.navigate('ReviewProductScreen')}
+              >
+                <Text style={styles.confirmText}>Xác nhận</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : null
+      }
+
     </View>
   );
 };
@@ -123,6 +150,8 @@ const styles = StyleSheet.create({
   },
   orderStatus: {
     color: '#3669C9',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   productContainer: {
     flexDirection: 'row',
@@ -132,13 +161,15 @@ const styles = StyleSheet.create({
   productImage: {
     width: 80,
     height: 80,
-    
+
   },
   productDetails: {
     flexDirection: 'row',
-    gap: 60,
+    gap: 40,
+    marginHorizontal: 10,
   },
   productInfo: {
+    marginTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -162,7 +193,8 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: '#fff',
-    padding: 16,
+    paddingVertical: 10,
+    borderRadius: 50,
     borderRadius: 1000,
     maxWidth: 300,
     width: 100,
@@ -181,7 +213,8 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     backgroundColor: '#3669C9',
-    padding: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     borderRadius: 50,
   },
   confirmText: {

@@ -216,8 +216,8 @@ const MyOrderScreen = ({ route, navigation }) => {
     return orders.filter((order) => order.status === status);
   };
   const getItemLayout = (data, index) => ({
-    length: 20, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
-    offset: 200 * index, // Offset dựa trên index của item
+    length: 30, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
+    offset: 150 * index, // Offset dựa trên index của item
     index, 
   });
   
@@ -308,7 +308,7 @@ const MyOrderScreen = ({ route, navigation }) => {
       flatListRef.current.scrollToIndex({
         index: index,
         animated: true,
-        viewPosition: 0.5, // Đặt tab ở giữa màn hình
+        viewPosition: 0.3, // Đặt tab ở giữa màn hình
       });
     }
   }, [index]);
