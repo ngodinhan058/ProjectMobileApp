@@ -1,846 +1,483 @@
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  Button,
-  TouchableOpacity,
-  FlatList,
-  Pressable,
-  TextInput,
-} from 'react-native';
-import ProductItem from '../components/ProductItem';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { useWindowDimensions } from 'react-native';
+import OrderItem from '../components/OrderItem';
 
-const featuredProducts = [
-  {
-    id: '1',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
+const MyOrderScreen = ({ route, navigation }) => {
+  const layout = useWindowDimensions();  // Lấy thông tin kích thước màn hình
+
+  
+  
+  const orders = [
+    {
+      id: 'order1',
+      date: '01/10/2024',
+      status: 'Chờ Xác Nhận',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.0',
-    review: '860',
-  },
-  {
-    id: '2',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
+    {
+      id: 'order7',
+      date: '01/10/2024',
+      status: 'Chờ Xác Nhận',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
-    name: 'TMA-2 HD Wireless2',
-    price: '100.000',
-    rating: '2.6',
-    review: '6',
-  },
-  {
-    id: '3',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+    {
+      id: 'order2',
+      date: '01/10/2024',
+      status: 'Chuẩn Bị Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
     },
-    name: 'TMA-2 HD Wireless',
-    price: '1.000.000',
-    rating: '0.6',
-    review: '106',
-  },
-];
+    {
+      id: 'order3',
+      date: '01/10/2024',
+      status: 'Đang Giao Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
+    },
+    {
+      id: 'order4',
+      date: '01/10/2024',
+      status: 'Đã Giao Hàng, Hãy Xác Nhận',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
+    },
+    {
+      id: 'order7',
+      date: '01/10/2024',
+      status: 'Đã Giao Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
+    },
+    {
+      id: 'order5',
+      date: '01/10/2024',
+      status: 'Đã Huỷ',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
+    },
+    {
+      id: 'order6',
+      date: '01/10/2024',
+      status: 'Trả Hàng',
+      products: [
+        {
+          id: '1',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 1',
+          color: 'Đen',
+          quantity: 1,
+          price: '1.500.000',
+        },
+        {
+          id: '2',
+          image: {
+            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+          },
+          name: 'Tai Nghe Sieu Ngau 2',
+          color: 'Trắng',
+          quantity: 1,
+          price: '1.500.000',
+        },
+      ],
+      total: '3.000.000',
+    },
 
-function MyOrderScreen({ route, navigation }) {
-  return (
-    <ScrollView style={{ padding: 20 }}>
-      <View>
-        <View
-          style={{
-            borderWidth: 1,
-            padding: 10,
-            borderRadius: 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
-          <Icon style={{ color: '#fcfc', fontSize: 28 }} name="search"></Icon>
-          <TextInput style={{ fontSize: 24 }} placeholder="Search"></TextInput>
-        </View>
+    // Thêm các đơn hàng với status khác
+  ];
+  const flatListRef = useRef(null);
+  // Lọc danh sách người dùng theo status
+  const filterByStatus = (statuses) => {
+    return orders.filter((order) => statuses.includes(order.status));
+  };
+  
+  const getItemLayout = (data, index) => ({
+    length: 30, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
+    offset: 150 * index, // Offset dựa trên index của item
+    index, 
+  });
+  
+  const handleScrollToIndexFailed = (info) => {
+    const wait = new Promise(resolve => setTimeout(resolve, 500));
+    wait.then(() => {
+      flatListRef.current?.scrollToIndex({ index: info.highestMeasuredFrameIndex, animated: true });
+    });
+  };
+  
+  
 
-        <View style={{}}>
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ margin: 10 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#3669C9',
-                    padding: 16,
-                    borderRadius: 50,
-                  }}
-                  onPress={() => navigation.navigate('MyOrderScreen')}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                      color: '#fff',
-                    }}
-                  >
-                    All
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ margin: 10 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#FFF7F3',
-                    padding: 16,
-                    borderRadius: 50,
-                  }}
-                  onPress={() => navigation.navigate('MyOrderConfirmScreen')}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                    }}
-                  >
-                    Chờ xác nhận
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ margin: 10 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#FFF7F3',
-                    padding: 16,
-                    borderRadius: 50,
-                  }}
-                  onPress={() => navigation.navigate('GettingOrderedScreen')}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                    }}
-                  >
-                    Chờ lấy hàng
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ margin: 10 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#FFF7F3',
-                    padding: 16,
-                    borderRadius: 50,
-                  }}
-                  onPress={() => navigation.navigate('WatingShipmentScreen')}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                    }}
-                  >
-                    Chờ giao hàng
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ margin: 10 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#FFF7F3',
-                    padding: 16,
-                    borderRadius: 50,
-                  }}
-                  onPress={() => navigation.navigate('SuccessShipmentScreen')}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                    }}
-                  >
-                    Đã giao hàng
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ margin: 10 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#FFF7F3',
-                    padding: 16,
-                    borderRadius: 50,
-                  }}
-                  onPress={() => navigation.navigate('')}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                    }}
-                  >
-                    Đã huỷ
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ margin: 10 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#FFF7F3',
-                    padding: 16,
-                    borderRadius: 50,
-                  }}
-                  onPress={() => navigation.navigate('ReviewProductScreen')}
-                >
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                    }}
-                  >
-                    Trả hàng
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-
-        <View
-          style={{
-            padding: 10,
-            backgroundColor: '#fff',
-            borderRadius: 10,
-            marginHorizontal: 2,
-            marginBottom: 10,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 4,
-            elevation: 4,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              margin: 10,
-            }}
-          >
-            <Text>00/00/0000</Text>
-            <Text style={{ color: '#3669C9' }}>Chuẩn bị hàng</Text>
-          </View>
-
-          <View>
-            <View
-              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            >
-              <Image
-                source={require('../assets/headphone.png')}
-                style={{ width: 80, height: 80 }}
-              />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 60,
-                }}
-              >
-                <View>
-                  <Text>Tai Nghe Sieu Ngau</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Text>Mau: den</Text>
-                    <Text>x1</Text>
-                  </View>
-                </View>
-                <Text>1.500.000d</Text>
-              </View>
-            </View>
-          </View>
-
-          <View>
-            <View
-              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            >
-              <Image
-                source={require('../assets/headphone.png')}
-                style={{ width: 80, height: 80 }}
-              />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 60,
-                }}
-              >
-                <View>
-                  <Text>Tai Nghe Sieu Ngau</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Text>Mau: den</Text>
-                    <Text>x1</Text>
-                  </View>
-                </View>
-                <Text>1.500.000d</Text>
-              </View>
-            </View>
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              gap: 10,
-              alignItems: 'center',
-            }}
-          >
-            <Text>Tong</Text>
-            <Text
-              style={{
-                color: '#3669C9',
-                fontWeight: 700,
-                fontSize: 24,
-              }}
-            >
-              3.000.000d
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <View style={{ margin: 10 }}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#fff',
-                  padding: 16,
-                  borderRadius: 1000,
-                  maxWidth: 300,
-                  width: 100,
-                  backgroundColor: '#fff',
-                  marginHorizontal: 2,
-                  marginBottom: 10,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 4,
-                  elevation: 4,
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#ccc',
-                  }}
-                >
-                  Huy don
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ margin: 10 }}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#3669C9',
-                  padding: 16,
-                  borderRadius: 50,
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#fff',
-                  }}
-                >
-                  Mua lai
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        <View
-          style={{
-            padding: 10,
-            backgroundColor: '#fff',
-            borderRadius: 10,
-            marginHorizontal: 2,
-            marginBottom: 10,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 4,
-            elevation: 4,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              margin: 10,
-            }}
-          >
-            <Text>00/00/0000</Text>
-            <Text style={{ color: '#3669C9' }}>Chuẩn bị hàng</Text>
-          </View>
-
-          <View>
-            <View
-              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            >
-              <Image
-                source={require('../assets/headphone.png')}
-                style={{ width: 80, height: 80 }}
-              />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 60,
-                }}
-              >
-                <View>
-                  <Text>Tai Nghe Sieu Ngau</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Text>Mau: den</Text>
-                    <Text>x1</Text>
-                  </View>
-                </View>
-                <Text>1.500.000d</Text>
-              </View>
-            </View>
-          </View>
-
-          <View>
-            <View
-              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            >
-              <Image
-                source={require('../assets/headphone.png')}
-                style={{ width: 80, height: 80 }}
-              />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 60,
-                }}
-              >
-                <View>
-                  <Text>Tai Nghe Sieu Ngau</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Text>Mau: den</Text>
-                    <Text>x1</Text>
-                  </View>
-                </View>
-                <Text>1.500.000d</Text>
-              </View>
-            </View>
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              gap: 10,
-              alignItems: 'center',
-            }}
-          >
-            <Text>Tong</Text>
-            <Text
-              style={{
-                color: '#3669C9',
-                fontWeight: 700,
-                fontSize: 24,
-              }}
-            >
-              3.000.000d
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <View style={{ margin: 10 }}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#fff',
-                  padding: 16,
-                  borderRadius: 1000,
-                  maxWidth: 300,
-                  width: 100,
-                  backgroundColor: '#fff',
-                  marginHorizontal: 2,
-                  marginBottom: 10,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 4,
-                  elevation: 4,
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#ccc',
-                  }}
-                >
-                  Huy don
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ margin: 10 }}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#3669C9',
-                  padding: 16,
-                  borderRadius: 50,
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#fff',
-                  }}
-                >
-                  Xac Nhan Thanh Toan
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        <View
-          style={{
-            padding: 10,
-            backgroundColor: '#fff',
-            borderRadius: 10,
-            marginHorizontal: 2,
-            marginBottom: 10,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 4,
-            elevation: 4,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              margin: 10,
-            }}
-          >
-            <Text>00/00/0000</Text>
-            <Text style={{ color: '#3669C9' }}>Chuẩn bị hàng</Text>
-          </View>
-
-          <View>
-            <View
-              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            >
-              <Image
-                source={require('../assets/headphone.png')}
-                style={{ width: 80, height: 80 }}
-              />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 60,
-                }}
-              >
-                <View>
-                  <Text>Tai Nghe Sieu Ngau</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Text>Mau: den</Text>
-                    <Text>x1</Text>
-                  </View>
-                </View>
-                <Text>1.500.000d</Text>
-              </View>
-            </View>
-          </View>
-
-          <View>
-            <View
-              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            >
-              <Image
-                source={require('../assets/headphone.png')}
-                style={{ width: 80, height: 80 }}
-              />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 60,
-                }}
-              >
-                <View>
-                  <Text>Tai Nghe Sieu Ngau</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <Text>Mau: den</Text>
-                    <Text>x1</Text>
-                  </View>
-                </View>
-                <Text>1.500.000d</Text>
-              </View>
-            </View>
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              gap: 10,
-              alignItems: 'center',
-            }}
-          >
-            <Text>Tong</Text>
-            <Text
-              style={{
-                color: '#3669C9',
-                fontWeight: 700,
-                fontSize: 24,
-              }}
-            >
-              3.000.000d
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <View style={{ margin: 10 }}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#fff',
-                  padding: 16,
-                  borderRadius: 1000,
-                  maxWidth: 300,
-                  width: 100,
-                  backgroundColor: '#fff',
-                  marginHorizontal: 2,
-                  marginBottom: 10,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 4,
-                  elevation: 4,
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#ccc',
-                  }}
-                >
-                  Huy don
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ margin: 10 }}>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#3669C9',
-                  padding: 16,
-                  borderRadius: 50,
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#fff',
-                  }}
-                >
-                  Mua lai
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
-    </ScrollView>
+  const PendingConfirmationRoute = () => (
+    <FlatList
+      data={filterByStatus('Chờ Xác Nhận')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+      style={{ marginTop: 40 }}
+    />
   );
-}
+
+  const PreparingRoute = () => (
+    <FlatList
+      data={filterByStatus('Chuẩn Bị Hàng')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+      style={{ marginTop: 40 }}
+    />
+  ); 
+
+  const ShippingRoute = () => {
+    const shippingData = filterByStatus(['Đang Giao Hàng', 'Đã Giao Hàng, Hãy Xác Nhận']);
+  
+    return (
+      <FlatList
+        data={shippingData}
+        renderItem={({ item }) => <OrderItem order={item} />}
+        keyExtractor={(item) => item.id}
+        style={{ marginTop: 40 }}
+      />
+    );
+  };
+  
+  const SuccessRoute = () => (
+    <FlatList
+      data={filterByStatus('Đã Giao Hàng')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+       style={{ marginTop: 40 }}
+    />
+  );
+  const cancelRoute = () => (
+    <FlatList
+      data={filterByStatus('Đã Huỷ')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+       style={{ marginTop: 40 }}
+    />
+  );
+  const returnRoute = () => (
+    <FlatList
+      data={filterByStatus('Trả Hàng')}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.id}
+       style={{ marginTop: 40 }}
+    />
+  );
+
+  // State để quản lý tab hiện tại
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    { key: 'pending', title: 'Chờ Xác Nhận' },
+    { key: 'preparing', title: 'Chờ Lấy Hàng' },
+    { key: 'shipping', title: 'Chờ Giao Hàng' },
+    { key: 'success', title: 'Đã Giao Hàng' },
+    { key: 'cancel', title: 'Đã Huỷ' },
+    { key: 'return', title: 'Trả Hàng' },
+
+  ]);
+  useEffect(() => {
+    const {initialRoute} = route.params;
+    if (initialRoute !== null) {
+      const tabIndex = routes.findIndex(r => r.key === initialRoute);
+      console.log("test",initialRoute);
+      if (tabIndex !== -1) {
+        setIndex(tabIndex);
+      }
+    }
+  }, [route.params]);
+  useEffect(() => {
+    // Cuộn đến tab được chọn
+    if (flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index: index,
+        animated: true,
+        viewPosition: 0.3, // Đặt tab ở giữa màn hình
+      });
+    }
+  }, [index]);
+
+  return (
+    <View style={styles.container}>
+       <View style={styles.iconHeader}>
+                <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <Icon name="angle-left" size={35} color="#000" />
+                </Pressable>
+                <Text style={styles.textHeader}>Đơn Hàng Của Tôi</Text>
+
+            </View>
+
+      {/* Tab View */}
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={SceneMap({
+          pending: PendingConfirmationRoute,
+          preparing: PreparingRoute,
+          shipping: ShippingRoute,
+          success: SuccessRoute,
+          cancel: cancelRoute,
+          return: returnRoute,
+        })}
+        onIndexChange={setIndex}
+        renderTabBar={(props) => (
+          <FlatList
+            style={{ position: 'absolute', zIndex: 99 }}
+            ref={flatListRef}
+            data={props.navigationState.routes}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item, index: tabIndex }) => (
+              <TouchableOpacity onPress={() => props.jumpTo(item.key)} style={{ paddingHorizontal: 10, }}>
+                <Text style={{
+                  color: tabIndex === props.navigationState.index ? '#fff' : '#000', width: 'auto', height: 30, backgroundColor: tabIndex === props.navigationState.index ? '#3669c9' : '#fafafa',
+                  paddingHorizontal: 20, lineHeight: 28, borderRadius: 30,
+                }}>
+                  {item.title}
+                </Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.key}
+            getItemLayout={getItemLayout} // Cung cấp getItemLayout
+            onScrollToIndexFailed={handleScrollToIndexFailed} // Xử lý khi scroll thất bại
+          />
+        )}
+      />
+
+
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  productDetailContainer: {
-    flex: 1,
-    backgroundColor: '#FFF',
-    padding: 20,
-  },
-  greySection: {
+  container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#fff',
+    paddingTop: 50,
   },
   iconHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingBottom: 10,
-  },
-  textHeader: {
+    paddingBottom: 20,
+},
+textHeader: {
     fontWeight: 'bold',
     fontSize: 18,
     textAlign: 'center',
     flex: 1,
-  },
-  backButton: {
+},
+backButton: {
     marginRight: 10,
-  },
-  shareButton: {
-    marginLeft: 10,
-  },
-  productImgContainer: {
+},
+  header: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    height: 200,
-    position: 'relative',
-  },
-  productImg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
-  },
-
-  numberOfImage: {
-    position: 'absolute',
-    left: '10%',
-    bottom: '10%',
-
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-
-  productInfo: {
-    flexDirection: 'column',
-    marginTop: 10,
-    marginBottom: 10,
-  },
-
-  productName: {
-    textTransform: 'uppercase',
-    fontSize: 20,
-    fontWeight: '700',
-  },
-
-  productPrice: {
-    color: '#FE3A30',
-    fontWeight: '500',
-  },
-
-  currencyHighlight: {
-    fontWeight: 'bold',
-  },
-
-  SoldProductInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  productStar: {
-    flexDirection: 'row',
-    gap: 5,
-  },
-
-  totalSellProduct: {
-    color: '#3A9B7A',
-  },
-
-  descriptionProductTitle: {
-    fontWeight: '800',
-    fontSize: 16,
-    paddingTop: 10,
-  },
-  descriptionProductText: {
-    lineHeight: 24,
-    paddingBottom: 10,
-    paddingBottom: 10,
-  },
-
-  reviewProductContainer: {
-    flexDirection: 'column',
-  },
-
-  reviewProductHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  reviewProductTitle: {
-    fontWeight: '800',
-    fontSize: 16,
-  },
-
-  sectionReviewerContainer: {
-    marginTop: 10,
-    flexDirection: 'row',
-    gap: 10,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 30,
   },
-  textBold: {
+  line: {
+    width: '95%',
+    height: 1,
+    backgroundColor: '#ededed',
+    marginVertical: 10,
+  },
+  welcomeText: {
+    fontSize: 24,
     fontWeight: 'bold',
-    fontSize: 18,
-    marginBottom: 10,
   },
-  seeAll: {
-    color: '#3669c9',
-    marginBottom: 10,
-    fontSize: 17,
+  subtitleText: {
+    fontSize: 16,
+    color: '#666',
   },
   productList: {
-    marginBottom: 20,
+    flex: 1,
+    marginTop: 50,
   },
-  reviewerImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 50,
+  productItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#ededed',
+    borderWidth: 2,
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 10,
+
   },
+  productIcon: {
+    width: 55,
+    height: 55,
+    marginLeft: 5,
+    marginTop: 5,
+  },
+  rankIcon: {
+    position: 'absolute',
+    width: 25,
+    height: 25,
+    right: 0,
+  },
+  productDetails: {
+    flex: 1,
+  },
+  productCode: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  productStatus: {
+    fontSize: 14,
+    color: '#888',
+  },
+
 });
 
 export default MyOrderScreen;

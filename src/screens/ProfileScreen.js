@@ -70,27 +70,32 @@ const ProfileScreen = ({ navigation }) => {
                 </View>
                 {/* Đơn hàng của tôi */}
                 <View style={styles.orderSection}>
-                    <Text style={styles.sectionTitle}>My Order</Text>
+                    <Text style={styles.sectionTitle}>Đơn Hàng Của Tôi</Text>
+
+                    <View style={styles.line} ></View>
                     <View style={styles.orderOptionContainer}>
-                        <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
+                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('MyOrderScreen', { initialRoute: "" })}>
                             <Image source={require('../assets/pay.png')} style={styles.icon} />
                             <Text style={styles.text}>Pay</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
+                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('MyOrderScreen', { initialRoute: "preparing" })}>
                             <Image source={require('../assets/ship.png')} style={styles.icon} />
                             <Text style={styles.text}>Ship</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
+                        <TouchableOpacity
+                            style={styles.orderOption}
+                            onPress={() => navigation.navigate('MyOrderScreen', { initialRoute: "shipping" })}
+                        >
                             <Image source={require('../assets/box_pro.png')} style={styles.icon} />
                             <Text style={styles.text}>Đang giao</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
+                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('')}>
                             <Image source={require('../assets/review.png')} style={styles.icon} />
                             <Text style={styles.text}>Đánh Giá</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.orderOption} onPress={() => {/* logic */ }}>
+                        <TouchableOpacity style={styles.orderOption} onPress={() => navigation.navigate('')}>
                             <Image source={require('../assets/undo.png')} style={styles.icon} />
                             <Text style={styles.text}>Trả Hàng</Text>
                         </TouchableOpacity>
@@ -210,8 +215,13 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         paddingBottom: 5,
         marginHorizontal: 10,
-        borderBottomColor: '#EDEDED',
-        borderBottomWidth: 1
+
+    },
+    line: {
+        width: '100%',
+        height: 1,
+        backgroundColor: '#EDEDED',
+        marginHorizontal: 10,
     },
     suggestionsSection: {
         paddingVertical: 20,

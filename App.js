@@ -9,12 +9,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
 import BioDataScreen from './src/screens/BioDataScreen';
-import CancelOrderScreen from './src/screens/CancelOrderScreen';
 import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
-import GettingOrderedScreen from './src/screens/GettingOrderedScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
-import MyOrderConfirmScreen from './src/screens/MyOrderConfirmScreen';
 import MyOrderScreen from './src/screens/MyOrderScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import NewsScreen from './src/screens/NewsScreen';
@@ -29,11 +26,9 @@ import ReviewProductScreen from './src/screens/ReviewProductScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import StartSearchScreen from './src/screens/StartSearchScreen';
-import SuccessShipmentScreen from './src/screens/SuccessShipmentScreen';
 import UpdatePassScreen from './src/screens/UpdatePassScreen';
 import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
 import VerificationScreen from './src/screens/VerificationScreen';
-import WatingShipmentScreen from './src/screens/WatingShipmentScreen';
 import WishListScreen from './src/screens/WishListScreen';
 
 {/* Admin */ }
@@ -101,14 +96,73 @@ function HaveLoginStack() {
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="BioDataScreen" component={BioDataScreen} />
       <Stack.Screen name="MyOrderScreen" component={MyOrderScreen} />
-      <Stack.Screen name="MyOrderConfirmScreen" component={MyOrderConfirmScreen} />
-      <Stack.Screen name="GettingOrderedScreen" component={GettingOrderedScreen} />
-      <Stack.Screen name="WatingShipmentScreen" component={WatingShipmentScreen} />
-      <Stack.Screen name="SuccessShipmentScreen" component={SuccessShipmentScreen} />
-      <Stack.Screen name="CancelOrderScreen" component={CancelOrderScreen} />
+
 
     </Stack.Navigator>
 
+  );
+}
+function NoLoginHome() {
+  return (
+     <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+
+            if (route.name === 'Mega Mall') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Wishlist') {
+              iconName = focused ? 'heart' : 'heart-outline';
+            } else if (route.name === 'Order') {
+              iconName = focused ? 'bag' : 'bag-outline';
+            } else if (route.name === 'Login') {
+              iconName = focused ? 'person' : 'person-outline';
+            }
+
+            return <Icon name={iconName} size={size} color={color} />;
+          },
+        })}
+      >
+        <Tab.Screen
+          name="Mega Mall"
+          component={HomeStack}
+          options={{
+            header: () => <Header />,  // Hiển thị Header chỉ trên HomeScreen
+          }}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => {
+              // Ngăn hành vi mặc định khi bấm vào tab
+              e.preventDefault();
+              // Điều hướng về màn hình Home trong HomeStack bất kể đang ở đâu
+              navigation.navigate('Home');
+            },
+          })}
+        />
+
+        <Tab.Screen
+          name="Wishlist"
+          component={WishListScreen}
+          options={{
+            header: () => <Header />,
+          }}
+
+        />
+        <Tab.Screen
+          name="Order"
+          component={HomeScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Tab.Screen
+          name="Login"
+          component={LoginStack}
+          options={{
+            headerShown: false,
+            tabBarStyle: { display: 'none' },  // Ẩn Bottom Navigation trên Login và SignUp
+          }}
+        />
+      </Tab.Navigator> 
   );
 }
 function HomeStack() {
@@ -289,68 +343,11 @@ function InventoryDrawerNavigator() {
 export default function App() {
   return (
     <NavigationContainer>
+      {/* <NoLoginHome /> */}
       <HaveLoginHome />
       {/* <AdminDrawerNavigator /> */}
       {/* <InventoryDrawerNavigator /> */}
-      {/* <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName;
-
-            if (route.name === 'Mega Mall') {
-              iconName = focused ? 'home' : 'home-outline';
-            } else if (route.name === 'Wishlist') {
-              iconName = focused ? 'heart' : 'heart-outline';
-            } else if (route.name === 'Order') {
-              iconName = focused ? 'bag' : 'bag-outline';
-            } else if (route.name === 'Login') {
-              iconName = focused ? 'person' : 'person-outline';
-            }
-
-            return <Icon name={iconName} size={size} color={color} />;
-          },
-        })}
-      >
-        <Tab.Screen
-          name="Mega Mall"
-          component={HomeStack}
-          options={{
-            header: () => <Header />,  // Hiển thị Header chỉ trên HomeScreen
-          }}
-          listeners={({ navigation }) => ({
-            tabPress: (e) => {
-              // Ngăn hành vi mặc định khi bấm vào tab
-              e.preventDefault();
-              // Điều hướng về màn hình Home trong HomeStack bất kể đang ở đâu
-              navigation.navigate('Home');
-            },
-          })}
-        />
-
-        <Tab.Screen
-          name="Wishlist"
-          component={WishListScreen}
-          options={{
-            header: () => <Header />,
-          }}
-
-        />
-        <Tab.Screen
-          name="Order"
-          component={HomeScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Tab.Screen
-          name="Login"
-          component={LoginStack}
-          options={{
-            headerShown: false,
-            tabBarStyle: { display: 'none' },  // Ẩn Bottom Navigation trên Login và SignUp
-          }}
-        />
-      </Tab.Navigator> */}
+      
 
 
     </NavigationContainer>
