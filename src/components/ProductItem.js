@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import * as FileSystem from 'expo-file-system';
 
 const ProductItem = ({ id, image, name, price, rating, review, like: initialLike }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [liked, setLiked] = useState(initialLike);
+  // const [localUri, setLocalUri] = useState(null);
   const shimmerAnim = useRef(new Animated.Value(0)).current; // Shimmer animation value
 
   const navigation = useNavigation();
@@ -16,6 +18,7 @@ const ProductItem = ({ id, image, name, price, rating, review, like: initialLike
   const toggleLike = () => {
     setLiked(!liked); // Chuyển đổi trạng thái like
   };
+
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
     Animated.loop(
@@ -35,16 +38,27 @@ const ProductItem = ({ id, image, name, price, rating, review, like: initialLike
       ])
     ).start();
   }, [shimmerAnim]);
-
+  useEffect(() => {
+    if (typeof image === 'string') {
+      imageString(image);
+    }
+  }, [image]);
+  
+  const imageString = (image) => {
+    return typeof image === 'string'
+      ? { uri: image }
+      :  setLoading(true) ; // Default placeholder image
+  };
   return (
     <View style={styles.container}>
       {loading ? (
         // Skeleton with shimmer effect while loading
         <View>
           <Image
-            source={image}
-            onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
+            source={image} 
+            onLoad={() => setLoading(false)}  // Ẩn skeleton khi ảnh load xong
           />
+
           <Animated.View style={[styles.skeletonImage, {
             backgroundColor: shimmerAnim.interpolate({
               inputRange: [0, 1],
@@ -79,12 +93,13 @@ const ProductItem = ({ id, image, name, price, rating, review, like: initialLike
           }}
         >
           <View>
+
             <Image
-              source={image}
+              source={imageString(image)} 
               style={styles.image}
             />
             <Text style={styles.name}>{truncateName(name)}</Text>
-            <Text style={styles.price}>{price} ₫</Text>
+            <Text style={styles.price}>{price}</Text>
             <View style={styles.rate}>
               <Text style={styles.rating}>
                 <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}

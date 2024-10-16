@@ -6,6 +6,8 @@ import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
 import { useNavigation } from '@react-navigation/native';
 import Filter from '../components/Filter';
+import axios from 'axios';
+import * as FileSystem from 'expo-file-system';
 
 
 const featuredProducts = [
@@ -70,6 +72,28 @@ const HomeScreen = () => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
 
+  const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+
+  // const [minPrice, setMinPrice] = useState(0);
+  // const [maxPrice, setMaxPrice] = useState(2000000);
+
+
+
+  useEffect(() => {
+    let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?';
+    const queryParams = [];
+    apiUrl += queryParams.join('&');
+    axios.get(apiUrl)
+      .then(response => {
+        const { content } = response.data.data;
+        setProductsState(content);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
+  }, []);
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
     Animated.loop(
@@ -97,7 +121,6 @@ const HomeScreen = () => {
   const handleSearch = () => {
     navigation.navigate('SearchScreen', { query: searchQuery });
   };
-  
   return (
     <ScrollView>
       {/* Bắt đầu phần với background #fff */}
@@ -108,14 +131,14 @@ const HomeScreen = () => {
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
             <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
-            <Text style={styles.searchInput}>Search Product Name</Text>
+              <Text style={styles.searchInput}>Search Product Name</Text>
               <Image
                 source={require('../assets/iconSeach.png')}
                 style={styles.icon}
               />
             </TouchableOpacity>
           </View>
-          
+
           {/* Banner chính */}
           {loading ? (
             <View>
@@ -172,7 +195,7 @@ const HomeScreen = () => {
         </View>
       </View>
 
-    
+
       {/* Sản phẩm nổi bật */}
       <View style={styles.containerPro}>
         <View style={styles.greySection}>
@@ -180,14 +203,36 @@ const HomeScreen = () => {
             <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          <FlatList
-            horizontal
-            data={featuredProducts}
-            renderItem={({ item }) => <ProductItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
+          {productsState.length > 0 ? (
+            <FlatList
+              horizontal
+              data={productsState}
+              renderItem={({ item }) => {
+                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+                const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
+                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+
+
+                return (
+                  <ProductItem
+                    id={item['productId']}
+                    name={item['productName']}
+                    price={item['productPriceSale']}
+                    oldPrice={item['productPrice']}
+                    image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                    rating={item['productRating']}
+                    sale={item['productSale']}
+                    isLoading={false}  // Set isLoading to false when not loading
+                  />
+                );
+              }}
+              keyExtractor={(item) => item['productId'].toString()}
+              showsHorizontalScrollIndicator={false}
+              style={styles.productList}
+            />
+          ) : null}
 
           {/* Banner phụ */}
           <Image source={require('../assets/banner2.png')} style={{ width: 370, height: 180, marginBottom: 10 }} />
@@ -197,14 +242,36 @@ const HomeScreen = () => {
             <Text style={styles.textBold}>Đã Bán Nhiều Nhất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          <FlatList
-            horizontal
-            data={bestSellers}
-            renderItem={({ item }) => <ProductItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
+          {productsState.length > 0 ? (
+            <FlatList
+              horizontal
+              data={productsState}
+              renderItem={({ item }) => {
+                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+                const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
+                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+
+
+                return (
+                  <ProductItem
+                    id={item['productId']}
+                    name={item['productName']}
+                    price={item['productPriceSale']}
+                    oldPrice={item['productPrice']}
+                    image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                    rating={item['productRating']}
+                    sale={item['productSale']}
+                    isLoading={false}  // Set isLoading to false when not loading
+                  />
+                );
+              }}
+              keyExtractor={(item) => item['productId'].toString()}
+              showsHorizontalScrollIndicator={false}
+              style={styles.productList}
+            />
+          ) : null}
 
           {/* Banner phụ 2 */}
           <Image source={require('../assets/banner3.png')} style={{ width: 380, height: 190, marginBottom: 10 }} />
@@ -214,27 +281,71 @@ const HomeScreen = () => {
             <Text style={styles.textBold}>Sản Phẩm Mới</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          <FlatList
-            horizontal
-            data={bestSellers}
-            renderItem={({ item }) => <ProductItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
+          {productsState.length > 0 ? (
+            <FlatList
+              horizontal
+              data={productsState}
+              keyExtractor={(item) => item['productId'].toString()}
+              renderItem={({ item }) => {
+                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+                const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
+                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+
+
+                return (
+                  <ProductItem
+                    id={item['productId']}
+                    name={item['productName']}
+                    price={item['productPriceSale']}
+                    oldPrice={item['productPrice']}
+                    image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                    rating={item['productRating']}
+                    sale={item['productSale']}
+                    isLoading={false}  // Set isLoading to false when not loading
+                  />
+                );
+              }}
+              showsHorizontalScrollIndicator={false}
+              style={styles.productList}
+            />
+          ) : null}
           {/* Top Rated Product */}
           <View style={styles.sectionHeader}>
             <Text style={styles.textBold}>Lượt Đánh Giá Cao Nhất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          <FlatList
-            horizontal
-            data={bestSellers}
-            renderItem={({ item }) => <ProductItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
+          {productsState.length > 0 ? (
+            <FlatList
+              horizontal
+              data={productsState}
+              renderItem={({ item }) => {
+                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+                const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
+                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+
+
+                return (
+                  <ProductItem
+                    id={item['productId']}
+                    name={item['productName']}
+                    price={item['productPriceSale']}
+                    oldPrice={item['productPrice']}
+                    image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                    rating={item['productRating']}
+                    sale={item['productSale']}
+                    isLoading={false}  // Set isLoading to false when not loading
+                  />
+                );
+              }}
+              keyExtractor={(item) => item['productId'].toString()}
+              showsHorizontalScrollIndicator={false}
+              style={styles.productList}
+            />
+          ) : null}
           {/* Special Offers */}
           <View style={styles.sectionHeader}>
             <Text style={styles.textBold}>Giảm Giá Đặc Biệt</Text>
