@@ -84,7 +84,7 @@ const ProductItem = ({ id, image, name, price, rating, review, like: initialLike
               style={styles.image}
             />
             <Text style={styles.name}>{truncateName(name)}</Text>
-            <Text style={styles.price}>{price} ₫</Text>
+            <Text style={styles.price}>{price}</Text>
             <View style={styles.rate}>
               <Text style={styles.rating}>
                 <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}

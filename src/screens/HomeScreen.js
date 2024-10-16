@@ -6,37 +6,38 @@ import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
 import { useNavigation } from '@react-navigation/native';
 import Filter from '../components/Filter';
+import axios from 'axios';
 
 
-const featuredProducts = [
-  {
-    id: '1',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.0',
-    review: '860',
-    like: true,
-  },
-  {
-    id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'TMA-2 HD Wireless2',
-    price: '1.500.000',
-    rating: '2.6',
-    review: '6',
-    like: false,
-  },
-  {
-    id: '3',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
-    price: '1.500.000',
-    rating: '0.6',
-    review: '106',
-    like: true,
-  },
-];
+// const featuredProducts = [
+//   {
+//     id: '1',
+//     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+//     name: 'TMA-2 HD Wireless0',
+//     price: '1.500.000',
+//     rating: '4.0',
+//     review: '860',
+//     like: true,
+//   },
+//   {
+//     id: '2',
+//     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
+//     name: 'TMA-2 HD Wireless2',
+//     price: '1.500.000',
+//     rating: '2.6',
+//     review: '6',
+//     like: false,
+//   },
+//   {
+//     id: '3',
+//     image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+//     name: 'TMA-2 HD Wireless',
+//     price: '1.500.000',
+//     rating: '0.6',
+//     review: '106',
+//     like: true,
+//   },
+// ];
 
 
 const bestSellers = [
@@ -70,6 +71,42 @@ const HomeScreen = () => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
 
+  const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+  const [minPrice, setMinPrice] = useState(0);
+    const [maxPrice, setMaxPrice] = useState(2000000);
+
+  useEffect(() => {
+    let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?';
+
+    // Initialize query params
+    const queryParams = [];
+    // if (currentPage !== null && currentPage !== undefined) queryParams.push(`page=${currentPage}`);
+    // if (pageSize) queryParams.push(`size=${pageSize}`);
+    // if (direction && direction !== "") queryParams.push(`direction=${direction}`);
+    if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
+    if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
+    // if (categoryId !== null && categoryId !== "") queryParams.push(`categoryId=${categoryId}`);
+
+    apiUrl += queryParams.join('&');
+
+    axios.get(apiUrl)
+      .then(response => {
+        const { content } = response.data.data;
+        // const { totalPages, number, size, totalElements } = response.data.data.page;
+        setProductsState(content);
+        // setTotalPages(totalPages);
+        // setCurrentPage(number);
+        // setPageSize(size);
+        // setTotalElements(totalElements);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
+  }, [minPrice, maxPrice]);
+
+
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
     Animated.loop(
@@ -97,7 +134,7 @@ const HomeScreen = () => {
   const handleSearch = () => {
     navigation.navigate('SearchScreen', { query: searchQuery });
   };
-  
+
   return (
     <ScrollView>
       {/* Bắt đầu phần với background #fff */}
@@ -108,14 +145,14 @@ const HomeScreen = () => {
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
             <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
-            <Text style={styles.searchInput}>Search Product Name</Text>
+              <Text style={styles.searchInput}>Search Product Name</Text>
               <Image
                 source={require('../assets/iconSeach.png')}
                 style={styles.icon}
               />
             </TouchableOpacity>
           </View>
-          
+
           {/* Banner chính */}
           {loading ? (
             <View>
@@ -172,7 +209,7 @@ const HomeScreen = () => {
         </View>
       </View>
 
-    
+
       {/* Sản phẩm nổi bật */}
       <View style={styles.containerPro}>
         <View style={styles.greySection}>
@@ -180,14 +217,28 @@ const HomeScreen = () => {
             <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          <FlatList
+
+          {productsState.length > 0 ? (
+            <FlatList
             horizontal
-            data={featuredProducts}
-            renderItem={({ item }) => <ProductItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
+              data={productsState}
+              renderItem={({ item }) => (
+                <ProductItem
+                  id={item['productId']}
+                  name={item['productName']}
+                  price={item['productPriceSale']}
+                  oldPrice={item['productPrice']}
+                  images={item['productImages']}
+                  rating={item['productRating']}
+                  sale={item['productSale']}
+                  isLoading={false}  // Set isLoading to false when not loading
+                />
+              )}
+              keyExtractor={(item) => item['productId'].toString()}
+              showsHorizontalScrollIndicator={false}
+              style={styles.productList}
+            />
+          ) : null}
 
           {/* Banner phụ */}
           <Image source={require('../assets/banner2.png')} style={{ width: 370, height: 180, marginBottom: 10 }} />
