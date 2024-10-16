@@ -72,8 +72,11 @@ const HomeScreen = () => {
   const navigation = useNavigation();
 
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+  
   const [minPrice, setMinPrice] = useState(0);
     const [maxPrice, setMaxPrice] = useState(2000000);
+
+
 
   useEffect(() => {
     let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?';
@@ -105,7 +108,6 @@ const HomeScreen = () => {
         setLoading(false);
       });
   }, [minPrice, maxPrice]);
-
 
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
@@ -239,7 +241,6 @@ const HomeScreen = () => {
               style={styles.productList}
             />
           ) : null}
-
           {/* Banner phụ */}
           <Image source={require('../assets/banner2.png')} style={{ width: 370, height: 180, marginBottom: 10 }} />
 

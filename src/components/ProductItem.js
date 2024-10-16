@@ -36,6 +36,8 @@ const ProductItem = ({ id, image, name, price, rating, review, like: initialLike
     ).start();
   }, [shimmerAnim]);
 
+  console.log("Image URL:", image && image[0] ? image[0].productImagePath : "No Image");
+
   return (
     <View style={styles.container}>
       {loading ? (
