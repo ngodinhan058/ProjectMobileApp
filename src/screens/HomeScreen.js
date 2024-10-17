@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity, Animated, Easing } from 'react-native';
+import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Animated, Easing } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
@@ -77,7 +77,14 @@ const HomeScreen = () => {
   // const [minPrice, setMinPrice] = useState(0);
   // const [maxPrice, setMaxPrice] = useState(2000000);
 
+  const [refreshing, setRefreshing] = React.useState(false);
 
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?';
@@ -122,7 +129,11 @@ const HomeScreen = () => {
     navigation.navigate('SearchScreen', { query: searchQuery });
   };
   return (
-    <ScrollView>
+
+
+    <ScrollView refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']}/>
+    }>
       {/* Bắt đầu phần với background #fff */}
       <View style={styles.container}>
         <View style={styles.whiteSection}>
