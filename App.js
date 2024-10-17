@@ -32,7 +32,7 @@ import VerificationScreen from './src/screens/VerificationScreen';
 import WishListScreen from './src/screens/WishListScreen';
 
 {/* Admin */ }
-import MenuScreen from './src/screens/admin/MenuScreen';
+
 {/* AdminProduct */ }
 import AddProductScreen from './src/screens/admin/product/AddProductScreen';
 import EditProductScreen from './src/screens/admin/product/EditProductScreen';
@@ -62,6 +62,8 @@ import EditIdCardScreen from './src/screens/admin/user/idcard/EditIdCardScreen';
 {/* Success, Fail */ }
 import SuccessScreen from './src/screens/admin/SuccessScreen';
 
+import ModalConfirm from './src/screens/shipper/ModalConfirm';
+import ChatScreen from './src/screens/shipper/ChatScreen';
 
 import Header from './src/components/Header';
 
@@ -304,7 +306,7 @@ function UserAdmin() {
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
+      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin}/>
       <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
     </Drawer.Navigator>
