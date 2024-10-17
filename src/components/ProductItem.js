@@ -85,10 +85,10 @@ const ProductItem = ({ id, image, name, price, rating, review, like: initialLike
 
             if (currentRoute === 'AddedProductToWishlist') {
               // Nếu đang ở ProductDetailScreen, dùng replace
-              navigation.replace('AddedProductToWishlist', { image, name, price, rating, review });
+              navigation.replace('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
             } else {
               // Nếu không, dùng navigate
-              navigation.navigate('AddedProductToWishlist', { image, name, price, rating, review });
+              navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
             }
           }}
         >

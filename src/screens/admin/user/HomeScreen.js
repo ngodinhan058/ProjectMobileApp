@@ -1,65 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useWindowDimensions } from 'react-native';
+import axios from 'axios';
 
 const HomeAdminScreen = ({ navigation }) => {
     const layout = useWindowDimensions();  // Lấy thông tin kích thước màn hình
+    const [usersState, setUsersState] = useState([]); // Dữ liệu sản phẩm
+
+
+    useEffect(() => {
+        const apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/users';
+
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(apiUrl);
+                const data = response.data.data; // Đảm bảo bạn đang lấy đúng dữ liệu
+                setUsersState(data);
+                console.log(data);
+            } catch (error) {
+                console.error('Error fetching data:', error.response ? error.response.data : error.message);
+            }
+        };
+
+        fetchData();
+    }, []);
+
 
     // Dữ liệu sản phẩm (users) với các vai trò khác nhau
     const products = [
         {
-            id: '1' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../../../assets/diamond.png') , number_id: '079203000000',
+            id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../../../assets/diamond.png'), number_id: '079203000000',
             id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
             id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
         },
         {
-            id: '2' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../../../assets/silver.png') , number_id: '079203000000',
+            id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../../../assets/silver.png'), number_id: '079203000000',
             id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
             id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
         },
         {
-            id: '3' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png') , number_id: '079203000000',
+            id: '3', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png'), number_id: '079203000000',
             id_image_front: require('../../../assets/silver.png'),
             id_image_back: require('../../../assets/silver.png'), role: 'customer',
         },
         {
-            id: '4' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Sếp', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png') , number_id: '079203000000',
+            id: '4', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Sếp', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png'), number_id: '079203000000',
             id_image_front: require('../../../assets/silver.png'),
             id_image_back: require('../../../assets/silver.png'), role: 'staff',
-        }, 
+        },
         {
-            id: '5' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Shipper', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png') , number_id: '079203000000',
+            id: '5', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Shipper', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png'), number_id: '079203000000',
             id_image_front: require('../../../assets/silver.png'),
             id_image_back: require('../../../assets/silver.png'), role: 'shipper',
         },
         {
-            id: '6' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Shipper 1', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png') , number_id: '079203000000',
+            id: '6', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'Shipper 1', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png'), number_id: '079203000000',
             id_image_front: require('../../../assets/silver.png'),
             id_image_back: require('../../../assets/silver.png'), role: 'shipper',
         },
         {
-            id: '7' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../../../assets/diamond.png') , number_id: '079203000000',
+            id: '7', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '123@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'An', first_name: 'Ngô Định', money: '200', rank: require('../../../assets/diamond.png'), number_id: '079203000000',
             id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
             id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
         },
         {
-            id: '8' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../../../assets/silver.png') , number_id: '079203000000',
+            id: '8', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '456@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'A', first_name: 'Nguyễn Văn', money: '200', rank: require('../../../assets/silver.png'), number_id: '079203000000',
             id_image_front: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.2-1024x0.jpg' },
             id_image_back: { uri: 'https://canhsatquanlyhanhchinh.gov.vn/Uploads/Images/2024/7/4/3/4.1.3-1024x0.jpg' }, role: 'customer',
         },
         {
-            id: '9' , image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
-            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png') , number_id: '079203000000',
+            id: '9', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, pass: '***', email: '789@gmail.com', phone: '0923039880',
+            birthday: '14-09-2004', address: '21/8', pin: '1234', last_name: 'B', first_name: 'Phạm Thị', money: '200', rank: require('../../../assets/bronze.png'), number_id: '079203000000',
             id_image_front: require('../../../assets/silver.png'),
             id_image_back: require('../../../assets/silver.png'), role: 'customer',
         },
@@ -68,7 +89,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
     // Lọc danh sách người dùng theo role
     const filterByRole = (role) => {
-        return products.filter((item) => item.role === role);
+        return usersState.filter((item) => item.role === role);
     };
 
     // Render từng sản phẩm (người dùng)
@@ -78,8 +99,8 @@ const HomeAdminScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('DetailUserScreen', {
                 image: item.image,
                 email: item.email,
-                first_name: item.first_name,
-                last_name: item.last_name,
+                first_name: item['user_first_name'],
+                last_name: item['user_last_name'],
                 id_image_front: item.id_image_front,
                 id_image_back: item.id_image_back,
                 pass: item.pass,
@@ -95,13 +116,17 @@ const HomeAdminScreen = ({ navigation }) => {
             <View style={{ marginRight: 20 }}>
                 <Image source={item.image} style={styles.productIcon} />
             </View>
+
+
+
             <View style={styles.productDetails}>
-                <Text style={styles.productCode}>{item.first_name}&#160;{item.last_name}</Text>
+                <Text style={styles.productCode}>{item['userFirstName']}&#160;{item['userLastName']}</Text>
                 <Image source={item.rank} style={styles.rankIcon} />
                 <Text style={styles.productStatus}>Email: {item.email}</Text>
                 <View style={styles.line}></View>
                 <Text style={styles.productCode}>Ví Tiền: {item.money} ₫</Text>
             </View>
+
             <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
             </Pressable>
@@ -111,7 +136,7 @@ const HomeAdminScreen = ({ navigation }) => {
     // Các Scene tương ứng với mỗi tab (mỗi role)
     const CustomerRoute = () => (
         <FlatList
-            data={filterByRole('customer')}
+            data={usersState}
             renderItem={renderProduct}
             keyExtractor={(item) => item.id}
             style={styles.productList}
@@ -157,7 +182,7 @@ const HomeAdminScreen = ({ navigation }) => {
             </View>
 
             {/* Tab View */}
-            <TabView
+            {/* <TabView
                 navigationState={{ index, routes }}
                 renderScene={SceneMap({
                     customer: CustomerRoute,
@@ -174,6 +199,12 @@ const HomeAdminScreen = ({ navigation }) => {
                         labelStyle={{ color: '#000' }}
                     />
                 )}
+            /> */}
+            <FlatList
+                data={usersState}
+                renderItem={renderProduct}
+                keyExtractor={(item) => item.id}
+                style={styles.productList}
             />
 
             {/* Add Button */}

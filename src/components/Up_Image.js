@@ -85,6 +85,7 @@ const Up_Image = () => {
                         <Image
                             source={{ uri: selectedImage }} // Hiển thị hình ảnh đã chọn
                             style={styles.imageIcon}
+                            
                         />
                     ) : (
                         <Image

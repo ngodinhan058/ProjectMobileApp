@@ -72,7 +72,6 @@ function ProductDetailScreen({ route, navigation }) {
           <View>
             <Text style={styles.productPrice}>
               {price}
-              <Text style={styles.currencyHighlight}>&#273;</Text>{' '}
             </Text>
           </View>
 

@@ -10,10 +10,11 @@ import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 
 
+
 const featuredProducts = [
   {
     id: '1',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    image: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
     name: 'TMA-2 HD Wireless0',
     price: '1.500.000',
     rating: '4.0',
@@ -22,7 +23,7 @@ const featuredProducts = [
   },
   {
     id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
+    image: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
     name: 'TMA-2 HD Wireless2',
     price: '1.500.000',
     rating: '2.6',
@@ -31,7 +32,7 @@ const featuredProducts = [
   },
   {
     id: '3',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
+    image: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
     name: 'TMA-2 HD Wireless',
     price: '1.500.000',
     rating: '0.6',
@@ -87,7 +88,7 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?';
+    let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?search=samsung';
     const queryParams = [];
     apiUrl += queryParams.join('&');
     axios.get(apiUrl)
@@ -132,7 +133,7 @@ const HomeScreen = () => {
 
 
     <ScrollView refreshControl={
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']}/>
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']} />
     }>
       {/* Bắt đầu phần với background #fff */}
       <View style={styles.container}>
@@ -223,7 +224,7 @@ const HomeScreen = () => {
 
                 const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
                   ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
 
 
                 return (

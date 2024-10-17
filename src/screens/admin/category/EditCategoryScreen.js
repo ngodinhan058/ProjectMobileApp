@@ -106,6 +106,94 @@ const EditProductScreen = ({ route, navigation }) => {
     );
 };
 
+// const EditProductScreen = ({ route, navigation }) => {
+
+//     const [categoryName, setcategoryName] = useState('');
+//     const [categorySlug, setcategorySlug] = useState('');
+
+//     const [dateOfBirth, setDateOfBirth] = useState(new Date());
+//     const [showDatePicker, setShowDatePicker] = useState(false);
+//     const onDateChange = (event, selectedDate) => {
+//         const currentDate = selectedDate || dateOfBirth;
+//         setShowDatePicker(false);
+//         setDateOfBirth(currentDate);
+//     };
+
+//     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+
+//     const toggleFilterModal = () => {
+//         setIsFilterModalVisible(!isFilterModalVisible);
+//     };
+
+   
+//     const handleResetFilters = () => {
+//         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
+//     };
+//     return (
+//         <View style={styles.container}>
+//             <ScrollView>
+//                 {/* Header */}
+//                 <View style={styles.header}>
+//                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+//                         <Icon name="angle-left" size={35} color="#000" />
+//                     </Pressable>
+//                     <Text style={styles.textHeader}>Sửa Thông Tin Danh Mục</Text>
+//                 </View>
+
+//                 {/* Icon Image */}
+//                 <UploadImage />
+//                 {/* Category Form */}
+//                 <View style={styles.formContainer}>
+//                     <Text style={styles.label}>Tên Danh Mục:</Text>
+//                     {/* Category Name */}
+//                     <TextInput
+//                         style={styles.input}
+//                         placeholder="Sửa Tên Danh Mục"
+//                         value={categoryName}
+//                         onChangeText={setcategoryName}
+//                     />
+//                     {/* Category Slug */}
+//                     <Text style={styles.label}>Slug Danh Mục:</Text>
+//                     <TextInput
+//                         style={styles.input}
+//                         placeholder="Sửa Slug Danh Mục"
+//                         value={categorySlug}
+//                         onChangeText={setcategorySlug}
+//                     />
+//                      {/* Category Releaase */}
+//                      <Text style={styles.label}>Ngày Tạo Danh Mục:</Text>
+//                     <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+//                         <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Sửa Ngày Tạo Danh Mục'}</Text>
+//                     </TouchableOpacity>
+//                     {showDatePicker && (
+//                         <DateTimePicker
+//                             value={dateOfBirth}
+//                             mode="date"
+//                             display="default"
+//                             onChange={onDateChange}
+//                         />
+//                     )}
+//                     {/* Category Parent */}
+//                     <Text style={styles.label}>Parent Danh Mục:</Text>
+//                     <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
+//                         <Text>Sửa Parent Danh Mục</Text>
+//                     </TouchableOpacity>
+//                     {/* Filter Modal Component */}
+//                     <SelectorInCategory
+//                         isVisible={isFilterModalVisible}
+//                         onClose={toggleFilterModal}
+//                         onReset={handleResetFilters}
+//                     />
+//                     {/* Add/Edit Button */}
+//                     <TouchableOpacity style={styles.button} onPress={() => alert('Category Added')}>
+//                         <Text style={styles.buttonText}>Sửa</Text>
+//                     </TouchableOpacity>
+//                 </View>
+//             </ScrollView>
+//         </View>
+//     );
+// };
+
 const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 20,
