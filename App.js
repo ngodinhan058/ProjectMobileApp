@@ -346,8 +346,8 @@ export default function App() {
   return (
     <NavigationContainer>
       {/* <NoLoginHome /> */}
-      {/* <HaveLoginHome /> */}
-      <AdminDrawerNavigator />
+      <HaveLoginHome />
+      {/* <AdminDrawerNavigator /> */}
       {/* <InventoryDrawerNavigator /> */}
       
 

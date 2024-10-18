@@ -2,52 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
-
-const featuredProducts = [
-    {
-      id: '1',
-      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-      name: 'TMA-2 HD Wireless0',
-      price: '1.500.000',
-      rating: '4.6',
-      review: '86'
-    },
-    {
-      id: '2',
-      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-      name: 'Macbook',
-      price: '1.500.000',
-      rating: '4.6',
-      review: '86'
-    },
-    {
-      id: '3',
-      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-      name: 'Wireless',
-      price: '1.500.000',
-      rating: '4.6',
-      review: '86'
-    },
-    {
-      id: '4',
-      image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-      name: 'TMA-2 HD Wireless',
-      price: '1.500.000',
-      rating: '4.6',
-      review: '86'
-    },
-  
-];
+import axios from 'axios';
 
 const SearchScreen = ({ navigation, route }) => {
+    const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+    const [minPrice, setMinPrice] = useState(0);
+    const [maxPrice, setMaxPrice] = useState(2000000);
+
     const { query } = route.params;
+    const finalQuery = query || '';
+
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [appliedFilters, setAppliedFilters] = useState(null);
-    const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
+    const [searchQuery, setSearchQuery] = useState(finalQuery); // Lưu trữ trạng thái cho thanh tìm kiếm
+    const [loading, setLoading] = useState(true); // Thêm biến loading nếu thiếu
+    const [categoryId, setCategoryId] = useState([]);
 
-    const filteredProducts = featuredProducts.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+
     const handleSearch = () => {
         navigation.replace('SearchScreen', { query: searchQuery });
     };
@@ -58,32 +29,47 @@ const SearchScreen = ({ navigation, route }) => {
 
     const handleApplyFilters = (filters) => {
         setAppliedFilters(filters);
+        setMinPrice(filters.priceRange[0]); // Sử dụng trực tiếp giá trị từ filters
+        setMaxPrice(filters.priceRange[1]); // Sử dụng trực tiếp giá trị từ filters
+        setCategoryId(filters.categories)
     };
-
+    
     const handleResetFilters = () => {
         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
     };
+    useEffect(() => {
+        let apiUrl = 'http://192.168.136.135:8080/api/v1/products/filters?';
+        const queryParams = [];
+        if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
+        if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
+        if (categoryId !== null && categoryId !== "") queryParams.push(`categoryId=${categoryId}`);
+        if (searchQuery !== null && searchQuery !== undefined) queryParams.push(`search=${searchQuery}`);
+       
+        apiUrl += queryParams.join('&');
+        axios.get(apiUrl)
+            .then(response => {
+                const { content } = response.data.data;
+                setProductsState(content);
+                setLoading(false);
+            })
+            .catch(error => {
+                // console.error('Error fetching data:', error);
+                setLoading(false);
+            });
+    }, [minPrice, maxPrice, categoryId, searchQuery]);
+
+    const filteredSuggestions = productsState.filter(product =>
+        product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // const filteredProducts = productsState.filter(product =>
+    //     product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    // );
 
     return (
         <View style={styles.container}>
-
-
-            {/* Hiển thị dữ liệu đã chọn */}
-            {appliedFilters && (
-                <View style={styles.appliedFilters}>
-                    <Text style={styles.appliedText}>Khoảng giá: {appliedFilters.priceRange[0].toLocaleString('vi-VN')} đ - {appliedFilters.priceRange[1].toLocaleString('vi-VN')} đ</Text>
-                    <Text style={styles.appliedText}>Sản phẩm đã chọn:</Text>
-                    {Object.keys(appliedFilters.categories).map((category) => (
-                        appliedFilters.categories[category] && (
-                            <Text key={category} style={styles.appliedText}>{category.charAt(0).toUpperCase() + category.slice(1)}</Text>
-                        )
-                    ))}
-                </View>
-            )}
-
             {/* Thanh tìm kiếm */}
             <View style={styles.searchBar}>
-
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search Product Name"
@@ -98,14 +84,11 @@ const SearchScreen = ({ navigation, route }) => {
                     />
                 </TouchableOpacity>
 
-
                 {/* Lọc */}
                 <TouchableOpacity style={styles.filter} onPress={toggleFilterModal}>
                     <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
                 </TouchableOpacity>
-
             </View>
-
 
             {/* Filter Modal Component */}
             <Filter
@@ -113,17 +96,51 @@ const SearchScreen = ({ navigation, route }) => {
                 onClose={toggleFilterModal}
                 onApply={handleApplyFilters}
                 onReset={handleResetFilters}
+                
             />
 
             {/* Danh sách sản phẩm dạng lưới */}
-            <FlatList
-                data={filteredProducts}
+            {/* <FlatList
+                data={productsState}
                 renderItem={({ item }) => <ProductItem {...item} />}
                 keyExtractor={(item) => item.id}
                 numColumns={2}
                 columnWrapperStyle={styles.columnWrapper}
                 contentContainerStyle={styles.listContent}
-            />
+            /> */}
+
+            {filteredSuggestions.length > 0 ? (
+                <FlatList
+                    data={filteredSuggestions}
+                    renderItem={({ item }) => {
+                        // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+                        const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+                            ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
+                            : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
+
+
+                        return (
+                            <ProductItem
+                                id={item['productId']}
+                                name={item['productName']}
+                                price={item['productPriceSale']}
+                                oldPrice={item['productPrice']}
+                                image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                                rating={item['productRating']}
+                                sale={item['productSale']}
+                                isLoading={false}  // Set isLoading to false when not loading
+                            />
+                        );
+                    }}
+                    keyExtractor={(item) => item['productId'].toString()}
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.productList}
+                    numColumns={2}
+                    columnWrapperStyle={styles.columnWrapper}
+                    contentContainerStyle={styles.listContent}
+                />
+            ) : null}
         </View>
     );
 };
@@ -155,7 +172,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fafafa',
         borderRadius: 10,
         alignItems: 'center',
-        
+
         marginBottom: 30,
         right: 0,
     },

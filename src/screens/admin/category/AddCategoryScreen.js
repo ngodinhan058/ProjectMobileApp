@@ -10,37 +10,53 @@ import {
     TextInput,
     Pressable,
     TouchableWithoutFeedback,
+    Alert,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import SelectorInCategory from '../../../components/SelectorInCategory';
+import axios from 'axios'; 
 
 
+const AddCategoryScreen = ({ navigation }) => {
+    const [categoryName, setCategoryName] = useState('');
+    const [categoryImg, setCategoryImg] = useState('');
+    const [categoryStatusId, setCategoryStatusId] = useState('01000000-0000-0000-0000-000000000000'); // Default Status ID
+    const [categoryParent, setCategoryParent] = useState('01000000-0000-0000-0000-000000000000'); // Default Parent ID
 
-const AddCategoryScreen = ({ route, navigation }) => {
-    const [categoryName, setcategoryName] = useState('');
-    const [categorySlug, setcategorySlug] = useState('');
-
-    const [dateOfBirth, setDateOfBirth] = useState(new Date());
+    const [categoryRelease, setCategoryRelease] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
+
     const onDateChange = (event, selectedDate) => {
-        const currentDate = selectedDate || dateOfBirth;
+        const currentDate = selectedDate || categoryRelease;
         setShowDatePicker(false);
-        setDateOfBirth(currentDate);
+        setCategoryRelease(currentDate);
     };
 
-    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+    const handleAddCategory = async () => {
+        try {
+            // Gửi yêu cầu POST tới API
+            const response = await axios.post('http://192.168.136.135:8080/api/v1/category', {
+                categoryName: categoryName,
+                categoryRelease: categoryRelease.toISOString().split('T')[0], // Chuyển ngày thành chuỗi định dạng 'YYYY-MM-DD'
+                statusId: categoryStatusId,
+                categoryParent: categoryParent,
+                categoryImgPath: categoryImg,
+            });
 
-    const toggleFilterModal = () => {
-        setIsFilterModalVisible(!isFilterModalVisible);
+            // Kiểm tra kết quả trả về từ API
+            if (response.status === 201) {
+                Alert.alert('Thành công', 'Danh mục đã được thêm.');
+                navigation.goBack(); // Quay lại màn hình trước đó
+            }
+        } catch (error) {
+            console.error('Lỗi khi thêm danh mục:', error);
+            Alert.alert('Lỗi', 'Không thể thêm danh mục.');
+        }
     };
 
-   
-    const handleResetFilters = () => {
-        setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
-    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -51,54 +67,58 @@ const AddCategoryScreen = ({ route, navigation }) => {
                     </Pressable>
                     <Text style={styles.textHeader}>Thêm Thông Tin Danh Mục</Text>
                 </View>
-
+                <Text style={styles.label}>Ảnh Danh Mục: (Link)</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Thêm Tên Danh Mục"
+                        value={categoryImg}
+                        onChangeText={setCategoryImg}
+                    />
                 {/* Icon Image */}
-                <UploadImage />
-
+                 {/* <UploadImage /> */}
                 {/* Category Form */}
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Danh Mục:</Text>
-                    {/* Category Name */}
                     <TextInput
                         style={styles.input}
                         placeholder="Thêm Tên Danh Mục"
                         value={categoryName}
-                        onChangeText={setcategoryName}
+                        onChangeText={setCategoryName}
                     />
-                    {/* Category Slug */}
-                    <Text style={styles.label}>Slug Danh Mục:</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Thêm Slug Danh Mục"
-                        value={categorySlug}
-                        onChangeText={setcategorySlug}
-                    />
-                    {/* Category Releaase */}
+
                     <Text style={styles.label}>Ngày Tạo Danh Mục:</Text>
                     <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-                        <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Thêm Ngày Tạo Danh Mục'}</Text>
+                        <Text>{categoryRelease ? categoryRelease.toDateString() : 'Thêm Ngày Tạo Danh Mục'}</Text>
                     </TouchableOpacity>
                     {showDatePicker && (
                         <DateTimePicker
-                            value={dateOfBirth}
+                            value={categoryRelease}
                             mode="date"
                             display="default"
                             onChange={onDateChange}
                         />
                     )}
-                    {/* Category Parent */}
-                    <Text style={styles.label}>Parent Danh Mục:</Text>
-                    <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
-                        <Text>Thêm Parent Danh Mục</Text>
-                    </TouchableOpacity>
-                    {/* Filter Modal Component */}
-                    <SelectorInCategory
-                        isVisible={isFilterModalVisible}
-                        onClose={toggleFilterModal}
-                        onReset={handleResetFilters}
+
+                    {/* Status Danh Mục */}
+                    <Text style={styles.label}>Status Danh Mục:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập Status Danh Mục"
+                        value={categoryStatusId}
+                        onChangeText={setCategoryStatusId}
                     />
-                    {/* Add/Edit Button */}
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Category Added')}>
+
+                    {/* Parent Danh Mục */}
+                    <Text style={styles.label}>Parent Danh Mục:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập Parent Danh Mục"
+                        value={categoryParent}
+                        onChangeText={setCategoryParent}
+                    />
+
+                    {/* Add Button */}
+                    <TouchableOpacity style={styles.button} onPress={handleAddCategory}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
@@ -106,6 +126,97 @@ const AddCategoryScreen = ({ route, navigation }) => {
         </View>
     );
 };
+
+
+
+// const AddCategoryScreen = ({ route, navigation }) => {
+//     const [categoryName, setcategoryName] = useState('');
+//     const [categorySlug, setcategorySlug] = useState('');
+
+//     const [dateOfBirth, setDateOfBirth] = useState(new Date());
+//     const [showDatePicker, setShowDatePicker] = useState(false);
+//     const onDateChange = (event, selectedDate) => {
+//         const currentDate = selectedDate || dateOfBirth;
+//         setShowDatePicker(false);
+//         setDateOfBirth(currentDate);
+//     };
+
+//     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+
+//     const toggleFilterModal = () => {
+//         setIsFilterModalVisible(!isFilterModalVisible);
+//     };
+
+   
+//     const handleResetFilters = () => {
+//         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
+//     };
+//     return (
+//         <View style={styles.container}>
+//             <ScrollView>
+//                 {/* Header */}
+//                 <View style={styles.header}>
+//                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+//                         <Icon name="angle-left" size={35} color="#000" />
+//                     </Pressable>
+//                     <Text style={styles.textHeader}>Thêm Thông Tin Danh Mục</Text>
+//                 </View>
+
+//                 {/* Icon Image */}
+//                 <UploadImage />
+
+//                 {/* Category Form */}
+//                 <View style={styles.formContainer}>
+//                     <Text style={styles.label}>Tên Danh Mục:</Text>
+//                     {/* Category Name */}
+//                     <TextInput
+//                         style={styles.input}
+//                         placeholder="Thêm Tên Danh Mục"
+//                         value={categoryName}
+//                         onChangeText={setcategoryName}
+//                     />
+                    
+//                     {/* Category Releaase */}
+//                     <Text style={styles.label}>Ngày Tạo Danh Mục:</Text>
+//                     <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+//                         <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Thêm Ngày Tạo Danh Mục'}</Text>
+//                     </TouchableOpacity>
+//                     {showDatePicker && (
+//                         <DateTimePicker
+//                             value={dateOfBirth}
+//                             mode="date"
+//                             display="default"
+//                             onChange={onDateChange}
+//                         />
+//                     )}
+//                      {/* Category Parent */}
+//                      <Text style={styles.label}>Status Danh Mục:</Text>
+//                     <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
+//                         <Text>Thêm Status Danh Mục</Text>
+//                     </TouchableOpacity>
+//                     {/* Filter Modal Component */}
+//                     <TextInput value='01000000-0000-0000-0000-000000000000'/>
+//                     {/* Category Parent */}
+//                     <Text style={styles.label}>Parent Danh Mục:</Text>
+//                     <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
+//                         <Text>Thêm Parent Danh Mục</Text>
+//                     </TouchableOpacity>
+//                     {/* Filter Modal Component */}
+//                     <SelectorInCategory
+//                         isVisible={isFilterModalVisible}
+//                         onClose={toggleFilterModal}
+//                         onReset={handleResetFilters}
+//                     />
+//                     {/* Add/Edit Button */}
+//                     <TouchableOpacity style={styles.button} onPress={() => alert('Category Added')}>
+//                         <Text style={styles.buttonText}>Thêm</Text>
+//                     </TouchableOpacity>
+//                 </View>
+//             </ScrollView>
+//         </View>
+//     );
+// };
+
 
 const styles = StyleSheet.create({
     container: {
