@@ -92,7 +92,7 @@ function RevenueScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -127,7 +127,7 @@ function RevenueScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -174,7 +174,7 @@ function RevenueScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -209,7 +209,7 @@ function RevenueScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>

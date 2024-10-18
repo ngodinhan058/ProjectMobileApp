@@ -36,7 +36,7 @@ function ItemHistoryScreen({ route, navigation }) {
           }}
         >
           <View>
-            <Image source={require('../assets/drive.png')} />
+            <Image source={require('../../assets/drive.png')} />
           </View>
           <Text style={{ textAlign: 'center', fontWeight: 700 }}>
             Ref ID: 12747599
@@ -75,7 +75,7 @@ function ItemHistoryScreen({ route, navigation }) {
             }}
           >
             <Image
-              source={require('../assets/profile.png')}
+              source={require('../../assets/profile.png')}
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
           </View>

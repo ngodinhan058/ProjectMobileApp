@@ -61,7 +61,7 @@ function ConfirmShippingPackageScreen({ route, navigation }) {
             }}
           >
             <Image
-              source={require('../assets/profile.png')}
+              source={require('../../assets/profile.png')}
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
           </View>
@@ -108,6 +108,7 @@ function ConfirmShippingPackageScreen({ route, navigation }) {
             borderRadius: 10,
             backgroundColor: '#3669C9',
           }}
+          onPress={() => navigation.navigate('InprogressShippingPackageScreen')}
         >
           <Text
             style={{

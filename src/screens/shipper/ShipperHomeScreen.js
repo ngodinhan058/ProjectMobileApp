@@ -68,7 +68,7 @@ function ShipperHomeScreen({ route, navigation }) {
         >
           <Image
             style={{ width: 50, height: 50, borderRadius: 50 }}
-            source={require('../assets/new2.png')}
+            source={require('../../assets/new2.png')}
           />
 
           <View>
@@ -90,7 +90,7 @@ function ShipperHomeScreen({ route, navigation }) {
                 width: 24,
                 height: 24,
               }}
-              source={require('../assets/bell.png')}
+              source={require('../../assets/bell.png')}
             />
             <Text
               style={{
@@ -139,12 +139,10 @@ function ShipperHomeScreen({ route, navigation }) {
             <View
               style={{
                 flexDirection: 'row',
-                marginLeft: 5,
-                gap: 10,
+                margin: 'auto',
                 position: 'relative',
                 top: -50,
-                left: 0,
-                right: 0,
+                alignItems: 'center',
                 backgroundColor: '#fff',
                 borderRadius: 10,
                 shadowColor: '#000',
@@ -167,7 +165,7 @@ function ShipperHomeScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/checkrate.png')}
+                  source={require('../../assets/checkrate.png')}
                 />
                 <Text
                   style={{
@@ -193,7 +191,7 @@ function ShipperHomeScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/pickup.png')}
+                  source={require('../../assets/pickup.png')}
                 />
                 <Text
                   style={{
@@ -219,7 +217,7 @@ function ShipperHomeScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/dropoff.png')}
+                  source={require('../../assets/dropoff.png')}
                 />
                 <Text
                   style={{
@@ -245,7 +243,7 @@ function ShipperHomeScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/history.png')}
+                  source={require('../../assets/history.png')}
                 />
                 <Text
                   style={{
@@ -275,9 +273,6 @@ function ShipperHomeScreen({ route, navigation }) {
             <View>
               <View
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
                   padding: 10,
                   backgroundColor: '#fff',
                   borderRadius: 10,
@@ -291,28 +286,37 @@ function ShipperHomeScreen({ route, navigation }) {
                   marginTop: 5,
                 }}
               >
-                <Image
-                  style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
-                />
-
-                <View>
-                  <Text>#HWDSF776567DS</Text>
-                  <Text>On the way &#183; 00/00/0000</Text>
-                </View>
-
-                <View
+                <TouchableOpacity
                   style={{
-                    backgroundColor: '#22D1EE',
-                    padding: 4,
-                    borderRadius: 8,
-                    maxWidth: 80,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                   }}
+                  onPress={() => navigation.navigate('ShippingDetailScreen')}
                 >
-                  <Text style={{ color: '#fff', textAlign: 'center' }}>
-                    Dang giao hang
-                  </Text>
-                </View>
+                  <Image
+                    style={{ width: 50, height: 50, borderRadius: 50 }}
+                    source={require('../../assets/new2.png')}
+                  />
+
+                  <View>
+                    <Text>#HWDSF776567DS</Text>
+                    <Text>On the way &#183; 00/00/0000</Text>
+                  </View>
+
+                  <View
+                    style={{
+                      backgroundColor: '#22D1EE',
+                      padding: 4,
+                      borderRadius: 8,
+                      maxWidth: 80,
+                    }}
+                  >
+                    <Text style={{ color: '#fff', textAlign: 'center' }}>
+                      Dang giao hang
+                    </Text>
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -351,7 +355,7 @@ function ShipperHomeScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -384,7 +388,7 @@ function ShipperHomeScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>

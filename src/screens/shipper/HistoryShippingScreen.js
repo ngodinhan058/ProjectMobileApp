@@ -32,6 +32,7 @@ function HistoryShippingScreen({ route, navigation }) {
             borderRadius: 10,
             borderBottomWidth: 1,
           }}
+          onPress={() => navigation.navigate('HistoryShippingScreen')}
         >
           <Text
             style={{
@@ -50,6 +51,8 @@ function HistoryShippingScreen({ route, navigation }) {
             padding: 20,
             borderRadius: 10,
           }}
+          onPress={() => navigation.navigate('WaitingShippingScreen')}
+          s
         >
           <Text
             style={{
@@ -66,10 +69,6 @@ function HistoryShippingScreen({ route, navigation }) {
 
       <View
         style={{
-          flexDirection: 'row',
-          gap: 20,
-          justifyContent: 'space-between',
-          padding: 10,
           backgroundColor: '#fff',
           borderRadius: 10,
           marginHorizontal: 2,
@@ -83,16 +82,60 @@ function HistoryShippingScreen({ route, navigation }) {
           marginTop: 10,
         }}
       >
-        <View>
-          <Image source={require('../assets/drive.png')} />
-        </View>
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            gap: 20,
+            justifyContent: 'space-between',
+            padding: 10,
+          }}
+          onPress={() => navigation.navigate('ItemHistoryScreen')}
+        >
+          <View>
+            <Image source={require('../../assets/drive.png')} />
+          </View>
 
-        <View>
-          <Text>87, South Lester Street, London Close Belgium</Text>
-          <Text>28 Aug, 4.39 PM</Text>
-        </View>
+          <View>
+            <Text>87, South Lester Street, London Close Belgium</Text>
+            <Text>28 Aug, 4.39 PM</Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
+      <View
+        style={{
+          backgroundColor: '#fff',
+          borderRadius: 10,
+          marginHorizontal: 2,
+          marginBottom: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.5,
+          shadowRadius: 4,
+          elevation: 4,
+          gap: 10,
+          marginTop: 10,
+        }}
+      >
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            gap: 20,
+            justifyContent: 'space-between',
+            padding: 10,
+          }}
+          onPress={() => navigation.navigate('ItemHistoryScreen')}
+        >
+          <View>
+            <Image source={require('../../assets/drive.png')} />
+          </View>
+
+          <View>
+            <Text>87, South Lester Street, London Close Belgium</Text>
+            <Text>28 Aug, 4.39 PM</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
       <View
         style={{
           flexDirection: 'row',
@@ -113,35 +156,7 @@ function HistoryShippingScreen({ route, navigation }) {
         }}
       >
         <View>
-          <Image source={require('../assets/drive.png')} />
-        </View>
-
-        <View>
-          <Text>87, South Lester Street, London Close Belgium</Text>
-          <Text>28 Aug, 4.39 PM</Text>
-        </View>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          gap: 20,
-          justifyContent: 'space-between',
-          padding: 10,
-          backgroundColor: '#fff',
-          borderRadius: 10,
-          marginHorizontal: 2,
-          marginBottom: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.5,
-          shadowRadius: 4,
-          elevation: 4,
-          gap: 10,
-          marginTop: 10,
-        }}
-      >
-        <View>
-          <Image source={require('../assets/drive.png')} />
+          <Image source={require('../../assets/drive.png')} />
         </View>
 
         <View>

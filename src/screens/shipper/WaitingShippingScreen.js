@@ -31,6 +31,7 @@ function WaitingShippingScreen({ route, navigation }) {
             padding: 20,
             borderRadius: 10,
           }}
+          onPress={() => navigation.navigate('HistoryShippingScreen')}
         >
           <Text
             style={{
@@ -66,10 +67,6 @@ function WaitingShippingScreen({ route, navigation }) {
 
       <View
         style={{
-          flexDirection: 'row',
-          gap: 20,
-          justifyContent: 'space-between',
-          padding: 10,
           backgroundColor: '#fff',
           borderRadius: 10,
           marginHorizontal: 2,
@@ -83,14 +80,24 @@ function WaitingShippingScreen({ route, navigation }) {
           marginTop: 10,
         }}
       >
-        <View>
-          <Image source={require('../assets/drive.png')} />
-        </View>
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            gap: 20,
+            justifyContent: 'space-between',
+            padding: 10,
+          }}
+          onPress={() => navigation.navigate('DetailWaitingShippingItemScreen')}
+        >
+          <View>
+            <Image source={require('../../assets/drive.png')} />
+          </View>
 
-        <View>
-          <Text>87, South Lester Street, London Close Belgium</Text>
-          <Text>28 Aug, 4.39 PM</Text>
-        </View>
+          <View>
+            <Text>87, South Lester Street, London Close Belgium</Text>
+            <Text>28 Aug, 4.39 PM</Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
       <View
@@ -113,7 +120,7 @@ function WaitingShippingScreen({ route, navigation }) {
         }}
       >
         <View>
-          <Image source={require('../assets/drive.png')} />
+          <Image source={require('../../assets/drive.png')} />
         </View>
 
         <View>
@@ -141,7 +148,7 @@ function WaitingShippingScreen({ route, navigation }) {
         }}
       >
         <View>
-          <Image source={require('../assets/drive.png')} />
+          <Image source={require('../../assets/drive.png')} />
         </View>
 
         <View>

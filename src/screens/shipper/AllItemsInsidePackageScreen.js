@@ -61,7 +61,7 @@ function AllItemsInsidePackageScreen({ route, navigation }) {
             }}
           >
             <Image
-              source={require('../assets/profile.png')}
+              source={require('../../assets/profile.png')}
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
           </View>
@@ -88,13 +88,18 @@ function AllItemsInsidePackageScreen({ route, navigation }) {
             }}
           >
             <TouchableOpacity>
-              <Image source={require('../assets/delete.png')} />
+              <Image source={require('../../assets/delete.png')} />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={{ gap: 20 }}>
-          <CheckBox rightText="Item1" />
+          <CheckBox
+            onClick={() =>
+              navigation.navigate('CheckedAllItemsInsidePackageScreen')
+            }
+            rightText="Item1"
+          />
           <CheckBox rightText="Item1" />
           <CheckBox rightText="Item1" />
         </View>
