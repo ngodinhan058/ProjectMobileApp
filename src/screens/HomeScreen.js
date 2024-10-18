@@ -61,10 +61,10 @@ const banners = [
 
 ];
 
-const categories = [
-  { id: '1', name: 'Laptop', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-  { id: '2', name: 'Iphone', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-];
+// const categories = [
+//   { id: '1', name: 'Laptop', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+//   { id: '2', name: 'Iphone', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+// ];
 
 
 const HomeScreen = () => {
@@ -74,6 +74,7 @@ const HomeScreen = () => {
   const navigation = useNavigation();
 
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+  const [categories, setCategories] = useState([]); // Dữ liệu sản phẩm
 
   // const [minPrice, setMinPrice] = useState(0);
   // const [maxPrice, setMaxPrice] = useState(2000000);
@@ -102,6 +103,25 @@ const HomeScreen = () => {
         setLoading(false);
       });
   }, []);
+
+
+  useEffect(() => {
+    const apiUrl = 'http://192.168.136.135:8080/api/v1/categories';
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(apiUrl);
+        const data = response.data.data;
+        setCategories(data);
+        console.log(data)
+      } catch (error) {
+        console.error('Error fetching data:', error.response ? error.response.data : error.message);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
     Animated.loop(
@@ -197,12 +217,25 @@ const HomeScreen = () => {
             </View>
           </View>
           {/* Xuất Danh mục sản phẩm */}
-          <FlatList
+          {/* <FlatList
             horizontal
             data={categories}
             renderItem={({ item }) => <CategoriesItem {...item} />}
             keyExtractor={(item) => item.id}
             showsHorizontalScrollIndicator={false}
+          /> */}
+          <FlatList
+            data={categories}
+            horizontal
+            keyExtractor={(item) => item.categoryId.toString()}
+            renderItem={({ item }) => (
+              <CategoriesItem
+                id={item.categoryId}
+                name={item.categoryName}
+                image={item.categoryImgPath}
+                isLoading={false}
+              />
+            )}
           />
         </View>
       </View>
@@ -263,7 +296,7 @@ const HomeScreen = () => {
 
                 const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
                   ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
 
 
                 return (
@@ -303,7 +336,7 @@ const HomeScreen = () => {
 
                 const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
                   ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
 
 
                 return (
@@ -337,7 +370,7 @@ const HomeScreen = () => {
 
                 const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
                   ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'default_image_path';  // Đường dẫn ảnh mặc định nếu không có ảnh
+                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
 
 
                 return (
