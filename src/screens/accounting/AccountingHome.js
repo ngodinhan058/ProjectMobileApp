@@ -10,10 +10,9 @@ import {
   Pressable,
   TextInput,
 } from 'react-native';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { StatusBar } from 'expo-status-bar';
-import Timeline from 'react-native-timeline-flatlist';
 
 const featuredProducts = [
   {
@@ -48,33 +47,7 @@ const featuredProducts = [
   },
 ];
 
-function ShippingDetailScreen({ route, navigation }) {
-  data = [
-    {
-      time: '09:00',
-      title: 'Da nhan hang',
-      description: 'Event 1 Description',
-    },
-    {
-      time: '10:45',
-      title: 'Dang van chuyen',
-      lineColor: '#22D1EE',
-      description: 'Event 1 Description',
-    },
-    {
-      time: '12:00',
-      title: 'Giao hang thanh cong',
-      circleColor: '#22D1EE',
-      description: 'Event 1 Description',
-    },
-    {
-      time: '12:00',
-      title: 'Tra hang',
-      circleColor: '#22D1EE',
-      description: 'Event 1 Description',
-    },
-  ];
-
+function AccountHomeScreen({ route, navigation }) {
   return (
     <View style={{ flex: 1, flexDirection: 'column' }}>
       <StatusBar hidden={true} />
@@ -165,20 +138,24 @@ function ShippingDetailScreen({ route, navigation }) {
           >
             <View
               style={{
+                margin: 10,
                 flexDirection: 'row',
-                marginLeft: 5,
                 gap: 10,
                 position: 'relative',
                 top: -50,
                 left: 0,
                 right: 0,
+                padding: 10,
                 backgroundColor: '#fff',
                 borderRadius: 10,
+                marginHorizontal: 2,
+                marginBottom: 10,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.5,
                 shadowRadius: 4,
                 elevation: 4,
+                marginLeft: '10%',
               }}
             >
               <TouchableOpacity
@@ -194,7 +171,7 @@ function ShippingDetailScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/checkrate.png')}
+                  source={require('../assets/bell.png')}
                 />
                 <Text
                   style={{
@@ -220,7 +197,7 @@ function ShippingDetailScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/pickup.png')}
+                  source={require('../assets/bell.png')}
                 />
                 <Text
                   style={{
@@ -246,33 +223,7 @@ function ShippingDetailScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/dropoff.png')}
-                />
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#000',
-                  }}
-                >
-                  Doanh thu
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={{
-                  padding: 16,
-                  borderRadius: 50,
-                  alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Image
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                  source={require('../assets/history.png')}
+                  source={require('../assets/bell.png')}
                 />
                 <Text
                   style={{
@@ -296,7 +247,10 @@ function ShippingDetailScreen({ route, navigation }) {
                 justifyContent: 'space-between',
               }}
             >
-              <Text style={{ fontWeight: 700 }}>Dang van chuyen</Text>
+              <Text style={{ fontWeight: 700 }}>Hoan tien</Text>
+              <Text style={{ fontWeight: 700, color: '#2490A9' }}>
+                View all
+              </Text>
             </View>
 
             <View>
@@ -328,51 +282,217 @@ function ShippingDetailScreen({ route, navigation }) {
                   <Text>On the way &#183; 00/00/0000</Text>
                 </View>
 
-                <View
-                  style={{
-                    backgroundColor: '#22D1EE',
-                    padding: 4,
-                    borderRadius: 8,
-                    maxWidth: 80,
-                  }}
-                >
-                  <Text style={{ color: '#fff', textAlign: 'center' }}>
-                    Dang giao hang
-                  </Text>
+                <View>
+                  <Text>▶</Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 10,
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                  marginTop: 5,
+                }}
+              >
+                <Image
+                  style={{ width: 50, height: 50, borderRadius: 50 }}
+                  source={require('../assets/new2.png')}
+                />
+
+                <View>
+                  <Text>#HWDSF776567DS</Text>
+                  <Text>On the way &#183; 00/00/0000</Text>
+                </View>
+
+                <View>
+                  <Text>▶</Text>
                 </View>
               </View>
             </View>
           </View>
 
-          <View
-            style={{
-              flex: 1,
-              padding: 20,
-              paddingTop: 65,
-              backgroundColor: 'white',
-            }}
-          >
-            <Timeline
-              data={data}
-              circleSize={20}
-              circleColor="rgb(45,156,219)"
-              lineColor="rgb(45,156,219)"
-              timeContainerStyle={{ minWidth: 52, marginTop: -5 }}
-              timeStyle={{
-                textAlign: 'center',
-                backgroundColor: '#ff9797',
-                color: 'white',
-                marginTop: 5,
-                padding: 5,
-                borderRadius: 13,
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
               }}
-              descriptionStyle={{ color: 'gray' }}
-              options={{
-                style: { paddingTop: 5 },
+            >
+              <Text style={{ fontWeight: 700 }}>Bao cao</Text>
+              <Text style={{ fontWeight: 700, color: '#2490A9' }}>
+                View all
+              </Text>
+            </View>
+
+            <View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 10,
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                  marginTop: 5,
+                }}
+              >
+                <Image
+                  style={{ width: 50, height: 50, borderRadius: 50 }}
+                  source={require('../assets/new2.png')}
+                />
+
+                <View>
+                  <Text>Kiem tra don hang thanh cong</Text>
+                  <Text>On the way &#183; 00/00/0000</Text>
+                </View>
+
+                <View>
+                  <Text>▶</Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 10,
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                  marginTop: 5,
+                }}
+              >
+                <Image
+                  style={{ width: 50, height: 50, borderRadius: 50 }}
+                  source={require('../assets/new2.png')}
+                />
+
+                <View>
+                  <Text>Kiem tra don hang thanh cong</Text>
+                  <Text>On the way &#183; 00/00/0000</Text>
+                </View>
+
+                <View>
+                  <Text>▶</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
               }}
-              isUsingFlatlist={true}
-              lineStyle={{ height: '100%', width: 4 }}
-            />
+            >
+              <Text style={{ fontWeight: 700 }}>Doanh thu</Text>
+              <Text style={{ fontWeight: 700, color: '#2490A9' }}>
+                View all
+              </Text>
+            </View>
+
+            <View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 10,
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                  marginTop: 5,
+                }}
+              >
+                <View>
+                  <Text style={{ fontSize: 16, color: '#202224' }}>
+                    Tong don hang
+                  </Text>
+                  <Text style={{ fontSize: 28, color: '#202224' }}>10000</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Image
+                      style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 50,
+                        resizeMode: 'contain',
+                      }}
+                      source={require('../assets/ic-trending-up-24px.png')}
+                    />
+                    <Text>1.3% Up from past week</Text>
+                  </View>
+                </View>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 10,
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  marginHorizontal: 2,
+                  marginBottom: 10,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 4,
+                  elevation: 4,
+                  marginTop: 5,
+                }}
+              >
+                <View>
+                  <Text style={{ fontSize: 16, color: '#202224' }}>
+                    Tong don hang
+                  </Text>
+                  <Text style={{ fontSize: 28, color: '#202224' }}>10000</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Image
+                      style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 50,
+                        resizeMode: 'contain',
+                      }}
+                      source={require('../assets/ic-trending-down-24px.png')}
+                    />
+                    <Text>4.3% Down from yesterday</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -382,4 +502,4 @@ function ShippingDetailScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default ShippingDetailScreen;
+export default AccountHomeScreen;

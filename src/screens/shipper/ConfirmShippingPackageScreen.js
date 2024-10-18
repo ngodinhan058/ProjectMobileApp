@@ -9,44 +9,13 @@ import {
   FlatList,
   Pressable,
   TextInput,
+  Switch,
 } from 'react-native';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CheckBox from 'react-native-check-box';
 
-const featuredProducts = [
-  {
-    id: '1',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.0',
-    review: '860',
-  },
-  {
-    id: '2',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless2',
-    price: '100.000',
-    rating: '2.6',
-    review: '6',
-  },
-  {
-    id: '3',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless',
-    price: '1.000.000',
-    rating: '0.6',
-    review: '106',
-  },
-];
-
-function DetailShiperPackage({ route, navigation }) {
+function ConfirmShippingPackageScreen({ route, navigation }) {
   return (
     <View
       style={{
@@ -148,7 +117,7 @@ function DetailShiperPackage({ route, navigation }) {
               color: '#fff',
             }}
           >
-            Chap nhan
+            Bat dau van chuyen
           </Text>
         </TouchableOpacity>
       </View>
@@ -158,4 +127,4 @@ function DetailShiperPackage({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default DetailShiperPackage;
+export default ConfirmShippingPackageScreen;

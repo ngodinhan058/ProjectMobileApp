@@ -11,11 +11,11 @@ import {
   TextInput,
   Switch,
 } from 'react-native';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CheckBox from 'react-native-check-box';
 
-function ConfirmReceiveMoneyScreen({ route, navigation }) {
+function InprogressShippingPackageScreen({ route, navigation }) {
   return (
     <View
       style={{
@@ -117,7 +117,26 @@ function ConfirmReceiveMoneyScreen({ route, navigation }) {
               color: '#fff',
             }}
           >
-            Da thu tien
+            Da giao
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            width: '100%',
+            padding: 20,
+            borderRadius: 10,
+            backgroundColor: '#ccc',
+          }}
+        >
+          <Text
+            style={{
+              textAlign: 'center',
+              fontWeight: '700',
+              fontSize: 16,
+              color: '#fff',
+            }}
+          >
+            Huy don
           </Text>
         </TouchableOpacity>
       </View>
@@ -127,4 +146,4 @@ function ConfirmReceiveMoneyScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default ConfirmReceiveMoneyScreen;
+export default InprogressShippingPackageScreen;

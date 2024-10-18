@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import React, { useState, useEffect, useRef } from 'react';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CheckBox from 'react-native-check-box';
 import DropDownPicker from 'react-native-dropdown-picker';
