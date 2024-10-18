@@ -92,7 +92,7 @@ function ReturnAccountScreen({ route, navigation }) {
             }}
           >
             <Image
-              source={require('../assets/profile.png')}
+              source={require('../../assets/profile.png')}
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
           </View>
@@ -152,7 +152,7 @@ function ReturnAccountScreen({ route, navigation }) {
               }}
             >
               <Image
-                source={require('../assets/headphone.png')}
+                source={require('../../assets/headphone.png')}
                 style={{ width: 100, height: 100, objectFit: 'cover' }}
               />
             </View>
@@ -175,7 +175,7 @@ function ReturnAccountScreen({ route, navigation }) {
               }}
             >
               <Image
-                source={require('../assets/headphone.png')}
+                source={require('../../assets/headphone.png')}
                 style={{ width: 100, height: 100, objectFit: 'cover' }}
               />
             </View>
@@ -198,7 +198,7 @@ function ReturnAccountScreen({ route, navigation }) {
               }}
             >
               <Image
-                source={require('../assets/headphone.png')}
+                source={require('../../assets/headphone.png')}
                 style={{ width: 100, height: 100, objectFit: 'cover' }}
               />
             </View>
@@ -221,7 +221,7 @@ function ReturnAccountScreen({ route, navigation }) {
               }}
             >
               <Image
-                source={require('../assets/headphone.png')}
+                source={require('../../assets/headphone.png')}
                 style={{ width: 100, height: 100, objectFit: 'cover' }}
               />
             </View>
@@ -238,6 +238,7 @@ function ReturnAccountScreen({ route, navigation }) {
               borderRadius: 10,
               backgroundColor: '#3498DB',
             }}
+            onPress={() => navigation.navigate('CompletedReturnAccountScreen')}
           >
             <Text
               style={{
@@ -247,7 +248,7 @@ function ReturnAccountScreen({ route, navigation }) {
                 color: '#fff',
               }}
             >
-              Huy Don
+              Hoan Tien
             </Text>
           </TouchableOpacity>
         </View>

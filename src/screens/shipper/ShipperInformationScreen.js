@@ -38,7 +38,7 @@ function ShipperInformationScreen({ route, navigation }) {
           }}
         >
           <Image
-            source={require('../assets/profile.png')}
+            source={require('../../assets/profile.png')}
             style={{ width: 40, height: 40, objectFit: 'cover' }}
           />
         </View>
@@ -51,92 +51,102 @@ function ShipperInformationScreen({ route, navigation }) {
         <Text>Account Settings</Text>
 
         <View style={{ gap: 20, marginTop: 20 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ProfileSettingScreen')}
           >
             <View
               style={{
-                backgroundColor: '#925BFE',
-                width: 50,
-                height: 50,
-                borderRadius: 50,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: 4,
-                opacity: 0.4,
-                justifyContent: 'center',
               }}
             >
-              <Image
-                source={require('../assets/profile.png')}
-                style={{ width: 24, height: 24, objectFit: 'cover' }}
-              />
+              <View
+                style={{
+                  backgroundColor: '#925BFE',
+                  width: 50,
+                  height: 50,
+                  borderRadius: 50,
+                  alignItems: 'center',
+                  padding: 4,
+                  opacity: 0.4,
+                  justifyContent: 'center',
+                }}
+              >
+                <Image
+                  source={require('../../assets/profile.png')}
+                  style={{ width: 24, height: 24, objectFit: 'cover' }}
+                />
+              </View>
+
+              <Text>Profile setting</Text>
+              <Text style={{ fontSize: 20 }}>˃</Text>
             </View>
+          </TouchableOpacity>
 
-            <Text>Profile setting</Text>
-            <Text style={{ fontSize: 20 }}>˃</Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ChangePasswordScreen')}
           >
             <View
               style={{
-                backgroundColor: '#925BFE',
-                width: 50,
-                height: 50,
-                borderRadius: 50,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: 4,
-                opacity: 0.4,
-                justifyContent: 'center',
               }}
             >
-              <Image
-                source={require('../assets/Lock.png')}
-                style={{ width: 24, height: 24, objectFit: 'cover' }}
-              />
+              <View
+                style={{
+                  backgroundColor: '#925BFE',
+                  width: 50,
+                  height: 50,
+                  borderRadius: 50,
+                  alignItems: 'center',
+                  padding: 4,
+                  opacity: 0.4,
+                  justifyContent: 'center',
+                }}
+              >
+                <Image
+                  source={require('../../assets/Lock.png')}
+                  style={{ width: 24, height: 24, objectFit: 'cover' }}
+                />
+              </View>
+
+              <Text>Change password</Text>
+              <Text style={{ fontSize: 20 }}>˃</Text>
             </View>
+          </TouchableOpacity>
 
-            <Text>Change password</Text>
-            <Text style={{ fontSize: 20 }}>˃</Text>
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
+          <TouchableOpacity onPress={() => navigation.navigate('ChatScreen')}>
             <View
               style={{
-                backgroundColor: '#925BFE',
-                width: 50,
-                height: 50,
-                borderRadius: 50,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: 4,
-                opacity: 0.4,
-                justifyContent: 'center',
               }}
             >
-              <Image
-                source={require('../assets/Chat.png')}
-                style={{ width: 24, height: 24, objectFit: 'cover' }}
-              />
-            </View>
+              <View
+                style={{
+                  backgroundColor: '#925BFE',
+                  width: 50,
+                  height: 50,
+                  borderRadius: 50,
+                  alignItems: 'center',
+                  padding: 4,
+                  opacity: 0.4,
+                  justifyContent: 'center',
+                }}
+              >
+                <Image
+                  source={require('../../assets/Chat.png')}
+                  style={{ width: 24, height: 24, objectFit: 'cover' }}
+                />
+              </View>
 
-            <Text>Chat support</Text>
-            <Text style={{ fontSize: 20 }}>˃</Text>
-          </View>
+              <Text>Chat support</Text>
+              <Text style={{ fontSize: 20 }}>˃</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -150,7 +160,7 @@ function ShipperInformationScreen({ route, navigation }) {
           }}
         >
           <Image
-            source={require('../assets/Download.png')}
+            source={require('../../assets/Download.png')}
             style={{ width: 40, height: 40, objectFit: 'cover' }}
           />
           <Text style={{ fontSize: 16 }}>Log out</Text>
@@ -165,7 +175,7 @@ function ShipperInformationScreen({ route, navigation }) {
           }}
         >
           <Image
-            source={require('../assets/Deactive.png')}
+            source={require('../../assets/Deactive.png')}
             style={{ width: 40, height: 40, objectFit: 'cover' }}
           />
           <Text style={{ color: '#FF4310', fontSize: 16 }}>

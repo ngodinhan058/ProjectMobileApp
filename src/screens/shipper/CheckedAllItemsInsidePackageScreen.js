@@ -61,7 +61,7 @@ function CheckedAllItemsInsidePackageScreen({ route, navigation }) {
             }}
           >
             <Image
-              source={require('../assets/profile.png')}
+              source={require('../../assets/profile.png')}
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
           </View>
@@ -88,7 +88,7 @@ function CheckedAllItemsInsidePackageScreen({ route, navigation }) {
             }}
           >
             <TouchableOpacity>
-              <Image source={require('../assets/delete.png')} />
+              <Image source={require('../../assets/delete.png')} />
             </TouchableOpacity>
           </View>
         </View>
@@ -120,6 +120,7 @@ function CheckedAllItemsInsidePackageScreen({ route, navigation }) {
             borderRadius: 10,
             backgroundColor: '#3669C9',
           }}
+          onPress={() => navigation.navigate('ConfirmShippingPackageScreen')}
         >
           <Text
             style={{

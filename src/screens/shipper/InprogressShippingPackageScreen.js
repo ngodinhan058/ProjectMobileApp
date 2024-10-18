@@ -36,7 +36,7 @@ function InprogressShippingPackageScreen({ route, navigation }) {
           justifyContent: 'space-between',
           padding: 10,
           backgroundColor: '#fff',
-          borderRadius: 10,
+          borgiaerRadius: 10,
           marginHorizontal: 2,
           marginBottom: 10,
           shadowColor: '#000',
@@ -61,7 +61,7 @@ function InprogressShippingPackageScreen({ route, navigation }) {
             }}
           >
             <Image
-              source={require('../assets/profile.png')}
+              source={require('../../assets/profile.png')}
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
           </View>
@@ -116,6 +116,7 @@ function InprogressShippingPackageScreen({ route, navigation }) {
               fontSize: 16,
               color: '#fff',
             }}
+            onPress={() => navigation.navigate('ConfirmReceiveMoneyScreen')}
           >
             Da giao
           </Text>
@@ -127,6 +128,7 @@ function InprogressShippingPackageScreen({ route, navigation }) {
             borderRadius: 10,
             backgroundColor: '#ccc',
           }}
+          onPress={() => navigation.navigate('CompletedCancelOrderScreen')}
         >
           <Text
             style={{

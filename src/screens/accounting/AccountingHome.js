@@ -68,7 +68,7 @@ function AccountHomeScreen({ route, navigation }) {
         >
           <Image
             style={{ width: 50, height: 50, borderRadius: 50 }}
-            source={require('../assets/new2.png')}
+            source={require('../../assets/new2.png')}
           />
 
           <View>
@@ -90,7 +90,7 @@ function AccountHomeScreen({ route, navigation }) {
                 width: 24,
                 height: 24,
               }}
-              source={require('../assets/bell.png')}
+              source={require('../../assets/bell.png')}
             />
             <Text
               style={{
@@ -164,14 +164,14 @@ function AccountHomeScreen({ route, navigation }) {
                   borderRadius: 50,
                   alignItems: 'center',
                 }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
+                onPress={() => navigation.navigate('ReturnAccountScreen')}
               >
                 <Image
                   style={{
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/bell.png')}
+                  source={require('../../assets/bell.png')}
                 />
                 <Text
                   style={{
@@ -197,7 +197,7 @@ function AccountHomeScreen({ route, navigation }) {
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/bell.png')}
+                  source={require('../../assets/bell.png')}
                 />
                 <Text
                   style={{
@@ -216,14 +216,14 @@ function AccountHomeScreen({ route, navigation }) {
                   borderRadius: 50,
                   alignItems: 'center',
                 }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
+                onPress={() => navigation.navigate('RevenueScreen')}
               >
                 <Image
                   style={{
                     width: 24,
                     height: 24,
                   }}
-                  source={require('../assets/bell.png')}
+                  source={require('../../assets/bell.png')}
                 />
                 <Text
                   style={{
@@ -274,7 +274,7 @@ function AccountHomeScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -307,7 +307,7 @@ function AccountHomeScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -356,7 +356,7 @@ function AccountHomeScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -389,7 +389,7 @@ function AccountHomeScreen({ route, navigation }) {
               >
                 <Image
                   style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../assets/new2.png')}
+                  source={require('../../assets/new2.png')}
                 />
 
                 <View>
@@ -449,7 +449,7 @@ function AccountHomeScreen({ route, navigation }) {
                         borderRadius: 50,
                         resizeMode: 'contain',
                       }}
-                      source={require('../assets/ic-trending-up-24px.png')}
+                      source={require('../../assets/ic-trending-up-24px.png')}
                     />
                     <Text>1.3% Up from past week</Text>
                   </View>
@@ -486,7 +486,7 @@ function AccountHomeScreen({ route, navigation }) {
                         borderRadius: 50,
                         resizeMode: 'contain',
                       }}
-                      source={require('../assets/ic-trending-down-24px.png')}
+                      source={require('../../assets/ic-trending-down-24px.png')}
                     />
                     <Text>4.3% Down from yesterday</Text>
                   </View>

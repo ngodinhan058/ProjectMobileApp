@@ -16,7 +16,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CheckBox from 'react-native-check-box';
-import DropDownPicker from 'react-native-dropdown-picker';
 
 function ProfileSettingScreen({ route, navigation }) {
   const [open, setOpen] = useState(false);

@@ -47,7 +47,7 @@ const featuredProducts = [
   },
 ];
 
-function CompletedReturnAccountScreen({ route, navigation }) {
+function CompletedCancelOrderScreen({ route, navigation }) {
   return (
     <View
       style={{
@@ -76,7 +76,7 @@ function CompletedReturnAccountScreen({ route, navigation }) {
 
       <View>
         <Text style={{ fontSize: 30, color: '#3669C9', fontWeight: 700 }}>
-          Hoan Tien Thanh Cong
+          Huy Don Thanh Cong
         </Text>
       </View>
 
@@ -95,7 +95,7 @@ function CompletedReturnAccountScreen({ route, navigation }) {
             shadowRadius: 4,
             elevation: 4,
           }}
-          onPress={() => navigation.navigate('AccountingHome')}
+          onPress={() => navigation.navigate('ShipperHomeScreen')}
         >
           <Text
             style={{
@@ -115,4 +115,4 @@ function CompletedReturnAccountScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default CompletedReturnAccountScreen;
+export default CompletedCancelOrderScreen;

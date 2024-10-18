@@ -13,10 +13,8 @@ import {
 } from 'react-native';
 
 import React, { useState, useEffect, useRef } from 'react';
-import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CheckBox from 'react-native-check-box';
-import DropDownPicker from 'react-native-dropdown-picker';
 
 function ChangePasswordScreen({ route, navigation }) {
   const [open, setOpen] = useState(false);
@@ -50,7 +48,10 @@ function ChangePasswordScreen({ route, navigation }) {
         >
           <TextInput placeholder="" style={{ padding: 4 }} />
 
-          <Image source={require('../assets/hide.png')} style={styles.clock} />
+          <Image
+            source={require('../../assets/hide.png')}
+            style={styles.clock}
+          />
         </View>
       </View>
 
@@ -66,7 +67,10 @@ function ChangePasswordScreen({ route, navigation }) {
         >
           <TextInput placeholder="" style={{ padding: 4 }} />
 
-          <Image source={require('../assets/hide.png')} style={styles.clock} />
+          <Image
+            source={require('../../assets/hide.png')}
+            style={styles.clock}
+          />
         </View>
       </View>
 
@@ -82,7 +86,10 @@ function ChangePasswordScreen({ route, navigation }) {
         >
           <TextInput placeholder="" style={{ padding: 4 }} />
 
-          <Image source={require('../assets/hide.png')} style={styles.clock} />
+          <Image
+            source={require('../../assets/hide.png')}
+            style={styles.clock}
+          />
         </View>
       </View>
 
@@ -94,6 +101,7 @@ function ChangePasswordScreen({ route, navigation }) {
             borderRadius: 10,
             backgroundColor: '#3669C9',
           }}
+          onPress={() => navigation.navigate('ShipperInformationScreen')}
         >
           <Text
             style={{

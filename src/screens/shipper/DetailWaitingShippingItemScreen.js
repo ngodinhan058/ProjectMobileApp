@@ -36,7 +36,7 @@ function DetailWaitingShippingItemScreen({ route, navigation }) {
           }}
         >
           <View>
-            <Image source={require('../assets/drive.png')} />
+            <Image source={require('../../assets/drive.png')} />
           </View>
           <Text style={{ textAlign: 'center', fontWeight: 700 }}>
             Ref ID: 12747599
@@ -65,7 +65,7 @@ function DetailWaitingShippingItemScreen({ route, navigation }) {
         <View style={{ gap: 20 }}>
           <View style={{ flexDirection: 'row', gap: 20 }}>
             <Image
-              source={require('../assets/delivery.png')}
+              source={require('../../assets/delivery.png')}
               style={{ width: 40, height: 40, objectFit: 'cover' }}
             />
             <Text
@@ -95,7 +95,7 @@ function DetailWaitingShippingItemScreen({ route, navigation }) {
               }}
             >
               <Image
-                source={require('../assets/profile.png')}
+                source={require('../../assets/profile.png')}
                 style={{ width: 40, height: 40, objectFit: 'cover' }}
               />
             </View>
