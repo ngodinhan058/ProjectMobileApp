@@ -46,7 +46,7 @@ const CategoryItem = ({ image, name }) => {
         <>
           <TouchableOpacity onPress={() => navigation.navigate('ProductByCateScreen',{ image, name })}>
             <View style={styles.categoryItem}>
-              <Image source={image} style={styles.categoryImage} />
+              <Image source={{ uri: image }} style={styles.categoryImage} />
             </View>
             <Text style={styles.categoryName}>{name}</Text>
           </TouchableOpacity>
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   // Style khi hết loading
   categoryItem: {
     position: 'relative',
-    backgroundColor: '#e9f3ea',
+    backgroundColor: '#A1CCF5',
     borderRadius: 10,
     marginRight: 30,
     alignItems: 'center',
