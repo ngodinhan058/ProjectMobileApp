@@ -9,13 +9,44 @@ import {
   FlatList,
   Pressable,
   TextInput,
-  Switch,
 } from 'react-native';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import CheckBox from 'react-native-check-box';
 
-function InprogressShippingPackageScreen({ route, navigation }) {
+const featuredProducts = [
+  {
+    id: '1',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
+    },
+    name: 'TMA-2 HD Wireless0',
+    price: '1.500.000',
+    rating: '4.0',
+    review: '860',
+  },
+  {
+    id: '2',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
+    },
+    name: 'TMA-2 HD Wireless2',
+    price: '100.000',
+    rating: '2.6',
+    review: '6',
+  },
+  {
+    id: '3',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+    },
+    name: 'TMA-2 HD Wireless',
+    price: '1.000.000',
+    rating: '0.6',
+    review: '106',
+  },
+];
+
+function DetailShiperPackage({ route, navigation }) {
   return (
     <View
       style={{
@@ -100,7 +131,7 @@ function InprogressShippingPackageScreen({ route, navigation }) {
         <Text>Document 5kg</Text>
       </View>
 
-      <View style={{ gap: 10 }}>
+      <View>
         <TouchableOpacity
           style={{
             width: '100%',
@@ -117,26 +148,7 @@ function InprogressShippingPackageScreen({ route, navigation }) {
               color: '#fff',
             }}
           >
-            Da giao
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            width: '100%',
-            padding: 20,
-            borderRadius: 10,
-            backgroundColor: '#ccc',
-          }}
-        >
-          <Text
-            style={{
-              textAlign: 'center',
-              fontWeight: '700',
-              fontSize: 16,
-              color: '#fff',
-            }}
-          >
-            Huy don
+            Chap nhan
           </Text>
         </TouchableOpacity>
       </View>
@@ -146,4 +158,4 @@ function InprogressShippingPackageScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default InprogressShippingPackageScreen;
+export default DetailShiperPackage;

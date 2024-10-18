@@ -11,11 +11,11 @@ import {
   TextInput,
   Switch,
 } from 'react-native';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CheckBox from 'react-native-check-box';
 
-function ConfirmShippingPackageScreen({ route, navigation }) {
+function AllItemsInsidePackageScreen({ route, navigation }) {
   return (
     <View
       style={{
@@ -76,28 +76,28 @@ function ConfirmShippingPackageScreen({ route, navigation }) {
       </View>
 
       <View style={{ gap: 10 }}>
-        <Text style={{ fontSize: 16, fontWeight: 700, color: '#3669C9' }}>
-          Nhan tu
-        </Text>
-        <Text>
-          53 Đ. Võ Văn Ngân, Linh Chiểu, Thành Phố Thủ Đức, Hồ Chí Minh
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={{ fontSize: 16, fontWeight: 700, color: '#3669C9' }}>
+            Danh sach san pham kiem hang
+          </Text>
+          <View
+            style={{
+              backgroundColor: '#3669C9',
+              padding: 10,
+              borderRadius: 10,
+            }}
+          >
+            <TouchableOpacity>
+              <Image source={require('../assets/delete.png')} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        <Text style={{ fontSize: 80, color: '#3669C9' }}>↓</Text>
-
-        <Text style={{ fontSize: 16, fontWeight: 700, color: '#3669C9' }}>
-          Den noi
-        </Text>
-        <Text>
-          53 Đ. Võ Văn Ngân, Linh Chiểu, Thành Phố Thủ Đức, Hồ Chí Minh
-        </Text>
-      </View>
-
-      <View style={{ borderTopWidth: 1, paddingTop: 10, gap: 10 }}>
-        <Text style={{ fontSize: 16, fontWeight: 700, color: '#3669C9' }}>
-          Trong luong
-        </Text>
-        <Text>Document 5kg</Text>
+        <View style={{ gap: 20 }}>
+          <CheckBox rightText="Item1" />
+          <CheckBox rightText="Item1" />
+          <CheckBox rightText="Item1" />
+        </View>
       </View>
 
       <View>
@@ -106,7 +106,7 @@ function ConfirmShippingPackageScreen({ route, navigation }) {
             width: '100%',
             padding: 20,
             borderRadius: 10,
-            backgroundColor: '#3669C9',
+            backgroundColor: '#ccc',
           }}
         >
           <Text
@@ -117,7 +117,7 @@ function ConfirmShippingPackageScreen({ route, navigation }) {
               color: '#fff',
             }}
           >
-            Bat dau van chuyen
+            Xac nhan da nhan hang
           </Text>
         </TouchableOpacity>
       </View>
@@ -127,4 +127,4 @@ function ConfirmShippingPackageScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default ConfirmShippingPackageScreen;
+export default AllItemsInsidePackageScreen;

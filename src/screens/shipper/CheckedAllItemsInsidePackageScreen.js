@@ -11,11 +11,11 @@ import {
   TextInput,
   Switch,
 } from 'react-native';
-import ProductItem from '../components/ProductItem';
+import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CheckBox from 'react-native-check-box';
 
-function AllItemsInsidePackageScreen({ route, navigation }) {
+function CheckedAllItemsInsidePackageScreen({ route, navigation }) {
   return (
     <View
       style={{
@@ -94,9 +94,21 @@ function AllItemsInsidePackageScreen({ route, navigation }) {
         </View>
 
         <View style={{ gap: 20 }}>
-          <CheckBox rightText="Item1" />
-          <CheckBox rightText="Item1" />
-          <CheckBox rightText="Item1" />
+          <CheckBox
+            isChecked={true}
+            rightText="Item1"
+            rightTextStyle={{ textDecorationLine: 'line-through' }}
+          />
+          <CheckBox
+            isChecked={true}
+            rightTextStyle={{ textDecorationLine: 'line-through' }}
+            rightText="Item1"
+          />
+          <CheckBox
+            isChecked={true}
+            rightTextStyle={{ textDecorationLine: 'line-through' }}
+            rightText="Item1"
+          />
         </View>
       </View>
 
@@ -106,7 +118,7 @@ function AllItemsInsidePackageScreen({ route, navigation }) {
             width: '100%',
             padding: 20,
             borderRadius: 10,
-            backgroundColor: '#ccc',
+            backgroundColor: '#3669C9',
           }}
         >
           <Text
@@ -127,4 +139,4 @@ function AllItemsInsidePackageScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({});
 
-export default AllItemsInsidePackageScreen;
+export default CheckedAllItemsInsidePackageScreen;
