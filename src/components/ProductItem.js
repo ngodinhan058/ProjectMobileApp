@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-const ProductItem = ({ id, image, name, price, rating, review, like: initialLike }) => {
+const ProductItem = ({ id, image, name, price, oldPrice,rating, review, like: initialLike }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [liked, setLiked] = useState(initialLike);
   // const [localUri, setLocalUri] = useState(null);
@@ -99,7 +99,7 @@ const ProductItem = ({ id, image, name, price, rating, review, like: initialLike
               style={styles.image}
             />
             <Text style={styles.name}>{truncateName(name)}</Text>
-            <Text style={styles.price}>{price}</Text>
+            <Text style={styles.price}>{oldPrice}</Text>
             <View style={styles.rate}>
               <Text style={styles.rating}>
                 <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}

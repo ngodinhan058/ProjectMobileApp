@@ -30,7 +30,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
         });
     };
 
-    const [priceRange, setPriceRange] = useState([50000, 50000000]);
+    const [priceRange, setPriceRange] = useState([0, 2000000]);
     const [isExpanded, setIsExpanded] = useState(false); // State kiểm soát hiển thị thêm danh mục
 
     const handleSliderChange = (values) => {
@@ -48,7 +48,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
     const handleReset = () => {
         setSelectedCategories(initialCategories); // Reset lại categories
-        setPriceRange([50000, 50000000]); // Reset lại khoảng giá
+        setPriceRange([0, 2000000]); // Reset lại khoảng giá
         onReset();
     };
 
@@ -83,9 +83,9 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                             values={priceRange}
                             sliderLength={300}
                             onValuesChange={handleSliderChange}
-                            min={50000}
-                            max={50000000}
-                            step={50000}
+                            min={0}
+                            max={2000000}
+                            step={100000}
                             selectedStyle={{ backgroundColor: '#3669c9' }}
                             unselectedStyle={{ backgroundColor: '#d3d3d3' }}
                             markerStyle={{

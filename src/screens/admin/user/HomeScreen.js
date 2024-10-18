@@ -97,34 +97,34 @@ const HomeAdminScreen = ({ navigation }) => {
         <TouchableOpacity
             style={styles.productItem}
             onPress={() => navigation.navigate('DetailUserScreen', {
-                image: item.image,
-                email: item.email,
+                image: { uri: item['userImagePath'] },
+                email: item['userEmail'],
                 first_name: item['user_first_name'],
                 last_name: item['user_last_name'],
-                id_image_front: item.id_image_front,
-                id_image_back: item.id_image_back,
+                id_image_front: { uri: 'https://cdn.tgdd.vn/Files/2021/04/18/1344478/cach-lam-can-cuoc-cong-dan-cccd-online_800x450.jpg' },
+                id_image_back: { uri: item.iCard.imageBackPath },
                 pass: item.pass,
-                birthday: item.birthday,
-                address: item.address,
-                phone: item.phone,
-                money: item.money,
+                birthday: item['userBirthday'],
+                address: item['userAddress'],
+                phone: item['userPhone'],
+                money: item['userMoney'],
                 role: item.role,
                 rank: item.rank,
-                number_id: item.number_id,
+                number_id: item.iCard.idCardNumber,
             })}
         >
             <View style={{ marginRight: 20 }}>
-                <Image source={item.image} style={styles.productIcon} />
+                <Image source={{ uri: item['userImagePath'] }} style={styles.productIcon} />
             </View>
 
 
 
             <View style={styles.productDetails}>
                 <Text style={styles.productCode}>{item['userFirstName']}&#160;{item['userLastName']}</Text>
-                <Image source={item.rank} style={styles.rankIcon} />
-                <Text style={styles.productStatus}>Email: {item.email}</Text>
+                {/* <Image source={} style={styles.rankIcon} /> */}
+                <Text style={styles.productStatus}>Email: {item['userEmail']}</Text>
                 <View style={styles.line}></View>
-                <Text style={styles.productCode}>Ví Tiền: {item.money} ₫</Text>
+                <Text style={styles.productCode}>Ví Tiền: {item['userMoney']}</Text>
             </View>
 
             <Pressable>
@@ -258,6 +258,7 @@ const styles = StyleSheet.create({
         height: 55,
         marginLeft: 5,
         marginTop: 5,
+        borderRadius: 55,
     },
     rankIcon: {
         position: 'absolute',
