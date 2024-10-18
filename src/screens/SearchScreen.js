@@ -14,6 +14,7 @@ const SearchScreen = ({ navigation, route }) => {
     const [appliedFilters, setAppliedFilters] = useState(null);
     const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
     const [loading, setLoading] = useState(true); // Thêm biến loading nếu thiếu
+    const [categoryId, setCategoryId] = useState([]);
 
     const handleSearch = () => {
         navigation.replace('SearchScreen', { query: searchQuery });
@@ -27,18 +28,18 @@ const SearchScreen = ({ navigation, route }) => {
         setAppliedFilters(filters);
         setMinPrice(filters.priceRange[0]); // Sử dụng trực tiếp giá trị từ filters
         setMaxPrice(filters.priceRange[1]); // Sử dụng trực tiếp giá trị từ filters
+        setCategoryId(filters.categories)
     };
     
     const handleResetFilters = () => {
         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
     };
     useEffect(() => {
-        
         let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?search=samsung&';
         const queryParams = [];
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
-        console.log("price", minPrice, maxPrice);
+        if (categoryId !== null && categoryId !== "") queryParams.push(`categoryId=${categoryId}`);
         
        
         apiUrl += queryParams.join('&');
@@ -52,7 +53,7 @@ const SearchScreen = ({ navigation, route }) => {
                 console.error('Error fetching data:', error);
                 setLoading(false);
             });
-    }, [minPrice, maxPrice]);
+    }, [minPrice, maxPrice, categoryId]);
 
     // const filteredProducts = productsState.filter(product =>
     //     product.name.toLowerCase().includes(searchQuery.toLowerCase())

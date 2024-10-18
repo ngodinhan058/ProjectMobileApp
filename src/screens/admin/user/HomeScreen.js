@@ -18,7 +18,6 @@ const HomeAdminScreen = ({ navigation }) => {
                 const response = await axios.get(apiUrl);
                 const data = response.data.data; // Đảm bảo bạn đang lấy đúng dữ liệu
                 setUsersState(data);
-                console.log(data);
             } catch (error) {
                 console.error('Error fetching data:', error.response ? error.response.data : error.message);
             }
