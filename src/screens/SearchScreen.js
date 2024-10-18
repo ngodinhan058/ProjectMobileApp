@@ -10,11 +10,14 @@ const SearchScreen = ({ navigation, route }) => {
     const [maxPrice, setMaxPrice] = useState(2000000);
 
     const { query } = route.params;
+    const finalQuery = query || '';
+
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [appliedFilters, setAppliedFilters] = useState(null);
-    const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
+    const [searchQuery, setSearchQuery] = useState(finalQuery); // Lưu trữ trạng thái cho thanh tìm kiếm
     const [loading, setLoading] = useState(true); // Thêm biến loading nếu thiếu
     const [categoryId, setCategoryId] = useState([]);
+
 
     const handleSearch = () => {
         navigation.replace('SearchScreen', { query: searchQuery });
@@ -35,12 +38,12 @@ const SearchScreen = ({ navigation, route }) => {
         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
     };
     useEffect(() => {
-        let apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/products/filters?search=samsung&';
+        let apiUrl = 'http://192.168.136.135:8080/api/v1/products/filters?';
         const queryParams = [];
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
         if (categoryId !== null && categoryId !== "") queryParams.push(`categoryId=${categoryId}`);
-        
+        if (searchQuery !== null && searchQuery !== undefined) queryParams.push(`search=${searchQuery}`);
        
         apiUrl += queryParams.join('&');
         axios.get(apiUrl)
@@ -50,10 +53,14 @@ const SearchScreen = ({ navigation, route }) => {
                 setLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching data:', error);
+                // console.error('Error fetching data:', error);
                 setLoading(false);
             });
-    }, [minPrice, maxPrice, categoryId]);
+    }, [minPrice, maxPrice, categoryId, searchQuery]);
+
+    const filteredSuggestions = productsState.filter(product =>
+        product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     // const filteredProducts = productsState.filter(product =>
     //     product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -102,9 +109,9 @@ const SearchScreen = ({ navigation, route }) => {
                 contentContainerStyle={styles.listContent}
             /> */}
 
-            {productsState.length > 0 ? (
+            {filteredSuggestions.length > 0 ? (
                 <FlatList
-                    data={productsState}
+                    data={filteredSuggestions}
                     renderItem={({ item }) => {
                         // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
 

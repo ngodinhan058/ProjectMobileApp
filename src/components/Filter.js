@@ -9,7 +9,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     const [priceRange, setPriceRange] = useState([0, 2000000]);
     const [isExpanded, setIsExpanded] = useState(false);
     useEffect(() => {
-        const apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/categories';
+        const apiUrl = 'http://192.168.136.135:8080/api/v1/categories';
 
         const fetchData = async () => {
             try {

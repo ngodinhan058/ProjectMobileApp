@@ -11,7 +11,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
 
     useEffect(() => {
-        const apiUrl = 'https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/users';
+        const apiUrl = 'http://192.168.136.135:8080/api/v1/users';
 
         const fetchData = async () => {
             try {

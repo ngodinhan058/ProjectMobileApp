@@ -38,7 +38,7 @@ const AddCategoryScreen = ({ navigation }) => {
     const handleAddCategory = async () => {
         try {
             // Gửi yêu cầu POST tới API
-            const response = await axios.post('https://74cd-2001-ee0-d700-d7f0-3cb7-32b6-92d8-b99c.ngrok-free.app/api/v1/category', {
+            const response = await axios.post('http://192.168.136.135:8080/api/v1/category', {
                 categoryName: categoryName,
                 categoryRelease: categoryRelease.toISOString().split('T')[0], // Chuyển ngày thành chuỗi định dạng 'YYYY-MM-DD'
                 statusId: categoryStatusId,
