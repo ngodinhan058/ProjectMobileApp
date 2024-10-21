@@ -3,6 +3,8 @@ import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, Touchab
 import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
 import axios from 'axios';
+import { BASE_URL } from './api/config';
+
 
 const SearchScreen = ({ navigation, route }) => {
     const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
@@ -33,19 +35,21 @@ const SearchScreen = ({ navigation, route }) => {
         setMaxPrice(filters.priceRange[1]); // Sử dụng trực tiếp giá trị từ filters
         setCategoryId(filters.categories)
     };
-    
+
     const handleResetFilters = () => {
         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
     };
     useEffect(() => {
-        let apiUrl = 'http://192.168.136.135:8080/api/v1/products/filters?';
+        let apiUrl = `${BASE_URL}products/filters?`;
+
         const queryParams = [];
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
         if (categoryId !== null && categoryId !== "") queryParams.push(`categoryId=${categoryId}`);
         if (searchQuery !== null && searchQuery !== undefined) queryParams.push(`search=${searchQuery}`);
-       
+
         apiUrl += queryParams.join('&');
+        console.log('sanpham', apiUrl)
         axios.get(apiUrl)
             .then(response => {
                 const { content } = response.data.data;
@@ -54,6 +58,7 @@ const SearchScreen = ({ navigation, route }) => {
             })
             .catch(error => {
                 // console.error('Error fetching data:', error);
+                setProductsState([]);
                 setLoading(false);
             });
     }, [minPrice, maxPrice, categoryId, searchQuery]);
@@ -61,11 +66,6 @@ const SearchScreen = ({ navigation, route }) => {
     const filteredSuggestions = productsState.filter(product =>
         product.productName.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    // const filteredProducts = productsState.filter(product =>
-    //     product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    // );
-
     return (
         <View style={styles.container}>
             {/* Thanh tìm kiếm */}
@@ -96,20 +96,12 @@ const SearchScreen = ({ navigation, route }) => {
                 onClose={toggleFilterModal}
                 onApply={handleApplyFilters}
                 onReset={handleResetFilters}
-                
+
             />
 
             {/* Danh sách sản phẩm dạng lưới */}
-            {/* <FlatList
-                data={productsState}
-                renderItem={({ item }) => <ProductItem {...item} />}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                columnWrapperStyle={styles.columnWrapper}
-                contentContainerStyle={styles.listContent}
-            /> */}
 
-            {filteredSuggestions.length > 0 ? (
+            {productsState.length > 0 ? (
                 <FlatList
                     data={filteredSuggestions}
                     renderItem={({ item }) => {
@@ -140,7 +132,13 @@ const SearchScreen = ({ navigation, route }) => {
                     columnWrapperStyle={styles.columnWrapper}
                     contentContainerStyle={styles.listContent}
                 />
-            ) : null}
+            ) : (
+
+                <View style={{ justifyContent: 'center' }}>
+                    <View style={{ marginBottom: '25%' }} ></View>
+                    <Image source={require('../assets/NoProduct.png')} style={{ width: '100%', height: '45%' }} />
+                </View>
+            )}
         </View>
     );
 };

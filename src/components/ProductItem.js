@@ -82,14 +82,15 @@ const ProductItem = ({ id, image, name, price, oldPrice,rating, review, like: in
         <TouchableOpacity
           onPress={() => {
             const currentRoute = navigation.getState().routes[navigation.getState().index].name;
+            navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
 
-            if (currentRoute === 'AddedProductToWishlist') {
-              // Nếu đang ở ProductDetailScreen, dùng replace
-              navigation.replace('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-            } else {
-              // Nếu không, dùng navigate
-              navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-            }
+            // if (currentRoute === 'AddedProductToWishlist') {
+            //   // Nếu đang ở ProductDetailScreen, dùng replace
+            //   navigation.replace('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
+            // } else {
+            //   // Nếu không, dùng navigate
+            //   navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
+            // }
           }}
         >
           <View>

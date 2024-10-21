@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import Filter from '../components/Filter';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
-
+import  { BASE_URL }  from './api/config';
 
 
 const featuredProducts = [
@@ -89,9 +89,10 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    let apiUrl = 'http://192.168.136.135:8080/api/v1/products/filters?';
+    let apiUrl = `${BASE_URL}products/filters?search=samsung`;
     const queryParams = [];
     apiUrl += queryParams.join('&');
+    console.log(apiUrl)
     axios.get(apiUrl)
       .then(response => {
         const { content } = response.data.data;
@@ -106,7 +107,7 @@ const HomeScreen = () => {
 
 
   useEffect(() => {
-    const apiUrl = 'http://192.168.136.135:8080/api/v1/categories';
+    let apiUrl = `${BASE_URL}categories`;
 
     const fetchData = async () => {
       try {
@@ -143,7 +144,6 @@ const HomeScreen = () => {
   }, [shimmerAnim]);
 
   {/* Search lấy dữ liệu để chuyển trang*/ }
-
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = () => {
@@ -236,6 +236,7 @@ const HomeScreen = () => {
                 isLoading={false}
               />
             )}
+            showsHorizontalScrollIndicator = {false}
           />
         </View>
       </View>
