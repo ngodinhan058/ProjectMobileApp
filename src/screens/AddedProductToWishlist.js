@@ -39,7 +39,7 @@ const featuredProducts = [
 ];
 
 function AddedProductToWishlist({ route, navigation }) {
-  const { image, name, price, rating, review } = route.params;
+  const { image, name, price, oldPrice, rating, review, sale } = route.params;
   return (
     <ScrollView>
       <View style={styles.productDetailContainer}>
@@ -69,9 +69,22 @@ function AddedProductToWishlist({ route, navigation }) {
           </View>
 
           <View>
-            <Text style={styles.productPrice}>
-              {price}
-            </Text>
+            {sale == 0 ? (
+              <Text style={styles.productPrice}>
+                {price}
+              </Text>
+            ) : (
+              <View>
+                <Text style={styles.productPrice}>
+                  {price}
+                </Text>
+                <Text style={styles.originalPrice}>
+                  {oldPrice}
+                </Text>
+              </View>
+            )}
+
+
           </View>
 
           <View style={styles.SoldProductInfo}>
@@ -368,7 +381,7 @@ const styles = StyleSheet.create({
   shareButton: {
     marginLeft: 10,
   },
-  
+
   productImgContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -406,8 +419,14 @@ const styles = StyleSheet.create({
   productPrice: {
     color: '#FE3A30',
     fontWeight: '500',
+    fontSize: 20,
   },
-
+  originalPrice: {
+    fontSize: 14,
+    color: '#888',
+    textDecorationLine: 'line-through',
+    marginBottom: 10,
+  },
   currencyHighlight: {
     fontWeight: 'bold',
   },

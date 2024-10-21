@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import Filter from '../components/Filter';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
-import  { BASE_URL }  from './api/config';
+import { BASE_URL } from './api/config';
 
 
 const featuredProducts = [
@@ -89,7 +89,7 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    let apiUrl = `${BASE_URL}products/filters?search=samsung`;
+    let apiUrl = `${BASE_URL}products/filters?`;
     const queryParams = [];
     apiUrl += queryParams.join('&');
     console.log(apiUrl)
@@ -114,7 +114,6 @@ const HomeScreen = () => {
         const response = await axios.get(apiUrl);
         const data = response.data.data;
         setCategories(data);
-        console.log(data)
       } catch (error) {
         console.error('Error fetching data:', error.response ? error.response.data : error.message);
       }
@@ -230,13 +229,13 @@ const HomeScreen = () => {
             keyExtractor={(item) => item.categoryId.toString()}
             renderItem={({ item }) => (
               <CategoriesItem
-                id={item.categoryId}
-                name={item.categoryName}
-                image={item.categoryImgPath}
+                id={item['categoryId']}
+                name={item['categoryName']}
+                image={item['categoryImgPath']}
                 isLoading={false}
               />
             )}
-            showsHorizontalScrollIndicator = {false}
+            showsHorizontalScrollIndicator={false}
           />
         </View>
       </View>
@@ -257,8 +256,9 @@ const HomeScreen = () => {
                 // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
 
                 const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
+                  ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
+                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
+
 
 
                 return (
