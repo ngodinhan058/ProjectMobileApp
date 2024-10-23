@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useWindowDimensions } from 'react-native';
+import { BASE_URL } from '../../api/config';
 import axios from 'axios';
 
 const HomeAdminScreen = ({ navigation }) => {
@@ -11,7 +12,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
 
     useEffect(() => {
-        const apiUrl = 'http://192.168.136.135:8080/api/v1/users';
+        const apiUrl = `${BASE_URL}users`;
 
         const fetchData = async () => {
             try {
