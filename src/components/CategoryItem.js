@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const CategoryItem = ({ image, name }) => {
+const CategoryItem = ({ id, image, name }) => {
   const [loading, setLoading] = useState(true);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
@@ -44,7 +44,7 @@ const CategoryItem = ({ image, name }) => {
         </View>
       ) : (
         <>
-          <TouchableOpacity onPress={() => navigation.navigate('ProductByCateScreen',{ image, name })}>
+          <TouchableOpacity onPress={() => navigation.navigate('ProductByCateScreen',{ id, image, name })}>
             <View style={styles.categoryItem}>
               <Image source={{ uri: image }} style={styles.categoryImage} />
             </View>

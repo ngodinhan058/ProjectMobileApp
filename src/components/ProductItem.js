@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-const ProductItem = ({ id, image, name, price, oldPrice,rating, review, like: initialLike }) => {
+const ProductItem = ({ id, image, name, price, oldPrice,rating, review,sale, like: initialLike }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [liked, setLiked] = useState(initialLike);
   // const [localUri, setLocalUri] = useState(null);
@@ -82,14 +82,15 @@ const ProductItem = ({ id, image, name, price, oldPrice,rating, review, like: in
         <TouchableOpacity
           onPress={() => {
             const currentRoute = navigation.getState().routes[navigation.getState().index].name;
+            navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, oldPrice, rating, review, sale });
 
-            if (currentRoute === 'AddedProductToWishlist') {
-              // Nếu đang ở ProductDetailScreen, dùng replace
-              navigation.replace('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-            } else {
-              // Nếu không, dùng navigate
-              navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-            }
+            // if (currentRoute === 'AddedProductToWishlist') {
+            //   // Nếu đang ở ProductDetailScreen, dùng replace
+            //   navigation.replace('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
+            // } else {
+            //   // Nếu không, dùng navigate
+            //   navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
+            // }
           }}
         >
           <View>
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: 150,
-    height: 140,
+    height: 150,
     marginBottom: 10,
   },
   skeletonText: {

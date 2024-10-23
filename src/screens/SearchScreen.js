@@ -3,11 +3,13 @@ import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, Touchab
 import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
 import axios from 'axios';
+import { BASE_URL } from './api/config';
+
 
 const SearchScreen = ({ navigation, route }) => {
     const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
-    const [minPrice, setMinPrice] = useState(0);
-    const [maxPrice, setMaxPrice] = useState(2000000);
+    const [minPrice, setMinPrice] = useState();
+    const [maxPrice, setMaxPrice] = useState();
 
     const { query } = route.params;
     const finalQuery = query || '';
@@ -16,7 +18,7 @@ const SearchScreen = ({ navigation, route }) => {
     const [appliedFilters, setAppliedFilters] = useState(null);
     const [searchQuery, setSearchQuery] = useState(finalQuery); // Lưu trữ trạng thái cho thanh tìm kiếm
     const [loading, setLoading] = useState(true); // Thêm biến loading nếu thiếu
-    const [categoryId, setCategoryId] = useState([]);
+    // const [categoryId, setCategoryId] = useState([]);
 
 
     const handleSearch = () => {
@@ -31,21 +33,22 @@ const SearchScreen = ({ navigation, route }) => {
         setAppliedFilters(filters);
         setMinPrice(filters.priceRange[0]); // Sử dụng trực tiếp giá trị từ filters
         setMaxPrice(filters.priceRange[1]); // Sử dụng trực tiếp giá trị từ filters
-        setCategoryId(filters.categories)
+        // setCategoryId(filters.categories)
     };
-    
+
     const handleResetFilters = () => {
         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
     };
     useEffect(() => {
-        let apiUrl = 'http://192.168.136.135:8080/api/v1/products/filters?';
+        let apiUrl = `${BASE_URL}products/filters?`;
+
         const queryParams = [];
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
-        if (categoryId !== null && categoryId !== "") queryParams.push(`categoryId=${categoryId}`);
         if (searchQuery !== null && searchQuery !== undefined) queryParams.push(`search=${searchQuery}`);
-       
+
         apiUrl += queryParams.join('&');
+        console.log('sanpham', apiUrl)
         axios.get(apiUrl)
             .then(response => {
                 const { content } = response.data.data;
@@ -54,18 +57,14 @@ const SearchScreen = ({ navigation, route }) => {
             })
             .catch(error => {
                 // console.error('Error fetching data:', error);
+                setProductsState([]);
                 setLoading(false);
             });
-    }, [minPrice, maxPrice, categoryId, searchQuery]);
+    }, [minPrice, maxPrice, searchQuery]);
 
     const filteredSuggestions = productsState.filter(product =>
         product.productName.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    // const filteredProducts = productsState.filter(product =>
-    //     product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    // );
-
     return (
         <View style={styles.container}>
             {/* Thanh tìm kiếm */}
@@ -96,28 +95,21 @@ const SearchScreen = ({ navigation, route }) => {
                 onClose={toggleFilterModal}
                 onApply={handleApplyFilters}
                 onReset={handleResetFilters}
-                
+
             />
 
             {/* Danh sách sản phẩm dạng lưới */}
-            {/* <FlatList
-                data={productsState}
-                renderItem={({ item }) => <ProductItem {...item} />}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                columnWrapperStyle={styles.columnWrapper}
-                contentContainerStyle={styles.listContent}
-            /> */}
 
-            {filteredSuggestions.length > 0 ? (
+            {productsState.length > 0 ? (
                 <FlatList
                     data={filteredSuggestions}
                     renderItem={({ item }) => {
                         // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
 
                         const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-                            ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                            : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
+                        ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
+                        : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
+      
 
 
                         return (
@@ -140,7 +132,13 @@ const SearchScreen = ({ navigation, route }) => {
                     columnWrapperStyle={styles.columnWrapper}
                     contentContainerStyle={styles.listContent}
                 />
-            ) : null}
+            ) : (
+
+                <View style={{  position: 'relative' }}>
+                    <View style={{ marginBottom: '70%' }} ></View>
+                    <Image source={require('../assets/NoProduct.png')} style={{ position: 'absolute', width: '100%', height: '75%', top: 100 }} />
+                </View>
+            )}
         </View>
     );
 };

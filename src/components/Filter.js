@@ -2,14 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import axios from 'axios';
+import { BASE_URL } from '../screens/api/config';
+
 
 const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     const [categories, setCategories] = useState([]);
-    const [selectedCategories, setSelectedCategories] = useState({});
+    const [selectedCategories, setSelectedCategories] = useState(null);
+
     const [priceRange, setPriceRange] = useState([0, 2000000]);
     const [isExpanded, setIsExpanded] = useState(false);
     useEffect(() => {
-        const apiUrl = 'http://192.168.136.135:8080/api/v1/categories';
+        let apiUrl = `${BASE_URL}categories`;
 
         const fetchData = async () => {
             try {
@@ -17,11 +20,8 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                 const data = response.data.data;
                 setCategories(data);
                 // Initialize selectedCategories with false for each category
-                const initialSelected = {};
-                data.forEach(category => {
-                    initialSelected[category.categoryId] = false;
-                });
-                setSelectedCategories(initialSelected);
+                
+                setSelectedCategories();
             } catch (error) {
                 console.error('Error fetching data:', error.response ? error.response.data : error.message);
             }
@@ -31,54 +31,32 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     }, []);
 
 
-
-    // const [selectedCategories, setSelectedCategories] = useState({
-    //     Phone: false,
-    //     Headphone: false,
-    //     Computer: false,
-    //     Laptop: false,
-    //     Laptop1: false,
-    //     Laptop2: false,
-    //     Laptop3: false,
-    // });
-
-    // const initialCategories = {
-    //     Phone: false,
-    //     Headphone: false,
-    //     Computer: false,
-    //     Laptop: false,
-    //     Laptop1: false,
-    //     Laptop2: false,
-    //     Laptop3: false,
-    // };
-
     const handleSliderChange = (values) => {
         setPriceRange(values);
     };
+    // const toggleCheckbox = (categoryId) => {
+    //     setSelectedCategories({
+    //         ...selectedCategories,
+    //         [categoryId]: !selectedCategories[categoryId],
+    //     });
+    // };
     const toggleCheckbox = (categoryId) => {
-        setSelectedCategories({
-            ...selectedCategories,
-            [categoryId]: !selectedCategories[categoryId],
-        });
+        setSelectedCategories(categoryId);
     };
 
     const handleApply = () => {
-        // Lọc các danh mục đã được chọn (có giá trị true)
-        const selectedCategoryIds = Object.keys(selectedCategories).filter(
-            (categoryId) => selectedCategories[categoryId] 
-        );
-    
+        
         // Tạo đối tượng filter chỉ chứa các category đã chọn và khoảng giá
         const selectedFilters = {
-            categories: selectedCategoryIds, // Chỉ truyền ID các danh mục đã chọn
+            categories: selectedCategories, // Chỉ truyền ID các danh mục đã chọn
             priceRange,
         };
-    
+
         // Gọi hàm onApply với dữ liệu lọc và đóng modal
         onApply(selectedFilters);
         onClose();
     };
-    
+
     const handleReset = () => {
         // Reset categories and price range
         const resetSelected = {};
@@ -95,10 +73,6 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     };
 
     // Hiển thị 4 mục đầu tiên hoặc tất cả tùy thuộc vào trạng thái
-    // Object.keys(selectedCategories) chỉ sài cho dạng bảng
-    // const categoriesToShow = isExpanded
-    //     ? Object.keys(selectedCategories) // Hiển thị tất cả nếu mở rộng
-    //     : Object.keys(selectedCategories).slice(0, 4); // Chỉ hiển thị 4 mục đầu tiên
     const categoriesToShow = isExpanded ? categories : categories.slice(0, 4);
 
     return (
@@ -150,7 +124,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                             if (index % 2 === 0) {
                                 return (
                                     <View key={index} style={styles.checkboxRow}>
-                                        {/* Mục checkbox đầu tiên của dòng */}
+                                        {/* First checkbox of the row */}
                                         <View style={styles.checkboxColumn}>
                                             <TouchableOpacity
                                                 style={styles.checkbox}
@@ -159,15 +133,15 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                                                 <Text style={styles.checkboxText}>
                                                     {categoriesToShow[index].categoryName.charAt(0).toUpperCase() + categoriesToShow[index].categoryName.slice(1)}
                                                 </Text>
-                                                {selectedCategories[categoriesToShow[index].categoryId] && (
+                                                {selectedCategories === categoriesToShow[index].categoryId && (
                                                     <View style={styles.checkedBox}>
                                                         <Text style={styles.tickCheckedBox}>✔</Text>
                                                     </View>
                                                 )}
                                             </TouchableOpacity>
                                         </View>
-                                        
-                                        {/* Mục checkbox thứ hai của dòng */}
+
+                                        {/* Second checkbox of the row */}
                                         {categoriesToShow[index + 1] && (
                                             <View style={styles.checkboxColumn}>
                                                 <TouchableOpacity
@@ -177,7 +151,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                                                     <Text style={styles.checkboxText}>
                                                         {categoriesToShow[index + 1].categoryName.charAt(0).toUpperCase() + categoriesToShow[index + 1].categoryName.slice(1)}
                                                     </Text>
-                                                    {selectedCategories[categoriesToShow[index + 1].categoryId] && (
+                                                    {selectedCategories === categoriesToShow[index + 1].categoryId && (
                                                         <View style={styles.checkedBox}>
                                                             <Text style={styles.tickCheckedBox}>✔</Text>
                                                         </View>
@@ -186,19 +160,11 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                                             </View>
                                         )}
                                     </View>
+
                                 );
                             }
                         })}
                     </View>
-
-
-
-                    
-
-
-
-
-
                     <TouchableOpacity onPress={toggleExpand}>
                         <Text style={styles.toggleButtonText}>
                             {isExpanded ? 'Thu gọn lại' : 'Hiển thị thêm'}

@@ -3,6 +3,8 @@ import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, Touchab
 import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
+import { BASE_URL } from './api/config';
 
 
 const featuredProducts = [
@@ -42,25 +44,61 @@ const featuredProducts = [
 ];
 
 
-const WishListScreen = ({ route, navigation }) => {
+const ProductByCateScreen = ({ route, navigation }) => {
   // Kiểm tra nếu route.params tồn tại và lấy giá trị query, nếu không có thì để là chuỗi rỗng
-  const { query = '' } = route?.params || {}; 
- const { image, name } = route.params;
+  const [loading, setLoading] = useState(true);
+  const { query = '' } = route?.params || {};
+  const { id, image, name } = route.params;
   const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+  const [minPrice, setMinPrice] = useState();
+  const [maxPrice, setMaxPrice] = useState();
+  const [categoryId, setCategoryId] = useState([]);
+
+  const [appliedFilters, setAppliedFilters] = useState(null);
+
+
+  useEffect(() => {
+
+    let apiUrl = `${BASE_URL}products/filters?`;
+    const queryParams = [];
+    if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
+    if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
+    if (id !== null && id !== "") queryParams.push(`categoryId=${id}`);
+
+    apiUrl += queryParams.join('&');
+    console.log(apiUrl)
+    axios.get(apiUrl)
+      .then(response => {
+        const { content } = response.data.data;
+        setProductsState(content);
+        setLoading(false);
+      })
+      .catch(error => {
+        // console.error('Error fetching data:', error);
+        setProductsState([]);
+        setLoading(false);
+      });
+  }, [minPrice, maxPrice, id]);
+
   const handleSearch = () => {
     navigation.replace('SearchScreen', { query: searchQuery });
   };
-  const filteredProducts = featuredProducts.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  const filteredSuggestions = productsState.filter(product =>
+    product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   const toggleFilterModal = () => {
     setIsFilterModalVisible(!isFilterModalVisible);
   };
 
   const handleApplyFilters = (filters) => {
     setAppliedFilters(filters);
+    setMinPrice(filters.priceRange[0]); // Sử dụng trực tiếp giá trị từ filters
+    setMaxPrice(filters.priceRange[1]); // Sử dụng trực tiếp giá trị từ filters
+    setCategoryId(filters.categories)
   };
+
 
   const handleResetFilters = () => {
     setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
@@ -68,13 +106,13 @@ const WishListScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-         <View style={styles.iconHeader}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Icon name="angle-left" size={35} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.textHeader}>Danh Mục {name}</Text>
-          
-        </View>
+      <View style={styles.iconHeader}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="angle-left" size={35} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.textHeader}>Danh Mục {name}</Text>
+
+      </View>
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
@@ -104,14 +142,40 @@ const WishListScreen = ({ route, navigation }) => {
       />
 
       {/* Danh sách sản phẩm dạng lưới */}
-      <FlatList
-        data={filteredProducts}  // Sử dụng dữ liệu sản phẩm giả định
-        renderItem={({ item }) => <ProductItem {...item} />}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
-      />
+      {productsState.length > 0 ? (
+        <FlatList
+          data={filteredSuggestions}
+          renderItem={({ item }) => {
+            // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+            const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+              ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
+              : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
+            return (
+              <ProductItem
+                id={item['productId']}
+                name={item['productName']}
+                price={item['productPriceSale']}
+                oldPrice={item['productPrice']}
+                image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                rating={item['productRating']}
+                sale={item['productSale']}
+                isLoading={false}  // Set isLoading to false when not loading
+              />
+            );
+          }}
+          keyExtractor={(item) => item['productId'].toString()}
+          showsHorizontalScrollIndicator={false}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+        />
+
+      ) :
+        <View style={{ position: 'relative' }}>
+          <View style={{ marginBottom: '70%' }} ></View>
+          <Image source={require('../assets/NoProduct.png')} style={{ position: 'absolute', width: '100%', height: '75%', top: 100 }} />
+        </View>}
     </View>
   );
 };
@@ -191,4 +255,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default WishListScreen;
+export default ProductByCateScreen;

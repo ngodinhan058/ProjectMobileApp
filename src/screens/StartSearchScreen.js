@@ -109,23 +109,16 @@ const SearchScreen = ({ navigation, route }) => {
                         <Text style={styles.recentSearchesTitle}>Gợi ý</Text>
                         <ScrollView contentContainerStyle={styles.suggestionsContainer}>
                             {filteredSuggestions.map((item) => (
-                                <View>
-                                    <View key={item.id} style={styles.suggestionItem}>
-                                        <TouchableOpacity onPress={() => setSearchQuery(item.name)} style={{
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                        }}>
-                                            <Image
-                                                source={require('../assets/iconSeach.png')}
-                                                style={styles.clock}
-                                            />
+                                <View key={item.id}>
+                                    <View style={styles.suggestionItem}>
+                                        <TouchableOpacity onPress={() => handleRecentSearchClick(item.name)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Image source={require('../assets/iconSeach.png')} style={styles.clock} />
                                             <Text style={styles.suggestionText}>{item.name}</Text>
                                         </TouchableOpacity>
                                     </View>
                                     <View style={styles.line}></View>
                                 </View>
                             ))}
-
                         </ScrollView>
 
                     </View>
@@ -172,6 +165,7 @@ const SearchScreen = ({ navigation, route }) => {
                         {featuredProducts.map((item) => (
                             <ProductItem key={item.id} {...item} />
                         ))}
+
                     </View>
                 </ScrollView>
             </View>
