@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
@@ -557,14 +558,37 @@ function Accouting() {
   );
 }
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(null); // trạng thái đăng nhập
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData'); // Lấy dữ liệu người dùng từ AsyncStorage
+        if (userData) {
+          setIsLoggedIn(true); // Nếu có userData -> Đã đăng nhập
+        } else {
+          setIsLoggedIn(false); // Nếu không có userData -> Chưa đăng nhập
+        }
+      } catch (error) {
+        console.error('Error checking login status', error);
+        setIsLoggedIn(false); // Xử lý lỗi bằng cách giả định là chưa đăng nhập
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+   {/* loading khi đang lấy thông tin đăng nhập */}
+   if (isLoggedIn === null) {
+    return null; 
+  }
   return (
     <NavigationContainer>
-      {/* <NoLoginHome /> */}
-      <HaveLoginHome />
-      {/* <AdminDrawerNavigator /> */}
-      {/* <InventoryDrawerNavigator /> */}
-      {/* <ShipperDrawerNavigator /> */}
-      {/* <Accouting /> */}
+      {isLoggedIn ? <HaveLoginHome /> : <NoLoginHome />}
+      {/* <AdminDrawerNavigator />  */}
+
     </NavigationContainer>
   );
 }
+{/* <InventoryDrawerNavigator /> */ }
+{/* <ShipperDrawerNavigator /> */ }
+{/* <Accouting /> */ }

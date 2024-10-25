@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { BASE_URL } from './api/config';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -10,17 +13,35 @@ const LoginScreen = ({ navigation }) => {
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 
   useEffect(() => {
-    if (email.trim() !== '' && password.length >= 8) {
+    if (email.trim() !== '' && password.length >= 2) {
       setIsButtonEnabled(true);
     } else {
       setIsButtonEnabled(false);
     }
   }, [email, password]);
 
-  const handleLogin = () => {
-    if (email === 'an' && password === '12345678') {
+  const login = async (email, password) => {
+    try {
+      console.log({ userEmail: email, userPassword: password });
+      const response = await axios.post(`${BASE_URL}users`, {
+        userEmail: email,
+        userPasswordLevel2: password,
+      });
+      const userData = response.data.data;
+      await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
+      return userData;
+    } catch (error) {
+      console.error('Login failed', error.response ? error.response.data : error.message);
+      throw error; // Ném lỗi để có thể hiển thị thông báo
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const userData = await login(email, password); // Gọi API để kiểm tra
       Alert.alert('Thành công', 'Đăng nhập thành công!');
-    } else {
+      navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
+    } catch (error) {
       Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
     }
   };
@@ -28,10 +49,10 @@ const LoginScreen = ({ navigation }) => {
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
-      enableOnAndroid={true}  // Kích hoạt hỗ trợ trên Android
-      extraHeight={150}  // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-200}  // Tùy chỉnh thêm khoảng cách cuộn
-      keyboardShouldPersistTaps="handled"  // Xử lý khi nhấn ngoài input
+      enableOnAndroid={true}
+      extraHeight={150}
+      extraScrollHeight={-200}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.innerContainer}>
         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -80,8 +101,8 @@ const LoginScreen = ({ navigation }) => {
           >
             <Text style={styles.signInText}>Đăng Nhập</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton}>
-            <Text style={styles.cancelText} onPress={() => navigation.goBack()}>Cancel</Text>
+          <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </View>
 
@@ -89,7 +110,7 @@ const LoginScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.navigate('ResetPassScreen')}>
             <Text style={styles.footerText}>Quên Mật Khẩu</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUpSceen')}>
+          <TouchableOpacity onPress={() => navigation.navigate('SignUpScreen')}>
             <Text style={{ color: '#3669c9', fontSize: 14, fontWeight: 'bold' }}>Sign Up</Text>
           </TouchableOpacity>
         </View>

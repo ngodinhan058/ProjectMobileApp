@@ -9,8 +9,11 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     const [categories, setCategories] = useState([]);
     const [selectedCategories, setSelectedCategories] = useState(null);
 
+
     const [priceRange, setPriceRange] = useState([0, 2000000]);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [sortOption, setSortOption] = useState();
+
     useEffect(() => {
         let apiUrl = `${BASE_URL}categories`;
 
@@ -20,7 +23,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                 const data = response.data.data;
                 setCategories(data);
                 // Initialize selectedCategories with false for each category
-                
+
                 setSelectedCategories();
             } catch (error) {
                 console.error('Error fetching data:', error.response ? error.response.data : error.message);
@@ -34,22 +37,33 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     const handleSliderChange = (values) => {
         setPriceRange(values);
     };
-    // const toggleCheckbox = (categoryId) => {
-    //     setSelectedCategories({
-    //         ...selectedCategories,
-    //         [categoryId]: !selectedCategories[categoryId],
-    //     });
-    // };
+    const CustomRadioButton = ({ label, value, selected, onSelect }) => {
+        return (
+            <>
+                <TouchableOpacity style={styles.radioContainer} onPress={() => onSelect(value)}>
+                    <Text style={styles.radioText}>{label}</Text>
+                    <View style={styles.outerCircle}>
+                        {selected && <View style={styles.innerCircle} />}
+                    </View>
+
+                </TouchableOpacity>
+                <View style={styles.line}></View>
+            </>
+        );
+    };
     const toggleCheckbox = (categoryId) => {
         setSelectedCategories(categoryId);
     };
-
+    const handleSortChange = (value) => {
+        setSortOption(value); // Cập nhật giá trị sort
+    };
     const handleApply = () => {
-        
+
         // Tạo đối tượng filter chỉ chứa các category đã chọn và khoảng giá
         const selectedFilters = {
             categories: selectedCategories, // Chỉ truyền ID các danh mục đã chọn
             priceRange,
+            sort: sortOption,
         };
 
         // Gọi hàm onApply với dữ liệu lọc và đóng modal
@@ -65,6 +79,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
         });
         setSelectedCategories(resetSelected);
         setPriceRange([0, 2000000]);
+        setSortOption(null);
         onReset();
     };
 
@@ -87,11 +102,10 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
             </TouchableWithoutFeedback>
 
             <View style={styles.container}>
-                <Text style={styles.title}>Bộ lọc Tìm Kiếm</Text>
-
-                <ScrollView style={styles.scrollView}>
+                <Text style={styles.title}>Bộ lọc và Sắp Xếp</Text>
+                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator= {false}>
                     <View style={styles.sliderContainer}>
-                        <Text style={styles.titleSmall}>Giá</Text>
+                        <Text style={styles.titleSmall}>Giá:</Text>
                         <MultiSlider
                             values={priceRange}
                             sliderLength={300}
@@ -117,7 +131,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
                     <View style={styles.line}></View>
                     {/* Cập nhật cách hiển thị danh mục */}
-                    <Text style={styles.titleSmall}>Danh Mục</Text>
+                    <Text style={styles.titleSmall}>Danh Mục:</Text>
 
                     <View style={styles.checkboxContainer}>
                         {categoriesToShow.map((category, index) => {
@@ -172,16 +186,38 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                     </TouchableOpacity>
                     <View style={styles.line}></View>
                     {/* Kết thúc danh mục */}
+                    <Text style={styles.titleSmall}>Sắp Xếp:</Text>
 
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-                            <Text>Reset</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-                            <Text style={styles.applyText}>Apply</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <CustomRadioButton
+                        label="Tăng Dần (Giá)"
+                        value="price|asc"
+                        selected={sortOption === 'price|asc'}
+                        onSelect={handleSortChange}
+                    />
+
+                    <CustomRadioButton
+                        label="Giảm Dần (Giá)"
+                        value="price|desc"
+                        selected={sortOption === 'price|desc'}
+                        onSelect={handleSortChange}
+                    />
+
+                    <CustomRadioButton
+                        label="Giảm Dần (Sale)"
+                        value="sale|desc"
+                        selected={sortOption === 'sale|desc'}
+                        onSelect={handleSortChange}
+                    />
+
                 </ScrollView>
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+                        <Text>Reset</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
+                        <Text style={styles.applyText}>Apply</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </Modal>
     );
@@ -198,7 +234,7 @@ const styles = StyleSheet.create({
         width: '100%',
         padding: 20,
         backgroundColor: '#FFF',
-        height: '70%',
+        height: '80%',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         bottom: 0,
@@ -220,7 +256,7 @@ const styles = StyleSheet.create({
     titleSmall: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 5,
+        marginBottom: 15,
     },
     sliderContainer: {
         marginHorizontal: 15,
@@ -237,14 +273,21 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     resetButton: {
-        padding: 10,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 5,
+        width: 120,
+        height: 50,
+        alignItems: 'center',
+        justifyContent:'center',
+        borderColor: '#000',
+        borderWidth: 1,
+        borderRadius: 10,
     },
     applyButton: {
-        padding: 10,
-        backgroundColor: '#0066ff',
-        borderRadius: 5,
+        width: 120,
+        height: 50,
+        alignItems: 'center',
+        justifyContent:'center',
+        backgroundColor: '#3669c9',
+        borderRadius: 10,
     },
     applyText: {
         color: 'white',
@@ -298,6 +341,33 @@ const styles = StyleSheet.create({
         color: '#0066ff',
         textAlign: 'center',
         marginTop: 10,
+    },
+
+    radioContainer: {
+        width: '100%',
+        height: 30,
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+
+    },
+    outerCircle: {
+        height: 24,
+        width: 24,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#3669c9',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    innerCircle: {
+        height: 12,
+        width: 12,
+        borderRadius: 6,
+        backgroundColor: '#3669c9',
+    },
+    radioText: {
+        fontSize: 16,
     },
 });
 

@@ -18,7 +18,7 @@ import UploadImage from '../../../components/Up_Image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import SelectorInCategory from '../../../components/SelectorInCategory';
 import axios from 'axios'; 
-
+import { BASE_URL } from '../../api/config';
 
 const AddCategoryScreen = ({ navigation }) => {
     const [categoryName, setCategoryName] = useState('');
@@ -28,6 +28,7 @@ const AddCategoryScreen = ({ navigation }) => {
 
     const [categoryRelease, setCategoryRelease] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
+    
 
     const onDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || categoryRelease;
@@ -38,7 +39,7 @@ const AddCategoryScreen = ({ navigation }) => {
     const handleAddCategory = async () => {
         try {
             // Gửi yêu cầu POST tới API
-            const response = await axios.post('http://192.168.136.135:8080/api/v1/category', {
+            const response = await axios.post(`${BASE_URL}category`, {
                 categoryName: categoryName,
                 categoryRelease: categoryRelease.toISOString().split('T')[0], // Chuyển ngày thành chuỗi định dạng 'YYYY-MM-DD'
                 statusId: categoryStatusId,

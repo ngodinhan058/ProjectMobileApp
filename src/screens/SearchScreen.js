@@ -17,6 +17,10 @@ const SearchScreen = ({ navigation, route }) => {
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [appliedFilters, setAppliedFilters] = useState(null);
     const [searchQuery, setSearchQuery] = useState(finalQuery); // Lưu trữ trạng thái cho thanh tìm kiếm
+    const [sortOption, setSortOption] = useState();
+
+    const [sort, setSort] = useState(''); // Kích thước trang (số sản phẩm mỗi trang)
+    const [direction, setDirection] = useState(''); // Kích thước trang (số sản phẩm mỗi trang)
     const [loading, setLoading] = useState(true); // Thêm biến loading nếu thiếu
     // const [categoryId, setCategoryId] = useState([]);
 
@@ -33,6 +37,16 @@ const SearchScreen = ({ navigation, route }) => {
         setAppliedFilters(filters);
         setMinPrice(filters.priceRange[0]); // Sử dụng trực tiếp giá trị từ filters
         setMaxPrice(filters.priceRange[1]); // Sử dụng trực tiếp giá trị từ filters
+        if (filters.sort) {
+            const [direction, sort] = filters.sort.split('|'); // Tách thành 2 phần: direction và sort
+            setDirection(direction); // Cập nhật direction
+            setSort(sort);           // Cập nhật sort
+        } else {
+            // Trường hợp không có giá trị sort (hoặc null), có thể đặt giá trị mặc định nếu cần
+            setDirection(null);
+            setSort(null);
+        }
+       
         // setCategoryId(filters.categories)
     };
 
@@ -45,6 +59,8 @@ const SearchScreen = ({ navigation, route }) => {
         const queryParams = [];
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
+        if (direction && direction !== "") queryParams.push(`direction=${direction}`);
+        if (sort && sort != "") queryParams.push(`sort=${sort}`);
         if (searchQuery !== null && searchQuery !== undefined) queryParams.push(`search=${searchQuery}`);
 
         apiUrl += queryParams.join('&');
