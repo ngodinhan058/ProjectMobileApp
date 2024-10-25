@@ -54,8 +54,8 @@ const SearchScreen = ({ navigation, route }) => {
         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
     };
     useEffect(() => {
+        setLoading(true);
         let apiUrl = `${BASE_URL}products/filters?`;
-
         const queryParams = [];
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
@@ -72,7 +72,7 @@ const SearchScreen = ({ navigation, route }) => {
                 setLoading(false);
             })
             .catch(error => {
-                // console.error('Error fetching data:', error);
+                console.error('Error fetching data:', error);
                 setProductsState([]);
                 setLoading(false);
             });

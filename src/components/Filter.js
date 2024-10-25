@@ -190,22 +190,22 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
                     <CustomRadioButton
                         label="Tăng Dần (Giá)"
-                        value="price|asc"
-                        selected={sortOption === 'price|asc'}
+                        value="asc|productPrice"
+                        selected={sortOption === 'asc|productPrice'}
                         onSelect={handleSortChange}
                     />
 
                     <CustomRadioButton
                         label="Giảm Dần (Giá)"
-                        value="price|desc"
-                        selected={sortOption === 'price|desc'}
+                        value="desc|productPrice"
+                        selected={sortOption === 'desc|productPrice'}
                         onSelect={handleSortChange}
                     />
 
                     <CustomRadioButton
                         label="Giảm Dần (Sale)"
-                        value="sale|desc"
-                        selected={sortOption === 'sale|desc'}
+                        value="desc|productSale"
+                        selected={sortOption === 'desc|productSale'}
                         onSelect={handleSortChange}
                     />
 
