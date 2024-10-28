@@ -5,7 +5,7 @@ import {
   Image,
   StyleSheet,
   ScrollView,
-  Button,
+  Modal,
   TouchableOpacity,
   FlatList,
   Pressable,
@@ -39,15 +39,18 @@ function AddedProductToWishlist({ route, navigation }) {
       });
   }, [id]); // Make sure to include `id` in the dependency array
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  console.log("hinh", productRelate);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  const onScrollEnd = (event) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.floor(contentOffsetX / width);
-    setCurrentImageIndex(index);
+  const openModal = (imagePath) => {
+    setSelectedImage(imagePath);
+    setModalVisible(true);
   };
 
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedImage(null);
+  };
   // useEffect(() => {
   //   let apiUrl = `${BASE_URL}products/filters?`;
   //   const queryParams = [];
@@ -85,32 +88,39 @@ function AddedProductToWishlist({ route, navigation }) {
           </Pressable>
         </View>
 
-        {/* Product Image */}
-        <View style={styles.productImgContainer}>
-        {/* <Image
-                source={{ uri: productRelate.productImages[0]['productImagePath'] }} // Use URI for each image path
-                style={styles.productImg}
-              /> */}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
           <FlatList
             data={productRelate.productImages}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.productImageIndex}
-            renderItem={({ item }) => {
-              <View>
-                {/* <Image
-                  source={{ uri: productRelate.productImages[0]['productImagePath']}} // Use URI for each image path
-                  style={styles.productImg}
-                /> */}
-                <Text>{item['productImagePath']}</Text>
-              </View>
-            }}
-            onMomentumScrollEnd={onScrollEnd}
+            keyExtractor={(item) => item.productImageIndex.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
+                <View style={{ marginHorizontal: 5 }}>
+                  <Image
+                    source={{ uri: item.productImagePath }}
+                    style={{ width: 345, height: 350, resizeMode: 'contain' }}
+                  />
+                </View>
+              </TouchableOpacity>
+            )}
           />
-          {/* <Text style={styles.numberOfImage}>
-            {currentImageIndex + 1}/{Array.isArray(productRelate.productImages.length)} Ảnh
-          </Text> */}
+
+          <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
+            <View style={styles.modalBackground}>
+              <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                <Text style={styles.closeText}>X</Text>
+              </TouchableOpacity>
+              {selectedImage && (
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={styles.fullScreenImage}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+          </Modal>
         </View>
         {/* Product info */}
         <View style={styles.productInfo}>
@@ -454,15 +464,10 @@ const styles = StyleSheet.create({
   },
 
   productImgContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    height: 300,
     position: 'relative',
-  },
-  productImg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
+    alignContent: 'center',
+    justifyContent: 'center',
+    height: 350,
   },
 
   numberOfImage: {
@@ -568,6 +573,26 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
+  },
+   modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 1,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 24,
+  },
+  fullScreenImage: {
+    width: '90%',
+    height: '90%',
   },
 });
 export default AddedProductToWishlist;
