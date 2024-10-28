@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-const ProductItem = ({ id, image, name, price, oldPrice,rating, review,sale, like: initialLike }) => {
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, like: initialLike }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [liked, setLiked] = useState(initialLike);
   // const [localUri, setLocalUri] = useState(null);
@@ -43,11 +43,11 @@ const ProductItem = ({ id, image, name, price, oldPrice,rating, review,sale, lik
       imageString(image);
     }
   }, [image]);
-  
+
   const imageString = (image) => {
     return typeof image === 'string'
       ? { uri: image }
-      :  setLoading(true) ; // Default placeholder image
+      : setLoading(true); // Default placeholder image
   };
   return (
     <View style={styles.container}>
@@ -55,7 +55,7 @@ const ProductItem = ({ id, image, name, price, oldPrice,rating, review,sale, lik
         // Skeleton with shimmer effect while loading
         <View>
           <Image
-            source={image} 
+            source={image}
             onLoad={() => setLoading(false)}  // Ẩn skeleton khi ảnh load xong
           />
 
@@ -81,40 +81,61 @@ const ProductItem = ({ id, image, name, price, oldPrice,rating, review,sale, lik
       ) : (
         <TouchableOpacity
           onPress={() => {
-            const currentRoute = navigation.getState().routes[navigation.getState().index].name;
-            navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, oldPrice, rating, review, sale });
-
-            // if (currentRoute === 'AddedProductToWishlist') {
-            //   // Nếu đang ở ProductDetailScreen, dùng replace
-            //   navigation.replace('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-            // } else {
-            //   // Nếu không, dùng navigate
-            //   navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-            // }
+            navigation.navigate('AddedProductToWishlist', { id });
           }}
         >
-          <View>
+        {sale == 0 ? (
+            <View>
+              <Image
+                source={imageString(image)}
+                style={styles.image}
+              />
+              <Text style={styles.name}>{truncateName(name)}</Text>
+              <Text style={styles.price}>{oldPrice}</Text>
+              <Text style={styles.originalPrice}></Text>
+              <View style={styles.rate}>
+                <Text style={styles.rating}>
+                  <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
+                </Text>
+                <Text style={styles.review}>{review} Review</Text>
+                <TouchableOpacity onPress={toggleLike}>
+                  <Text style={styles.heart}>
+                    <Icon name={liked ? "heart" : "heart-outline"} size={18} color="#3669c9" />
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          
+
+        ) : (
+          <>
+            {/* Nhãn SALE */}
+            <View style={styles.saleLabel}>
+              <Text style={styles.saleText}>-{sale}%</Text>
+            </View>
 
             <Image
-              source={imageString(image)} 
-              style={styles.image}
-            />
+                source={imageString(image)}
+                style={styles.image}
+              />
             <Text style={styles.name}>{truncateName(name)}</Text>
-            <Text style={styles.price}>{oldPrice}</Text>
+            <Text style={styles.price}>{price}</Text>
+            <Text style={styles.originalPrice}>{oldPrice}</Text>
+
             <View style={styles.rate}>
               <Text style={styles.rating}>
                 <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
               </Text>
               <Text style={styles.review}>{review} Review</Text>
               <TouchableOpacity onPress={toggleLike}>
-                <Text style={styles.heart}>
-                  <Icon name={liked ? "heart" : "heart-outline"} size={18} color="#3669c9" />
-                </Text>
-              </TouchableOpacity>
+                  <Text style={styles.heart}>
+                    <Icon name={liked ? "heart" : "heart-outline"} size={18} color="#3669c9" />
+                  </Text>
+                </TouchableOpacity>
             </View>
-          </View>
+          </>
+        )}
         </TouchableOpacity>
-
 
       )}
     </View>
@@ -160,18 +181,20 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   name: {
-    height: 40,
+    height: 30,
     fontSize: 14,
     fontWeight: 'bold',
   },
   price: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: 'red',
-    fontSize: 14,
   },
   rate: {
     position: 'relative',
     width: '100%',
     height: 15,
+
   },
   rating: {
     fontSize: 12,
@@ -180,6 +203,32 @@ const styles = StyleSheet.create({
     position: 'absolute',
     fontSize: 12,
     left: '32%',
+  },
+  saleLabel: {
+    backgroundColor: 'red',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 5,
+    position: 'absolute',
+    right: 0,
+    zIndex: 1,
+  },
+  saleText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  
+  salePrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'red',
+  },
+  originalPrice: {
+    fontSize: 14,
+    color: '#888',
+    textDecorationLine: 'line-through',
+    marginBottom: 10,
   },
   heart: {
     position: 'absolute',
