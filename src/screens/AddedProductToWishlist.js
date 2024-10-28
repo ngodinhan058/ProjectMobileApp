@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,40 +9,71 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
+  Dimensions,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
-const featuredProducts = [
-  {
-    id: '1',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.0',
-    review: '860'
-  },
-  {
-    id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'TMA-2 HD Wireless2',
-    price: '100.000',
-    rating: '2.6',
-    review: '6'
-  },
-  {
-    id: '3',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
-    price: '1.000.000',
-    rating: '0.6',
-    review: '106'
-  },
-];
+import { useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import { BASE_URL } from './api/config';
 
+const { width } = Dimensions.get('window');
 function AddedProductToWishlist({ route, navigation }) {
-  const { image, name, price, oldPrice, rating, review, sale } = route.params;
+  const [loading, setLoading] = useState(true); // Track the loading state
+  const [productRelate, setProductRelate] = useState([]); // Dữ liệu sản phẩm
+  const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+  const { id } = route.params;
+
+  useEffect(() => {
+    let apiUrl = `${BASE_URL}products/${id}`;
+    axios.get(apiUrl)
+      .then(response => {
+        const productData = response.data.data; // Get the entire data object
+        // Set product relate state with productData
+        setProductRelate(productData); // Set the entire product data
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
+  }, [id]); // Make sure to include `id` in the dependency array
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  console.log("hinh", productRelate);
+
+  const onScrollEnd = (event) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.floor(contentOffsetX / width);
+    setCurrentImageIndex(index);
+  };
+
+  // useEffect(() => {
+  //   let apiUrl = `${BASE_URL}products/filters?`;
+  //   const queryParams = [];
+  //   apiUrl += queryParams.join('&');
+  //   console.log(apiUrl)
+  //   axios.get(apiUrl)
+  //     .then(response => {
+  //       const { content } = response.data.data;
+  //       setProductsState(content);
+  //       setLoading(false);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching data:', error);
+  //       setLoading(false);
+  //     });
+  // }, []);
+  const scrollViewRef = useRef();
+  const flatListRef = useRef(null);
+
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  //   }, [])
+  // );
   return (
-    <ScrollView>
+    <ScrollView showsVerticalScrollIndicator={false}>
       <View style={styles.productDetailContainer}>
         <View style={styles.iconHeader}>
           <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -55,46 +87,64 @@ function AddedProductToWishlist({ route, navigation }) {
 
         {/* Product Image */}
         <View style={styles.productImgContainer}>
-          <Image
-            source={image}
-            style={styles.productImg}
+        {/* <Image
+                source={{ uri: productRelate.productImages[0]['productImagePath'] }} // Use URI for each image path
+                style={styles.productImg}
+              /> */}
+          <FlatList
+            data={productRelate.productImages}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.productImageIndex}
+            renderItem={({ item }) => {
+              <View>
+                {/* <Image
+                  source={{ uri: productRelate.productImages[0]['productImagePath']}} // Use URI for each image path
+                  style={styles.productImg}
+                /> */}
+                <Text>{item['productImagePath']}</Text>
+              </View>
+            }}
+            onMomentumScrollEnd={onScrollEnd}
           />
-          <Text style={styles.numberOfImage}>1/5 Foto</Text>
+          {/* <Text style={styles.numberOfImage}>
+            {currentImageIndex + 1}/{Array.isArray(productRelate.productImages.length)} Ảnh
+          </Text> */}
         </View>
-
         {/* Product info */}
         <View style={styles.productInfo}>
           <View>
-            <Text style={styles.productName}>{name}</Text>
+            <Text style={styles.productName}>{productRelate.productName}</Text>
           </View>
 
           <View>
-            {sale == 0 ? (
+            {productRelate.productSale == 0 ? (
+
+
               <Text style={styles.productPrice}>
-                {price}
+                {productRelate.productPrice}
               </Text>
             ) : (
               <View>
                 <Text style={styles.productPrice}>
-                  {price}
+                  {productRelate.productPrice}
                 </Text>
                 <Text style={styles.originalPrice}>
-                  {oldPrice}
+                  {productRelate.productPriceSale}
                 </Text>
               </View>
             )}
-
-
           </View>
 
           <View style={styles.SoldProductInfo}>
             <View style={styles.productStar}>
               <Image source={require('../assets/star.png')} />
-              <Text>{rating}</Text>
-              <Text>{review} reviewes</Text>
+              <Text> {productRelate.productRating}</Text>
+              {/* <Text>{review} reviewes</Text> */}
             </View>
             <View>
-              <Text style={styles.totalSellProduct}>Sole : 250</Text>
+              {/* <Text style={styles.totalSellProduct}>Sole : 250</Text> */}
             </View>
           </View>
         </View>
@@ -126,11 +176,11 @@ function AddedProductToWishlist({ route, navigation }) {
           <View style={styles.reviewProductHeader}>
             <View>
               <Text style={styles.reviewProductTitle}>Review</Text>
-              <Text style={styles.reviewProductTitle}>({review})</Text>
+              {/* <Text style={styles.reviewProductTitle}>({review})</Text> */}
             </View>
             <View style={styles.productStar}>
               <Image source={require('../assets/star.png')} />
-              <Text>{rating}</Text>
+              <Text>{productRelate.productRating}</Text>
             </View>
           </View>
 
@@ -278,13 +328,34 @@ function AddedProductToWishlist({ route, navigation }) {
         </View>
         <FlatList
           horizontal
-          data={featuredProducts}
-          renderItem={({ item }) => <ProductItem {...item} />}
-          keyExtractor={(item) => item.id}
+          ref={scrollViewRef}
+          data={productRelate}
+          renderItem={({ item }) => {
+            // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+            const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+              ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
+              : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
+
+
+
+            return (
+              <ProductItem
+                id={item['productId']}
+                name={item['productName']}
+                price={item['productPriceSale']}
+                oldPrice={item['productPrice']}
+                image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                rating={item['productRating']}
+                sale={item['productSale']}
+                isLoading={false}  // Set isLoading to false when not loading
+              />
+            );
+          }}
+          keyExtractor={(item) => item['productId'].toString()}
           showsHorizontalScrollIndicator={false}
           style={styles.productList}
         />
-
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
           <View style={{ flex: 1 }}>
             <TouchableOpacity
@@ -385,7 +456,7 @@ const styles = StyleSheet.create({
   productImgContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    height: 200,
+    height: 300,
     position: 'relative',
   },
   productImg: {

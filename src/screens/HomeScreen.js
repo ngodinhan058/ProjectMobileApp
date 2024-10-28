@@ -85,7 +85,8 @@ const HomeScreen = () => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-    }, 2000);
+      navigation.push('Home');
+    }, 1000);
   }, []);
 
   useEffect(() => {
