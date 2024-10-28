@@ -13,37 +13,37 @@ import {
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useFocusEffect } from '@react-navigation/native';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
 
-const { width } = Dimensions.get('window');
 function AddedProductToWishlist({ route, navigation }) {
+  const scrollRef = React.useRef();
   const [loading, setLoading] = useState(true); // Track the loading state
   const [productRelate, setProductRelate] = useState([]); // Dữ liệu sản phẩm
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const { id } = route.params;
 
   useEffect(() => {
-    let apiUrl = `${BASE_URL}products/${id}`;
+    let apiUrl = `${BASE_URL}product/${id}`;
     axios.get(apiUrl)
       .then(response => {
-        const productData = response.data.data; // Get the entire data object
-        // Set product relate state with productData
-        setProductRelate(productData); // Set the entire product data
+        const productData = response.data.data;
+        scrollRef.current.scrollTo({ y: 0, animated: true });
+        setProductsState(productData);
         setLoading(false);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
         setLoading(false);
       });
-  }, [id]); // Make sure to include `id` in the dependency array
+  }, [id]);
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const openModal = (imagePath) => {
-    setSelectedImage(imagePath);
+    setSelectedImage([{ url: imagePath }]);
     setModalVisible(true);
   };
 
@@ -51,32 +51,26 @@ function AddedProductToWishlist({ route, navigation }) {
     setModalVisible(false);
     setSelectedImage(null);
   };
-  // useEffect(() => {
-  //   let apiUrl = `${BASE_URL}products/filters?`;
-  //   const queryParams = [];
-  //   apiUrl += queryParams.join('&');
-  //   console.log(apiUrl)
-  //   axios.get(apiUrl)
-  //     .then(response => {
-  //       const { content } = response.data.data;
-  //       setProductsState(content);
-  //       setLoading(false);
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching data:', error);
-  //       setLoading(false);
-  //     });
-  // }, []);
-  const scrollViewRef = useRef();
-  const flatListRef = useRef(null);
+  useEffect(() => {
+    if (productsState && productsState.categories && productsState.categories.length > 0) {
+      const apiUrl = `${BASE_URL}products/relate/${productsState.categories[0].categoryId}`;
+      axios.get(apiUrl)
+        .then(response => {
+          const { content } = response.data.data;
+          setProductRelate(content);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+          setLoading(false);
+        });
+    }
+  }, [productsState]);
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-  //   }, [])
-  // );
+
+
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef}>
       <View style={styles.productDetailContainer}>
         <View style={styles.iconHeader}>
           <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -89,8 +83,9 @@ function AddedProductToWishlist({ route, navigation }) {
         </View>
 
         <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+
           <FlatList
-            data={productRelate.productImages}
+            data={productsState.productImages}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
@@ -113,10 +108,12 @@ function AddedProductToWishlist({ route, navigation }) {
                 <Text style={styles.closeText}>X</Text>
               </TouchableOpacity>
               {selectedImage && (
-                <Image
-                  source={{ uri: selectedImage }}
-                  style={styles.fullScreenImage}
-                  resizeMode="contain"
+                <ImageViewer
+                  imageUrls={selectedImage} // Thư viện yêu cầu array của các object với key `url`
+                  enableSwipeDown
+                  onSwipeDown={closeModal}
+                  renderIndicator={() => null}
+                  style={styles.fullScreenImage} // Ẩn số chỉ mục ảnh
                 />
               )}
             </View>
@@ -125,23 +122,23 @@ function AddedProductToWishlist({ route, navigation }) {
         {/* Product info */}
         <View style={styles.productInfo}>
           <View>
-            <Text style={styles.productName}>{productRelate.productName}</Text>
+            <Text style={styles.productName}>{productsState.productName}</Text>
           </View>
 
           <View>
-            {productRelate.productSale == 0 ? (
+            {productsState.productSale == 0 ? (
 
 
               <Text style={styles.productPrice}>
-                {productRelate.productPrice}
+                {productsState.productPrice}
               </Text>
             ) : (
               <View>
                 <Text style={styles.productPrice}>
-                  {productRelate.productPrice}
+                  {productsState.productPriceSale}
                 </Text>
                 <Text style={styles.originalPrice}>
-                  {productRelate.productPriceSale}
+                  {productsState.productPrice}
                 </Text>
               </View>
             )}
@@ -150,7 +147,7 @@ function AddedProductToWishlist({ route, navigation }) {
           <View style={styles.SoldProductInfo}>
             <View style={styles.productStar}>
               <Image source={require('../assets/star.png')} />
-              <Text> {productRelate.productRating}</Text>
+              <Text> {productsState.productRating}</Text>
               {/* <Text>{review} reviewes</Text> */}
             </View>
             <View>
@@ -190,7 +187,7 @@ function AddedProductToWishlist({ route, navigation }) {
             </View>
             <View style={styles.productStar}>
               <Image source={require('../assets/star.png')} />
-              <Text>{productRelate.productRating}</Text>
+              <Text>{productsState.productRating}</Text>
             </View>
           </View>
 
@@ -338,7 +335,6 @@ function AddedProductToWishlist({ route, navigation }) {
         </View>
         <FlatList
           horizontal
-          ref={scrollViewRef}
           data={productRelate}
           renderItem={({ item }) => {
             // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
@@ -346,9 +342,6 @@ function AddedProductToWishlist({ route, navigation }) {
             const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
               ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
               : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
-
-
-
             return (
               <ProductItem
                 id={item['productId']}
@@ -359,6 +352,7 @@ function AddedProductToWishlist({ route, navigation }) {
                 rating={item['productRating']}
                 sale={item['productSale']}
                 isLoading={false}  // Set isLoading to false when not loading
+
               />
             );
           }}
@@ -574,7 +568,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 50,
   },
-   modalBackground: {
+  modalBackground: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     alignItems: 'center',
@@ -591,7 +585,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   fullScreenImage: {
-    width: '90%',
+    width: '100%',
     height: '90%',
   },
 });
