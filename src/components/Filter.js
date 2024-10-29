@@ -22,8 +22,6 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                 const response = await axios.get(apiUrl);
                 const data = response.data.data;
                 setCategories(data);
-                // Initialize selectedCategories with false for each category
-
                 setSelectedCategories();
             } catch (error) {
                 console.error('Error fetching data:', error.response ? error.response.data : error.message);
@@ -72,12 +70,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     };
 
     const handleReset = () => {
-        // Reset categories and price range
-        const resetSelected = {};
-        categories.forEach(category => {
-            resetSelected[category.categoryId] = false;
-        });
-        setSelectedCategories(resetSelected);
+        setSelectedCategories(null);
         setPriceRange([0, 2000000]);
         setSortOption(null);
         onReset();
@@ -190,15 +183,15 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
                     <CustomRadioButton
                         label="Tăng Dần (Giá)"
-                        value="asc|productPrice"
-                        selected={sortOption === 'asc|productPrice'}
+                        value="asc|productPriceSale"
+                        selected={sortOption === 'asc|productPriceSale'}
                         onSelect={handleSortChange}
                     />
 
                     <CustomRadioButton
                         label="Giảm Dần (Giá)"
-                        value="desc|productPrice"
-                        selected={sortOption === 'desc|productPrice'}
+                        value="desc|productPriceSale"
+                        selected={sortOption === 'desc|productPriceSale'}
                         onSelect={handleSortChange}
                     />
 

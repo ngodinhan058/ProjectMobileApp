@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, like: initialLike }) => {
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, like: initialLike, isLoading }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [liked, setLiked] = useState(initialLike);
   // const [localUri, setLocalUri] = useState(null);
@@ -47,18 +47,13 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, l
   const imageString = (image) => {
     return typeof image === 'string'
       ? { uri: image }
-      : setLoading(true); // Default placeholder image
+      : isLoading == true; // Default placeholder image
   };
   return (
     <View style={styles.container}>
-      {loading ? (
+      {isLoading ? (
         // Skeleton with shimmer effect while loading
         <View>
-          <Image
-            source={image}
-            onLoad={() => setLoading(false)}  // Ẩn skeleton khi ảnh load xong
-          />
-
           <Animated.View style={[styles.skeletonImage, {
             backgroundColor: shimmerAnim.interpolate({
               inputRange: [0, 1],
@@ -154,6 +149,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     marginBottom: 10,
+    resizeMode: 'contain'
   },
   skeletonText: {
     height: 20,

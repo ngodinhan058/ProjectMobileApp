@@ -24,20 +24,48 @@ function AddedProductToWishlist({ route, navigation }) {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const { id } = route.params;
 
+  // useEffect(() => {
+  //   let apiUrl = `${BASE_URL}product/${id}`;
+  //   axios.get(apiUrl)
+  //     .then(response => {
+  //       const productData = response.data.data;
+  //       scrollRef.current.scrollTo({ y: 0, animated: true });
+  //       setProductsState(productData);
+  //       setLoading(false);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching data:', error);
+  //       setLoading(false);
+  //     });
+  // }, [id]);
   useEffect(() => {
-    let apiUrl = `${BASE_URL}product/${id}`;
-    axios.get(apiUrl)
-      .then(response => {
-        const productData = response.data.data;
+    const fetchProductData = async () => {
+      try {
+        // Gọi API lấy chi tiết sản phẩm
+        const productResponse = await axios.get(`${BASE_URL}product/${id}`);
+        const productData = productResponse.data.data;
         scrollRef.current.scrollTo({ y: 0, animated: true });
         setProductsState(productData);
+  
+        // Gọi API lấy sản phẩm liên quan nếu có danh mục
+        if (productData.categories && productData.categories.length > 0) {
+          const relatedProductsResponse = await axios.get(
+            `${BASE_URL}products/relate/${productData.categories[0].categoryId}`
+          );
+          const relatedProductsData = relatedProductsResponse.data.data.content;
+          setProductRelate(relatedProductsData);
+        }
+  
         setLoading(false);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error fetching data:', error);
-        setLoading(false);
-      });
+        setLoading(true);
+      }
+    };
+  
+    fetchProductData();
   }, [id]);
+  
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -51,21 +79,7 @@ function AddedProductToWishlist({ route, navigation }) {
     setModalVisible(false);
     setSelectedImage(null);
   };
-  useEffect(() => {
-    if (productsState && productsState.categories && productsState.categories.length > 0) {
-      const apiUrl = `${BASE_URL}products/relate/${productsState.categories[0].categoryId}`;
-      axios.get(apiUrl)
-        .then(response => {
-          const { content } = response.data.data;
-          setProductRelate(content);
-          setLoading(false);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-          setLoading(false);
-        });
-    }
-  }, [productsState]);
+
 
 
 
