@@ -56,7 +56,7 @@ const banners = [
 
 ];
 
-const HomeScreen = () => {
+const HomeScreen = ({ onScroll }) => {
   {/* Loading Banner */ }
   const [loading, setLoading] = useState(true);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
@@ -122,13 +122,29 @@ const HomeScreen = () => {
       ])
     ).start();
   }, [shimmerAnim]);
-
+  const previousScrollOffset = useRef(0); // Lưu lại vị trí cuộn trước đó
   return (
 
 
-    <ScrollView refreshControl={
-      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']} />
-    }>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']} />
+      }
+      onScroll={(event) => {
+        const currentOffset = event.nativeEvent.contentOffset.y;
+        const isScrollingUp = currentOffset < previousScrollOffset.current;
+
+        // Điều kiện để hiển thị footer khi cuộn lên hoặc khi cuộn đến đỉnh
+        if (isScrollingUp || currentOffset <= 0) {
+          onScroll(true); // Hiển thị footer
+        } else {
+          onScroll(false); // Ẩn footer
+        }
+
+        previousScrollOffset.current = currentOffset; // Cập nhật vị trí cuộn hiện tại
+      }}
+      scrollEventThrottle={16}
+    >
       {/* Bắt đầu phần với background #fff */}
       <View style={styles.container}>
         <View style={styles.whiteSection}>
@@ -223,7 +239,7 @@ const HomeScreen = () => {
             <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          
+
           {productsState.length > 0 ? (
             <FlatList
               horizontal

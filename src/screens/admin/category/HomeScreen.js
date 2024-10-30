@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-
+import axios from 'axios';
+import { BASE_URL } from '../../api/config';
 const HomeAdminScreen = ({ navigation }) => {
     const products = [
         {
@@ -17,28 +18,41 @@ const HomeAdminScreen = ({ navigation }) => {
             id: '3', name: '#2',
             image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
         },
-        
+
 
     ];
+    const [categoryAll, setCategoryAll] = useState([]);
 
+    useEffect(() => {
+        let apiUrl = `${BASE_URL}categories`;
+        axios.get(apiUrl)
+            .then(response => {
+                const ctgData = response.data.data;
+                setCategoryAll(ctgData);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }, []);
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
             onPress={() => navigation.navigate('DetailCategoryScreen', {
-                image: item.image,
-                name: item.name,
-               
+                id: item.categoryId,
+                image: item.categoryImgPath,
+                name: item.categoryName,
+
             })}
         >
             <View style={{
                 marginRight: 20,
             }}>
-                <Image source={item.image} style={styles.productIcon} />
+                <Image source={item.categoryImgPath} style={styles.productIcon} />
             </View>
 
             <View style={styles.productDetails}>
-                <Text style={styles.productCode}>{item.name}</Text>
-                
+                <Text style={styles.productCode}>{item.categoryName}</Text>
+
             </View>
             <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
@@ -60,9 +74,9 @@ const HomeAdminScreen = ({ navigation }) => {
             </View>
             {/* Product List */}
             <FlatList
-                data={products}
+                data={categoryAll}
                 renderItem={renderProduct}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.categoryId}
                 style={styles.productList}
             />
 

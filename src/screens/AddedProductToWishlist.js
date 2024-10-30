@@ -17,7 +17,7 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
 
-function AddedProductToWishlist({ route, navigation }) {
+function AddedProductToWishlist({ route, navigation, onScroll }) {
   const scrollRef = React.useRef();
   const [loading, setLoading] = useState(true); // Track the loading state
   const [productRelate, setProductRelate] = useState([]); // Dữ liệu sản phẩm
@@ -46,7 +46,7 @@ function AddedProductToWishlist({ route, navigation }) {
         const productData = productResponse.data.data;
         scrollRef.current.scrollTo({ y: 0, animated: true });
         setProductsState(productData);
-  
+
         // Gọi API lấy sản phẩm liên quan nếu có danh mục
         if (productData.categories && productData.categories.length > 0) {
           const relatedProductsResponse = await axios.get(
@@ -55,17 +55,17 @@ function AddedProductToWishlist({ route, navigation }) {
           const relatedProductsData = relatedProductsResponse.data.data.content;
           setProductRelate(relatedProductsData);
         }
-  
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
         setLoading(true);
       }
     };
-  
+
     fetchProductData();
   }, [id]);
-  
+
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -80,11 +80,22 @@ function AddedProductToWishlist({ route, navigation }) {
     setSelectedImage(null);
   };
 
-
-
-
+  const previousScrollOffset = useRef(0); // Lưu lại vị trí cuộn trước đó
   return (
-    <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef}>
+    <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} onScroll={(event) => {
+      const currentOffset = event.nativeEvent.contentOffset.y;
+      const isScrollingUp = currentOffset < previousScrollOffset.current;
+
+      // Điều kiện để hiển thị footer khi cuộn lên hoặc khi cuộn đến đỉnh
+      if (isScrollingUp || currentOffset <= 0) {
+        onScroll(true); // Hiển thị footer
+      } else {
+        onScroll(false); // Ẩn footer
+      }
+
+      previousScrollOffset.current = currentOffset; // Cập nhật vị trí cuộn hiện tại
+    }}
+      scrollEventThrottle={16}>
       <View style={styles.productDetailContainer}>
         <View style={styles.iconHeader}>
           <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
