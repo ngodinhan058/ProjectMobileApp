@@ -17,7 +17,7 @@ const SearchScreen = ({ navigation, route }) => {
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [appliedFilters, setAppliedFilters] = useState(null);
     const [searchQuery, setSearchQuery] = useState(finalQuery); // Lưu trữ trạng thái cho thanh tìm kiếm
-    const [sortOption, setSortOption] = useState();
+    const [categoryId, setCategoryId] = useState();
 
     const [sort, setSort] = useState(''); // Kích thước trang (số sản phẩm mỗi trang)
     const [direction, setDirection] = useState(''); // Kích thước trang (số sản phẩm mỗi trang)
@@ -47,7 +47,7 @@ const SearchScreen = ({ navigation, route }) => {
             setSort(null);
         }
        
-        // setCategoryId(filters.categories)
+        setCategoryId(filters.categories)
     };
 
     const handleResetFilters = () => {
@@ -56,12 +56,14 @@ const SearchScreen = ({ navigation, route }) => {
     useEffect(() => {
         setLoading(true);
         let apiUrl = `${BASE_URL}products/filters?`;
+        console.log(apiUrl);
         const queryParams = [];
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
         if (direction && direction !== "") queryParams.push(`direction=${direction}`);
-        if (sort && sort != "") queryParams.push(`sort=${sort}`);
+        if (sort && sort != "") queryParams.push(`sort=${sort}`);categoryId
         if (searchQuery !== null && searchQuery !== undefined) queryParams.push(`search=${searchQuery}`);
+        if (categoryId !== null && categoryId !== undefined) queryParams.push(`categoryId=${categoryId}`);
 
         apiUrl += queryParams.join('&');
         console.log('sanpham', apiUrl)
@@ -74,9 +76,9 @@ const SearchScreen = ({ navigation, route }) => {
             .catch(error => {
                 console.error('Error fetching data:', error);
                 setProductsState([]);
-                setLoading(false);
+                setLoading(true);
             });
-    }, [minPrice, maxPrice, searchQuery]);
+    }, [minPrice, maxPrice, searchQuery, sort, direction, categoryId]);
 
     const filteredSuggestions = productsState.filter(product =>
         product.productName.toLowerCase().includes(searchQuery.toLowerCase())

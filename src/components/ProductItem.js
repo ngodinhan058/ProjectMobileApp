@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, like: initialLike }) => {
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, like: initialLike, isLoading }) => {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [liked, setLiked] = useState(initialLike);
   // const [localUri, setLocalUri] = useState(null);
@@ -47,18 +47,13 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, l
   const imageString = (image) => {
     return typeof image === 'string'
       ? { uri: image }
-      : setLoading(true); // Default placeholder image
+      : isLoading == true; // Default placeholder image
   };
   return (
     <View style={styles.container}>
-      {loading ? (
+      {isLoading ? (
         // Skeleton with shimmer effect while loading
         <View>
-          <Image
-            source={image}
-            onLoad={() => setLoading(false)}  // Ẩn skeleton khi ảnh load xong
-          />
-
           <Animated.View style={[styles.skeletonImage, {
             backgroundColor: shimmerAnim.interpolate({
               inputRange: [0, 1],
@@ -79,21 +74,12 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, l
           }]} />
         </View>
       ) : (
-        sale == 0 ? (
-          <TouchableOpacity
-            onPress={() => {
-              const currentRoute = navigation.getState().routes[navigation.getState().index].name;
-              navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, oldPrice, rating, review, sale });
-
-              // if (currentRoute === 'AddedProductToWishlist') {
-              //   // Nếu đang ở ProductDetailScreen, dùng replace
-              //   navigation.replace('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-              // } else {
-              //   // Nếu không, dùng navigate
-              //   navigation.navigate('AddedProductToWishlist', { image: imageString(image), name, price, rating, review });
-              // }
-            }}
-          >
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('AddedProductToWishlist', { id });
+          }}
+        >
+        {sale == 0 ? (
             <View>
               <Image
                 source={imageString(image)}
@@ -114,16 +100,19 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, l
                 </TouchableOpacity>
               </View>
             </View>
-          </TouchableOpacity>
+          
 
         ) : (
           <>
             {/* Nhãn SALE */}
             <View style={styles.saleLabel}>
-              <Text style={styles.saleText}>SALE</Text>
+              <Text style={styles.saleText}>-{sale}%</Text>
             </View>
 
-            <Image source={image} style={styles.image} />
+            <Image
+                source={imageString(image)}
+                style={styles.image}
+              />
             <Text style={styles.name}>{truncateName(name)}</Text>
             <Text style={styles.price}>{price}</Text>
             <Text style={styles.originalPrice}>{oldPrice}</Text>
@@ -140,8 +129,8 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, l
                 </TouchableOpacity>
             </View>
           </>
-        )
-
+        )}
+        </TouchableOpacity>
 
       )}
     </View>
@@ -160,6 +149,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     marginBottom: 10,
+    resizeMode: 'contain'
   },
   skeletonText: {
     height: 20,
@@ -187,7 +177,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   name: {
-    height: 40,
+    height: 30,
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -216,8 +206,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 5,
     position: 'absolute',
-    top: 10,
-    right: 10,
+    right: 0,
     zIndex: 1,
   },
   saleText: {

@@ -78,7 +78,7 @@ const ProductByCateScreen = ({ route, navigation }) => {
       .catch(error => {
         // console.error('Error fetching data:', error);
         setProductsState([]);
-        setLoading(false);
+        setLoading(true);
       });
   }, [minPrice, maxPrice, id]);
 
