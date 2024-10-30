@@ -8,11 +8,14 @@ import {
     TouchableOpacity,
     Animated,
     Pressable,
+    Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
+import { BASE_URL } from '../../api/config';
 
 function DetailScreen({ route, navigation }) {
-    const { id, image, name } = route.params;
+    const { id, image, name, parent } = route.params;
 
     // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +58,18 @@ function DetailScreen({ route, navigation }) {
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
     });
-
+    const deleteCategory = async () => {
+        try {
+            const response = await axios.delete(`${BASE_URL}category/${id}`);
+            console.log('Category deleted:', response.status); // Trạng thái thành công
+            // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
+            Alert.alert("Success", "Xoá Thành Công");
+            // Điều hướng hoặc cập nhật trạng thái nếu cần
+        } catch (error) {
+            console.error('Error deleting category:', error.response ? error.response.data : error.message);
+            Alert.alert("Error", "Failed to delete category.");
+        }
+    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -69,14 +83,17 @@ function DetailScreen({ route, navigation }) {
 
                     {/* Product Image */}
                     <View style={styles.productImgContainer}>
-                        <Image source={image} style={styles.productImg} />
-                        <Text style={styles.numberOfImage}>1/5 Foto</Text>
+                        <Image source={{ uri: image }}style={styles.productImg} />
+                        
                     </View>
 
                     {/* Product info */}
                     <View style={styles.productInfo}>
                         <View>
                             <Text style={styles.productName}>{name}</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.productName}>{parent}</Text>
                         </View>
 
                     </View>
@@ -92,13 +109,25 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditCategoryScreen' , {id})}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditCategoryScreen' , {id, image, name, parent})}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
 
             <Animated.View style={[styles.subButton, { bottom: position1 }]}>
-                <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => {
+                    Alert.alert(
+                        "Confirm Deletion",
+                        "Bạn có chắc muốn xoá không??",
+                        [
+                            {
+                                text: "Huỷ",
+                                style: "cancel"
+                            },
+                            { text: "Có", onPress: deleteCategory }
+                        ]
+                    );
+                }}>
                     <Icon name="trash" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
@@ -138,6 +167,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         borderRadius: 10,
+        resizeMode: 'contain',
     },
     numberOfImage: {
         position: 'absolute',

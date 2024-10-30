@@ -1,30 +1,14 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+
 const HomeAdminScreen = ({ navigation }) => {
-    const products = [
-        {
-            id: '1', name: '#HWDSF776567DS',
-            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-        {
-            id: '2', name: '#1',
-            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-        {
-            id: '3', name: '#2',
-            image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-
-
-    ];
     const [categoryAll, setCategoryAll] = useState([]);
 
     useEffect(() => {
-        let apiUrl = `${BASE_URL}categories`;
+        const apiUrl = `${BASE_URL}categories`;
         axios.get(apiUrl)
             .then(response => {
                 const ctgData = response.data.data;
@@ -34,30 +18,45 @@ const HomeAdminScreen = ({ navigation }) => {
                 console.error('Error fetching data:', error);
             });
     }, []);
+
+    const renderCategoryChildren = (children) => {
+        if (!children || children.length === 0) return null; // Dừng nếu không có categoryChildren
+
+        return (
+            <FlatList
+                data={children}
+                renderItem={renderProduct}
+                keyExtractor={(item) => item.categoryId}
+                style={styles.childList}
+            />
+        );
+    };
+
     const renderProduct = ({ item }) => (
-        <TouchableOpacity
-            style={styles.productItem}
-            onPress={() => navigation.navigate('DetailCategoryScreen', {
-                id: item.categoryId,
-                image: item.categoryImgPath,
-                name: item.categoryName,
+        <View>
+            <TouchableOpacity
+                style={styles.productItem}
+                onPress={() => navigation.navigate('DetailCategoryScreen', {
+                    id: item.categoryId,
+                    image: item.categoryImgPath,
+                    name: item.categoryName,
+                    parent: item.categoryParent,
+                })}
+            >
+                <View style={{ marginRight: 20 }}>
+                    <Image source={{ uri: item.categoryImgPath }} style={styles.productIcon} />
+                </View>
+                <View style={styles.productDetails}>
+                    <Text style={styles.productCode}>{item.categoryName}</Text>
+                </View>
+                <Pressable>
+                    <Icon name="angle-right" size={25} color="#000" />
+                </Pressable>
+            </TouchableOpacity>
 
-            })}
-        >
-            <View style={{
-                marginRight: 20,
-            }}>
-                <Image source={item.categoryImgPath} style={styles.productIcon} />
-            </View>
-
-            <View style={styles.productDetails}>
-                <Text style={styles.productCode}>{item.categoryName}</Text>
-
-            </View>
-            <Pressable>
-                <Icon name="angle-right" size={25} color="#000" />
-            </Pressable>
-        </TouchableOpacity>
+            {/* Hiển thị categoryChildren nếu có */}
+            {renderCategoryChildren(item.categoryChildren)}
+        </View>
     );
 
     return (
@@ -94,24 +93,12 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#fff',
     },
+
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 30,
-
     },
-    menuButton: {
-        marginRight: 10,
-    },
-    menuIcon: {
-        width: 35,
-        height: 35,
-        borderColor: '#ededed',
-        borderRadius: 24,
-        borderWidth: 2,
-        marginTop: 0,
-    },
-
     welcomeText: {
         fontSize: 24,
         fontWeight: 'bold',
@@ -119,14 +106,6 @@ const styles = StyleSheet.create({
     subtitleText: {
         fontSize: 16,
         color: '#666',
-    },
-    productListTitle: {
-        position: 'absolute',
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        left: '35%'
-
     },
     productList: {
         flex: 1,
@@ -145,7 +124,6 @@ const styles = StyleSheet.create({
         height: 55,
         marginLeft: 5,
         marginTop: 5,
-
     },
     productDetails: {
         flex: 1,
@@ -154,14 +132,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-
-    productStatus: {
-        fontSize: 14,
-        color: '#888',
-    },
-    arrowIcon: {
-        width: 20,
-        height: 20,
+    childList: {
+        paddingLeft: 20, // Thêm khoảng cách cho danh sách con
     },
     addButton: {
         position: 'absolute',
