@@ -123,6 +123,8 @@ import ModalConfirm from './src/screens/shipper/ModalConfirm';
 import ChatScreen from './src/screens/shipper/ChatScreen';
 
 import Header from './src/components/Header';
+import Footer from './src/components/Footer';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -167,25 +169,7 @@ function HaveLoginStack() {
 }
 function NoLoginHome() {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Mega Mall') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Wishlist') {
-            iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'Order') {
-            iconName = focused ? 'bag' : 'bag-outline';
-          } else if (route.name === 'Login') {
-            iconName = focused ? 'person' : 'person-outline';
-          }
-
-          return <Icon name={iconName} size={size} color={color} />;
-        },
-      })}
-    >
+    <Tab.Navigator tabBar={(props) => <Footer {...props} />} >
       <Tab.Screen
         name="Mega Mall"
         component={HomeStack}
@@ -200,30 +184,10 @@ function NoLoginHome() {
             navigation.navigate('Home');
           },
         })}
-      />
-
-      <Tab.Screen
-        name="Wishlist"
-        component={WishListScreen}
-        options={{
-          header: () => <Header />,
-        }}
-      />
-      <Tab.Screen
-        name="Order"
-        component={HomeScreen}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Tab.Screen
-        name="Login"
-        component={LoginStack}
-        options={{
-          headerShown: false,
-          tabBarStyle: { display: 'none' }, // Ẩn Bottom Navigation trên Login và SignUp
-        }}
-      />
+      />      
+      <Tab.Screen name="Wishlist" component={WishListScreen} />
+      <Tab.Screen name="MyOrderScreen" component={MyOrderScreen} />
+      <Tab.Screen name="Login" component={LoginStack} />
     </Tab.Navigator>
   );
 }
@@ -577,9 +541,9 @@ export default function App() {
 
     checkLoginStatus();
   }, []);
-   {/* loading khi đang lấy thông tin đăng nhập */}
-   if (isLoggedIn === null) {
-    return null; 
+  {/* loading khi đang lấy thông tin đăng nhập */ }
+  if (isLoggedIn === null) {
+    return null;
   }
   return (
     <NavigationContainer>
