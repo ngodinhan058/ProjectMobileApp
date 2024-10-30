@@ -17,7 +17,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import SelectorInCategory from '../../../components/SelectorInCategory';
-import axios from 'axios'; 
+import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 const AddCategoryScreen = ({ navigation }) => {
@@ -28,7 +28,7 @@ const AddCategoryScreen = ({ navigation }) => {
 
     const [categoryRelease, setCategoryRelease] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
-    
+
 
     const onDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || categoryRelease;
@@ -69,14 +69,14 @@ const AddCategoryScreen = ({ navigation }) => {
                     <Text style={styles.textHeader}>Thêm Thông Tin Danh Mục</Text>
                 </View>
                 <Text style={styles.label}>Ảnh Danh Mục: (Link)</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Thêm Tên Danh Mục"
-                        value={categoryImg}
-                        onChangeText={setCategoryImg}
-                    />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Thêm Tên Danh Mục"
+                    value={categoryImg}
+                    onChangeText={setCategoryImg}
+                />
                 {/* Icon Image */}
-                 {/* <UploadImage /> */}
+                {/* <UploadImage /> */}
                 {/* Category Form */}
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Danh Mục:</Text>
@@ -148,7 +148,7 @@ const AddCategoryScreen = ({ navigation }) => {
 //         setIsFilterModalVisible(!isFilterModalVisible);
 //     };
 
-   
+
 //     const handleResetFilters = () => {
 //         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
 //     };
@@ -176,7 +176,7 @@ const AddCategoryScreen = ({ navigation }) => {
 //                         value={categoryName}
 //                         onChangeText={setcategoryName}
 //                     />
-                    
+
 //                     {/* Category Releaase */}
 //                     <Text style={styles.label}>Ngày Tạo Danh Mục:</Text>
 //                     <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>

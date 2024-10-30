@@ -12,7 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 function DetailScreen({ route, navigation }) {
-    const { image, name } = route.params;
+    const { id, image, name } = route.params;
 
     // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
@@ -92,7 +92,7 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditCategoryScreen')}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditCategoryScreen' , {id})}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>

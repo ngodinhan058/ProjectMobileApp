@@ -7,9 +7,6 @@ import OrderItem from '../components/OrderItem';
 
 const MyOrderScreen = ({ route, navigation }) => {
   const layout = useWindowDimensions();  // Lấy thông tin kích thước màn hình
-
-  
-  
   const orders = [
     {
       id: 'order1',
@@ -243,21 +240,15 @@ const MyOrderScreen = ({ route, navigation }) => {
   const filterByStatus = (statuses) => {
     return orders.filter((order) => statuses.includes(order.status));
   };
-  
+
   const getItemLayout = (data, index) => ({
     length: 30, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
     offset: 150 * index, // Offset dựa trên index của item
-    index, 
+    index,
   });
-  
-  const handleScrollToIndexFailed = (info) => {
-    const wait = new Promise(resolve => setTimeout(resolve, 500));
-    wait.then(() => {
-      flatListRef.current?.scrollToIndex({ index: info.highestMeasuredFrameIndex, animated: true });
-    });
-  };
-  
-  
+
+
+
 
   const PendingConfirmationRoute = () => (
     <FlatList
@@ -275,11 +266,11 @@ const MyOrderScreen = ({ route, navigation }) => {
       keyExtractor={(item) => item.id}
       style={{ marginTop: 40 }}
     />
-  ); 
+  );
 
   const ShippingRoute = () => {
     const shippingData = filterByStatus(['Đang Giao Hàng', 'Đã Giao Hàng, Hãy Xác Nhận']);
-  
+
     return (
       <FlatList
         data={shippingData}
@@ -289,13 +280,13 @@ const MyOrderScreen = ({ route, navigation }) => {
       />
     );
   };
-  
+
   const SuccessRoute = () => (
     <FlatList
       data={filterByStatus('Đã Giao Hàng')}
       renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.id}
-       style={{ marginTop: 40 }}
+      style={{ marginTop: 40 }}
     />
   );
   const cancelRoute = () => (
@@ -303,7 +294,7 @@ const MyOrderScreen = ({ route, navigation }) => {
       data={filterByStatus('Đã Huỷ')}
       renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.id}
-       style={{ marginTop: 40 }}
+      style={{ marginTop: 40 }}
     />
   );
   const returnRoute = () => (
@@ -311,7 +302,7 @@ const MyOrderScreen = ({ route, navigation }) => {
       data={filterByStatus('Trả Hàng')}
       renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.id}
-       style={{ marginTop: 40 }}
+      style={{ marginTop: 40 }}
     />
   );
 
@@ -327,35 +318,37 @@ const MyOrderScreen = ({ route, navigation }) => {
 
   ]);
   useEffect(() => {
-    const {initialRoute} = route.params;
-    if (initialRoute !== null) {
+    const { initialRoute } = route?.params || {};
+
+    if (initialRoute) {
       const tabIndex = routes.findIndex(r => r.key === initialRoute);
-      console.log("test",initialRoute);
       if (tabIndex !== -1) {
         setIndex(tabIndex);
       }
+    } else {
+      setIndex(0);
     }
   }, [route.params]);
+
   useEffect(() => {
-    // Cuộn đến tab được chọn
-    if (flatListRef.current) {
+    if (flatListRef.current && index >= 0) {
       flatListRef.current.scrollToIndex({
         index: index,
         animated: true,
-        viewPosition: 0.3, // Đặt tab ở giữa màn hình
+        viewPosition: 0.3,
       });
     }
   }, [index]);
 
   return (
     <View style={styles.container}>
-       <View style={styles.iconHeader}>
-                <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Icon name="angle-left" size={35} color="#000" />
-                </Pressable>
-                <Text style={styles.textHeader}>Đơn Hàng Của Tôi</Text>
+      <View style={styles.iconHeader}>
+        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="angle-left" size={35} color="#000" />
+        </Pressable>
+        <Text style={styles.textHeader}>Đơn Hàng Của Tôi</Text>
 
-            </View>
+      </View>
 
       {/* Tab View */}
       <TabView
@@ -388,7 +381,7 @@ const MyOrderScreen = ({ route, navigation }) => {
             )}
             keyExtractor={(item) => item.key}
             getItemLayout={getItemLayout} // Cung cấp getItemLayout
-            onScrollToIndexFailed={handleScrollToIndexFailed} // Xử lý khi scroll thất bại
+            
           />
         )}
       />
@@ -411,16 +404,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     paddingBottom: 20,
-},
-textHeader: {
+  },
+  textHeader: {
     fontWeight: 'bold',
     fontSize: 18,
     textAlign: 'center',
     flex: 1,
-},
-backButton: {
+  },
+  backButton: {
     marginRight: 10,
-},
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

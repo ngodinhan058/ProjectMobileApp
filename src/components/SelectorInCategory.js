@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,276 +9,89 @@ import {
     ScrollView,
     TextInput,
 } from 'react-native';
+import axios from 'axios';
+import { BASE_URL } from '../screens/api/config';
 
-const categoryData = [
-    {
-        id: "482ce198-2473-4a2f-9296-1f67c1a7376b",
-        level: 0,
-        name: "Điện thoại",
-        slug: "dien-thoai",
-        release: "2024-07-12T15:00:00Z",
-        createdAt: "2024-10-09T04:15:33.988+00:00",
-        updatedAt: "2024-10-09T04:15:33.988+00:00",
-        status: {
-            id: "b24151e5-0400-4615-ac54-043e843a8812",
-            type: 1,
-            name: "Actice"
-        },
-        childrens: [
-            {
-                id: "2bff891d-04f2-4050-87a6-a65f5dfba4c8",
-                level: 1,
-                name: "Remote4",
-                slug: "re-mote4",
-                release: "2024-10-09T08:00:00Z",
-                createdAt: "2024-10-09T05:34:01.047+00:00",
-                updatedAt: "2024-10-09T05:34:01.047+00:00",
-                status: {
-                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                    type: 1,
-                    name: "Actice"
-                },
-                childrens: []
-            },
-            {
-                id: "5b07eb04-c9b9-4cf8-a494-249051d8f774",
-                level: 1,
-                name: "Di động",
-                slug: "di-động",
-                release: "2024-10-09T15:00:00Z",
-                createdAt: "2024-10-09T04:50:06.928+00:00",
-                updatedAt: "2024-10-09T04:50:06.928+00:00",
-                status: {
-                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                    type: 1,
-                    name: "Actice"
-                },
-                childrens: []
-            },
-            {
-                id: "8e2b0d38-0c23-4085-8347-cacaba17fd31",
-                level: 1,
-                name: "Ti Vi",
-                slug: "ti-vi",
-                release: "2024-01-09T15:00:00Z",
-                createdAt: "2024-10-09T04:21:27.229+00:00",
-                updatedAt: "2024-10-09T04:21:27.229+00:00",
-                status: {
-                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                    type: 1,
-                    name: "Actice"
-                },
-                childrens: []
-            },
-            {
-                id: "9ab777bc-72f6-4101-8b2d-8c8a7f1f7e9e",
-                level: 1,
-                name: "Tủ Lạnh",
-                slug: "tu-lanh",
-                release: "2024-01-09T15:00:00Z",
-                createdAt: "2024-10-09T04:22:09.451+00:00",
-                updatedAt: "2024-10-09T04:22:09.451+00:00",
-                status: {
-                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                    type: 1,
-                    name: "Actice"
-                },
-                childrens: []
-            },
-            {
-                id: "9b02df65-5c5d-4c37-ba20-ae94745842ca",
-                level: 1,
-                name: "Remote",
-                slug: "re-mote",
-                release: "2024-10-09T15:00:00Z",
-                createdAt: "2024-10-09T05:05:46.709+00:00",
-                updatedAt: "2024-10-09T05:05:46.709+00:00",
-                status: {
-                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                    type: 1,
-                    name: "Actice"
-                },
-                childrens: []
-            },
-
-
-            {
-                id: "eb9610ac-d458-4b27-848a-ab726587a3d0",
-                level: 1,
-                name: "Quạt Máy",
-                slug: "quat-may",
-                release: "2024-01-09T15:00:00Z",
-                createdAt: "2024-10-09T04:44:46.695+00:00",
-                updatedAt: "2024-10-09T04:44:46.695+00:00",
-                status: {
-                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                    type: 1,
-                    name: "Actice"
-                },
-                childrens: []
-            },
-            {
-                id: "ebd56fe5-eaea-49bb-a1c9-81894cdd8ea9",
-                level: 1,
-                name: "Máy Tính",
-                slug: "may-tinh",
-                release: "2024-12-09T15:00:00Z",
-                createdAt: "2024-10-09T04:17:40.316+00:00",
-                updatedAt: "2024-10-09T04:17:40.316+00:00",
-                status: {
-                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                    type: 1,
-                    name: "Actice"
-                },
-                childrens: [
-                    {
-                        id: "1c3a008f-fb1d-4ded-a77f-074d14fcc572",
-                        level: 2,
-                        name: "Laptop",
-                        slug: "lap-top",
-                        release: "2024-10-09T15:00:00Z",
-                        createdAt: "2024-10-09T04:48:55.703+00:00",
-                        updatedAt: "2024-10-09T04:48:55.703+00:00",
-                        status: {
-                            id: "b24151e5-0400-4615-ac54-043e843a8812",
-                            type: 1,
-                            name: "Actice"
-                        },
-                        childrens: [
-                            {
-                                id: "5623cb4c-48fc-4c18-9f2e-5aac3c5d5c8a",
-                                level: 3,
-                                name: "Remote1",
-                                slug: "re-mote1",
-                                release: "0015-04-14T15:00:00Z",
-                                createdAt: "2024-10-09T05:06:15.377+00:00",
-                                updatedAt: "2024-10-09T05:06:15.377+00:00",
-                                status: {
-                                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                                    type: 1,
-                                    name: "Actice"
-                                },
-                                childrens: [
-                                    {
-                                        id: "8b1385cd-6b8e-4c91-b15b-61e9ed94fa46",
-                                        level: 4,
-                                        name: "Remote1-1",
-                                        slug: "re-mote1-1",
-                                        release: "2024-10-09T15:00:00Z",
-                                        createdAt: "2024-10-09T05:06:48.118+00:00",
-                                        updatedAt: "2024-10-09T05:06:48.118+00:00",
-                                        status: {
-                                            id: "b24151e5-0400-4615-ac54-043e843a8812",
-                                            type: 1,
-                                            name: "Actice"
-                                        },
-                                        childrens: []
-                                    }
-                                ]
-                            },
-                            {
-                                id: "1c3a008f-fb1d-4ded-a77f-074d14fcc572",
-                                level: 3,
-                                name: "Laptop2",
-                                slug: "laptop-2",
-                                release: "2024-10-09T15:00:00Z",
-                                createdAt: "2024-10-09T05:05:46.709+00:00",
-                                updatedAt: "2024-10-09T05:05:46.709+00:00",
-                                status: {
-                                    id: "b24151e5-0400-4615-ac54-043e843a8812",
-                                    type: 1,
-                                    name: "Actice"
-                                },
-                                childrens: []
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
-];
 
 
 const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
     const [selectedCategories, setSelectedCategories] = useState({});
     const [expandedCategories, setExpandedCategories] = useState({});
     const [searchText, setSearchText] = useState('');
+    const [categoryAll, setCategoryAll] = useState([]);
+    
+    useEffect(() => {
+        let apiUrl = `${BASE_URL}categories`;
+        axios.get(apiUrl)
+            .then(response => {
+                const ctgData = response.data.data;
+                setCategoryAll(ctgData);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }, []);
 
-    // Filter categories based on search text
-    // Filter categories based on search text
     const filterCategories = (categories) => {
         if (!searchText) return categories;
 
         return categories.filter((category) => {
-            // Kiểm tra tên của danh mục chính
-            const matchesCategoryName = category.name.toLowerCase().includes(searchText.toLowerCase());
-
-            // Kiểm tra tên trong danh mục con
-            const matchesChildrens = category.childrens && category.childrens.some((child) =>
-                child.name.toLowerCase().includes(searchText.toLowerCase())
+            const matchesCategoryName = category.categoryName.toLowerCase().includes(searchText.toLowerCase());
+            const matchesChildren = category.categoryChildren && category.categoryChildren.some((child) =>
+                child.categoryName.toLowerCase().includes(searchText.toLowerCase())
             );
 
-            // Trả về true nếu danh mục chính hoặc danh mục con khớp với searchText
-            return matchesCategoryName || matchesChildrens;
+            return matchesCategoryName || matchesChildren;
         });
     };
-
-
-    // Toggle category selection
-    const toggleCategorySelection = (categoryName) => {
+    const handleApply = () => {
+        const selectedCategoryIds = Object.keys(selectedCategories).filter((categoryId) => selectedCategories[categoryId] === true);
+        onApply(selectedCategoryIds); // Truyền ID danh mục cha đã chọn
+        onClose();
+    };
+    const toggleCategorySelection = (categoryId) => {
         setSelectedCategories({
             ...selectedCategories,
-            [categoryName]: !selectedCategories[categoryName],
+            [categoryId]: !selectedCategories[categoryId],
         });
     };
 
-    // Toggle visibility of children
-    const toggleExpand = (categoryName) => {
+    const toggleExpand = (categoryId) => {
         setExpandedCategories({
             ...expandedCategories,
-            [categoryName]: !expandedCategories[categoryName],
+            [categoryId]: !expandedCategories[categoryId],
         });
     };
 
-    // Recursive function to render categories and children
-    const renderCategories = (categories, level = 0) => {
+    const renderCategories = (categories, categoryLevel = 0) => {
         return categories.map((category) => (
-            <View key={category.name} style={{ paddingLeft: level * 5 }}>
-                <View style={{ flexDirection: 'row' }} >
-                    {/* Expand/Collapse button if there are children */}
-                    {category.childrens.length > 0 && (
-                        <TouchableOpacity onPress={() => toggleExpand(category.name)} style={{
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}>
+            <View key={category.categoryId} style={{ paddingLeft: categoryLevel * 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {category.categoryChildren.length > 0 && (
+                        <TouchableOpacity onPress={() => toggleExpand(category.categoryId)} style={styles.expandButton}>
                             <Text style={styles.expandText}>
-                                {expandedCategories[category.name] ? '▼' : '▶'}
+                                {expandedCategories[category.categoryId] ? '▼' : '▶'}
                             </Text>
                         </TouchableOpacity>
                     )}
                     <TouchableOpacity
                         style={styles.checkbox}
-                        onPress={() => toggleCategorySelection(category.name)}
+                        onPress={() => toggleCategorySelection(category.categoryId)}
                     >
                         <Text style={styles.checkboxText}>
-                            {category.name}
+                            {category.categoryName}
                         </Text>
-                        {selectedCategories[category.name] && (
+                        {selectedCategories[category.categoryId] && (
                             <View style={styles.checkedBox}>
                                 <Text style={styles.tickCheckedBox}>✔</Text>
                             </View>
                         )}
                     </TouchableOpacity>
-
-
                 </View>
-
-                <View style={{ marginLeft: '15%' }} >
-                    {/* Render children if expanded */}
-                    {expandedCategories[category.name] &&
-                        category.childrens.length > 0 &&
-                        renderCategories(category.childrens, level + 1)}
+                <View style={{ marginLeft: '10%' }}>
+                    {expandedCategories[category.categoryId] &&
+                        category.categoryChildren.length > 0 &&
+                        renderCategories(category.categoryChildren, categoryLevel + 1)}
                 </View>
             </View>
         ));
@@ -287,6 +100,7 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
     const handleReset = () => {
         setSelectedCategories({});
         setExpandedCategories({});
+        setSearchText('');
     };
 
     return (
@@ -303,7 +117,6 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
             <View style={styles.container}>
                 <Text style={styles.title}>Select Categories</Text>
 
-                {/* Search bar */}
                 <TextInput
                     style={styles.searchBar}
                     placeholder="Search..."
@@ -314,19 +127,15 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
                 <ScrollView style={styles.scrollView}>
                     <Text style={styles.titleSmall}>Categories</Text>
                     <View style={styles.checkboxContainer}>
-                        {/* Render parent and child categories */}
-                        {renderCategories(filterCategories(categoryData))}
+                        {renderCategories(filterCategories(categoryAll))}
                     </View>
-
-                    <View style={styles.line}></View>
-
-
                 </ScrollView>
+
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
                         <Text>Reset</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.applyButton} onPress={() => alert('Applied')}>
+                    <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
                         <Text style={styles.applyText}>Apply</Text>
                     </TouchableOpacity>
                 </View>
@@ -334,6 +143,7 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
         </Modal>
     );
 };
+
 
 const styles = StyleSheet.create({
     modalOverlay: {
