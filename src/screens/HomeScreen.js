@@ -41,11 +41,6 @@ const featuredProducts = [
   },
 ];
 
-
-const bestSellers = [
-  { id: '1', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
-  { id: '2', image: require('../assets/headphone.png'), name: 'TMA-2 HD Wireless', price: '1.500.000', rating: '4.6' },
-];
 const saleProducts = [
   { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
   { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
@@ -61,12 +56,6 @@ const banners = [
 
 ];
 
-// const categories = [
-//   { id: '1', name: 'Laptop', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-//   { id: '2', name: 'Iphone', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-// ];
-
-
 const HomeScreen = () => {
   {/* Loading Banner */ }
   const [loading, setLoading] = useState(true);
@@ -76,52 +65,43 @@ const HomeScreen = () => {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const [categories, setCategories] = useState([]); // Dữ liệu sản phẩm
 
-  // const [minPrice, setMinPrice] = useState(0);
-  // const [maxPrice, setMaxPrice] = useState(2000000);
-
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const productsApiUrl = `${BASE_URL}products/filters?`;
+      const categoriesApiUrl = `${BASE_URL}categories`;
+
+      const [productsResponse, categoriesResponse] = await Promise.all([
+        axios.get(productsApiUrl),
+        axios.get(categoriesApiUrl),
+      ]);
+
+      const productsData = productsResponse.data.data.content;
+      const categoriesData = categoriesResponse.data.data;
+
+      setProductsState(productsData);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
       setRefreshing(false);
-      navigation.push('Home');
-    }, 1000);
-  }, []);
+    }
+  };
 
   useEffect(() => {
-    let apiUrl = `${BASE_URL}products/filters?`;
-    const queryParams = [];
-    apiUrl += queryParams.join('&');
-    console.log(apiUrl)
-    axios.get(apiUrl)
-      .then(response => {
-        const { content } = response.data.data;
-        setProductsState(content);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        setLoading(false);
-      });
-  }, []);
-
-
-  useEffect(() => {
-    let apiUrl = `${BASE_URL}categories`;
-
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(apiUrl);
-        const data = response.data.data;
-        setCategories(data);
-      } catch (error) {
-        console.error('Error fetching data:', error.response ? error.response.data : error.message);
-      }
-    };
-
     fetchData();
   }, []);
+
+  // Tối ưu hóa onRefresh bằng cách gọi lại fetchData
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setLoading(true);
+    fetchData();
+  }, []);
+
 
   useEffect(() => {
     // Bắt đầu hiệu ứng shimmer khi component được mount
@@ -143,12 +123,6 @@ const HomeScreen = () => {
     ).start();
   }, [shimmerAnim]);
 
-  {/* Search lấy dữ liệu để chuyển trang*/ }
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = () => {
-    navigation.navigate('SearchScreen', { query: searchQuery });
-  };
   return (
 
 
@@ -233,7 +207,7 @@ const HomeScreen = () => {
                 id={item['categoryId']}
                 name={item['categoryName']}
                 image={item['categoryImgPath']}
-                isLoading={false}
+                isLoading={loading}
               />
             )}
             showsHorizontalScrollIndicator={false}
@@ -249,6 +223,7 @@ const HomeScreen = () => {
             <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
+          
           {productsState.length > 0 ? (
             <FlatList
               horizontal
@@ -271,7 +246,7 @@ const HomeScreen = () => {
                     image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
                     rating={item['productRating']}
                     sale={item['productSale']}
-                    isLoading={false}  // Set isLoading to false when not loading
+                    isLoading={loading}  // Set isLoading to false when not loading
                   />
                 );
               }}
@@ -310,7 +285,7 @@ const HomeScreen = () => {
                     image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
                     rating={item['productRating']}
                     sale={item['productSale']}
-                    isLoading={false}  // Set isLoading to false when not loading
+                    isLoading={loading}  // Set isLoading to false when not loading
                   />
                 );
               }}
@@ -350,7 +325,7 @@ const HomeScreen = () => {
                     image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
                     rating={item['productRating']}
                     sale={item['productSale']}
-                    isLoading={false}  // Set isLoading to false when not loading
+                    isLoading={loading}  // Set isLoading to false when not loading
                   />
                 );
               }}
@@ -384,7 +359,7 @@ const HomeScreen = () => {
                     image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
                     rating={item['productRating']}
                     sale={item['productSale']}
-                    isLoading={false}  // Set isLoading to false when not loading
+                    isLoading={loading}  // Set isLoading to false when not loading
                   />
                 );
               }}

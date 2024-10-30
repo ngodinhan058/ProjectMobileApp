@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const CategoryItem = ({ id, image, name }) => {
-  const [loading, setLoading] = useState(true);
+const CategoryItem = ({ id, image, name,isLoading }) => {
+
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
   useEffect(() => {
@@ -27,13 +27,9 @@ const CategoryItem = ({ id, image, name }) => {
   }, [shimmerAnim]);
   return (
     <View>
-      {loading ? (
+      {isLoading ? (
         // Skeleton with shimmer effect while loading
         <View>
-          <Image
-            source={image}
-            onLoad={() => setLoading(false)} // Khi ảnh load xong, ẩn skeleton
-          />
           <Animated.View style={[styles.skeletonItem, {
             backgroundColor: shimmerAnim.interpolate({
               inputRange: [0, 1],
