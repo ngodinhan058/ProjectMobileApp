@@ -4,8 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, like: initialLike, isLoading }) => {
-  const [loading, setLoading] = useState(true); // Track the loading state
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, like: initialLike, isLoading }) => {  
   const [liked, setLiked] = useState(initialLike);
   // const [localUri, setLocalUri] = useState(null);
   const shimmerAnim = useRef(new Animated.Value(0)).current; // Shimmer animation value

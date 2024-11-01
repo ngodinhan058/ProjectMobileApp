@@ -5,41 +5,10 @@ import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
 import NewItem from '../components/NewItem';
 import { useNavigation } from '@react-navigation/native';
-import Filter from '../components/Filter';
 import axios from 'axios';
-import * as FileSystem from 'expo-file-system';
 import { BASE_URL } from './api/config';
+import ScrollHandler from '../components/ScrollHandler';
 
-
-const featuredProducts = [
-  {
-    id: '1',
-    image: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.0',
-    review: '860',
-    like: true,
-  },
-  {
-    id: '2',
-    image: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    name: 'TMA-2 HD Wireless2',
-    price: '1.500.000',
-    rating: '2.6',
-    review: '6',
-    like: false,
-  },
-  {
-    id: '3',
-    image: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-    name: 'TMA-2 HD Wireless',
-    price: '1.500.000',
-    rating: '0.6',
-    review: '106',
-    like: true,
-  },
-];
 
 const saleProducts = [
   { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
@@ -79,19 +48,19 @@ const HomeScreen = ({ onScroll }) => {
 
       const productsData = productsResponse.data.data.content;
       const categoriesData = categoriesResponse.data.data;
-
       setProductsState(productsData);
       setCategories(categoriesData);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false); // Dừng loading sau 2 giây (hoặc khi tải xong)
+      }, 5000);
       setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    setLoading(true);
     fetchData();
   }, []);
   const onRefresh = React.useCallback(() => {
@@ -101,48 +70,9 @@ const HomeScreen = ({ onScroll }) => {
   }, []);
 
 
-  useEffect(() => {
-    // Bắt đầu hiệu ứng shimmer khi component được mount
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [shimmerAnim]);
-  const previousScrollOffset = useRef(0); // Lưu lại vị trí cuộn trước đó
+
   return (
-
-
-    <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']} />
-      }
-      onScroll={(event) => {
-        const currentOffset = event.nativeEvent.contentOffset.y;
-        const isScrollingUp = currentOffset < previousScrollOffset.current;
-
-        // Điều kiện để hiển thị footer khi cuộn lên hoặc khi cuộn đến đỉnh
-        if (isScrollingUp || currentOffset <= 0) {
-          onScroll(true); // Hiển thị footer
-        } else {
-          onScroll(false); // Ẩn footer
-        }
-
-        previousScrollOffset.current = currentOffset; // Cập nhật vị trí cuộn hiện tại
-      }}
-      scrollEventThrottle={16}
-    >
+    <ScrollHandler onScroll={onScroll} refreshing={refreshing} onRefresh={onRefresh}>
       {/* Bắt đầu phần với background #fff */}
       <View style={styles.container}>
         <View style={styles.whiteSection}>
@@ -163,7 +93,7 @@ const HomeScreen = ({ onScroll }) => {
           {loading ? (
             <View>
               <View style={styles.banner}>
-                <Image source={banners.image} onLoad={() => setLoading(false)} />
+                <Image source={banners.image}  />
               </View>
 
               <Animated.View style={[styles.skeletonText, {
@@ -205,13 +135,6 @@ const HomeScreen = ({ onScroll }) => {
             </View>
           </View>
           {/* Xuất Danh mục sản phẩm */}
-          {/* <FlatList
-            horizontal
-            data={categories}
-            renderItem={({ item }) => <CategoriesItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-          /> */}
           <FlatList
             data={categories}
             horizontal
@@ -244,13 +167,9 @@ const HomeScreen = ({ onScroll }) => {
               data={productsState}
               renderItem={({ item }) => {
                 // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
-
                 const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
                   ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
                   : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
-
-
-
                 return (
                   <ProductItem
                     id={item['productId']}
@@ -424,7 +343,7 @@ const HomeScreen = ({ onScroll }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+    </ScrollHandler>
   );
 };
 
