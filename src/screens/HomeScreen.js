@@ -69,7 +69,6 @@ const HomeScreen = ({ onScroll }) => {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       const productsApiUrl = `${BASE_URL}products/filters?`;
       const categoriesApiUrl = `${BASE_URL}categories`;
 
@@ -92,10 +91,9 @@ const HomeScreen = ({ onScroll }) => {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
   }, []);
-
-  // Tối ưu hóa onRefresh bằng cách gọi lại fetchData
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     setLoading(true);
