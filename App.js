@@ -366,8 +366,8 @@ function UserAdmin() {
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
+      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
     </Drawer.Navigator>
   );
@@ -554,9 +554,9 @@ export default function App() {
   return (
     <NavigationContainer>
       {/* {isLoggedIn ? <HaveLoginHome /> : <NoLoginHome />} */}
-      <HaveLoginHome />
+      {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
-      {/* <AdminDrawerNavigator />  */}
+      <AdminDrawerNavigator /> 
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
