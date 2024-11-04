@@ -20,13 +20,13 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 const EditProductScreen = ({ route, navigation }) => {
-    const { id } = route.params; // categoryId truyền từ màn hình trước
-    const [categoryName, setcategoryName] = useState('');
-    const [categoryImg, setCategoryImg] = useState('');
+    const { id, image, name, parent } = route.params; // categoryId truyền từ màn hình trước
+    const [categoryName, setcategoryName] = useState(name);
+    const [categoryImg, setCategoryImg] = useState(image);
     const [categoryStatusId, setCategoryStatusId] = useState('01000000-0000-0000-0000-000000000000');
     const [dateOfBirth, setDateOfBirth] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [parentCategoryId, setParentCategoryId] = useState(null); // ID của danh mục cha
+    const [parentCategoryId, setParentCategoryId] = useState(parent); // ID của danh mục cha
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
     
@@ -36,20 +36,28 @@ const EditProductScreen = ({ route, navigation }) => {
             const formattedDate = dateOfBirth.toISOString().split('T')[0]; // Định dạng lại ngày
             const payload = {
                 categoryName,
-                categoryStatusId,
+                statusId: categoryStatusId,
                 categoryRelease: formattedDate,
-                categoryParent: parentCategoryId,
+                categoryParent: parentCategoryId[0],
                 categoryImgPath: categoryImg,
             };
-
-            await axios.put(`${BASE_URL}/category/${id}`, payload);
+    
+            const apiUrl = `${BASE_URL}category/${id}`;
+            console.log("API URL:", apiUrl);
+            console.log("Payload:", payload);
+    
+            // Thực hiện yêu cầu cập nhật
+            const response = await axios.put(apiUrl, payload);
+            
             alert('Category Updated Successfully');
             navigation.goBack();
         } catch (error) {
+            // Log lỗi chi tiết
             console.error('Error updating category:', error);
             alert('Failed to update category');
         }
     };
+    
 
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
 
