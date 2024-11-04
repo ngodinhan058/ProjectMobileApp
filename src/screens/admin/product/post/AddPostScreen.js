@@ -17,11 +17,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../../components/Up_Image_Multi';
 
 const AddPostScreen = ({ route, navigation }) => {
-    const [postName, setPostName] = useState('');
-    const [postPrice, setPostPrice] = useState('');
-    const [postQuantity, setPostQuantity] = useState('');
-    const [postSale, setPostSale] = useState('');
-
+    const { savedData } = route.params || {};
     const [modalVisible, setModalVisible] = useState(false);
     const [addModalVisible, setAddModalVisible] = useState(false);
     const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
@@ -52,7 +48,19 @@ const AddPostScreen = ({ route, navigation }) => {
             setNewCategoryType('');
         }
     };
-
+    
+    const [postData, setPostData] = useState({
+        postName: savedData?.postName || '',
+        postContent: savedData?.postContent || '',
+        postImagePath: 'img/product01.png',
+        postType: 1,
+        userId: '01000000-0000-0000-0000-000000000000',
+        postStatusId: '03000000-0000-0000-0000-000000000000'
+    });
+    const handleNavigateToProduct = () => {
+        // Truyền postData sang ProductScreen
+        navigation.navigate('AddProductScreen', { postDTO: postData });
+    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -65,7 +73,7 @@ const AddPostScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Icon Image */}
-                <UploadImage />
+                {/* <UploadImage /> */}
 
                 {/* Post Form */}
                 <View style={styles.formContainer}>
@@ -73,32 +81,23 @@ const AddPostScreen = ({ route, navigation }) => {
                     <TextInput
                         style={styles.input}
                         placeholder="Thêm Tên Post"
-                        value={postName}
-                        onChangeText={setPostName}
+                        value={postData.postName}
+                        onChangeText={(text) => setPostData({ ...postData, postName: text })}
                     />
-
-                    <Text style={styles.label}>Slug Post</Text>
+                    {/* <Text style={styles.label}>Loại Post</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Slug Post"
-                        value={postPrice}
-                        onChangeText={setPostPrice}
-                    />
+                        placeholder="YYYY-MM-DD"
+                        value={postData.postRelease}
+                        onChangeText={(text) => setPostData({ ...postData, postRelease: text })}
+                    /> */}
 
-                    <Text style={styles.label}>Loại Post</Text>
+                    <Text style={styles.label}>Content Post</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Thêm Loại Post"
-                        value={postQuantity}
-                        onChangeText={setPostQuantity}
-                    />
-
-                    <Text style={styles.label}>Chi Tiết Post</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Thêm Chi Tiết Post"
-                        value={postSale}
-                        onChangeText={setPostSale}
+                        placeholder="Thêm Content Post"
+                        value={postData.postContent}
+                        onChangeText={(text) => setPostData({ ...postData, postContent: text })}
                     />
 
                     {/* Post Category */}
@@ -183,7 +182,7 @@ const AddPostScreen = ({ route, navigation }) => {
                         </TouchableWithoutFeedback>
                     </Modal>
 
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Post Added/Edited')}>
+                    <TouchableOpacity style={styles.button} onPress={handleNavigateToProduct}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
@@ -255,7 +254,7 @@ const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalView: {
         position: 'absolute',
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
         width: '100%',
-        
+
     },
     modalText: {
         fontSize: 16,

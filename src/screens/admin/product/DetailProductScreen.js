@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -8,17 +8,33 @@ import {
     TouchableOpacity,
     Animated,
     Pressable,
+    FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
+import { BASE_URL } from '../../api/config';
 
 function DetailScreen({ route, navigation }) {
-    const { image, name, price, rating, review, quantity, sale } = route.params;
+    const { id } = route.params;
 
     // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
     const [animation] = useState(new Animated.Value(0)); // giá trị hoạt ảnh
     const [rotation] = useState(new Animated.Value(0));
+    const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+    useEffect(() => {
+        const apiUrl = `${BASE_URL}product/${id}`;
+        console.log(apiUrl);
 
+        axios.get(apiUrl)
+            .then(response => {
+                const productData = response.data.data;
+                setProductsState(productData);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }, [id]);
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
 
@@ -31,8 +47,8 @@ function DetailScreen({ route, navigation }) {
 
         setIsOpen(!isOpen);
 
-          // Thực hiện animation xoay icon
-          Animated.timing(rotation, {
+        // Thực hiện animation xoay icon
+        Animated.timing(rotation, {
             toValue: isOpen ? 0 : 1,
             duration: 300,
             useNativeDriver: true, // Để hiệu ứng xoay mượt hơn
@@ -68,47 +84,61 @@ function DetailScreen({ route, navigation }) {
                     </View>
 
                     {/* Product Image */}
-                    <View style={styles.productImgContainer}>
-                        <Image source={image} style={styles.productImg} />
-                        <Text style={styles.numberOfImage}>1/5 Foto</Text>
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+
+                        <FlatList
+                            data={productsState.productImages}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.productImageIndex.toString()}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
+                                    <View style={{ marginHorizontal: 5 }}>
+                                        <Image
+                                            source={{ uri: item.productImagePath }}
+                                            style={{ width: 345, height: 350, resizeMode: 'contain' }}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                        />
+
+                       
                     </View>
 
                     {/* Product info */}
                     <View style={styles.productInfo}>
                         <View>
-                            <Text style={styles.productName}>{name}</Text>
+                            <Text style={styles.productName}>{productsState.productName}</Text>
                         </View>
 
                         <View>
-                            <Text style={styles.originalPrice}>{price} &#273;</Text>
+                            <Text style={styles.originalPrice}>{productsState.productPrice}</Text>
                             <Text style={styles.productPrice}>
-                                {price} &#273;
+                                {productsState.productPriceSale}
                             </Text>
                             <Text style={styles.productSale}>
-                                Sale: {sale}%
+                                Sale: {productsState.productSale}%
                             </Text>
                         </View>
 
                         <View style={styles.SoldProductInfo}>
                             <View style={styles.productStar}>
                                 <Image source={require('../../../assets/star.png')} />
-                                <Text>{rating}</Text>
+                                <Text>{productsState.productRating}</Text>
                             </View>
                             <View>
-                                <Text style={styles.totalSellProduct}>Số lượng còn lại: {quantity}</Text>
+                                <Text style={styles.totalSellProduct}>Số lượng còn lại: {productsState.productQuantity}</Text>
                             </View>
                         </View>
                     </View>
 
                     {/* Description Product */}
                     <View>
-                        <Text style={styles.descriptionProductTitle}>Description Product</Text>
+                        <Text style={styles.descriptionProductTitle}>Thông Tin Sản Phẩm</Text>
                         <Text style={styles.descriptionProductText}>
-                            The speaker unit contains a diaphragm that is precision-grown from
-                            NAC Audio bio-cellulose, making it stiffer, lighter and stronger
-                            than regular PET speaker units, and allowing the sound-producing
-                            diaphragm to vibrate without the levels of distortion found in other
-                            speakers.
+                            {productsState?.post?.postContent}
                         </Text>
                     </View>
                 </View>
@@ -117,7 +147,7 @@ function DetailScreen({ route, navigation }) {
             {/* Add Button */}
             <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
                 <Animated.Text style={[styles.editButtonText, { transform: [{ rotate: rotateIcon }] }]}>
-                ▶
+                    ▶
                 </Animated.Text>
             </TouchableOpacity>
 
@@ -238,11 +268,11 @@ const styles = StyleSheet.create({
     editButtonText: {
         fontSize: 40,
         color: '#fff',
-       marginLeft: 10,
-       marginBottom: 10,
-        
+        marginLeft: 10,
+        marginBottom: 10,
+
     },
-    
+
     subButton: {
         position: 'absolute',
         right: 35,

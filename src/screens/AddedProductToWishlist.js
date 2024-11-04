@@ -138,8 +138,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
           <View>
             {productsState.productSale == 0 ? (
-
-
               <Text style={styles.productPrice}>
                 {productsState.productPrice}
               </Text>
