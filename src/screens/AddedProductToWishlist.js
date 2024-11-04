@@ -24,20 +24,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const { id } = route.params;
 
-  // useEffect(() => {
-  //   let apiUrl = `${BASE_URL}product/${id}`;
-  //   axios.get(apiUrl)
-  //     .then(response => {
-  //       const productData = response.data.data;
-  //       scrollRef.current.scrollTo({ y: 0, animated: true });
-  //       setProductsState(productData);
-  //       setLoading(false);
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching data:', error);
-  //       setLoading(false);
-  //     });
-  // }, [id]);
   useEffect(() => {
     const fetchProductData = async () => {
       try {

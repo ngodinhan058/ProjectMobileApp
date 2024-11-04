@@ -54,8 +54,8 @@ const HomeScreen = ({ onScroll }) => {
       console.error('Error fetching data:', error);
     } finally {
       setTimeout(() => {
-        setLoading(false); // Dừng loading sau 2 giây (hoặc khi tải xong)
-      }, 5000);
+        setLoading(false);
+      }, 1000);
       setRefreshing(false);
     }
   };
