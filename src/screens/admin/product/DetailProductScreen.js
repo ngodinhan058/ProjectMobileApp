@@ -9,6 +9,7 @@ import {
     Animated,
     Pressable,
     FlatList,
+    Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
@@ -71,7 +72,18 @@ function DetailScreen({ route, navigation }) {
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
     });
-
+    const deleteCategory = async () => {
+        try {
+           await axios.delete(`${BASE_URL}product/${id}`);
+            // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
+            Alert.alert("Success", "Xoá Thành Công");
+            navigation.replace("ProductList")
+            // Điều hướng hoặc cập nhật trạng thái nếu cần
+        } catch (error) {
+            console.error('Error deleting category:', error.response ? error.response.data : error.message);
+            Alert.alert("Error", "Failed to delete category.");
+        }
+    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -159,7 +171,7 @@ function DetailScreen({ route, navigation }) {
             </Animated.View>
 
             <Animated.View style={[styles.subButton, { bottom: position1 }]}>
-                <TouchableOpacity style={styles.iconButton}>
+                <TouchableOpacity style={styles.iconButton} onPress={deleteCategory}>
                     <Icon name="trash" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
