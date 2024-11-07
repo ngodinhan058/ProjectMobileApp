@@ -87,7 +87,7 @@ function DetailScreen({ route, navigation }) {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <View style={styles.productDetailContainer}>
+                <View>
                     <View style={styles.iconHeader}>
                         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                             <Icon name="angle-left" size={35} color="#000" />
