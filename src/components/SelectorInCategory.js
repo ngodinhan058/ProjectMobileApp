@@ -45,10 +45,22 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
         });
     };
     const handleApply = () => {
-        const selectedCategoryIds = Object.keys(selectedCategories).filter((categoryId) => selectedCategories[categoryId] === true);
-        onApply(selectedCategoryIds); // Truyền ID danh mục cha đã chọn
+        // Lấy danh sách ID của các danh mục đã chọn
+        const selectedCategoryIds = Object.keys(selectedCategories).filter(
+            (categoryId) => selectedCategories[categoryId] === true
+        );
+    
+        // Lấy tên của các danh mục đã chọn dựa trên các ID đã chọn
+        const selectedCategoryNames = selectedCategoryIds.map((categoryId) => {
+            const category = categoryAll.find((cat) => cat.categoryId === categoryId);
+            return category.categoryName; // Không cần kiểm tra null vì API của bạn luôn trả về tên
+        });
+    
+        // Truyền cả ID và tên danh mục vào hàm onApply
+        onApply(selectedCategoryIds, selectedCategoryNames); // Truyền cả ID và tên
         onClose();
     };
+    
     const toggleCategorySelection = (categoryId) => {
         setSelectedCategories({
             ...selectedCategories,

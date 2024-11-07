@@ -15,41 +15,39 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image_Multi';
+import SelectorInCategory from '../../../components/SelectorInCategory';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 const AddProductScreen = ({ route, navigation }) => {
+    const [productSupplier, setProductSupplier] = useState([]); // Dữ liệu sản phẩm
+    const [parentCategoryId, setParentCategoryId] = useState([]);
+    const [parentCategoryName, setParentCategoryName] = useState();
+    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+    const fetchData = async () => {
+        try {
+            const supplierApiUrl = `${BASE_URL}product-suppliers/category`;
+            const categoriesApiUrl = `${BASE_URL}categories`;
 
-    const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
+            const [supplierResponse, categoriesResponse] = await Promise.all([
+                axios.get(supplierApiUrl),
+                axios.get(categoriesApiUrl),
+            ]);
+
+            const supplierData = supplierResponse.data.data;
+            const categoriesData = categoriesResponse.data.data;
+            setProductSupplier(supplierData);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
     const { postDTO } = route.params || {};
-    const { query } = route.params || {};
-    const [searchQuery, setSearchQuery] = useState('');
-    const filteredCategories = categories.filter(category =>
-        category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
 
-    const handleSearch = (value) => {
-        setSearchQuery(value);
-    };
-
-    // const [productName, setProductName] = useState('');
-    // const [productPrice, setProductPrice] = useState('');
-    // const [productQuantity, setProductQuantity] = useState('0');
-    // const [productSale, setProductSale] = useState('');
-    // const [productImg, setProductImg] = useState([]);
-
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
-
-    const handleSelect = (value) => {
-        setSelectedValue(value);
-        setModalVisible(false);
-    };
     const [productData, setProductData] = useState({
         productName: '',
         productPrice: '',
-        productQuantity: '',
+        productQuantity: 0,
         productSale: '',
         productImages: [
             {
@@ -61,11 +59,61 @@ const AddProductScreen = ({ route, navigation }) => {
         productYearOfManufacture: 2024,
         productSizes: ["003c6e39-fdd2-345c-8d87-6e6543f34567", "002b5d28-fdd1-234b-7c98-7d5432f23456"],
         supplierId: "06000000-0000-0000-0000-000000000000",
-        categories: ["01233300-0000-0000-0000-000000000000"],
-        postDTO: postDTO || {}
+        categories: parentCategoryId,
+        post: postDTO || {},
+        coupon: {
+            couponName: "Discount Sale",
+            couponCode: "DISCOUNT2024",
+            couponRelease: "2024-01-01",
+            couponExpire: "2024-12-31",
+            couponQuantity: 100,
+            couponPerHundred: 10.0,
+            couponType: 1
+        }
     })
+    const [error, setError] = useState({
+        productPriceError: false,
+        productQuantityError: false,
+        productSaleError: false,
+        productNameError: false
+    });
     const handleAddProduct = async () => {
-        if (!productData.postDTO || Object.keys(productData.postDTO).length === 0) {
+        let hasError = false;
+        if (productData.productPrice <= 0 || isNaN(productData.productPrice)) {
+            setError((prev) => ({ ...prev, productPriceError: true }));
+            hasError = true;
+        } else {
+            setError((prev) => ({ ...prev, productPriceError: false }));
+        }
+
+        if (productData.productQuantity <= 0 || isNaN(productData.productQuantity)) {
+            setError((prev) => ({ ...prev, productQuantityError: true }));
+            hasError = true;
+        } else {
+            setError((prev) => ({ ...prev, productQuantityError: false }));
+        }
+
+        if (productData.productSale < 0 || productData.productSale > 100 || isNaN(productData.productSale)) {
+            setError((prev) => ({ ...prev, productSaleError: true }));
+            hasError = true;
+        } else {
+            setError((prev) => ({ ...prev, productSaleError: false }));
+        }
+
+        if (productData.productName === '') {
+            setError((prev) => ({ ...prev, productNameError: true }));
+            hasError = true;
+        } else {
+            setError((prev) => ({ ...prev, productNameError: false }));
+        }
+
+        if (hasError) {
+            return; // Dừng lại nếu có lỗi
+        }
+
+
+
+        if (!productData.post || Object.keys(productData.post).length === 0) {
             Alert.alert("Thông báo", "Chưa thêm thông tin bài đăng (post)");
             return;
         }
@@ -85,16 +133,31 @@ const AddProductScreen = ({ route, navigation }) => {
             Alert.alert('Lỗi', 'Không thể thêm sản phẩm.');
         }
     };
+    const handleQuantityChange = (operation) => {
+        let newQuantity = parseInt(productData.productQuantity);
+        if (operation === "increase") {
+            newQuantity += 1;
+        } else if (operation === "decrease") {
+            newQuantity = Math.max(0, newQuantity - 1); // Đảm bảo không giảm dưới 0
+        }
+
+        // Cập nhật lại state cho số lượng sản phẩm
+        setProductData({ ...productData, productQuantity: newQuantity.toString() });
+    };
+
     useEffect(() => {
-        console.log(postDTO);
 
         if (postDTO) {
             setProductData((prevData) => ({
                 ...prevData,
-                postDTO: postDTO
+                categories: parentCategoryId,
+                post: postDTO
             }));
         }
     }, [postDTO]);
+    const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
+
+    const handleResetFilters = () => { setParentCategoryId(null), setParentCategoryName(null) };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -111,23 +174,16 @@ const AddProductScreen = ({ route, navigation }) => {
 
                 {/* Form sản phẩm */}
                 <View style={styles.formContainer}>
-                    {/* <Text style={styles.label}>Ảnh Sản Phẩm: (Link)</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Thêm Ảnh Sản Phẩm"
-                        value={productImg}
-                        onChangeText={setProductImg}
-                    /> */}
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, error.productNameError && styles.inputError]}
                         placeholder="Thêm Tên Sản Phẩm"
                         value={productData.postName}
                         onChangeText={(text) => setProductData({ ...productData, productName: text })}
                     />
                     <Text style={styles.label}>Giá Sản Phẩm:</Text>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, error.productNameError && styles.inputError]}
                         placeholder="Thêm Giá Sản Phẩm"
                         value={productData.productPrice}
                         onChangeText={(text) => setProductData({ ...productData, productPrice: text })}
@@ -136,18 +192,25 @@ const AddProductScreen = ({ route, navigation }) => {
                     <View style={styles.quantityContainer}>
                         <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
                         <View style={styles.quantityWrapper}>
-                            <TouchableOpacity style={styles.quantityPlus} onPress={() => setProductQuantity((prev) => parseInt(prev) + 1)}>
+                            <TouchableOpacity
+                                style={styles.quantityPlus}
+                                onPress={() => handleQuantityChange("increase")}
+                            >
                                 <Text style={styles.buttonIcon}>▲</Text>
                             </TouchableOpacity>
+
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, error.productQuantityError && styles.inputError]}
                                 placeholder="Thêm Số Lượng Sản Phẩm"
                                 value={productData.productQuantity}
                                 onChangeText={(text) => setProductData({ ...productData, productQuantity: text })}
                                 keyboardType="numeric"
                             />
 
-                            <TouchableOpacity style={styles.quantityMinus} onPress={() => setProductQuantity((prev) => Math.max(0, parseInt(prev) - 1))}>
+                            <TouchableOpacity
+                                style={styles.quantityMinus}
+                                onPress={() => handleQuantityChange("decrease")}
+                            >
                                 <Text style={styles.buttonIcon}>▼</Text>
                             </TouchableOpacity>
                         </View>
@@ -155,7 +218,7 @@ const AddProductScreen = ({ route, navigation }) => {
 
                     <Text style={styles.label}>Giảm Giá Sản Phẩm:</Text>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, error.productNameError && styles.inputError]}
                         placeholder="Thêm Giảm Giá Sản Phẩm"
                         value={productData.productSale}
                         onChangeText={(text) => setProductData({ ...productData, productSale: text })}
@@ -164,45 +227,22 @@ const AddProductScreen = ({ route, navigation }) => {
 
                     {/* Danh mục sản phẩm */}
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
-                    <TouchableOpacity
-                        style={styles.dropdown}
-                        onPress={() => setModalVisible(true)}>
-                        <Text style={styles.selectedValue}>{selectedValue}</Text>
+                    {/* Chọn danh mục cha */}
+                    <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
+                        {parentCategoryName ? (<Text>{parentCategoryName}</Text>) : (<Text>Chưa Chọn Danh Mục Sản Phẩm</Text>)}
                     </TouchableOpacity>
+ 
+                    {/* Modal để chọn danh mục cha */}
+                    <SelectorInCategory
+                        isVisible={isFilterModalVisible}
+                        onClose={toggleFilterModal}
+                        onReset={handleResetFilters}
+                        onApply={(selectedParent, selectedParentName) => {
+                            setParentCategoryId(selectedParent);
+                            setParentCategoryName(selectedParentName);
+                        }}
+                    />
 
-                    {/* Modal */}
-                    <Modal
-                        animationType="fade"
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}>
-                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                            <View style={styles.modalOverlay}>
-                                <View style={styles.modalView}>
-                                    <View style={styles.searchBar}>
-                                        <TextInput
-                                            style={styles.searchInput}
-                                            placeholder="Tìm kiếm danh mục"
-                                            value={searchQuery}
-                                            onChangeText={handleSearch}
-                                        />
-                                    </View>
-                                    <FlatList
-                                        data={filteredCategories}
-                                        keyExtractor={(item) => item}
-                                        renderItem={({ item }) => (
-                                            <TouchableOpacity onPress={() => handleSelect(item)} style={styles.modalItem}>
-                                                <Text style={styles.modalText}>{item}</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                    />
-                                    <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}>
-                                        <Text style={styles.buttonText}>Đóng</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </Modal>
 
                     {/* Add/Edit Button */}
                     <TouchableOpacity style={styles.button} onPress={handleAddProduct}>
@@ -280,6 +320,14 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
+        justifyContent: 'center'
+    },
+    inputError: {
+        borderColor: 'red',
+    },
+    errorText: {
+        color: 'red',
+        marginBottom: 12,
     },
     buttonIcon: {
         color: '#3669c9',
@@ -330,6 +378,14 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         backgroundColor: '#3669c9',
+        paddingVertical: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    buttonDisabled: {
+        width: '100%',
+        backgroundColor: '#cccccc',
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: 'center',
