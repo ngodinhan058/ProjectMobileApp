@@ -1,6 +1,6 @@
 import Icon from 'react-native-vector-icons/Ionicons';
 import React, { useEffect, useRef, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 
 // Sử dụng React.memo để tránh render lại nếu props không thay đổi
 const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
@@ -9,12 +9,13 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: isVisible ? 0 : 100, // Ẩn hoặc hiện footer khi cuộn lên/xuống
-      duration: 200, // Giảm duration để animation nhanh hơn
+      duration: 250, // Giảm duration để animation nhanh hơn
+      easing: Easing.out(Easing.ease),
       useNativeDriver: true,
     }).start();
   }, [isVisible]);
 
-  // Sử dụng useCallback để tối ưu hàm onPress
+ // Tối ưu hóa callback cho việc điều hướng
   const handlePress = useCallback(
     (routeName) => {
       navigation.navigate(routeName);
