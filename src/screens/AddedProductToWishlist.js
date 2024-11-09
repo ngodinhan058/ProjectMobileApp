@@ -24,32 +24,55 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const { id } = route.params;
 
+  // Hàm lấy dữ liệu sản phẩm
+  const fetchProductData = async (id) => {
+    const productsApiUrl = `${BASE_URL}product/${id}`; // API lấy thông tin sản phẩm theo ID
+    try {
+      const response = await axios.get(productsApiUrl, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true', // Bỏ qua cảnh báo của ngrok nếu có
+        },
+      });
+      return response.data.data; // Trả về dữ liệu sản phẩm
+    } catch (error) {
+      console.error('Lỗi khi lấy dữ liệu sản phẩm:', error);
+      throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+  };
+
+  // Hàm lấy sản phẩm liên quan
+  const fetchRelatedProducts = async (categoryId) => {
+    const categoriesApiUrl = `${BASE_URL}products/relate/${categoryId}`; // API lấy sản phẩm liên quan theo categoryId
+    try {
+      const response = await axios.get(categoriesApiUrl, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      });
+      return response.data.data.content; // Trả về dữ liệu sản phẩm liên quan
+    } catch (error) {
+      console.error('Lỗi khi lấy sản phẩm liên quan:', error);
+      throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+  };
+  // Hàm chính để gọi đồng thời hết API
+  const fetchData = async () => {
+    try {
+      const productsData = await fetchProductData(id);
+      const categoryId = productsData.categories[0].categoryId;
+      const productRelateData = await fetchRelatedProducts(categoryId);
+
+      setProductsState(productsData);
+      setProductRelate(productRelateData);
+      setLoading(false);
+
+    } catch (error) {
+      console.error('Lỗi khi lấy dữ liệu:', error); // Log lỗi nếu có
+    }
+  };
   useEffect(() => {
-    const fetchProductData = async () => {
-      try {
-        // Gọi API lấy chi tiết sản phẩm
-        const productResponse = await axios.get(`${BASE_URL}product/${id}`);
-        const productData = productResponse.data.data;
-        scrollRef.current.scrollTo({ y: 0, animated: true });
-        setProductsState(productData);
-
-        // Gọi API lấy sản phẩm liên quan nếu có danh mục
-        if (productData.categories && productData.categories.length > 0) {
-          const relatedProductsResponse = await axios.get(
-            `${BASE_URL}products/relate/${productData.categories[0].categoryId}`
-          );
-          const relatedProductsData = relatedProductsResponse.data.data.content;
-          setProductRelate(relatedProductsData);
-        }
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(true);
-      }
-    };
-
-    fetchProductData();
+    scrollRef.current.scrollTo({ y: 0, animated: true });
+    fetchData(); // Lấy dữ liệu khi component lần đầu render
   }, [id]);
 
 
@@ -168,22 +191,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         {/* Description Product */}
         <View>
           <Text style={styles.descriptionProductTitle}>
-            Description Product
+            {productsState.post?.postName}
           </Text>
           <Text style={styles.descriptionProductText}>
-            The speaker unit contains a diaphragm that is precision-grown from
-            NAC Audio bio-cellulose, making it stiffer, lighter and stronger
-            than regular PET speaker units, and allowing the sound-producing
-            diaphragm to vibrate without the levels of distortion found in other
-            speakers.
-          </Text>
-
-          <Text style={styles.descriptionProductText}>
-            The speaker unit contains a diaphragm that is precision-grown from
-            NAC Audio bio-cellulose, making it stiffer, lighter and stronger
-            than regular PET speaker units, and allowing the sound-producing
-            diaphragm to vibrate without the levels of distortion found in other
-            speakers.
+            {productsState.post?.postContent}
           </Text>
         </View>
 

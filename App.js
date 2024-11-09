@@ -129,15 +129,6 @@ import Footer from './src/components/Footer';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
-const user = [
-  {
-    id: '1',
-    name: 'Ngô Định An',
-    image: {
-      uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
-    },
-  },
-];
 
 function LoginStack() {
   return (
@@ -528,32 +519,8 @@ function Accouting() {
   );
 }
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(null); // trạng thái đăng nhập
-
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const userData = await AsyncStorage.getItem('userData'); // Lấy dữ liệu người dùng từ AsyncStorage
-        if (userData) {
-          setIsLoggedIn(true); // Nếu có userData -> Đã đăng nhập
-        } else {
-          setIsLoggedIn(false); // Nếu không có userData -> Chưa đăng nhập
-        }
-      } catch (error) {
-        console.error('Error checking login status', error);
-        setIsLoggedIn(false); // Xử lý lỗi bằng cách giả định là chưa đăng nhập
-      }
-    };
-
-    checkLoginStatus();
-  }, []);
-  {/* loading khi đang lấy thông tin đăng nhập */ }
-  if (isLoggedIn === null) {
-    return null;
-  }
   return (
     <NavigationContainer>
-      {/* {isLoggedIn ? <HaveLoginHome /> : <NoLoginHome />} */}
       {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       <AdminDrawerNavigator /> 

@@ -8,6 +8,7 @@ import {
     TouchableWithoutFeedback,
     ScrollView,
     TextInput,
+    Alert,
 } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
@@ -49,7 +50,11 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
         const selectedCategoryIds = Object.keys(selectedCategories).filter(
             (categoryId) => selectedCategories[categoryId] === true
         );
-    
+        if (selectedCategoryIds.length === 0) {
+            // Hiển thị thông báo nếu chưa có danh mục nào được chọn
+            Alert.alert("Thông báo", "Vui lòng chọn ít nhất một danh mục trước khi áp dụng.");
+            return; // Dừng lại nếu chưa có danh mục nào được chọn
+        }
         // Lấy tên của các danh mục đã chọn dựa trên các ID đã chọn
         const selectedCategoryNames = selectedCategoryIds.map((categoryId) => {
             const category = categoryAll.find((cat) => cat.categoryId === categoryId);
@@ -110,9 +115,11 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset }) => {
     };
 
     const handleReset = () => {
-        setSelectedCategories({});
-        setExpandedCategories({});
-        setSearchText('');
+        const selectedCategoryIds = null;
+        const selectedCategoryNames = null;
+
+        onReset(selectedCategoryIds, selectedCategoryNames);
+        onClose();
     };
 
     return (
@@ -204,14 +211,21 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     resetButton: {
-        padding: 10,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 5,
+        width: 120,
+        height: 50,
+        alignItems: 'center',
+        justifyContent:'center',
+        borderColor: '#000',
+        borderWidth: 1,
+        borderRadius: 10,
     },
     applyButton: {
-        padding: 10,
-        backgroundColor: '#0066ff',
-        borderRadius: 5,
+        width: 120,
+        height: 50,
+        alignItems: 'center',
+        justifyContent:'center',
+        backgroundColor: '#3669c9',
+        borderRadius: 10,
     },
     applyText: {
         color: 'white',
