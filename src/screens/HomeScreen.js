@@ -197,7 +197,7 @@ const HomeScreen = ({ onScroll }) => {
             <Text style={styles.textBold}>Đã Bán Nhiều Nhất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          {productsState.length > 0 ? (
+          {/* {productsState.length > 0 ? (
             <FlatList
               horizontal
               data={productsState}
@@ -226,7 +226,7 @@ const HomeScreen = ({ onScroll }) => {
               showsHorizontalScrollIndicator={false}
               style={styles.productList}
             />
-          ) : null}
+          ) : null} */}
 
           {/* Banner phụ 2 */}
           <Image source={require('../assets/banner3.png')} style={{ width: 380, height: 190, marginBottom: 10 }} />
@@ -236,7 +236,7 @@ const HomeScreen = ({ onScroll }) => {
             <Text style={styles.textBold}>Sản Phẩm Mới</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          {productsState.length > 0 ? (
+          {/* {productsState.length > 0 ? (
             <FlatList
               horizontal
               data={productsState}
@@ -265,13 +265,13 @@ const HomeScreen = ({ onScroll }) => {
               showsHorizontalScrollIndicator={false}
               style={styles.productList}
             />
-          ) : null}
+          ) : null} */}
           {/* Top Rated Product */}
           <View style={styles.sectionHeader}>
             <Text style={styles.textBold}>Lượt Đánh Giá Cao Nhất</Text>
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
-          {productsState.length > 0 ? (
+          {/* {productsState.length > 0 ? (
             <FlatList
               horizontal
               data={productsState}
@@ -300,7 +300,7 @@ const HomeScreen = ({ onScroll }) => {
               showsHorizontalScrollIndicator={false}
               style={styles.productList}
             />
-          ) : null}
+          ) : null} */}
           {/* Special Offers */}
           <View style={styles.sectionHeader}>
             <Text style={styles.textBold}>Giảm Giá Đặc Biệt</Text>

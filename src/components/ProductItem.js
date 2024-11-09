@@ -18,25 +18,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, l
     setLiked(!liked); // Chuyển đổi trạng thái like
   };
 
-  useEffect(() => {
-    // Bắt đầu hiệu ứng shimmer khi component được mount
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [shimmerAnim]);
+ 
   useEffect(() => {
     if (typeof image === 'string') {
       imageString(image);

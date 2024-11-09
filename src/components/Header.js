@@ -7,8 +7,10 @@ const Header = () => {
   return (
     <View style={styles.headerContainer}>
       {/* Logo */}
-      <Text style={styles.logo}>Mega Mall</Text>
-
+      <TouchableOpacity onPress={ () => navigation.navigate('Home') }>
+        <Text style={styles.logo}>Mega Mall</Text>
+      </TouchableOpacity>
+    
       {/* Icon thông báo và giỏ hàng */}
       <View style={styles.iconsContainer}>
         <TouchableOpacity>

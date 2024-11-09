@@ -8,10 +8,11 @@ import {
   TouchableOpacity,
   TextInput,
 } from 'react-native';
+import CartItem from '../components/CartItem';
 
 function AddToCartScreen({ navigation }) {
   return (
-    <ScrollView style={{ padding: 20 }}>
+    <ScrollView style={{ padding: 20 , backgroundColor: '#fff'}}>
       <View style={{ gap: 20 }}>
         <View>
           <Text>Giao hàng đến</Text>
@@ -28,100 +29,15 @@ function AddToCartScreen({ navigation }) {
           </View>
         </View>
 
-        <View style={{ gap: 10, marginTop: 20 }}>
-          <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                borderRadius: 10,
-                borderColor: '#ccc',
-                borderWidth: 2,
-                padding: 10,
-              }}
-            >
-              <View>
-                <Image
-                  style={{ width: 50, height: 50 }}
-                  source={require('../assets/headphone.png')}
-                />
-              </View>
-              <View>
-                <Text>Tai Nghe</Text>
-                <Text>Tai nghe sieu dep, sieu ngau</Text>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  position: 'relative',
-                  marginLeft: 5,
-                }}
-              >
-                <Text style={{ position: 'absolute', left: -10, top: 10 }}>
-                  1
-                </Text>
-                <View>
-                  <Text>🔼</Text>
-                  <Text>🔽</Text>
-                </View>
-              </View>
-
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-              >
-                <Text>10.000.000đ</Text>
-                <Text>🗑️</Text>
-              </View>
-            </View>
-          </View>
-          <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                borderRadius: 10,
-                borderColor: '#ccc',
-                borderWidth: 2,
-                padding: 10,
-              }}
-            >
-              <View>
-                <Image
-                  style={{ width: 50, height: 50 }}
-                  source={require('../assets/headphone.png')}
-                />
-              </View>
-              <View>
-                <Text>Tai Nghe</Text>
-                <Text>Tai nghe sieu dep, sieu ngau</Text>
-              </View>
-
-              <View style={{ flexDirection: 'row', position: 'relative' }}>
-                <Text style={{ position: 'absolute', left: -10, top: 10 }}>
-                  1
-                </Text>
-                <View>
-                  <Text>🔼</Text>
-                  <Text>🔽</Text>
-                </View>
-              </View>
-
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-              >
-                <Text>10.000.000đ</Text>
-                <Text>🗑️</Text>
-              </View>
-            </View>
-          </View>
+        <View style={{ marginTop: 20, marginHorizontal: 2 }}>
+            <CartItem />
         </View>
 
         <View style={{ marginTop: 10, gap: 10 }}>
-          <Text>Ghi chu</Text>
+          <Text>Ghi Chú</Text>
           <TextInput
             style={{
-              backgroundColor: '#ccc',
+              backgroundColor: '#ddd',
               padding: 10,
               borderRadius: 10,
               opacity: 0.25,
@@ -131,13 +47,17 @@ function AddToCartScreen({ navigation }) {
         </View>
 
         <View>
-          <Text>Uu dai cua toi</Text>
+          <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Ưa Đãi Của Tôi</Text>
           <View
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
               gap: 20,
-              padding: 10,
+              padding: 20,
+              marginVertical: 10,
+              borderWidth: 1,
+              borderColor: '#ccc',
+              borderRadius: 10
             }}
           >
             <Image source={require('../assets/star.png')} />
@@ -147,14 +67,14 @@ function AddToCartScreen({ navigation }) {
                 color: '#3669C9',
               }}
             >
-              Chon ma giam gia
+              Chọn Mã Giảm Giá
             </Text>
             <Image source={require('../assets/star.png')} />
           </View>
         </View>
 
         <View>
-          <Text>Tổng cộng</Text>
+        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Tổng Cộng</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -234,6 +154,7 @@ function AddToCartScreen({ navigation }) {
               borderWidth: 1,
               padding: 20,
               borderRadius: 10,
+              marginBottom: 50,
             }}
           >
             <Text
