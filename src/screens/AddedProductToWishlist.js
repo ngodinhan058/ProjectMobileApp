@@ -14,6 +14,7 @@ import {
 import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ImageViewer from 'react-native-image-zoom-viewer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
 
@@ -22,6 +23,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [productRelate, setProductRelate] = useState([]); // Dữ liệu sản phẩm
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+  const [selectedSize, setSelectedSize] = useState('144Hz'); // Đặt size mặc định
   const { id } = route.params;
 
   // Hàm lấy dữ liệu sản phẩm
@@ -90,6 +92,137 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   };
 
   const previousScrollOffset = useRef(0); // Lưu lại vị trí cuộn trước đó
+
+
+//Cart
+const [cart, setCart] = useState([]);
+const [quantity, setQuantity] = useState(1);
+const [error, setError] = useState('');
+const [errorCheck, setErrorCheck] = useState(false);
+
+// Hàm để tính thời gian hết hạn của cart
+const getExpiryTime = () => Date.now() + 24 * 60 * 60 * 1000; // 24 giờ
+
+useEffect(() => {
+  if (selectedSize && quantity > 0) {
+    setError('');
+  }
+}, [selectedSize, quantity]);
+
+useEffect(() => {
+  const loadCart = async () => {
+    try {
+      const savedCart = await AsyncStorage.getItem('cart');
+      if (savedCart) {
+        const { items, expiry } = JSON.parse(savedCart);
+        if (Date.now() > expiry) {
+          await AsyncStorage.removeItem('cart');
+        } else {
+          setCart(items);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading cart from AsyncStorage:", error);
+    }
+  };
+
+  loadCart();
+}, []);
+
+useEffect(() => {
+  const saveCart = async () => {
+    if (cart.length > 0) {
+      const cartData = {
+        items: cart,
+        expiry: getExpiryTime(),
+      };
+      try {
+        await AsyncStorage.setItem('cart', JSON.stringify(cartData));
+      } catch (error) {
+        console.error("Error saving cart to AsyncStorage:", error);
+      }
+    }
+  };
+
+  saveCart();
+}, [cart]);
+
+const handleAddToCart = () => {
+  if (!selectedSize) {
+    setError('Vui lòng chọn kích thước sản phẩm');
+    setErrorCheck(false);
+    setTimeout(() => setErrorCheck(true), 0);
+    return;
+  }
+
+  if (quantity < 1) {
+    setError('Vui lòng chọn số lượng hợp lệ');
+    setErrorCheck(false);
+    setTimeout(() => setErrorCheck(true), 0);
+    return;
+  }
+
+  const selectedProductSize = productsState.productSizes.find(
+    (size) => size.productSizeName === selectedSize
+  );
+
+  if (!selectedProductSize) {
+    setError('Kích thước sản phẩm không tồn tại');
+    setErrorCheck(false);
+    setTimeout(() => setErrorCheck(true), 0);
+    return;
+  }
+
+  const availableQuantity = selectedProductSize.productSizeQuantity.productSizeQuantity;
+  if (quantity > availableQuantity) {
+    setError(`Số lượng yêu cầu vượt quá số lượng tồn kho (${availableQuantity} sản phẩm)`);
+    setErrorCheck(false);
+    setTimeout(() => setErrorCheck(true), 0);
+    return;
+  }
+
+  setError('');
+  setErrorCheck(false);
+
+  const basePrice = parseInt(productsState.productPriceSale.replace(/\D/g, ''), 10);
+
+  const existingProductIndex = cart.findIndex(
+    (item) => item.id === id && item.size === selectedSize
+  );
+
+  if (existingProductIndex !== -1) {
+    const updatedCart = cart.map((item, index) => 
+      index === existingProductIndex
+        ? { 
+            ...item, 
+            quantity: item.quantity + quantity,
+            price: (basePrice * (item.quantity + quantity)).toLocaleString() + " ₫",
+          }
+        : item
+    );
+    setCart(updatedCart);
+  } else {
+    const newProduct = {
+      id,
+      name: productsState.productName,
+      size: selectedSize,
+      quantity,
+      price: (basePrice * quantity).toLocaleString() + " ₫",
+    };
+    setCart([...cart, newProduct]);
+  }
+};
+
+const handleQuantityChange = (amount) => {
+  setQuantity(Math.max(1, quantity + amount));
+};
+//Kết thúc
+useEffect(() => {
+  console.log("Cart data:", cart);
+}, [cart]);
+
+
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} onScroll={(event) => {
       const currentOffset = event.nativeEvent.contentOffset.y;
@@ -426,6 +559,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                 padding: 20,
                 borderRadius: 10,
               }}
+              onPress={handleAddToCart}
             >
               <Text
                 style={{
