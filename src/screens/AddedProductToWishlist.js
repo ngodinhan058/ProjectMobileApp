@@ -23,7 +23,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [productRelate, setProductRelate] = useState([]); // Dữ liệu sản phẩm
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
-  const [selectedSize, setSelectedSize] = useState('144Hz'); // Đặt size mặc định
+  const [selectedSize, setSelectedSize] = useState(); // Đặt size mặc định
   const { id } = route.params;
 
   // Hàm lấy dữ liệu sản phẩm
@@ -93,133 +93,140 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   const previousScrollOffset = useRef(0); // Lưu lại vị trí cuộn trước đó
 
+  const handleSelectSize = (sizeName) => {
+    // Nếu kích thước đã được chọn, nhấn lần nữa sẽ hủy chọn
+    if (selectedSize === sizeName) {
+      setSelectedSize(null);
+    } else {
+      setSelectedSize(sizeName);
+    }
+  };
+  //Cart
+  const [cart, setCart] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [error, setError] = useState('');
+  const [errorCheck, setErrorCheck] = useState(false);
 
-//Cart
-const [cart, setCart] = useState([]);
-const [quantity, setQuantity] = useState(1);
-const [error, setError] = useState('');
-const [errorCheck, setErrorCheck] = useState(false);
+  // Hàm để tính thời gian hết hạn của cart
+  const getExpiryTime = () => Date.now() + 24 * 60 * 60 * 1000; // 24 giờ
 
-// Hàm để tính thời gian hết hạn của cart
-const getExpiryTime = () => Date.now() + 24 * 60 * 60 * 1000; // 24 giờ
+  useEffect(() => {
+    if (selectedSize && quantity > 0) {
+      setError('');
+    }
+  }, [selectedSize, quantity]);
 
-useEffect(() => {
-  if (selectedSize && quantity > 0) {
-    setError('');
-  }
-}, [selectedSize, quantity]);
+  useEffect(() => {
+    const loadCart = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem('cart');
+        if (savedCart) {
+          const { items, expiry } = JSON.parse(savedCart);
+          if (Date.now() > expiry) {
+            await AsyncStorage.removeItem('cart');
+          } else {
+            setCart(items);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading cart from AsyncStorage:", error);
+      }
+    };
 
-useEffect(() => {
-  const loadCart = async () => {
-    try {
-      const savedCart = await AsyncStorage.getItem('cart');
-      if (savedCart) {
-        const { items, expiry } = JSON.parse(savedCart);
-        if (Date.now() > expiry) {
-          await AsyncStorage.removeItem('cart');
-        } else {
-          setCart(items);
+    loadCart();
+  }, []);
+
+  useEffect(() => {
+    const saveCart = async () => {
+      if (cart.length > 0) {
+        const cartData = {
+          items: cart,
+          expiry: getExpiryTime(),
+        };
+        try {
+          await AsyncStorage.setItem('cart', JSON.stringify(cartData));
+        } catch (error) {
+          console.error("Error saving cart to AsyncStorage:", error);
         }
       }
-    } catch (error) {
-      console.error("Error loading cart from AsyncStorage:", error);
+    };
+
+    saveCart();
+  }, [cart]);
+
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      setError('Vui lòng chọn kích thước sản phẩm');
+      setErrorCheck(false);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
     }
-  };
 
-  loadCart();
-}, []);
-
-useEffect(() => {
-  const saveCart = async () => {
-    if (cart.length > 0) {
-      const cartData = {
-        items: cart,
-        expiry: getExpiryTime(),
-      };
-      try {
-        await AsyncStorage.setItem('cart', JSON.stringify(cartData));
-      } catch (error) {
-        console.error("Error saving cart to AsyncStorage:", error);
-      }
+    if (quantity < 1) {
+      setError('Vui lòng chọn số lượng hợp lệ');
+      setErrorCheck(false);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
     }
-  };
 
-  saveCart();
-}, [cart]);
+    const selectedProductSize = productsState.productSizes.find(
+      (size) => size.productSizeName === selectedSize
+    );
 
-const handleAddToCart = () => {
-  if (!selectedSize) {
-    setError('Vui lòng chọn kích thước sản phẩm');
+    if (!selectedProductSize) {
+      setError('Kích thước sản phẩm không tồn tại');
+      setErrorCheck(false);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    const availableQuantity = selectedProductSize.productSizeQuantity.productSizeQuantity;
+    if (quantity > availableQuantity) {
+      setError(`Số lượng yêu cầu vượt quá số lượng tồn kho (${availableQuantity} sản phẩm)`);
+      setErrorCheck(false);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    setError('');
     setErrorCheck(false);
-    setTimeout(() => setErrorCheck(true), 0);
-    return;
-  }
 
-  if (quantity < 1) {
-    setError('Vui lòng chọn số lượng hợp lệ');
-    setErrorCheck(false);
-    setTimeout(() => setErrorCheck(true), 0);
-    return;
-  }
+    const basePrice = parseInt(productsState.productPriceSale.replace(/\D/g, ''), 10);
 
-  const selectedProductSize = productsState.productSizes.find(
-    (size) => size.productSizeName === selectedSize
-  );
+    const existingProductIndex = cart.findIndex(
+      (item) => item.id === id && item.size === selectedSize
+    );
 
-  if (!selectedProductSize) {
-    setError('Kích thước sản phẩm không tồn tại');
-    setErrorCheck(false);
-    setTimeout(() => setErrorCheck(true), 0);
-    return;
-  }
-
-  const availableQuantity = selectedProductSize.productSizeQuantity.productSizeQuantity;
-  if (quantity > availableQuantity) {
-    setError(`Số lượng yêu cầu vượt quá số lượng tồn kho (${availableQuantity} sản phẩm)`);
-    setErrorCheck(false);
-    setTimeout(() => setErrorCheck(true), 0);
-    return;
-  }
-
-  setError('');
-  setErrorCheck(false);
-
-  const basePrice = parseInt(productsState.productPriceSale.replace(/\D/g, ''), 10);
-
-  const existingProductIndex = cart.findIndex(
-    (item) => item.id === id && item.size === selectedSize
-  );
-
-  if (existingProductIndex !== -1) {
-    const updatedCart = cart.map((item, index) => 
-      index === existingProductIndex
-        ? { 
-            ...item, 
+    if (existingProductIndex !== -1) {
+      const updatedCart = cart.map((item, index) =>
+        index === existingProductIndex
+          ? {
+            ...item,
             quantity: item.quantity + quantity,
             price: (basePrice * (item.quantity + quantity)).toLocaleString() + " ₫",
           }
-        : item
-    );
-    setCart(updatedCart);
-  } else {
-    const newProduct = {
-      id,
-      name: productsState.productName,
-      size: selectedSize,
-      quantity,
-      price: (basePrice * quantity).toLocaleString() + " ₫",
-    };
-    setCart([...cart, newProduct]);
-  }
-};
+          : item
+      );
+      setCart(updatedCart);
+    } else {
+      const newProduct = {
+        id,
+        name: productsState.productName,
+        size: selectedSize,
+        quantity,
+        price: (basePrice * quantity).toLocaleString() + " ₫",
+      };
+      setCart([...cart, newProduct]);
+    }
+  };
 
-const handleQuantityChange = (amount) => {
-  setQuantity(Math.max(1, quantity + amount));
-};
-//Kết thúc
-useEffect(() => {
-  console.log("Cart data:", cart);
-}, [cart]);
+  const handleQuantityChange = (amount) => {
+    setQuantity(Math.max(1, quantity + amount));
+  };
+  //Kết thúc
+  useEffect(() => {
+    console.log("Cart data:", cart);
+  }, [cart]);
 
 
 
@@ -318,6 +325,38 @@ useEffect(() => {
             <View>
               {/* <Text style={styles.totalSellProduct}>Sole : 250</Text> */}
             </View>
+          </View>
+
+          <View style={styles.productOptions}>
+            {loading ? (
+              <Text>Loading...</Text> // Nếu không có thư viện, hãy thử thay bằng <Text>Loading...</Text>
+            ) : (
+              <View style={styles.sizesContainer}>
+                {productsState.productSizes.map((size) => (
+                  <TouchableOpacity
+                    key={size.productSizeId}
+                    style={[
+                      styles.sizeOption,
+                      selectedSize === size.productSizeName && styles.selected,
+                      size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
+                      errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
+                    ]}
+                    onPress={() => handleSelectSize(size.productSizeName)}
+                    disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
+                  >
+                    <Text
+                      style={
+                        selectedSize === size.productSizeName
+                          ? { color: '#fff' } // Màu trắng khi được chọn
+                          : { color: '#000' } // Màu đen khi không được chọn
+                      }
+                    >
+                      {size.productSizeName}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </View>
 
@@ -741,6 +780,58 @@ const styles = StyleSheet.create({
   fullScreenImage: {
     width: '100%',
     height: '90%',
+  },
+
+  productOptions: {
+    marginVertical: 20,
+  },
+  sizesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  sizeLabel: {
+    fontWeight: 'bold',
+    fontSize: 18, // Tăng kích thước chữ
+    marginBottom: 10,
+    color: '#333', // Màu chữ tối hơn
+  },
+  sizeOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap', // Cho phép các nút xuống dòng
+  },
+  sizeOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    borderRadius: 5, // Bo tròn các góc
+    width: '30%', // Đặt kích thước động để 4 nút vừa 1 hàng, nút thứ 5 sẽ xuống dòng
+    margin: 5, // Khoảng cách giữa các nút
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5, // Đổ bóng nhẹ
+  },
+  selected: {
+    backgroundColor: '#3669c9', // Màu nền khi chọn
+    color: '#fff', // Màu chữ khi chọn
+    transform: [{ scale: 1.05 }], // Phóng to nhẹ
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8, // Đổ bóng đậm hơn
+  },
+  disabled: {
+    backgroundColor: '#e0e0e0', // Màu nền cho kích cỡ không khả dụng
+    color: '#aaa', // Màu chữ cho kích cỡ không khả dụng
+    opacity: 0.6,
+    textDecorationLine: 'line-through',
+  },
+  flashBorder: {
+    borderColor: 'red', // Viền màu đỏ cho hiệu ứng chớp
+    borderWidth: 2,
+    // Để tạo hiệu ứng flash, bạn có thể sử dụng thư viện 'react-native-reanimated' hoặc 'react-native-animatable'
   },
 });
 export default AddedProductToWishlist;
