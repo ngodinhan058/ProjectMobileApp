@@ -134,7 +134,7 @@ function LoginStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
-      <Stack.Screen name="SignUpSceen" component={SignUpScreen} />
+      <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
       <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
       <Stack.Screen name="ResetPassScreen" component={ResetPassScreen} />
@@ -522,8 +522,8 @@ export default function App() {
   return (
     <NavigationContainer>
       {/* <HaveLoginHome /> */}
-      {/* <NoLoginHome /> */}
-      <AdminDrawerNavigator /> 
+      <NoLoginHome />
+      {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
