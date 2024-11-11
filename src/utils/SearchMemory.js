@@ -1,25 +1,21 @@
+// utils/SearchMemory.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Save data
 export const saveData = async (key, value) => {
   try {
     await AsyncStorage.setItem(key, value);
-  } catch (e) {
-    console.error('Error saving data', e);
+  } catch (error) {
+    console.error('Error saving data:', error);
   }
 };
 
-// Retrieve data
 export const loadData = async (key) => {
   try {
     const value = await AsyncStorage.getItem(key);
-    if (value !== null) {
-      return JSON.parse(value); // If data exists, parse and return it
-    }
-    return []; // Return an empty array if no data is found
-  } catch (e) {
-    console.error('Error loading data', e);
-    return []; // Return empty array in case of an error
+    return value ? JSON.parse(value) : [];
+  } catch (error) {
+    console.error('Error loading data:', error);
+    return [];
   }
 };
 
