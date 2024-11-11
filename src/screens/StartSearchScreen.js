@@ -11,16 +11,22 @@ import { ScrollView } from 'react-native-gesture-handler';
 import ProductItem from '../components/ProductItem';
 import { loadData, saveData } from '../utils/SearchMemory';
 import { SEARCH_KEY } from '../constants/SearchKey';
+import { BASE_URL } from './api/config';
+import axios from 'axios';
 
 const SearchScreen = ({ navigation, route }) => {
   // Retrieve query from route params or set to an empty string
   const { query = '' } = route?.params || {};
+  const [loading, setLoading] = useState(true);
 
   // States for search query and recent searches
   const [searchQuery, setSearchQuery] = useState(query);
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
   const [recentSearches, setRecentSearches] = useState([]);
+  const [suggestion, setSuggestion] = useState([]);
+
+  const timeoutRef = React.useRef(null);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -38,6 +44,55 @@ const SearchScreen = ({ navigation, route }) => {
       console.log(temp);
     };
   }, []);
+
+  const fetchData = async (url) => {
+    setLoading(true);
+    try {
+      const productsResponse = await axios.get(url);
+
+      const productsData = productsResponse.data.data.content;
+      console.log(productsData.map((p) => p.productName));
+
+      setSuggestion(productsData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    if (searchQuery && searchQuery.length < 2) {
+      setSuggestion([]); // Clear suggestions if the query is less than 2 characters
+      setLoading(false);
+      return; // Do not proceed if the search query is too short
+    }
+    console.log();
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current); // Clear previous timeout
+    }
+
+    // Set a new timeout
+    timeoutRef.current = setTimeout(() => {
+      if (searchQuery.length >= 2) {
+        const productsApiUrl = `${BASE_URL}products/filters?search=${searchQuery}`;
+        fetchData(productsApiUrl); // Fetch data based on the query
+      } else {
+        setSuggestion([]); // Clear suggestions if search query is empty or too short
+      }
+    }, 3000); // Wait for 3 seconds before fetching
+    setLoading(false);
+
+    return () => {
+      clearTimeout(timeoutRef.current); // Cleanup timeout on unmount
+    };
+  }, [searchQuery]);
 
   const recentSearchesShow = isFilterModalVisible
     ? recentSearches // Hiển thị tất cả nếu mở rộng
@@ -84,9 +139,9 @@ const SearchScreen = ({ navigation, route }) => {
     },
   ];
   // Filter featured products based on the search query
-  const filteredSuggestions = featuredProducts.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredSuggestions = featuredProducts.filter((product) =>
+  //   product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
   const handleSearch = async () => {
     // Save the current search query to recent searches
     // if (searchQuery && !recentSearches.includes(searchQuery)) {
@@ -180,30 +235,54 @@ const SearchScreen = ({ navigation, route }) => {
         {/* Suggestions Section */}
         {searchQuery ? (
           <View style={styles.suggestionsContainer}>
+            {searchQuery.length < 2 && (
+              <Text style={{ marginTop: -24, marginBottom: 10 }}>
+                Nhập ít nhất 2 ký tự
+              </Text>
+            )}
+
             <Text style={styles.recentSearchesTitle}>Gợi ý</Text>
-            <ScrollView contentContainerStyle={styles.suggestionsContainer}>
-              {filteredSuggestions.map((item) => (
-                <View key={item.id}>
-                  <View style={styles.suggestionItem}>
-                    <TouchableOpacity
-                      onPress={() => handleRecentSearchClick(item.name)}
-                      style={{ flexDirection: 'row', alignItems: 'center' }}
-                    >
-                      <Image
-                        source={require('../assets/iconSeach.png')}
-                        style={styles.clock}
-                      />
-                      <Text style={styles.suggestionText}>{item.name}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.line}></View>
-                </View>
-              ))}
-            </ScrollView>
+
+            {loading ? (
+              <Text>Loading...</Text>
+            ) : (
+              <>
+                {suggestion.length === 0 ? (
+                  <Text>Không có giá trị để gợi ý</Text>
+                ) : (
+                  <ScrollView
+                    contentContainerStyle={styles.suggestionsContainer}
+                  >
+                    {suggestion.map((item) => (
+                      <View key={item.productId}>
+                        <View style={styles.suggestionItem}>
+                          <TouchableOpacity
+                            onPress={() => handleRecentSearchClick(item.name)}
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Image
+                              source={require('../assets/iconSeach.png')}
+                              style={styles.clock}
+                            />
+                            <Text style={styles.suggestionText}>
+                              {item.productName}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={styles.line}></View>
+                      </View>
+                    ))}
+                  </ScrollView>
+                )}
+              </>
+            )}
           </View>
         ) : (
           <View style={styles.recentSearchesContainer}>
-            <Text style={styles.recentSearchesTitle}>Đã tìm kiếm</Text>
+            <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
             <ScrollView contentContainerStyle={styles.listContent}>
               {recentSearchesShow.map((item, index) => (
                 <View key={index.toString()} style={styles.recentSearchItem}>
@@ -230,21 +309,15 @@ const SearchScreen = ({ navigation, route }) => {
               ))}
             </ScrollView>
             <TouchableOpacity
-              onPress={() => toggleExpand()}
+              onPress={toggleExpand}
               style={{
                 marginBottom: 10,
                 color: '#3669c9',
               }}
             >
-              {isFilterModalVisible ? (
-                <Text style={{ color: '#C4C5C4', textAlign: 'center' }}>
-                  Thu Gọn
-                </Text>
-              ) : (
-                <Text style={{ color: '#C4C5C4', textAlign: 'center' }}>
-                  Hiển Thị Tiếp
-                </Text>
-              )}
+              <Text style={{ color: '#C4C5C4', textAlign: 'center' }}>
+                {isFilterModalVisible ? 'Collapse' : 'Show More'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
