@@ -80,7 +80,10 @@ import DetailUserScreen from './src/screens/admin/user/DetailUserScreen';
 }
 import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
 import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
-
+{
+  /* Admin Shipment */
+}
+import AddProductShipment from './src/screens/admin/shipment/AddProductShipment';
 {
   /* Shipper */
 }
@@ -354,12 +357,24 @@ function UserAdmin() {
     </Stack.Navigator>
   );
 }
+{
+  /* Admin Shipment */
+}
+function ShipmentAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
+      
+    </Stack.Navigator>
+  );
+}
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
       <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
+      <Drawer.Screen name="Danh Sách Shipment" component={ShipmentAdmin} />
     </Drawer.Navigator>
   );
 }
@@ -522,8 +537,8 @@ export default function App() {
   return (
     <NavigationContainer>
       {/* <HaveLoginHome /> */}
-      <NoLoginHome />
-      {/* <AdminDrawerNavigator />  */}
+      {/* <NoLoginHome /> */}
+      <AdminDrawerNavigator /> 
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
