@@ -50,11 +50,11 @@ const AddPostScreen = ({ route, navigation }) => {
     };
     
     const [postData, setPostData] = useState({
-        postName: savedData?.postName || '',
-        postContent: savedData?.postContent || '',
+        postName: savedData?.postName || '123',
+        postContent: savedData?.postContent || '123',
         postImagePath: 'img/product01.png',
         postType: 1,
-        userId: '01000000-0000-0000-0000-000000000000',
+        userId: '1e867606-e231-4cf8-8107-d433e7f4de29',
         postStatusId: '03000000-0000-0000-0000-000000000000'
     });
     const handleNavigateToProduct = () => {

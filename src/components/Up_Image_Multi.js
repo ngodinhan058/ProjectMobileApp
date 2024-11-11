@@ -16,7 +16,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
 import { Linking, Alert } from 'react-native';
 
-const Up_Image_Multi = ({ navigation }) => {
+const Up_Image_Multi = ({ onImagesSelected }) => {
 
     const [selectedImages, setSelectedImages] = useState([]); // Trạng thái lưu trữ nhiều hình ảnh
     const [imageModalVisible, setImageModalVisible] = useState(false);
@@ -39,14 +39,14 @@ const Up_Image_Multi = ({ navigation }) => {
 
         let imageResult = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsMultipleSelection: true,  // Cho phép chọn nhiều ảnh
-            // allowsEditing: true,
-            aspect: [4, 3],
+            allowsMultipleSelection: true,
             quality: 1,
         });
 
         if (!imageResult.canceled) {
-            setSelectedImages([...selectedImages, ...imageResult.assets.map(asset => asset.uri)]); // Thêm ảnh vào danh sách
+            const newImages = imageResult.assets.map(asset => asset.uri);
+            setSelectedImages([...selectedImages, ...newImages]);
+            onImagesSelected([...selectedImages, ...newImages]); // Send selected images URIs
         }
         setImageModalVisible(false); // Đóng modal sau khi chọn ảnh
     };
