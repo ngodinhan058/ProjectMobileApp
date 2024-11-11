@@ -62,6 +62,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     try {
       const productsData = await fetchProductData(id);
       const categoryId = productsData.categories[0].categoryId;
+      console.log(productsData.productImages[0].productImagePath);
+
       const productRelateData = await fetchRelatedProducts(categoryId);
 
       setProductsState(productsData);
@@ -231,389 +233,383 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef} onScroll={(event) => {
-      const currentOffset = event.nativeEvent.contentOffset.y;
-      const isScrollingUp = currentOffset < previousScrollOffset.current;
-
-      // Điều kiện để hiển thị footer khi cuộn lên hoặc khi cuộn đến đỉnh
-      if (isScrollingUp || currentOffset <= 0) {
-        onScroll(true); // Hiển thị footer
-      } else {
-        onScroll(false); // Ẩn footer
-      }
-
-      previousScrollOffset.current = currentOffset; // Cập nhật vị trí cuộn hiện tại
-    }}
-      scrollEventThrottle={16}>
-      <View style={styles.productDetailContainer}>
-        <View style={styles.iconHeader}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Icon name="angle-left" size={35} color="#000" />
-          </Pressable>
-          <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
-          <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
-            <Icon name="share" size={25} color="#000" />
-          </Pressable>
-        </View>
-
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-
-          <FlatList
-            data={productsState.productImages}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.productImageIndex.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
-                <View style={{ marginHorizontal: 5 }}>
-                  <Image
-                    source={{ uri: item.productImagePath }}
-                    style={{ width: 345, height: 350, resizeMode: 'contain' }}
-                  />
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-
-          <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
-            <View style={styles.modalBackground}>
-              <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-                <Text style={styles.closeText}>X</Text>
-              </TouchableOpacity>
-              {selectedImage && (
-                <ImageViewer
-                  imageUrls={selectedImage} // Thư viện yêu cầu array của các object với key `url`
-                  enableSwipeDown
-                  onSwipeDown={closeModal}
-                  renderIndicator={() => null}
-                  style={styles.fullScreenImage} // Ẩn số chỉ mục ảnh
-                />
-              )}
-            </View>
-          </Modal>
-        </View>
-        {/* Product info */}
-        <View style={styles.productInfo}>
-          <View>
-            <Text style={styles.productName}>{productsState.productName}</Text>
+    <View>
+      <ScrollView ref={scrollRef}>
+        <View style={styles.productDetailContainer}>
+          <View style={styles.iconHeader}>
+            <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+              <Icon name="angle-left" size={35} color="#000" />
+            </Pressable>
+            <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
+            <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
+              <Icon name="share" size={25} color="#000" />
+            </Pressable>
           </View>
 
-          <View>
-            {productsState.productSale == 0 ? (
-              <Text style={styles.productPrice}>
-                {productsState.productPrice}
-              </Text>
-            ) : (
-              <View>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+
+            <FlatList
+              data={productsState.productImages}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.productImageIndex.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
+                  <View style={{ marginHorizontal: 5 }}>
+                    <Image
+                      source={{ uri: item.productImagePath }}
+                      style={{ width: 345, height: 350, resizeMode: 'contain' }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+            {/* <Image
+              source={{ uri: productsState.productImages?.[0].productImagePath }}
+              style={{ width: 345, height: 350, resizeMode: 'contain' }}
+            /> */}
+
+            <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
+              <View style={styles.modalBackground}>
+                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                  <Text style={styles.closeText}>X</Text>
+                </TouchableOpacity>
+                {selectedImage && (
+                  <ImageViewer
+                    imageUrls={selectedImage} // Thư viện yêu cầu array của các object với key `url`
+                    enableSwipeDown
+                    onSwipeDown={closeModal}
+                    renderIndicator={() => null}
+                    style={styles.fullScreenImage} // Ẩn số chỉ mục ảnh
+                  />
+                )}
+              </View>
+            </Modal>
+          </View>
+          {/* Product info */}
+          <View style={styles.productInfo}>
+            <View>
+              <Text style={styles.productName}>{productsState.productName}</Text>
+            </View>
+
+            <View>
+              {productsState.productSale == 0 ? (
                 <Text style={styles.productPrice}>
-                  {productsState.productPriceSale}
-                </Text>
-                <Text style={styles.originalPrice}>
                   {productsState.productPrice}
                 </Text>
+              ) : (
+                <View>
+                  <Text style={styles.productPrice}>
+                    {productsState.productPriceSale}
+                  </Text>
+                  <Text style={styles.originalPrice}>
+                    {productsState.productPrice}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.SoldProductInfo}>
+              <View style={styles.productStar}>
+                <Image source={require('../assets/star.png')} />
+                <Text> {productsState.productRating}</Text>
+                {/* <Text>{review} reviewes</Text> */}
               </View>
-            )}
-          </View>
-
-          <View style={styles.SoldProductInfo}>
-            <View style={styles.productStar}>
-              <Image source={require('../assets/star.png')} />
-              <Text> {productsState.productRating}</Text>
-              {/* <Text>{review} reviewes</Text> */}
+              <View>
+                {/* <Text style={styles.totalSellProduct}>Sole : 250</Text> */}
+              </View>
             </View>
-            <View>
-              {/* <Text style={styles.totalSellProduct}>Sole : 250</Text> */}
-            </View>
-          </View>
 
-          <View style={styles.productOptions}>
-            {loading ? (
-              <Text>Loading...</Text> // Nếu không có thư viện, hãy thử thay bằng <Text>Loading...</Text>
-            ) : (
-              <View style={styles.sizesContainer}>
-                {productsState.productSizes.map((size) => (
-                  <TouchableOpacity
-                    key={size.productSizeId}
-                    style={[
-                      styles.sizeOption,
-                      selectedSize === size.productSizeName && styles.selected,
-                      size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
-                      errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
-                    ]}
-                    onPress={() => handleSelectSize(size.productSizeName)}
-                    disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
-                  >
-                    <Text
-                      style={
-                        selectedSize === size.productSizeName
-                          ? { color: '#fff' } // Màu trắng khi được chọn
-                          : { color: '#000' } // Màu đen khi không được chọn
-                      }
+            <View style={styles.productOptions}>
+              {loading ? (
+                <Text>Loading...</Text> // Nếu không có thư viện, hãy thử thay bằng <Text>Loading...</Text>
+              ) : (
+                <View style={styles.sizesContainer}>
+                  {productsState.productSizes.map((size) => (
+                    <TouchableOpacity
+                      key={size.productSizeId}
+                      style={[
+                        styles.sizeOption,
+                        selectedSize === size.productSizeName && styles.selected,
+                        size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
+                        errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
+                      ]}
+                      onPress={() => handleSelectSize(size.productSizeName)}
+                      disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
                     >
-                      {size.productSizeName}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Description Product */}
-        <View>
-          <Text style={styles.descriptionProductTitle}>
-            {productsState.post?.postName}
-          </Text>
-          <Text style={styles.descriptionProductText}>
-            {productsState.post?.postContent}
-          </Text>
-        </View>
-
-        {/* Review Product */}
-        <View style={styles.reviewProductContainer}>
-          <View style={styles.reviewProductHeader}>
-            <View>
-              <Text style={styles.reviewProductTitle}>Review</Text>
-              {/* <Text style={styles.reviewProductTitle}>({review})</Text> */}
-            </View>
-            <View style={styles.productStar}>
-              <Image source={require('../assets/star.png')} />
-              <Text>{productsState.productRating}</Text>
+                      <Text
+                        style={
+                          selectedSize === size.productSizeName
+                            ? { color: '#fff' } // Màu trắng khi được chọn
+                            : { color: '#000' } // Màu đen khi không được chọn
+                        }
+                      >
+                        {size.productSizeName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
 
-          <View style={{}}>
-            <View style={styles.sectionReviewerContainer}>
-              <View style={{ flex: 1 }}>
-                <Image
-                  style={styles.reviewerImage}
-                  source={require('../assets/new3.png')}
-                />
-              </View>
-              <View style={{ flex: 6 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <View>
-                    <Text>Yelena Belova</Text>
-                    <View style={{ flexDirection: 'row' }}>
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                    </View>
-                  </View>
-                  <View>
-                    <Text>2 Minggu yang lalu</Text>
-                  </View>
-                </View>
-                <View style={{ paddingTop: 10 }}>
-                  <Text>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua.
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.sectionReviewerContainer}>
-              <View style={{ flex: 1 }}>
-                <Image
-                  style={styles.reviewerImage}
-                  source={require('../assets/new3.png')}
-                />
-              </View>
-              <View style={{ flex: 6 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <View>
-                    <Text>Yelena Belova</Text>
-                    <View style={{ flexDirection: 'row' }}>
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                    </View>
-                  </View>
-                  <View>
-                    <Text>2 Minggu yang lalu</Text>
-                  </View>
-                </View>
-                <View style={{ paddingTop: 10 }}>
-                  <Text>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua.
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.sectionReviewerContainer}>
-              <View style={{ flex: 1 }}>
-                <Image
-                  style={styles.reviewerImage}
-                  source={require('../assets/new3.png')}
-                />
-              </View>
-              <View style={{ flex: 6 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <View>
-                    <Text>Yelena Belova</Text>
-                    <View style={{ flexDirection: 'row' }}>
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                      <Image source={require('../assets/star.png')} />
-                    </View>
-                  </View>
-                  <View>
-                    <Text>2 Minggu yang lalu</Text>
-                  </View>
-                </View>
-                <View style={{ paddingTop: 10 }}>
-                  <Text>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua.
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={{ margin: 10 }}>
-          <TouchableOpacity
-            style={{
-              width: '100%',
-              backgroundColor: '#fff',
-              borderColor: '#ccc',
-              borderWidth: 1,
-              padding: 15,
-              marginVertical: 20,
-              borderRadius: 10,
-            }} onPress={() => navigation.navigate('ReviewProductScreen')}
-          >
-            <Text style={{ textAlign: 'center', fontWeight: '600' }}>
-              See All Review
+          {/* Description Product */}
+          <View>
+            <Text style={styles.descriptionProductTitle}>
+              {productsState.post?.postName}
             </Text>
-          </TouchableOpacity>
-        </View>
+            <Text style={styles.descriptionProductText}>
+              {productsState.post?.postContent}
+            </Text>
+          </View>
 
+          {/* Review Product */}
+          <View style={styles.reviewProductContainer}>
+            <View style={styles.reviewProductHeader}>
+              <View>
+                <Text style={styles.reviewProductTitle}>Review</Text>
+                {/* <Text style={styles.reviewProductTitle}>({review})</Text> */}
+              </View>
+              <View style={styles.productStar}>
+                <Image source={require('../assets/star.png')} />
+                <Text>{productsState.productRating}</Text>
+              </View>
+            </View>
 
-      </View>
-      <View style={styles.greySection}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
-          <Text style={styles.seeAll}>Xem Tất Cả</Text>
-        </View>
-        <FlatList
-          horizontal
-          data={productRelate}
-          renderItem={({ item }) => {
-            // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+            <View style={{}}>
+              <View style={styles.sectionReviewerContainer}>
+                <View style={{ flex: 1 }}>
+                  <Image
+                    style={styles.reviewerImage}
+                    source={require('../assets/new3.png')}
+                  />
+                </View>
+                <View style={{ flex: 6 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <View>
+                      <Text>Yelena Belova</Text>
+                      <View style={{ flexDirection: 'row' }}>
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                      </View>
+                    </View>
+                    <View>
+                      <Text>2 Minggu yang lalu</Text>
+                    </View>
+                  </View>
+                  <View style={{ paddingTop: 10 }}>
+                    <Text>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                      do eiusmod tempor incididunt ut labore et dolore magna
+                      aliqua.
+                    </Text>
+                  </View>
+                </View>
+              </View>
 
-            const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-              ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
-              : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
-            return (
-              <ProductItem
-                id={item['productId']}
-                name={item['productName']}
-                price={item['productPriceSale']}
-                oldPrice={item['productPrice']}
-                image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
-                rating={item['productRating']}
-                sale={item['productSale']}
-                isLoading={false}  // Set isLoading to false when not loading
+              <View style={styles.sectionReviewerContainer}>
+                <View style={{ flex: 1 }}>
+                  <Image
+                    style={styles.reviewerImage}
+                    source={require('../assets/new3.png')}
+                  />
+                </View>
+                <View style={{ flex: 6 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <View>
+                      <Text>Yelena Belova</Text>
+                      <View style={{ flexDirection: 'row' }}>
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                      </View>
+                    </View>
+                    <View>
+                      <Text>2 Minggu yang lalu</Text>
+                    </View>
+                  </View>
+                  <View style={{ paddingTop: 10 }}>
+                    <Text>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                      do eiusmod tempor incididunt ut labore et dolore magna
+                      aliqua.
+                    </Text>
+                  </View>
+                </View>
+              </View>
 
-              />
-            );
-          }}
-          keyExtractor={(item) => item['productId'].toString()}
-          showsHorizontalScrollIndicator={false}
-          style={styles.productList}
-        />
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
-          <View style={{ flex: 1 }}>
+              <View style={styles.sectionReviewerContainer}>
+                <View style={{ flex: 1 }}>
+                  <Image
+                    style={styles.reviewerImage}
+                    source={require('../assets/new3.png')}
+                  />
+                </View>
+                <View style={{ flex: 6 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <View>
+                      <Text>Yelena Belova</Text>
+                      <View style={{ flexDirection: 'row' }}>
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                        <Image source={require('../assets/star.png')} />
+                      </View>
+                    </View>
+                    <View>
+                      <Text>2 Minggu yang lalu</Text>
+                    </View>
+                  </View>
+                  <View style={{ paddingTop: 10 }}>
+                    <Text>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                      do eiusmod tempor incididunt ut labore et dolore magna
+                      aliqua.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View style={{ margin: 10 }}>
             <TouchableOpacity
               style={{
                 width: '100%',
                 backgroundColor: '#fff',
                 borderColor: '#ccc',
                 borderWidth: 1,
-                padding: 20,
+                padding: 15,
+                marginVertical: 20,
                 borderRadius: 10,
-                backgroundColor: '#FE3A30',
-              }}
+              }} onPress={() => navigation.navigate('ReviewProductScreen')}
             >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#FFF',
-                  }}
-                >
-                  Đã thêm yêu thích
-                </Text>
-                <Image
-                  style={{ width: 20, height: 20, tintColor: '#fff' }}
-                  source={require('../assets/heart.png')}
-                />
-              </View>
+              <Text style={{ textAlign: 'center', fontWeight: '600' }}>
+                See All Review
+              </Text>
             </TouchableOpacity>
           </View>
 
-          <View style={{ flex: 1 }}>
-            <TouchableOpacity
+
+        </View>
+        <View style={styles.greySection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
+            <Text style={styles.seeAll}>Xem Tất Cả</Text>
+          </View>
+          <FlatList
+            horizontal
+            data={productRelate}
+            renderItem={({ item }) => {
+              // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
+
+              const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
+                ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
+                : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
+              return (
+                <ProductItem
+                  id={item['productId']}
+                  name={item['productName']}
+                  price={item['productPriceSale']}
+                  oldPrice={item['productPrice']}
+                  image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                  rating={item['productRating']}
+                  sale={item['productSale']}
+                  isLoading={false}  // Set isLoading to false when not loading
+
+                />
+              );
+            }}
+            keyExtractor={(item) => item['productId'].toString()}
+            showsHorizontalScrollIndicator={false}
+            style={styles.productList}
+          />
+
+        </View>
+      </ScrollView>
+      <View style={{ flexDirection: 'row', height: '35%', padding: 20, gap: 10, justifyContent: 'center', backgroundColor: '#fff' }}>
+        <View>
+          <TouchableOpacity
+            style={{
+              width: '100%',
+              backgroundColor: '#fff',
+              borderColor: '#ccc',
+              borderWidth: 1,
+              padding: 20,
+              borderRadius: 10,
+              backgroundColor: '#FE3A30',
+            }}
+          >
+            <View
               style={{
-                width: '100%',
-                backgroundColor: '#3669C9',
-                borderColor: '#ccc',
-                borderWidth: 1,
-                padding: 20,
-                borderRadius: 10,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
               }}
-              onPress={handleAddToCart}
             >
               <Text
                 style={{
                   textAlign: 'center',
                   fontWeight: '600',
-                  color: '#fff',
+                  color: '#FFF',
                 }}
               >
-                Thêm vào giỏ hàng
+
               </Text>
-            </TouchableOpacity>
-          </View>
+              <Image
+                style={{ width: 20, height: 20, tintColor: '#fff' }}
+                source={require('../assets/heart.png')}
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={{
+              width: '100%',
+              backgroundColor: '#3669C9',
+              borderColor: '#ccc',
+              borderWidth: 1,
+              padding: 20,
+              borderRadius: 10,
+            }}
+            onPress={handleAddToCart}
+          >
+            <Text
+              style={{
+                textAlign: 'center',
+                fontWeight: '600',
+                color: '#fff',
+              }}
+            >
+              Thêm vào giỏ hàng
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+    </View>
 
 
 

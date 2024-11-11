@@ -54,57 +54,62 @@ const AddProductScreen = ({ route, navigation }) => {
     });
 
     const handleAddProduct = async () => {
-        // if (Object.values(error).some((errorField) => errorField === true) || 
-        //     !productData.post || !productData.categories || !productSupplier) {
-        //     Alert.alert('Thông báo', 'Vui lòng kiểm tra các thông tin sản phẩm.');
-        //     return;
-        // }
-
-        // Tạo FormData
         const formData = new FormData();
-
-        // Thêm `params` dưới dạng JSON string vào FormData
+    
+        // Thêm thông tin sản phẩm vào FormData
         formData.append('params', JSON.stringify({
             productName: productData.productName,
             productPrice: productData.productPrice,
             productYearOfManufacture: productData.productYearOfManufacture,
             sizesProduct: productData.sizesProduct,
             productSupplier: productSupplier,
-            categories: productData.categories,
-            post: productData.post,
-            productImage: productData.productImages, // Đảm bảo đây là một mảng hình ảnh hoặc mô tả hình ảnh
+            categories: parentCategoryId,
+            post: postDTO,
+            productImage: productData.productImages, // Đảm bảo đây là mảng hình ảnh hoặc mô tả hình ảnh
         }));
-
         // Thêm từng file ảnh vào FormData
         selectedImages.forEach((imageUri, index) => {
             const newFile = {
                 uri: imageUri,
                 name: `product_image_${index}.jpg`,
-                type: 'image/jpeg', // Đảm bảo loại file là image/jpeg
+                type: 'image/jpeg',
             };
-            console.log(newFile);
-            
-            formData.append('file', newFile);  // 'file' trùng với tên nhận trong backend
+            formData.append('file', newFile);  // 'file' là tên trường nhận file trên backend
         });
-        console.log(formData);
-
+        console.log("123123" ,formData)
+       
         try {
-            const response = await axios.post(`${BASE_URL}product`, formData, {
+            const response = await fetch(`${BASE_URL}product`, {
+                method: 'POST',
+                body: formData,
                 headers: {
-                    'Content-Type': 
-                        "multipart/form-data"
+                   
+                    // 'Content-Type': 'multipart/form-data',
+                    // 'Content-Type': 'application/json'
                     
                 }
+                
             });
+            
+            
+            const result = await response.json();
+            console.log(result);
+            
+    
             if (response.status === 201) {
                 Alert.alert('Thành công', 'Sản phẩm đã được thêm.');
                 navigation.replace("ProductList");
+            } else {
+                Alert.alert('Lỗi','Không thể thêm sản phẩm.');
+                
+                
             }
         } catch (error) {
             console.error('Lỗi khi thêm sản phẩm:', error);
             Alert.alert('Lỗi', 'Không thể thêm sản phẩm.');
         }
     };
+    
 
 
     useEffect(() => {
