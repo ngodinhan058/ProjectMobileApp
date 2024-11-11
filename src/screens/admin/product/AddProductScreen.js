@@ -14,77 +14,107 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import UploadImage from '../../../components/Up_Image_Multi';
 import SelectorInCategory from '../../../components/SelectorInCategory';
 import Supplier from '../../../components/Supplier';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
+import UploadImage from '../../../components/Up_Image_Multi';
 const AddProductScreen = ({ route, navigation }) => {
-    const [productSupplier, setProductSupplier] = useState(); 
-    const [productSupplierName, setProductSupplierName] = useState(); 
+    const [productSupplier, setProductSupplier] = useState();
+    const [productSupplierName, setProductSupplierName] = useState();
     const [parentCategoryId, setParentCategoryId] = useState(null);
     const [parentCategoryName, setParentCategoryName] = useState(null);
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isSupplierModal, setIsSupplierModal] = useState(false);
-
+    const [selectedImages, setSelectedImages] = useState([]);
     const { postDTO } = route.params || {};
 
     const [productData, setProductData] = useState({
         productName: '',
         productPrice: '',
-        productQuantity: 0,
-        productSale: 0,
-        productImages: [
+        productYearOfManufacture: 2024,
+        sizesProduct: [
             {
-                productImagePath: "img/20210410_zOS3hu3lOAH3RLHxZKRgrGz9.jpg",
-                productImageAlt: "Image of product",
-                productImageIndex: 1
+                productSizeId: "00000000-0000-0000-0000-000000000000",
+                productSizeQuantity: 5
             }
         ],
-        productYearOfManufacture: 2024,
-        productSizes: ["003c6e39-fdd2-345c-8d87-6e6543f34567", "002b5d28-fdd1-234b-7c98-7d5432f23456"],
-        supplierId: productSupplier,
+        productSupplier: productSupplier,
         categories: parentCategoryId,
         post: postDTO || {},
-        coupon: {
-            couponName: "Discount Sale",
-            couponCode: "DISCOUNT2024",
-            couponRelease: "2024-01-01",
-            couponExpire: "2024-12-31",
-            couponQuantity: 100,
-            couponPerHundred: 10.0,
-            couponType: 1
+        productImages: {
+            productImageAlt: "Image of product",
         }
-    })
+    });
+
     const [error, setError] = useState({
         productPriceError: false,
-        productQuantityError: false,
-        productSaleError: false,
         productNameError: false
     });
+
     const handleAddProduct = async () => {
-        if (Object.values(error).some((errorField) => errorField === true) && !productData.post || Object.keys(productData.post).length === 0 && !productData.categories || Object.keys(productData.categories).length === 0
-        && !productData.supplierId || Object.keys(productData.supplierId).length === 0) {
-            Alert.alert('Thông báo', 'Vui lòng kiểm tra các thông tin sản phẩm.');
-            return;
-        }
+        const formData = new FormData();
+    
+        // Thêm thông tin sản phẩm vào FormData
+        formData.append('params', JSON.stringify({
+            productName: productData.productName,
+            productPrice: productData.productPrice,
+            productYearOfManufacture: productData.productYearOfManufacture,
+            sizesProduct: productData.sizesProduct,
+            productSupplier: productSupplier,
+            categories: parentCategoryId,
+            post: postDTO,
+            productImage: productData.productImages, // Đảm bảo đây là mảng hình ảnh hoặc mô tả hình ảnh
+        }));
+        // Thêm từng file ảnh vào FormData
+        selectedImages.forEach((imageUri, index) => {
+            const newFile = {
+                uri: imageUri,
+                name: `product_image_${index}.jpg`,
+                type: 'image/jpeg',
+            };
+            formData.append('file', newFile);  // 'file' là tên trường nhận file trên backend
+        });
+        console.log("123123" ,formData)
+       
         try {
-            const response = await axios.post(`${BASE_URL}product`, productData);
+            const response = await fetch(`${BASE_URL}product`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                   
+                    // 'Content-Type': 'multipart/form-data',
+                    // 'Content-Type': 'application/json'
+                    
+                }
+                
+            });
+            
+            
+            const result = await response.json();
+            console.log(result);
+            
+    
             if (response.status === 201) {
-                Alert.alert('Thành công', 'sản phẩm đã được thêm.');
-                navigation.replace("ProductList")
+                Alert.alert('Thành công', 'Sản phẩm đã được thêm.');
+                navigation.replace("ProductList");
+            } else {
+                Alert.alert('Lỗi','Không thể thêm sản phẩm.');
+                
+                
             }
         } catch (error) {
             console.error('Lỗi khi thêm sản phẩm:', error);
             Alert.alert('Lỗi', 'Không thể thêm sản phẩm.');
         }
     };
+    
+
+
     useEffect(() => {
         setError({
             productPriceError: productData.productPrice <= 0 || isNaN(productData.productPrice),
-            productQuantityError: productData.productQuantity <= 0 || isNaN(productData.productQuantity),
-            productSaleError: productData.productSale < 0 || productData.productSale > 100 || isNaN(productData.productSale),
             productNameError: productData.productName === ''
         });
         if (postDTO) {
@@ -92,14 +122,18 @@ const AddProductScreen = ({ route, navigation }) => {
                 ...prevData,
                 categories: parentCategoryId,
                 post: postDTO,
-                supplierId: productSupplier,
+                productSupplier: productSupplier,
             }));
         }
-    }, [postDTO, productData.productPrice, productData.productQuantity, productData.productSale, productData.productName,]);
+    }, [postDTO, productData.productPrice, productData.productName]);
+
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
 
-    const handleResetFilters = () => { setParentCategoryId(null), setParentCategoryName(null) };
+    const handleResetFilters = () => {
+        setParentCategoryId(null);
+        setParentCategoryName(null);
+    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -111,6 +145,7 @@ const AddProductScreen = ({ route, navigation }) => {
                     <Text style={styles.textHeader}>Thêm Thông Tin Sản Phẩm</Text>
                 </View>
                 {/* Form sản phẩm */}
+                <UploadImage onImagesSelected={setSelectedImages} />
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
                     <TextInput
@@ -125,27 +160,6 @@ const AddProductScreen = ({ route, navigation }) => {
                         placeholder="Thêm Giá Sản Phẩm"
                         value={productData.productPrice}
                         onChangeText={(text) => setProductData({ ...productData, productPrice: text })}
-                        keyboardType="numeric"
-                    />
-
-                    <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-
-                    <TextInput
-                        style={[styles.input, error.productQuantityError && styles.inputError]}
-                        placeholder="Thêm Số Lượng Sản Phẩm"
-                        value={productData.productQuantity}
-                        onChangeText={(text) => setProductData({ ...productData, productQuantity: text })}
-                        keyboardType="numeric"
-                    />
-
-
-
-                    <Text style={styles.label}>Giảm Giá Sản Phẩm: %</Text>
-                    <TextInput
-                        style={[styles.input, error.productSaleError && styles.inputError]}
-                        placeholder="0"
-                        value={productData.productSale}
-                        onChangeText={(text) => setProductData({ ...productData, productSale: text })}
                         keyboardType="numeric"
                     />
                     {/* Post sản phẩm */}
@@ -174,11 +188,11 @@ const AddProductScreen = ({ route, navigation }) => {
                     <TouchableOpacity style={[styles.input, !productSupplier && styles.inputError]} onPress={toggleSupplierModal}>
                         {productSupplier != null ? (<Text>{productSupplierName}</Text>) : (<Text>Chưa Chọn Thương Hiệu Sản Phẩm</Text>)}
                     </TouchableOpacity>
-                    <Supplier 
-                          isVisible={isSupplierModal}
-                          onClose={toggleSupplierModal}
-                          onReset={handleResetFilters}
-                          onApply={(selectedFilters) => {
+                    <Supplier
+                        isVisible={isSupplierModal}
+                        onClose={toggleSupplierModal}
+                        onReset={handleResetFilters}
+                        onApply={(selectedFilters) => {
                             setProductSupplier(selectedFilters.suppliers);
                             setProductSupplierName(selectedFilters.suppliersName);
                         }}
@@ -192,7 +206,7 @@ const AddProductScreen = ({ route, navigation }) => {
         </View>
     );
 };
-// <UploadImage />
+
 
 const styles = StyleSheet.create({
     container: {

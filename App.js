@@ -212,7 +212,7 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     { name: "ProductDetailScreen", component: ProductDetailScreen, showFooter: true },
     { name: "NewsScreen", component: NewsScreen, showFooter: true },
     { name: "NewsDetailScreen", component: NewsDetailScreen, showFooter: true },
-    { name: "AddedProductToWishlist", component: AddedProductToWishlist, showFooter: true },
+    { name: "AddedProductToWishlist", component: AddedProductToWishlist, showFooter: false },
     { name: "AddToCartScreen", component: AddToCartScreen, showFooter: false }, // Ẩn Footer cho màn AddToCartScreen
     { name: "ReviewProductScreen", component: ReviewProductScreen, showFooter: true },
     { name: "SuccessScreen", component: SuccessScreen, showFooter: true },
@@ -521,9 +521,9 @@ function Accouting() {
 export default function App() {
   return (
     <NavigationContainer>
-      <HaveLoginHome />
+      {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
-      {/* <AdminDrawerNavigator />  */}
+      <AdminDrawerNavigator /> 
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
