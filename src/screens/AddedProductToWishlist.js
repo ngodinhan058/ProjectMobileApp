@@ -10,6 +10,7 @@ import {
   FlatList,
   Pressable,
   TextInput,
+  Button,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -23,6 +24,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [loading, setLoading] = useState(true); // Track the loading state
   const [productRelate, setProductRelate] = useState([]); // Dữ liệu sản phẩm
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+  const [image, setImage] = useState(); // Dữ liệu sản phẩm
   const [selectedSize, setSelectedSize] = useState(); // Đặt size mặc định
   const { id } = route.params;
 
@@ -61,17 +63,17 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const fetchData = async () => {
     try {
       const productsData = await fetchProductData(id);
-      const categoryId = productsData.categories[0].categoryId;
-      console.log(productsData.productImages[0].productImagePath);
-
+      const categoryId = productsData.categories[0].categoryId;      
+      const image = productsData.productImages[0].productImagePath;
       const productRelateData = await fetchRelatedProducts(categoryId);
 
       setProductsState(productsData);
       setProductRelate(productRelateData);
+      setImage(image);
       setLoading(false);
 
     } catch (error) {
-      console.error('Lỗi khi lấy dữ liệu:', error); // Log lỗi nếu có
+      console.log('Lỗi khi lấy dữ liệu:', error); // Log lỗi nếu có
     }
   };
   useEffect(() => {
@@ -93,7 +95,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     setSelectedImage(null);
   };
 
-  const previousScrollOffset = useRef(0); // Lưu lại vị trí cuộn trước đó
 
   const handleSelectSize = (sizeName) => {
     // Nếu kích thước đã được chọn, nhấn lần nữa sẽ hủy chọn
@@ -187,6 +188,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     if (quantity > availableQuantity) {
       setError(`Số lượng yêu cầu vượt quá số lượng tồn kho (${availableQuantity} sản phẩm)`);
       setErrorCheck(false);
+      setErrorCheckQuantity(true);
       setTimeout(() => setErrorCheck(true), 0);
       return;
     }
@@ -206,7 +208,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           ? {
             ...item,
             quantity: item.quantity + quantity,
-            price: (basePrice * (item.quantity + quantity)).toLocaleString() + " ₫",
+            total: (basePrice * (item.quantity + quantity)).toLocaleString() + " ₫",
           }
           : item
       );
@@ -217,7 +219,9 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         name: productsState.productName,
         size: selectedSize,
         quantity,
-        price: (basePrice * quantity).toLocaleString() + " ₫",
+        price: productsState.productPriceSale,
+        total: (basePrice * quantity).toLocaleString() + " ₫",
+        image: image,
       };
       setCart([...cart, newProduct]);
     }
@@ -225,20 +229,24 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   const handleQuantityChange = (amount) => {
     setQuantity(Math.max(1, quantity + amount));
+    setErrorCheckQuantity(false);
   };
   // Hàm xử lý khi có thay đổi trong ô input
-  const handleInputChange = (event) => {
-    // const value = parseInt(event.target.value, 10);
+  const handleInputChange = (text) => {
+    const value = parseInt(text, 10);
     if (!isNaN(value) && value >= 1) {
       setQuantity(value);
+      setErrorCheckQuantity(false); // Reset error if the input is valid
     } else {
-      setQuantity(1); // Nếu giá trị nhập không hợp lệ thì đặt về 1
+      setQuantity(1); // Set to 1 if input is invalid
+      setErrorCheckQuantity(true); // Set error state if input is invalid
     }
   };
   //Kết thúc
-  useEffect(() => {
-    console.log("Cart data:", cart);
-  }, [cart]);
+  // useEffect(() => {
+  //   console.log("Cart data:", cart);
+  //   AsyncStorage.clear();
+  // }, [cart]);
 
 
 
@@ -275,11 +283,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                 </TouchableOpacity>
               )}
             />
-            {/* <Image
-              source={{ uri: productsState.productImages?.[0].productImagePath }}
-              style={{ width: 345, height: 350, resizeMode: 'contain' }}
-            /> */}
-
             <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
               <View style={styles.modalBackground}>
                 <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
@@ -301,6 +304,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           <View style={styles.productInfo}>
             <View>
               <Text style={styles.productName}>{productsState.productName}</Text>
+
             </View>
 
             <View>
@@ -594,43 +598,42 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
           </TouchableOpacity>
         </View>
-
-
-
-
-
-        <View style={{ flex: 1, position: 'relative' }}>
+        <View style={{ flex: 1, position: 'relative',  }}>
           {/* Số lượng */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 99 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5,}}>
             <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold' }}>-</Text>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
             </TouchableOpacity>
-
             <TextInput
               style={{
-                width: 60,
+                width: 50,
                 height: 40,
                 borderColor: '#ccc',
-                borderWidth: 1,
+                borderWidth: 2,
                 textAlign: 'center',
-                fontSize: 18,
-                marginHorizontal: 10,
-                backgroundColor: errorCheckQuantity ? 'red' : 'white',
+                fontSize: 16,
+                fontWeight: 'bold',
+                color: '#3669c9',
+                
+                borderColor: errorCheckQuantity ? 'red' : '#ccc',
+                backgroundColor: '#fff',
+                borderRadius: 10,
+                
               }}
-              value={quantity}
-              onChangeText={handleInputChange(quantity)}
+              value={String(quantity)}
+              onChangeText={handleInputChange}
               keyboardType="numeric"
             />
 
-            <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10 }}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold' }}>+</Text>
+            <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
             </TouchableOpacity>
           </View>
 
           {/* Thêm vào giỏ hàng */}
           <TouchableOpacity
             style={{
-              
+
               backgroundColor: '#3669C9',
               borderColor: '#ccc',
               borderWidth: 1,
@@ -642,7 +645,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           >
             <Text
               style={{
-                textAlign: 'center',
+                
                 fontWeight: '600',
                 color: '#fff',
               }}

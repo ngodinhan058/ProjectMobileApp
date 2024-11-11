@@ -8,15 +8,18 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CartItem from '../components/CartItem';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function AddToCartScreen({ navigation }) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Tiền mặt');
   const [selectedPaymentIcon, setSelectedPaymentIcon] = useState(require('../assets/wallet.png'));
   const [isModalVisible, setModalVisible] = useState(false);
   const [invoiceOption, setInvoiceOption] = useState(false);
+  const [cartData, setCartData] = useState([]);
 
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png') },
@@ -35,6 +38,63 @@ function AddToCartScreen({ navigation }) {
     toggleModal();
   };
 
+
+
+  useEffect(() => {
+    const loadCartData = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem('cart');
+        if (savedCart) {
+          const { items } = JSON.parse(savedCart);
+          setCartData(items);
+        }
+      } catch (error) {
+        console.error("Error loading cart from AsyncStorage:", error);
+      }
+    };
+
+    loadCartData();
+  }, []);
+  // Update quantity in cart
+  const handleQuantityChange = (id, newQuantity, price) => {
+    const basePrice = parseInt(price.replace(/\D/g, ''), 10);
+    if (newQuantity === 0) {
+      // Remove item if new quantity is 0
+      const updatedCart = cartData.filter((item) => item.id !== id);
+      setCartData(updatedCart);
+      saveCartData(updatedCart);
+    } else {
+      // Update quantity and price for the item with the matching id
+      const updatedCart = cartData.map((item) =>
+        item.id === id
+          ? {
+            ...item,
+            quantity: newQuantity,
+            total: (basePrice * newQuantity).toLocaleString() + " ₫"
+          }
+          : item
+      );
+      setCartData(updatedCart);
+      saveCartData(updatedCart);
+    }
+  };
+
+  // Delete item from cart
+  const handleDelete = (id) => {
+    const updatedCart = cartData.filter((item) => item.id !== id);
+    setCartData(updatedCart);
+    saveCartData(updatedCart);
+  };
+
+  // Save updated cart to AsyncStorage
+  const saveCartData = async (updatedCart) => {
+    try {
+      const cartData = { items: updatedCart };
+      await AsyncStorage.setItem('cart', JSON.stringify(cartData));
+    } catch (error) {
+      console.error("Error saving cart to AsyncStorage:", error);
+    }
+  };
 
 
   return (
@@ -58,10 +118,24 @@ function AddToCartScreen({ navigation }) {
           </View>
 
           <View style={{ marginHorizontal: 2 }}>
-            <CartItem />
-            <CartItem />
-            <CartItem />
-            <CartItem />
+            {cartData.length > 0 ? (
+              cartData.map((item) => (
+                <CartItem
+                  key={item.id}
+                  id={item.id}
+                  name={item.name}
+                  price={item.price}
+                  quantity={item.quantity}
+                  size={item.size}
+                  image={item.image}
+                  total={item.total}
+                  onDelete={handleDelete}
+                  onQuantityChange={handleQuantityChange}
+                />
+              ))
+            ) : (
+              <Text>Giỏ hàng của bạn trống</Text>
+            )}
           </View>
 
           <View style={{ marginTop: 10, gap: 10 }}>
@@ -169,7 +243,7 @@ function AddToCartScreen({ navigation }) {
           <TouchableOpacity style={styles.paymentMethod} onPress={toggleModal}>
             <Image source={selectedPaymentIcon} style={styles.icon} />
             <Text style={styles.selectedPaymentText}>{selectedPaymentMethod}</Text>
-            <Icon name="angle-down" size={22} color="#000"/>
+            <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
           <View style={{ justifyContent: 'center' }}>
             <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>10.000.000đ</Text>
@@ -235,7 +309,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 20,
     padding: 10,
-    borderRightWidth: 1, 
+    borderRightWidth: 1,
     borderColor: '#ccc'
   },
   icon: {
