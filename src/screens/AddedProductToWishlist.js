@@ -563,7 +563,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
         </View>
       </ScrollView>
-      <View style={{ flexDirection: 'row', height: '35%', padding: 20, gap: 10, justifyContent: 'center', backgroundColor: '#fff' }}>
+      <View style={{ flexDirection: 'row', height: '37%', paddingHorizontal: 20, gap: 10, justifyContent: 'center', backgroundColor: '#fff', paddingTop: 8, }}>
         <View>
           <TouchableOpacity
             style={{
