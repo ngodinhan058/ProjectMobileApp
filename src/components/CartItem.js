@@ -4,64 +4,125 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-const CartItem = () => {
-
+const CartItem = ({ id, name, price, quantity, size, image, total, onDelete, onQuantityChange }) => {
+    const truncateName = (text) => {
+        return text.length > 10 ? text.substring(0, 10) + '...' : text;
+      };
     return (
+        // <View
+        //     style={{
+        //         width: '100%',
+        //         height: 100,
+        //         flexDirection: 'row',
+        //         alignItems: 'center',
+        //         justifyContent: 'space-between',
+        //         marginTop: 20,
+        //         borderRadius: 20,
+        //         backgroundColor: '#fff',
+        //         shadowColor: '#000',
+        //         shadowOffset: { width: 0, height: 2 },
+        //         shadowOpacity: 0.2,
+        //         shadowRadius: 4,
+        //         elevation: 4,
+        //     }}
+        // >
+        //     {/* Left Section with Image */}
+        //     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        //         <Image
+        //             style={{ width: 50, height: 50, marginRight: 10 }}
+        //             source={require('../assets/headphone.png')}
+        //         />
+        //         <View>
+        //             <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Tai Nghe</Text>
+        //             <Text style={{ fontSize: 14, color: 'gray' }}>10.000.000đ</Text>
+        //             <Text style={{ fontSize: 12, color: 'gray' }}>Size: 120Hz</Text>
+        //         </View>
+        //     </View>
+
+        //     {/* Middle Section with Quantity and Arrows */}
+        //     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        //         <Text style={{ fontSize: 18, marginRight: 5 }}>1</Text>
+        //         <View>
+        //             <Image
+        //                 style={{ width: 12, height: 8.5 }}
+        //                 source={require('../assets/arrowUp.png')}
+        //             />
+        //             <Image
+        //                 style={{ width: 12, height: 8.5, marginTop: 2 }}
+        //                 source={require('../assets/arrowDown.png')}
+        //             />
+        //         </View>
+        //     </View>
+
+        //     {/* Right Section with Price and Trash Icon */}
+        //     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        //         <Text style={{ fontSize: 15, fontWeight: 'bold', marginRight: 15 }}>10.000.000đ</Text>
+        //         <Image
+        //             style={{ width: 20, height: 20, marginRight: 5 }}
+        //             source={require('../assets/trash.png')}
+        //         />
+        //     </View>
+        // </View>
+
         <View
-        style={{
-            width: '100%',
-            height: 100,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginTop: 20,
-            borderRadius: 20,
-            backgroundColor: '#fff',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 4,
-            elevation: 4,
-        }}
-    >
-        {/* Left Section with Image */}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image
-                style={{ width: 50, height: 50, marginRight: 10 }}
-                source={require('../assets/headphone.png')}
-            />
-            <View>
-                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Tai Nghe</Text>
-                <Text style={{ fontSize: 14, color: 'gray' }}>10.000.000đ</Text>
-                <Text style={{ fontSize: 12, color: 'gray' }}>Size: 120Hz</Text>
+            style={{
+                width: '100%',
+                height: 100,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 20,
+                borderRadius: 20,
+                backgroundColor: '#fff',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 4,
+            }}
+        >
+            {/* Left Section with Image */}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Image
+                    style={{ width: 60, height: 60, marginLeft: 5, resizeMode: 'contain' }}
+                    source={{ uri: image }}
+                />
+                <View>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{truncateName(name)}</Text>
+                    <Text style={{ fontSize: 14, color: 'gray' }}>{price}</Text>
+                    <Text style={{ fontSize: 12, color: 'gray' }}>Size: {size}</Text>
+                </View>
+            </View>
+
+            {/* Middle Section with Quantity and Arrows */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+                <Text style={{ fontSize: 18, }}>{quantity}</Text>
+                <TouchableOpacity onPress={() => onQuantityChange(id, quantity - 1, price)}>
+                    <Image
+                        style={{ width: 14, height: 10.5, position: 'absolute', top: 3}}
+                        source={require('../assets/arrowDown.png')}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => onQuantityChange(id, quantity + 1, price)}>
+                    <Image
+                        style={{ width: 14, height: 10.5, position: 'absolute',top: -12 }}
+                        source={require('../assets/arrowUp.png')}
+                    />
+                </TouchableOpacity>
+            </View>
+
+            {/* Right Section with Price and Trash Icon */}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontSize: 15, fontWeight: 'bold', marginRight: 15 }}>{total}</Text>
+                <TouchableOpacity onPress={() => onDelete(id)}>
+                    <Image
+                        style={{ width: 20, height: 20, marginRight: 5 }}
+                        source={require('../assets/trash.png')}
+                    />
+                </TouchableOpacity>
             </View>
         </View>
-    
-        {/* Middle Section with Quantity and Arrows */}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 18, marginRight: 5 }}>1</Text>
-            <View>
-                <Image
-                    style={{ width: 12, height: 8.5 }}
-                    source={require('../assets/arrowUp.png')}
-                />
-                <Image
-                    style={{ width: 12, height: 8.5, marginTop: 2 }}
-                    source={require('../assets/arrowDown.png')}
-                />
-            </View>
-        </View>
-    
-        {/* Right Section with Price and Trash Icon */}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 15, fontWeight: 'bold', marginRight: 15 }}>10.000.000đ</Text>
-            <Image
-                style={{ width: 20, height: 20, marginRight: 5 }}
-                source={require('../assets/trash.png')}
-            />
-        </View>
-    </View>
-    
+
 
     );
 };
