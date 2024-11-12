@@ -1,169 +1,215 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
     Modal,
     TouchableOpacity,
     StyleSheet,
-    FlatList,
+    ActivityIndicator,
     Image,
     TextInput,
     Pressable,
-    TouchableWithoutFeedback,
+    Alert,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image_Multi';
+import SelectorInCategory from '../../../components/SelectorInCategory';
+import Supplier from '../../../components/Supplier';
+import axios from 'axios';
+import { BASE_URL } from '../../api/config';
 
 const EditProductScreen = ({ route, navigation }) => {
+    const { product, postDTO } = route.params || {}; // Lấy dữ liệu sản phẩm từ `route.params`
 
-    const categories = ['Apple', 'Vivo', 'Samsung', 'Xiaomi'];
+    const [isLoading, setIsLoading] = useState(false);
+    const [productId, setProductId] = useState(product?.productId);
+    const [selectedImages, setSelectedImages] = useState(product?.productImages || []);
+    const [productSupplier, setProductSupplier] = useState(product?.productSupplier?.productSupplierSd);
+    const [productSupplierName, setProductSupplierName] = useState(product?.productSupplier?.productSupplierName);
+    const [parentCategoryId, setParentCategoryId] = useState(product?.categories?.categoryId || null);
+    const [parentCategoryName, setParentCategoryName] = useState(product?.categories?.categoryName || null);
+    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+    const [isSupplierModal, setIsSupplierModal] = useState(false);
 
-    const { query } = route.params || {}; // Kiểm tra xem `query` có tồn tại hay không
-    const [searchQuery, setSearchQuery] = useState(''); // Lưu trữ trạng thái cho thanh tìm kiếm
+    const basePrice = parseInt(product?.productPrice.replace(/\D/g, ''), 10);
 
-    // Lọc các danh mục theo thanh tìm kiếm
-    const filteredCategories = categories.filter(category =>
-        category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const [productData, setProductData] = useState({
+        productName: product?.productName || '',
+        productPrice: basePrice,
+        productYearOfManufacture: product?.productYearOfManufacture || 2024,
+        sizesProduct: product?.sizesProduct || [
+            { productSizeId: "00000000-0000-0000-0000-000000000000", productSizeQuantity: 5 }
+        ],
+        productImages: { productImageAlt: "Image of product" },
+        post: { postContent: postDTO?.postContent, postName: postDTO?.postName } || {},
+    });
+    console.log(productId);
 
-    const handleSearch = (value) => {
-        setSearchQuery(value);
+    const [error, setError] = useState({
+        productPriceError: false,
+        productNameError: false,
+    });
+    const handleUpdateProduct = async () => {
+        setIsLoading(true);
+        const formData = new FormData();
+        const params = {
+            productName: productData.productName,
+            productPrice: productData.productPrice,
+            productYearOfManufacture: productData.productYearOfManufacture,
+            sizesProduct: productData.sizesProduct,
+            productSupplier: productSupplier,
+            categories: parentCategoryId,
+            post: postDTO,
+            productImage: productData.productImages,
+        };
+        formData.append('paramsJson', JSON.stringify(params));
+
+
+        if (selectedImages && selectedImages.length > 0) {
+            selectedImages.forEach((imageUri, index) => {
+                if (imageUri) {
+                    const fileType = imageUri.split('.').pop();
+                    const newFile = {
+                        uri: imageUri,
+                        name: `product-image-${index}.${fileType}`,
+                        type: `image/${fileType}`,
+                    };
+                    formData.append('file', newFile);
+                }
+            });
+        }
+
+
+        try {
+            const response = await fetch(`${BASE_URL}product/${productId}`, {
+                method: 'PUT',
+                body: formData,
+            });
+            console.log(response);
+
+
+            if (response.status === 200) {
+                Alert.alert('Success', 'Product updated successfully.');
+                navigation.replace('ProductList');
+            } else {
+                Alert.alert('Error', `Failed to update product. Status: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error updating product:', error);
+            Alert.alert('Error', 'Unable to update product due to a network error.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const [productName, setProductName] = useState('');
-    const [productPrice, setProductPrice] = useState('');
-    const [productQuantity, setProductQuantity] = useState('0');
-    const [productSale, setProductSale] = useState('');
-    const [productDetails, setProductDetails] = useState('');
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
+    useEffect(() => {
+        setError({
+            productPriceError: productData.productPrice <= 0 || isNaN(productData.productPrice),
+            productNameError: productData.productName === '',
+        });
+    }, [productData.productPrice, productData.productName]);
 
-    const handleSelect = (value) => {
-        setSelectedValue(value);
-        setModalVisible(false);
+    const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
+    const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
+
+    const handleResetFilters = () => {
+        setParentCategoryId(null);
+        setParentCategoryName(null);
     };
-
     return (
         <View style={styles.container}>
             <ScrollView>
-                {/* Header */}
                 <View style={styles.header}>
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Sửa Thông Tin Sản Phẩm</Text>
+                    <Text style={styles.textHeader}>Chỉnh Sửa Thông Tin Sản Phẩm</Text>
                 </View>
 
-                {/* Icon Image */}
-                <UploadImage />
-                <TouchableOpacity style={styles.buttonPost} onPress={() => navigation.navigate('EditPostScreen')}>
-                    <Text style={styles.buttonText}>Sửa Post</Text>
-                </TouchableOpacity>
-                {/* Product Form */}
+                <UploadImage onImagesSelected={setSelectedImages} initialImages={selectedImages} />
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
-                    {/* Product Name */}
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, error.productNameError && styles.inputError]}
                         placeholder="Sửa Tên Sản Phẩm"
-                        value={productName}
-                        onChangeText={setProductName}
+                        value={productData.productName}
+                        onChangeText={(text) => setProductData({ ...productData, productName: text })}
                     />
                     <Text style={styles.label}>Giá Sản Phẩm:</Text>
-                    {/* Product Price */}
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, error.productPriceError && styles.inputError]}
                         placeholder="Sửa Giá Sản Phẩm"
-                        value={productPrice}
-                        onChangeText={setProductPrice}
-                        keyboardType="numeric"
-                    />
-                    <View style={styles.quantityContainer}>
-                        <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-                        <View style={styles.quantityWrapper}>
-                            <TouchableOpacity style={styles.quantityPlus} onPress={() => setProductQuantity((prev) => parseInt(prev) + 1)}>
-                                <Text style={styles.buttonIcon}>▲</Text>
-                            </TouchableOpacity>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Thêm Số Lượng Sản Phẩm"
-                                value={productQuantity.toString()}
-                                onChangeText={setProductQuantity}
-                                keyboardType="numeric"
-                            />
-
-                            <TouchableOpacity style={styles.quantityMinus} onPress={() => setProductQuantity((prev) => Math.max(0, parseInt(prev) - 1))}>
-                                <Text style={styles.buttonIcon}>▼</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                    <Text style={styles.label}>Giảm Giá Sản Phẩm:</Text>
-                    {/* Product Sale */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Sửa Giảm Giá Sản Phẩm"
-                        value={productSale}
-                        onChangeText={setProductSale}
+                        value={productData.productPrice.toString()}
+                        onChangeText={(text) => {
+                            const numericValue = parseFloat(text);
+                            setProductData({
+                                ...productData,
+                                productPrice: isNaN(numericValue) ? '' : numericValue,
+                            });
+                        }}
                         keyboardType="numeric"
                     />
 
-                    {/* Product Category */}
+                    <Text style={styles.label}>Post Sản Phẩm:</Text>
+                    <TouchableOpacity style={[styles.input, !postDTO && styles.inputError]} onPress={() => navigation.navigate('EditPostScreen', { savedData: { postName: postDTO?.postName, postContent: postDTO?.postContent } })}>
+                        {postDTO ? <Text>Đã Thêm Post Sản Phẩm</Text> : <Text>Chưa Thêm Post Sản Phẩm</Text>}
+                    </TouchableOpacity>
+
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
-                    <TouchableOpacity
-                        style={styles.dropdown}
-                        onPress={() => setModalVisible(true)}>
-                        <Text style={styles.selectedValue}>{selectedValue}</Text>
+                    <TouchableOpacity style={[styles.input, !parentCategoryName && styles.inputError]} onPress={toggleFilterModal}>
+                        {parentCategoryName ? <Text>{parentCategoryName}</Text> : <Text>Chưa Chọn Danh Mục Sản Phẩm</Text>}
                     </TouchableOpacity>
 
-                    {/* Modal */}
-                    <Modal
-                        animationType="fade"
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}>
-                        {/* TouchableWithoutFeedback để đóng modal khi bấm bên ngoài */}
-                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                            <View style={styles.modalOverlay}>
-                                <View style={styles.modalView}>
-                                    <View style={styles.searchBar}>
-                                        <TextInput
-                                            style={styles.searchInput}
-                                            placeholder="Tìm kiếm danh mục"
-                                            value={searchQuery}
-                                            onChangeText={handleSearch}
-                                        />
-                                       
-                                    </View>
-                                    <FlatList
-                                        data={filteredCategories}
-                                        keyExtractor={(item) => item}
-                                        renderItem={({ item }) => (
-                                            <TouchableOpacity onPress={() => handleSelect(item)} style={styles.modalItem}>
-                                                <Text style={styles.modalText}>{item}</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                    />
-                                    <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}>
-                                        <Text style={styles.buttonText}>Đóng</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </Modal>
+                    <SelectorInCategory
+                        isVisible={isFilterModalVisible}
+                        onClose={toggleFilterModal}
+                        onApply={(selectedParent, selectedParentName) => {
+                            setParentCategoryId(selectedParent);
+                            setParentCategoryName(selectedParentName);
+                        }}
+                    />
 
-                    {/* Add/Edit Button */}
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Product Added/Edited')}>
-                        <Text style={styles.buttonText}>Sửa</Text>
+                    <Text style={styles.label}>Thương Hiệu Sản Phẩm:</Text>
+                    <TouchableOpacity style={[styles.input, !productSupplier && styles.inputError]} onPress={toggleSupplierModal}>
+                        {productSupplierName != null ? (<Text>{productSupplierName}</Text>) : (<Text>Chưa Chọn Thương Hiệu Sản Phẩm</Text>)}
                     </TouchableOpacity>
+
+                    <Supplier
+                        isVisible={isSupplierModal}
+                        onClose={toggleSupplierModal}
+                        selectedProductSupplierSd ={productSupplier}
+                        onReset={handleResetFilters}
+                        onApply={(selectedFilters) => {
+                            setProductSupplier(selectedFilters.suppliers);
+                            setProductSupplierName(selectedFilters.suppliersName);
+                        }}
+                    />
+
                 </View>
             </ScrollView>
+
+            <TouchableOpacity style={styles.button} onPress={handleUpdateProduct} disabled={isLoading}>
+                <Text style={styles.buttonText}>Cập Nhật</Text>
+            </TouchableOpacity>
+
+            {isLoading && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator size="large" color="#3669c9" />
+                </View>
+            )}
         </View>
     );
 };
-
 const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
     container: {
         paddingHorizontal: 20,
         flex: 1,
@@ -206,7 +252,7 @@ const styles = StyleSheet.create({
     },
 
     quantityPlus: {
-        position: 'absolute', 
+        position: 'absolute',
         right: 10,
         top: 0,
         zIndex: 99,

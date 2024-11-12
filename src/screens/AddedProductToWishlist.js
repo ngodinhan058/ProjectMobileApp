@@ -63,7 +63,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const fetchData = async () => {
     try {
       const productsData = await fetchProductData(id);
-      const categoryId = productsData.categories[0].categoryId;      
+      const categoryId = productsData.categories[0].categoryId;
       const image = productsData.productImages[0].productImagePath;
       const productRelateData = await fetchRelatedProducts(categoryId);
 
@@ -265,13 +265,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           </View>
 
           <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-
             <FlatList
               data={productsState.productImages}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              keyExtractor={(item) => item.productImageIndex.toString()}
+              keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
               renderItem={({ item }) => (
                 <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
                   <View style={{ marginHorizontal: 5 }}>
@@ -598,9 +597,9 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1, position: 'relative',  }}>
+        <View style={{ flex: 1, position: 'relative', }}>
           {/* Số lượng */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5,}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
             <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
               <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
             </TouchableOpacity>
@@ -614,11 +613,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                 fontSize: 16,
                 fontWeight: 'bold',
                 color: '#3669c9',
-                
+
                 borderColor: errorCheckQuantity ? 'red' : '#ccc',
                 backgroundColor: '#fff',
                 borderRadius: 10,
-                
+
               }}
               value={String(quantity)}
               onChangeText={handleInputChange}
@@ -645,7 +644,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           >
             <Text
               style={{
-                
+
                 fontWeight: '600',
                 color: '#fff',
               }}

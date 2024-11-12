@@ -18,42 +18,20 @@ import UploadImage from '../../../../components/Up_Image_Multi';
 
 
 const EditPostScreen = ({ route, navigation }) => {
-    const [postName, setPostName] = useState('');
-    const [postPrice, setPostPrice] = useState('');
-    const [postQuantity, setPostQuantity] = useState('');
-    const [postSale, setPostSale] = useState('');
+    const { savedData } = route.params || {};
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [addModalVisible, setAddModalVisible] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
-    const [newCategoryName, setNewCategoryName] = useState('');
-    const [newCategoryType, setNewCategoryType] = useState('');
-
-    const [categories, setCategories] = useState(['Apple', 'Vivo', 'Samsung', 'Xiaomi']);
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const filteredCategories = categories.filter(category =>
-        category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const handleSearch = (value) => {
-        setSearchQuery(value);
+    const [postData, setPostData] = useState({
+        postName: savedData?.postName || '',
+        postContent: savedData?.postContent || '',
+        postImagePath: 'img/product01.png',
+        postType: 1,
+        userId: '4e98028c-2157-4568-a9bc-c21033bad79a',
+        postStatusId: '03000000-0000-0000-0000-000000000000'
+    });
+    const handleNavigateToProduct = () => {
+        // Truyền postData sang ProductScreen
+        navigation.navigate('EditProductScreen', { postDTO: postData });
     };
-
-    const handleSelect = (value) => {
-        setSelectedValue(value);
-        setModalVisible(false);
-    };
-
-    const handleAddCategory = () => {
-        // if (newCategoryName && newCategoryType) {
-        //     setCategories([...categories, `${newCategoryName} (${newCategoryType})`]);
-        //     setNewCategoryName('');
-        //     setNewCategoryType('');
-        // }
-        setAddModalVisible(false);
-    };
-
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -66,126 +44,36 @@ const EditPostScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Icon Image */}
-                <UploadImage />
+                {/* <UploadImage /> */}
 
                 {/* Post Form */}
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Post</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Tên Post"
-                        value={postName}
-                        onChangeText={setPostName}
+                        placeholder="Thêm Tên Post"
+                        value={postData.postName}
+                        onChangeText={(text) => setPostData({ ...postData, postName: text })}
                     />
-
-                    <Text style={styles.label}>Slug Post</Text>
+                    {/* <Text style={styles.label}>Loại Post</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Slug Post"
-                        value={postPrice}
-                        onChangeText={setPostPrice}
-                    />
+                        placeholder="YYYY-MM-DD"
+                        value={postData.postRelease}
+                        onChangeText={(text) => setPostData({ ...postData, postRelease: text })}
+                    /> */}
 
-                    <Text style={styles.label}>Loại Post</Text>
+                    <Text style={styles.label}>Content Post</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Sửa Loại Post"
-                        value={postQuantity}
-                        onChangeText={setPostQuantity}
+                        placeholder="Thêm Content Post"
+                        value={postData.postContent}
+                        onChangeText={(text) => setPostData({ ...postData, postContent: text })}
                     />
 
-                    <Text style={styles.label}>Chi Tiết Post</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Sửa Chi Tiết Post"
-                        value={postSale}
-                        onChangeText={setPostSale}
-                    />
 
-                    {/* Post Category */}
-                    <Text style={styles.label}>Post Status</Text>
-                    <TouchableOpacity
-                        style={styles.dropdown}
-                        onPress={() => setModalVisible(true)}>
-                        <Text style={styles.selectedValue}>{selectedValue}</Text>
-                    </TouchableOpacity>
-
-                    {/* Modal chọn category */}
-                    <Modal
-                        animationType="fade"
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}>
-                        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                            <View style={styles.modalOverlay}>
-                                <View style={styles.modalView}>
-                                    <View style={styles.searchBar}>
-                                        <TextInput
-                                            style={styles.searchInput}
-                                            placeholder="Tìm kiếm/ Sửa Status"
-                                            value={searchQuery}
-                                            onChangeText={handleSearch}
-                                        />
-                                        <TouchableOpacity
-                                            style={styles.filter}
-                                            onPress={() => setAddModalVisible(true)}>
-                                            <Text style={styles.iconCenter}><Icon name="pencil" size={20} color="#3669c9" /></Text>
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    <FlatList
-                                        data={filteredCategories}
-                                        keyExtractor={(item) => item}
-                                        renderItem={({ item }) => (
-                                            <TouchableOpacity
-                                                onPress={() => handleSelect(item)}
-                                                style={styles.modalItem}>
-                                                <Text style={styles.modalText}>{item}</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                    />
-                                    <TouchableOpacity style={styles.button} onPress={() => setModalVisible(false)}>
-                                        <Text style={styles.buttonText}>Đóng</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </Modal>
-
-                    {/* Modal Sửa category mới */}
-                    <Modal
-                        animationType="fade"
-                        transparent={true}
-                        visible={addModalVisible}
-                        onRequestClose={() => setAddModalVisible(false)}>
-                        <TouchableWithoutFeedback onPress={() => setAddModalVisible(false)}>
-                            <View style={styles.modalOverlay}>
-                                <View style={styles.addModalView}>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Tên Category"
-                                        value={newCategoryName}
-                                        onChangeText={setNewCategoryName}
-                                    />
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Loại Category"
-                                        value={newCategoryType}
-                                        onChangeText={setNewCategoryType}
-                                    />
-                                    <TouchableOpacity style={styles.button} onPress={handleAddCategory}>
-                                        <Text style={styles.buttonText}>Sửa</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.button} onPress={() => setAddModalVisible(false)}>
-                                        <Text style={styles.buttonText}>Đóng</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </Modal>
-
-                    <TouchableOpacity style={styles.button} onPress={() => alert('Post Added/Edited')}>
-                        <Text style={styles.buttonText}>Sửa</Text>
+                    <TouchableOpacity style={styles.button} onPress={handleNavigateToProduct}>
+                        <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
