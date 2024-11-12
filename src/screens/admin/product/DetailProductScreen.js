@@ -194,7 +194,19 @@ function DetailScreen({ route, navigation }) {
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
                 <TouchableOpacity
                     style={styles.iconButton}
-                    onPress={() => navigation.navigate('EditProductScreen', { product: productsState, postDTO: productsState.post })} // Truyền sản phẩm
+                    onPress={() => {
+                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
+                        navigation.navigate('EditProductScreen', {
+                            product: productsState,
+                            postDTO: {
+                                postName,
+                                postContent,
+                                postImagePath,
+                                postType,
+                                postStatusId: postStatus?.postStatusId
+                            }
+                        });
+                    }}
                 >
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>

@@ -21,19 +21,22 @@ import { BASE_URL } from '../../api/config';
 
 const EditProductScreen = ({ route, navigation }) => {
     const { product, postDTO } = route.params || {}; // Lấy dữ liệu sản phẩm từ `route.params`
-    
+
     const [isLoading, setIsLoading] = useState(false);
+    const [productId, setProductId] = useState(product?.productId);
     const [selectedImages, setSelectedImages] = useState(product?.productImages || []);
     const [productSupplier, setProductSupplier] = useState(product?.productSupplier?.productSupplierSd);
-    const [productSupplierName, setProductSupplierName] = useState(product?.productSupplierName?.productSupplierName);
+    const [productSupplierName, setProductSupplierName] = useState(product?.productSupplier?.productSupplierName);
     const [parentCategoryId, setParentCategoryId] = useState(product?.categories?.categoryId || null);
     const [parentCategoryName, setParentCategoryName] = useState(product?.categories?.categoryName || null);
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isSupplierModal, setIsSupplierModal] = useState(false);
 
+    const basePrice = parseInt(product?.productPrice.replace(/\D/g, ''), 10);
+
     const [productData, setProductData] = useState({
         productName: product?.productName || '',
-        productPrice: product?.productPrice || '',
+        productPrice: basePrice,
         productYearOfManufacture: product?.productYearOfManufacture || 2024,
         sizesProduct: product?.sizesProduct || [
             { productSizeId: "00000000-0000-0000-0000-000000000000", productSizeQuantity: 5 }
@@ -41,13 +44,12 @@ const EditProductScreen = ({ route, navigation }) => {
         productImages: { productImageAlt: "Image of product" },
         post: { postContent: postDTO?.postContent, postName: postDTO?.postName } || {},
     });
+    console.log(productId);
 
     const [error, setError] = useState({
         productPriceError: false,
         productNameError: false,
     });
-    console.log(product?.productId);
-    
     const handleUpdateProduct = async () => {
         setIsLoading(true);
         const formData = new FormData();
@@ -58,13 +60,11 @@ const EditProductScreen = ({ route, navigation }) => {
             sizesProduct: productData.sizesProduct,
             productSupplier: productSupplier,
             categories: parentCategoryId,
-            // post: { postContent: postDTO?.postContent, postName: postDTO?.postName },
             post: postDTO,
             productImage: productData.productImages,
         };
         formData.append('paramsJson', JSON.stringify(params));
-        console.log(formData);
-        
+
 
         if (selectedImages && selectedImages.length > 0) {
             selectedImages.forEach((imageUri, index) => {
@@ -79,16 +79,16 @@ const EditProductScreen = ({ route, navigation }) => {
                 }
             });
         }
-        
-        
+
+
         try {
-            const response = await fetch(`${BASE_URL}product/${product?.productId}`, {
+            const response = await fetch(`${BASE_URL}product/${productId}`, {
                 method: 'PUT',
                 body: formData,
             });
             console.log(response);
-            
-            
+
+
             if (response.status === 200) {
                 Alert.alert('Success', 'Product updated successfully.');
                 navigation.replace('ProductList');
@@ -114,6 +114,10 @@ const EditProductScreen = ({ route, navigation }) => {
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
 
+    const handleResetFilters = () => {
+        setParentCategoryId(null);
+        setParentCategoryName(null);
+    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -149,7 +153,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     />
 
                     <Text style={styles.label}>Post Sản Phẩm:</Text>
-                    <TouchableOpacity style={[styles.input, !postDTO && styles.inputError]} onPress={() => navigation.navigate('EditPostScreen', { savedData: { postName: postDTO?.postName, postContent: postDTO?.postContent }})}>
+                    <TouchableOpacity style={[styles.input, !postDTO && styles.inputError]} onPress={() => navigation.navigate('EditPostScreen', { savedData: { postName: postDTO?.postName, postContent: postDTO?.postContent } })}>
                         {postDTO ? <Text>Đã Thêm Post Sản Phẩm</Text> : <Text>Chưa Thêm Post Sản Phẩm</Text>}
                     </TouchableOpacity>
 
@@ -169,17 +173,20 @@ const EditProductScreen = ({ route, navigation }) => {
 
                     <Text style={styles.label}>Thương Hiệu Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !productSupplier && styles.inputError]} onPress={toggleSupplierModal}>
-                        {productSupplier ? <Text>{productSupplierName}</Text> : <Text>Chưa Chọn Thương Hiệu Sản Phẩm</Text>}
+                        {productSupplierName != null ? (<Text>{productSupplierName}</Text>) : (<Text>Chưa Chọn Thương Hiệu Sản Phẩm</Text>)}
                     </TouchableOpacity>
 
                     <Supplier
                         isVisible={isSupplierModal}
                         onClose={toggleSupplierModal}
+                        selectedProductSupplierSd ={productSupplier}
+                        onReset={handleResetFilters}
                         onApply={(selectedFilters) => {
                             setProductSupplier(selectedFilters.suppliers);
                             setProductSupplierName(selectedFilters.suppliersName);
                         }}
                     />
+
                 </View>
             </ScrollView>
 

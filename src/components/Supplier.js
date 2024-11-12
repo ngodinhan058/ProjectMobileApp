@@ -5,10 +5,9 @@ import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 
 
-const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
+const FilterScreen = ({ isVisible, onClose, onApply, onReset, selectedProductSupplierSd }) => {
     const [suppliers, setsuppliers] = useState([]);
-    const [suppliersName, setsuppliersName] = useState([]);
-    const [selectedsuppliers, setSelectedsuppliers] = useState(null);
+    const [selectedsuppliers, setSelectedsuppliers] = useState(selectedProductSupplierSd || null);  // Set the supplier from the props if available
     const [isExpanded, setIsExpanded] = useState(false);
 
     useEffect(() => {
@@ -19,7 +18,6 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                 const response = await axios.get(apiUrl);
                 const data = response.data.data;
                 setsuppliers(data);
-                setSelectedsuppliers();
             } catch (error) {
                 console.error('Error fetching data:', error.response ? error.response.data : error.message);
             }
@@ -27,37 +25,40 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
         fetchData();
     }, []);
+
     const toggleCheckbox = (productSupplierSd) => {
-        setSelectedsuppliers(productSupplierSd);
+        setSelectedsuppliers(productSupplierSd);  // Toggle supplier selection
     };
+
     const handleApply = () => {
-        // Tìm name của supplier đã chọn dựa trên `selectedsuppliers`
-        const selectedSupplier = suppliers.find(supplier => supplier.productSupplierSd === selectedsuppliers);
-        const selectedSupplierName = selectedSupplier ? selectedSupplier.productSupplierName : null;
-    
-        // Tạo đối tượng filter chỉ chứa các category đã chọn và khoảng giá
-        const selectedFilters = {
-            suppliers: selectedsuppliers,
-            suppliersName: selectedSupplierName,
-        };
-    
-        // Gọi hàm onApply với dữ liệu lọc và đóng modal
-        onApply(selectedFilters);
+        // Only include selectedsuppliers and its name if it's not null
+        if (selectedsuppliers) {
+            const selectedSupplier = suppliers.find(supplier => supplier.productSupplierSd === selectedsuppliers);
+            const selectedSupplierName = selectedSupplier ? selectedSupplier.productSupplierName : null;
+
+            const selectedFilters = {
+                suppliers: selectedsuppliers,
+                suppliersName: selectedSupplierName || null,  // Ensure null if no name found
+            };
+
+            onApply(selectedFilters);  // Call onApply with the selected filters
+        } else {
+            onApply({ suppliers: null, suppliersName: null });  // Pass null if no supplier selected
+        }
         onClose();
     };
-    
 
     const handleReset = () => {
-        setSelectedsuppliers(null);
+        setSelectedsuppliers(null);  // Reset supplier selection
         onReset();
         onClose();
     };
 
     const toggleExpand = () => {
-        setIsExpanded(!isExpanded);
+        setIsExpanded(!isExpanded);  // Toggle expand/collapse
     };
 
-    // Hiển thị 4 mục đầu tiên hoặc tất cả tùy thuộc vào trạng thái
+    // Only show first 4 items or all based on the expanded state
     const suppliersToShow = isExpanded ? suppliers : suppliers.slice(0, 4);
 
     return (
@@ -73,7 +74,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
             <View style={styles.container}>
                 <Text style={styles.title}>Thương Hiệu</Text>
-                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator= {false}>
+                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                     <View style={styles.checkboxContainer}>
                         {suppliersToShow.map((category, index) => {
                             if (index % 2 === 0) {
@@ -115,7 +116,6 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                                             </View>
                                         )}
                                     </View>
-
                                 );
                             }
                         })}
