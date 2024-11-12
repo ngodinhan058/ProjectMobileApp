@@ -109,13 +109,13 @@ const AddCategoryScreen = ({ navigation }) => {
                     )}
 
                     {/* Status Danh Mục */}
-                    <Text style={styles.label}>Status Danh Mục:</Text>
+                    {/* <Text style={styles.label}>Status Danh Mục:</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Nhập Status Danh Mục"
                         value={categoryStatusId}
                         onChangeText={setCategoryStatusId}
-                    />
+                    /> */}
 
                     {/* Parent Danh Mục */}
                     <Text style={styles.label}>Thêm Danh Mục Cha:</Text>

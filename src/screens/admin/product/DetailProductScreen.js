@@ -11,6 +11,7 @@ import {
     FlatList,
     Alert,
     Modal,
+    ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -25,7 +26,10 @@ function DetailScreen({ route, navigation }) {
     const [animation] = useState(new Animated.Value(0)); // giá trị hoạt ảnh
     const [rotation] = useState(new Animated.Value(0));
     const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+    const [isLoading, setIsLoading] = useState(false);
+
     useEffect(() => {
+        setIsLoading(true);
         const apiUrl = `${BASE_URL}product/${id}`;
         console.log(apiUrl);
 
@@ -33,10 +37,11 @@ function DetailScreen({ route, navigation }) {
             .then(response => {
                 const productData = response.data.data;
                 setProductsState(productData);
+                setIsLoading(false);
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
-            });
+            })
     }, [id]);
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
@@ -75,7 +80,9 @@ function DetailScreen({ route, navigation }) {
         outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
     });
     const deleteCategory = async () => {
+        setIsLoading(true);
         try {
+            set
             await axios.delete(`${BASE_URL}product/${id}`);
             // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
             Alert.alert("Success", "Xoá Thành Công");
@@ -84,6 +91,8 @@ function DetailScreen({ route, navigation }) {
         } catch (error) {
             console.error('Error deleting category:', error.response ? error.response.data : error.message);
             Alert.alert("Error", "Failed to delete category.");
+        }finally {
+            setIsLoading(false);  // Set loading to false when request completes
         }
     };
     const [selectedImage, setSelectedImage] = useState(null);
@@ -217,11 +226,23 @@ function DetailScreen({ route, navigation }) {
                     <Icon name="trash" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
+            {isLoading && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator size="large" color="#3669c9" />
+                </View>
+            )}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
     container: {
         padding: 20,
         height: '100%',

@@ -87,6 +87,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     onChangeText={setCategoryImg}
                 />
                 {/* Tên danh mục */}
+                <Text style={styles.label}>Tên Danh Mục:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Sửa Tên Danh Mục"
@@ -95,14 +96,15 @@ const EditProductScreen = ({ route, navigation }) => {
                 />
 
                 {/* Trạng thái danh mục */}
-                <TextInput
+                {/* <TextInput
                     style={styles.input}
                     placeholder="Nhập Status Danh Mục"
                     value={categoryStatusId}
                     onChangeText={setCategoryStatusId}
-                />
+                /> */}
 
                 {/* Ngày tạo danh mục */}
+                <Text style={styles.label}>Ngày tạo danh mục: </Text>
                 <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
                     <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Sửa Ngày Tạo Danh Mục'}</Text>
                 </TouchableOpacity>
@@ -116,6 +118,7 @@ const EditProductScreen = ({ route, navigation }) => {
                 )}
 
                 {/* Chọn danh mục cha */}
+                <Text style={styles.label}>Thêm Danh Mục Cha:</Text>
                 <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
                     {id ? (<Text>Đã Chọn Danh Mục Cha</Text>) : (<Text>Chưa Chọn Danh Mục Cha</Text>)}
                 </TouchableOpacity>
