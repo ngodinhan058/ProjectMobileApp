@@ -10,8 +10,10 @@ import {
     Pressable,
     FlatList,
     Alert,
+    Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
@@ -74,7 +76,7 @@ function DetailScreen({ route, navigation }) {
     });
     const deleteCategory = async () => {
         try {
-           await axios.delete(`${BASE_URL}product/${id}`);
+            await axios.delete(`${BASE_URL}product/${id}`);
             // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
             Alert.alert("Success", "Xoá Thành Công");
             navigation.replace("ProductList")
@@ -83,6 +85,18 @@ function DetailScreen({ route, navigation }) {
             console.error('Error deleting category:', error.response ? error.response.data : error.message);
             Alert.alert("Error", "Failed to delete category.");
         }
+    };
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [isModalVisible, setModalVisible] = useState(false);
+
+    const openModal = (imagePath) => {
+        setSelectedImage([{ url: imagePath }]);
+        setModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setSelectedImage(null);
     };
     return (
         <View style={styles.container}>
@@ -97,13 +111,12 @@ function DetailScreen({ route, navigation }) {
 
                     {/* Product Image */}
                     <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-
                         <FlatList
                             data={productsState.productImages}
                             horizontal
                             pagingEnabled
                             showsHorizontalScrollIndicator={false}
-                            keyExtractor={(item) => item.productImageIndex.toString()}
+                            keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
                             renderItem={({ item }) => (
                                 <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
                                     <View style={{ marginHorizontal: 5 }}>
@@ -115,8 +128,22 @@ function DetailScreen({ route, navigation }) {
                                 </TouchableOpacity>
                             )}
                         />
-
-                       
+                        <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
+                            <View style={styles.modalBackground}>
+                                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                                    <Text style={styles.closeText}>X</Text>
+                                </TouchableOpacity>
+                                {selectedImage && (
+                                    <ImageViewer
+                                        imageUrls={selectedImage} // Thư viện yêu cầu array của các object với key `url`
+                                        enableSwipeDown
+                                        onSwipeDown={closeModal}
+                                        renderIndicator={() => null}
+                                        style={styles.fullScreenImage} // Ẩn số chỉ mục ảnh
+                                    />
+                                )}
+                            </View>
+                        </Modal>
                     </View>
 
                     {/* Product info */}
@@ -165,7 +192,22 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditProductScreen')}>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => {
+                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
+                        navigation.navigate('EditProductScreen', {
+                            product: productsState,
+                            postDTO: {
+                                postName,
+                                postContent,
+                                postImagePath,
+                                postType,
+                                postStatusId: postStatus?.postStatusId
+                            }
+                        });
+                    }}
+                >
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
@@ -312,6 +354,27 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 1,
+    },
+    closeText: {
+        color: '#fff',
+        fontSize: 24,
+    },
+    fullScreenImage: {
+        width: '100%',
+        height: '90%',
+    },
+
 });
 
 export default DetailScreen;

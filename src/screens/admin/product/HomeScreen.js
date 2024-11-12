@@ -18,7 +18,6 @@ const HomeAdminScreen = ({ navigation }) => {
                 console.error('Error fetching data:', error);
             });
     }, []);
-    const img = img ? item.productImages[0].productImagePath : null
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
@@ -27,7 +26,7 @@ const HomeAdminScreen = ({ navigation }) => {
             })}
         >
             <View style={{ marginRight: 20, }}>
-                <Image source={{ uri: img  }} style={styles.productIcon} />
+                <Image source={{ uri: item.productImages[0].productImagePath  }} style={styles.productIcon} />
             </View>
 
             <View style={styles.productDetails}>
@@ -137,7 +136,7 @@ const styles = StyleSheet.create({
         height: 55,
         marginLeft: 5,
         marginTop: 5,
-
+        resizeMode: 'contain',
     },
     productDetails: {
         flex: 1,
