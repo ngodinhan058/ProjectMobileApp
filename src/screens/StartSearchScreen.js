@@ -12,7 +12,6 @@ import ProductItem from '../components/ProductItem';
 import { loadData, saveData } from '../utils/SearchMemory';
 import { SEARCH_KEY } from '../constants/SearchKey';
 import { BASE_URL } from './api/config';
-import axios from 'axios';
 
 const SearchScreen = ({ navigation, route }) => {
   // Retrieve query from route params or set to an empty string
