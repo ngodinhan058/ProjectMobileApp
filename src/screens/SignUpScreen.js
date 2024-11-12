@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Pressable,
+  Alert,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -17,34 +25,65 @@ const SignUpScreen = ({ navigation }) => {
     }
   }, [email, userName]);
 
+  const enterEmail = async (email) => {
+    try {
+      console.log({ userEmail: email, userPassword: password });
+      const response = await axios.post(`${BASE_URL}auth/create-email`, {
+        userEmail: email,
+      });
+      const userData = response.data;
+      await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
+      return userData;
+    } catch (error) {
+      console.error(
+        'Login failed',
+        error.response ? error.response.data : error.message
+      );
+      throw error; // Ném lỗi để có thể hiển thị thông báo
+    }
+  };
 
+  const handleLogin = async () => {
+    try {
+      const userData = await enterEmail(email); // Gọi API để kiểm tra
+      Alert.alert('Thành công', 'Đăng nhập thành công!');
+      navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
+    } catch (error) {
+      Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
+    }
+  };
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
-      enableOnAndroid={true}  // Kích hoạt hỗ trợ trên Android
-      extraHeight={150}  // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-280}  // Tùy chỉnh thêm khoảng cách cuộn
-      keyboardShouldPersistTaps="handled"  // Xử lý khi nhấn ngoài input
+      enableOnAndroid={true} // Kích hoạt hỗ trợ trên Android
+      extraHeight={150} // Điều chỉnh khoảng cách bàn phím với nội dung
+      extraScrollHeight={-280} // Tùy chỉnh thêm khoảng cách cuộn
+      keyboardShouldPersistTaps="handled" // Xử lý khi nhấn ngoài input
     >
-      <View style={{ flex: 1, }}>
+      <View style={{ flex: 1 }}>
         {/* Nút quay lại */}
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
 
         {/* Tiêu đề */}
         <Text style={styles.title}>Đăng Ký Tài Khoản</Text>
         <Text style={styles.titleBold}>Mega Mall</Text>
-        <Text style={styles.subtitle}>Nhập Email/Tên Đăng Nhập, và Mật khẩu để đăng nhập</Text>
+        <Text style={styles.subtitle}>
+          Nhập Email/Tên Đăng Nhập, và Mật khẩu để đăng nhập
+        </Text>
         {/* Input username*/}
-        <Text style={styles.label}>Tên Đăng Nhập</Text>
+        {/* <Text style={styles.label}>Tên Đăng Nhập</Text>
         <TextInput
           style={styles.input}
           placeholder="Nhập Tên Đăng Nhập"
           placeholderTextColor="#C4C4C4"
           value={email}
           onChangeText={setEmail}
-        />
+        /> */}
         {/* Input Email*/}
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -54,8 +93,6 @@ const SignUpScreen = ({ navigation }) => {
           value={userName}
           onChangeText={setUserName}
         />
-
-
 
         {/* Nút Sign In và Cancel */}
         <View style={styles.buttonContainer}>
@@ -70,7 +107,9 @@ const SignUpScreen = ({ navigation }) => {
             <Text style={styles.signInText}>Tiếp tục</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton}>
-            <Text style={styles.cancelText} onPress={() => navigation.goBack()}>Cancel</Text>
+            <Text style={styles.cancelText} onPress={() => navigation.goBack()}>
+              Cancel
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -80,7 +119,11 @@ const SignUpScreen = ({ navigation }) => {
             <Text style={styles.footerText}>Đã có tài khoản?</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-            <Text style={{ color: '#3669c9', fontSize: 14, fontWeight: 'bold' }}>Đăng Nhập</Text>
+            <Text
+              style={{ color: '#3669c9', fontSize: 14, fontWeight: 'bold' }}
+            >
+              Đăng Nhập
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -179,7 +222,7 @@ const styles = StyleSheet.create({
   footerContainer: {
     flexDirection: 'row',
     marginTop: '60%',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   footerText: {
     fontSize: 14,

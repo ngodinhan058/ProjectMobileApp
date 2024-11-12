@@ -125,7 +125,6 @@ import ChatScreen from './src/screens/shipper/ChatScreen';
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
 
-
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -134,7 +133,7 @@ function LoginStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
-      <Stack.Screen name="SignUpSceen" component={SignUpScreen} />
+      <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
       <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
       <Stack.Screen name="ResetPassScreen" component={ResetPassScreen} />
@@ -157,9 +156,7 @@ function NoLoginHome() {
 
   return (
     <Tab.Navigator
-      tabBar={(props) => (
-        <Footer {...props} isVisible={isFooterVisible} />
-      )}
+      tabBar={(props) => <Footer {...props} isVisible={isFooterVisible} />}
     >
       <Tab.Screen
         name="Mega Mall"
@@ -181,9 +178,12 @@ function NoLoginHome() {
         )}
       </Tab.Screen>
 
-      <Tab.Screen name="Wishlist" options={{
-        header: () => <Header />,
-      }}>
+      <Tab.Screen
+        name="Wishlist"
+        options={{
+          header: () => <Header />,
+        }}
+      >
         {() => <WishListScreen onScroll={handleScroll} />}
       </Tab.Screen>
       <Tab.Screen
@@ -195,27 +195,52 @@ function NoLoginHome() {
           blur: () => setIsFooterVisible(true),
         }}
       />
-      <Tab.Screen name="Login" component={LoginStack} options={{ headerShown: false }} listeners={{
-        focus: () => setIsFooterVisible(false),
-        blur: () => setIsFooterVisible(true),
-      }} />
+      <Tab.Screen
+        name="Login"
+        component={LoginStack}
+        options={{ headerShown: false }}
+        listeners={{
+          focus: () => setIsFooterVisible(false),
+          blur: () => setIsFooterVisible(true),
+        }}
+      />
     </Tab.Navigator>
   );
 }
 
 function HomeStack({ onScroll, setIsFooterVisible }) {
   const screens = [
-    { name: "Home", component: HomeScreen, showFooter: true },
-    { name: "ProductByCateScreen", component: ProductByCateScreen, showFooter: true },
-    { name: "SearchScreen", component: SearchScreen, showFooter: true },
-    { name: "StartSearchScreen", component: StartSearchScreen, showFooter: true },
-    { name: "ProductDetailScreen", component: ProductDetailScreen, showFooter: true },
-    { name: "NewsScreen", component: NewsScreen, showFooter: true },
-    { name: "NewsDetailScreen", component: NewsDetailScreen, showFooter: true },
-    { name: "AddedProductToWishlist", component: AddedProductToWishlist, showFooter: true },
-    { name: "AddToCartScreen", component: AddToCartScreen, showFooter: false }, // Ẩn Footer cho màn AddToCartScreen
-    { name: "ReviewProductScreen", component: ReviewProductScreen, showFooter: true },
-    { name: "SuccessScreen", component: SuccessScreen, showFooter: true },
+    { name: 'Home', component: HomeScreen, showFooter: true },
+    {
+      name: 'ProductByCateScreen',
+      component: ProductByCateScreen,
+      showFooter: true,
+    },
+    { name: 'SearchScreen', component: SearchScreen, showFooter: true },
+    {
+      name: 'StartSearchScreen',
+      component: StartSearchScreen,
+      showFooter: true,
+    },
+    {
+      name: 'ProductDetailScreen',
+      component: ProductDetailScreen,
+      showFooter: true,
+    },
+    { name: 'NewsScreen', component: NewsScreen, showFooter: true },
+    { name: 'NewsDetailScreen', component: NewsDetailScreen, showFooter: true },
+    {
+      name: 'AddedProductToWishlist',
+      component: AddedProductToWishlist,
+      showFooter: true,
+    },
+    { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false }, // Ẩn Footer cho màn AddToCartScreen
+    {
+      name: 'ReviewProductScreen',
+      component: ReviewProductScreen,
+      showFooter: true,
+    },
+    { name: 'SuccessScreen', component: SuccessScreen, showFooter: true },
   ];
 
   return (
@@ -229,7 +254,9 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
             focus: () => setIsFooterVisible(screen.showFooter), // Thiết lập hiển thị Footer khi focus vào màn hình
           }}
         >
-          {(props) => React.createElement(screen.component, { ...props, onScroll })}
+          {(props) =>
+            React.createElement(screen.component, { ...props, onScroll })
+          }
         </Stack.Screen>
       ))}
     </Stack.Navigator>
@@ -245,9 +272,7 @@ function HaveLoginHome() {
   };
   return (
     <Tab.Navigator
-      tabBar={(props) => (
-        <Footer {...props} isVisible={isFooterVisible} />
-      )}
+      tabBar={(props) => <Footer {...props} isVisible={isFooterVisible} />}
     >
       <Tab.Screen
         name="Mega Mall"
@@ -261,17 +286,34 @@ function HaveLoginHome() {
           },
         })}
       >
-        {() => <HomeStack onScroll={handleScroll} setIsFooterVisible={setIsFooterVisible} />}
+        {() => (
+          <HomeStack
+            onScroll={handleScroll}
+            setIsFooterVisible={setIsFooterVisible}
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="Wishlist" options={{
-        header: () => <Header />,
-      }}>
+      <Tab.Screen
+        name="Wishlist"
+        options={{
+          header: () => <Header />,
+        }}
+      >
         {() => <WishListScreen onScroll={handleScroll} />}
       </Tab.Screen>
-      <Tab.Screen name="MyOrderScreen" component={MyOrderScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Login" options={{ headerShown: false }} >
-        {() => <HaveLoginStack onScroll={handleScroll} setIsFooterVisible={setIsFooterVisible}/>}
+      <Tab.Screen
+        name="MyOrderScreen"
+        component={MyOrderScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen name="Login" options={{ headerShown: false }}>
+        {() => (
+          <HaveLoginStack
+            onScroll={handleScroll}
+            setIsFooterVisible={setIsFooterVisible}
+          />
+        )}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -281,9 +323,8 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     // { name: "CompletedOrderConfirmationScreen" ,component : CompletedOrderConfirmationScreen},
     // { name: "RejectOrderConfirmationScreen" ,component : RejectOrderConfirmationScreen},
     // { name: "OrderConfirmationScreen" ,component : OrderConfirmationScreen},
-    { name: "ProfileScreen", component: ProfileScreen, showFooter: true },
-    { name: "BioDataScreen", component: BioDataScreen, showFooter: false },
-
+    { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
+    { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -296,12 +337,13 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
             focus: () => setIsFooterVisible(screen.showFooter),
           }}
         >
-          {(props) => React.createElement(screen.component, { ...props, onScroll })}
+          {(props) =>
+            React.createElement(screen.component, { ...props, onScroll })
+          }
         </Stack.Screen>
       ))}
     </Stack.Navigator>
   );
-
 }
 {
   /* Admin Product */
@@ -518,16 +560,37 @@ function Accouting() {
     </Stack.Navigator>
   );
 }
+
 export default function App() {
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem('userData');
+
+        if (savedCart) {
+          const { username, token } = JSON.parse(savedCart);
+          setUser({ username, token });
+        }
+      } catch (error) {
+        console.error('Error loading cart from AsyncStorage:', error);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  console.log(user);
+
   return (
     <NavigationContainer>
-      <HaveLoginHome />
-      {/* <NoLoginHome /> */}
+      {user && <HaveLoginHome />}
+      {!user && <NoLoginHome />}
       {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
-
     </NavigationContainer>
   );
 }
