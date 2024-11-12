@@ -18,43 +18,13 @@ import UploadImage from '../../../../components/Up_Image_Multi';
 
 const AddPostScreen = ({ route, navigation }) => {
     const { savedData } = route.params || {};
-    const [modalVisible, setModalVisible] = useState(false);
-    const [addModalVisible, setAddModalVisible] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('Chọn loại sản phẩm');
-    const [newCategoryName, setNewCategoryName] = useState('');
-    const [newCategoryType, setNewCategoryType] = useState('');
 
-    const [categories, setCategories] = useState(['Apple', 'Vivo', 'Samsung', 'Xiaomi']);
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const filteredCategories = categories.filter(category =>
-        category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const handleSearch = (value) => {
-        setSearchQuery(value);
-    };
-
-    const handleSelect = (value) => {
-        setSelectedValue(value);
-        setModalVisible(false);
-    };
-
-    const handleAddCategory = () => {
-        if (newCategoryName && newCategoryType) {
-            setCategories([...categories, `${newCategoryName} (${newCategoryType})`]);
-            setAddModalVisible(false);
-            setNewCategoryName('');
-            setNewCategoryType('');
-        }
-    };
-    
     const [postData, setPostData] = useState({
         postName: savedData?.postName || '',
         postContent: savedData?.postContent || '',
         postImagePath: 'img/product01.png',
         postType: 1,
-        userId: '01000000-0000-0000-0000-000000000000',
+        userId: '4e98028c-2157-4568-a9bc-c21033bad79a',
         postStatusId: '03000000-0000-0000-0000-000000000000'
     });
     const handleNavigateToProduct = () => {
@@ -101,15 +71,15 @@ const AddPostScreen = ({ route, navigation }) => {
                     />
 
                     {/* Post Category */}
-                    <Text style={styles.label}>Post Status</Text>
+                    {/* <Text style={styles.label}>Post Status</Text>
                     <TouchableOpacity
                         style={styles.dropdown}
                         onPress={() => setModalVisible(true)}>
                         <Text style={styles.selectedValue}>{selectedValue}</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
                     {/* Modal chọn category */}
-                    <Modal
+                    {/* <Modal
                         animationType="fade"
                         transparent={true}
                         visible={modalVisible}
@@ -118,12 +88,7 @@ const AddPostScreen = ({ route, navigation }) => {
                             <View style={styles.modalOverlay}>
                                 <View style={styles.modalView}>
                                     <View style={styles.searchBar}>
-                                        <TextInput
-                                            style={styles.searchInput}
-                                            placeholder="Tìm kiếm/ Thêm Status"
-                                            value={searchQuery}
-                                            onChangeText={handleSearch}
-                                        />
+                                       
                                         <TouchableOpacity
                                             style={styles.filter}
                                             onPress={() => setAddModalVisible(true)}>
@@ -132,7 +97,7 @@ const AddPostScreen = ({ route, navigation }) => {
                                     </View>
 
                                     <FlatList
-                                        data={filteredCategories}
+                                        data={filteredPostStatus}
                                         keyExtractor={(item) => item}
                                         renderItem={({ item }) => (
                                             <TouchableOpacity
@@ -148,10 +113,10 @@ const AddPostScreen = ({ route, navigation }) => {
                                 </View>
                             </View>
                         </TouchableWithoutFeedback>
-                    </Modal>
+                    </Modal> */}
 
                     {/* Modal thêm category mới */}
-                    <Modal
+                    {/* <Modal
                         animationType="fade"
                         transparent={true}
                         visible={addModalVisible}
@@ -180,7 +145,7 @@ const AddPostScreen = ({ route, navigation }) => {
                                 </View>
                             </View>
                         </TouchableWithoutFeedback>
-                    </Modal>
+                    </Modal> */}
 
                     <TouchableOpacity style={styles.button} onPress={handleNavigateToProduct}>
                         <Text style={styles.buttonText}>Thêm</Text>

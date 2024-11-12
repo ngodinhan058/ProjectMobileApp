@@ -9,82 +9,103 @@ import {
     Image,
     TextInput,
     Pressable,
-    TouchableWithoutFeedback,
+    ActivityIndicator,
     Alert,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import UploadImage from '../../../components/Up_Image_Multi';
 import SelectorInCategory from '../../../components/SelectorInCategory';
 import Supplier from '../../../components/Supplier';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
+import UploadImage from '../../../components/Up_Image_Multi';
 const AddProductScreen = ({ route, navigation }) => {
-    const [productSupplier, setProductSupplier] = useState(); 
-    const [productSupplierName, setProductSupplierName] = useState(); 
+    const [productSupplier, setProductSupplier] = useState();
+    const [productSupplierName, setProductSupplierName] = useState();
     const [parentCategoryId, setParentCategoryId] = useState(null);
     const [parentCategoryName, setParentCategoryName] = useState(null);
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isSupplierModal, setIsSupplierModal] = useState(false);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedImages, setSelectedImages] = useState([]);
     const { postDTO } = route.params || {};
 
     const [productData, setProductData] = useState({
         productName: '',
         productPrice: '',
-        productQuantity: 0,
-        productSale: 0,
-        productImages: [
+        productYearOfManufacture: 2024,
+        sizesProduct: [
             {
-                productImagePath: "img/20210410_zOS3hu3lOAH3RLHxZKRgrGz9.jpg",
-                productImageAlt: "Image of product",
-                productImageIndex: 1
+                productSizeId: "00000000-0000-0000-0000-000000000000",
+                productSizeQuantity: 5
             }
         ],
-        productYearOfManufacture: 2024,
-        productSizes: ["003c6e39-fdd2-345c-8d87-6e6543f34567", "002b5d28-fdd1-234b-7c98-7d5432f23456"],
-        supplierId: productSupplier,
+        productSupplier: productSupplier,
         categories: parentCategoryId,
         post: postDTO || {},
-        coupon: {
-            couponName: "Discount Sale",
-            couponCode: "DISCOUNT2024",
-            couponRelease: "2024-01-01",
-            couponExpire: "2024-12-31",
-            couponQuantity: 100,
-            couponPerHundred: 10.0,
-            couponType: 1
+        productImages: {
+            productImageAlt: "Image of product",
         }
-    })
+    });
+
     const [error, setError] = useState({
         productPriceError: false,
-        productQuantityError: false,
-        productSaleError: false,
         productNameError: false
     });
+
     const handleAddProduct = async () => {
-        if (Object.values(error).some((errorField) => errorField === true) && !productData.post || Object.keys(productData.post).length === 0 && !productData.categories || Object.keys(productData.categories).length === 0
-        && !productData.supplierId || Object.keys(productData.supplierId).length === 0) {
-            Alert.alert('Thông báo', 'Vui lòng kiểm tra các thông tin sản phẩm.');
-            return;
+        setIsLoading(true);  // Set loading to true when starting the request
+        const formData = new FormData();
+        const params = {
+            productName: productData.productName,
+            productPrice: productData.productPrice,
+            productYearOfManufacture: productData.productYearOfManufacture,
+            sizesProduct: productData.sizesProduct,
+            productSupplier: productSupplier,
+            categories: parentCategoryId,
+            post: postDTO,
+            productImage: productData.productImages,
         }
+        // Thêm thông tin sản phẩm vào FormData
+        formData.append('params', JSON.stringify(params));
+
+        // Thêm từng file ảnh vào FormData
+        selectedImages.forEach((imageUri, index) => {
+            const fileType = imageUri.split('.').pop();
+            const newFile = {
+                uri: imageUri,
+                name: `product-image-${index}.${fileType}`,
+                type: `image/${fileType}`,
+            };
+            console.log('formData:', imageUri);
+            formData.append('file', newFile);
+        });
+        console.log('formData:', formData);
         try {
-            const response = await axios.post(`${BASE_URL}product`, productData);
+            const response = await fetch(`${BASE_URL}product`, {
+                method: 'POST',
+                body: formData,
+
+            });
+            console.log('response:', response.status);
             if (response.status === 201) {
-                Alert.alert('Thành công', 'sản phẩm đã được thêm.');
-                navigation.replace("ProductList")
+                Alert.alert('Success', 'Product added successfully.');
+                navigation.replace('ProductList');
             }
         } catch (error) {
-            console.error('Lỗi khi thêm sản phẩm:', error);
-            Alert.alert('Lỗi', 'Không thể thêm sản phẩm.');
+            console.error('Error adding product:', error);
+            Alert.alert('Error', 'Unable to add product due to a network error.');
+        } finally {
+            setIsLoading(false);  // Set loading to false when request completes
         }
     };
+
+
+
     useEffect(() => {
         setError({
             productPriceError: productData.productPrice <= 0 || isNaN(productData.productPrice),
-            productQuantityError: productData.productQuantity <= 0 || isNaN(productData.productQuantity),
-            productSaleError: productData.productSale < 0 || productData.productSale > 100 || isNaN(productData.productSale),
             productNameError: productData.productName === ''
         });
         if (postDTO) {
@@ -92,25 +113,29 @@ const AddProductScreen = ({ route, navigation }) => {
                 ...prevData,
                 categories: parentCategoryId,
                 post: postDTO,
-                supplierId: productSupplier,
+                productSupplier: productSupplier,
             }));
         }
-    }, [postDTO, productData.productPrice, productData.productQuantity, productData.productSale, productData.productName,]);
+    }, [postDTO, productData.productPrice, productData.productName]);
+
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
 
-    const handleResetFilters = () => { setParentCategoryId(null), setParentCategoryName(null) };
+    const handleResetFilters = () => {
+        setParentCategoryId(null);
+        setParentCategoryName(null);
+    };
     return (
         <View style={styles.container}>
             <ScrollView>
-                {/* Header */}
                 <View style={styles.header}>
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
                     <Text style={styles.textHeader}>Thêm Thông Tin Sản Phẩm</Text>
                 </View>
-                {/* Form sản phẩm */}
+
+                <UploadImage onImagesSelected={setSelectedImages} />
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
                     <TextInput
@@ -123,44 +148,28 @@ const AddProductScreen = ({ route, navigation }) => {
                     <TextInput
                         style={[styles.input, error.productPriceError && styles.inputError]}
                         placeholder="Thêm Giá Sản Phẩm"
-                        value={productData.productPrice}
-                        onChangeText={(text) => setProductData({ ...productData, productPrice: text })}
-                        keyboardType="numeric"
-                    />
-
-                    <Text style={styles.label}>Số Lượng Sản Phẩm:</Text>
-
-                    <TextInput
-                        style={[styles.input, error.productQuantityError && styles.inputError]}
-                        placeholder="Thêm Số Lượng Sản Phẩm"
-                        value={productData.productQuantity}
-                        onChangeText={(text) => setProductData({ ...productData, productQuantity: text })}
+                        value={productData.productPrice.toString()} // Convert to string for display
+                        onChangeText={(text) => {
+                            const numericValue = parseFloat(text);
+                            setProductData({
+                                ...productData,
+                                productPrice: isNaN(numericValue) ? '' : numericValue // Store as number
+                            });
+                        }}
                         keyboardType="numeric"
                     />
 
 
-
-                    <Text style={styles.label}>Giảm Giá Sản Phẩm: %</Text>
-                    <TextInput
-                        style={[styles.input, error.productSaleError && styles.inputError]}
-                        placeholder="0"
-                        value={productData.productSale}
-                        onChangeText={(text) => setProductData({ ...productData, productSale: text })}
-                        keyboardType="numeric"
-                    />
-                    {/* Post sản phẩm */}
                     <Text style={styles.label}>Post Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !postDTO && styles.inputError]} onPress={() => navigation.navigate('AddPostScreen', { savedData: postDTO })}>
                         {postDTO ? (<Text>Đã Thêm Post Sản Phẩm</Text>) : (<Text>Chưa Thêm Post Sản Phẩm</Text>)}
                     </TouchableOpacity>
-                    {/* Danh mục sản phẩm */}
+
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
-                    {/* Chọn danh mục cha */}
                     <TouchableOpacity style={[styles.input, !parentCategoryName && styles.inputError]} onPress={toggleFilterModal}>
                         {parentCategoryName != null ? (<Text>{parentCategoryName}</Text>) : (<Text>Chưa Chọn Danh Mục Sản Phẩm</Text>)}
                     </TouchableOpacity>
 
-                    {/* Modal để chọn danh mục cha */}
                     <SelectorInCategory
                         isVisible={isFilterModalVisible}
                         onClose={toggleFilterModal}
@@ -170,31 +179,48 @@ const AddProductScreen = ({ route, navigation }) => {
                             setParentCategoryName(selectedParentName);
                         }}
                     />
+
                     <Text style={styles.label}>Thương Hiệu Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !productSupplier && styles.inputError]} onPress={toggleSupplierModal}>
                         {productSupplier != null ? (<Text>{productSupplierName}</Text>) : (<Text>Chưa Chọn Thương Hiệu Sản Phẩm</Text>)}
                     </TouchableOpacity>
-                    <Supplier 
-                          isVisible={isSupplierModal}
-                          onClose={toggleSupplierModal}
-                          onReset={handleResetFilters}
-                          onApply={(selectedFilters) => {
+
+                    <Supplier
+                        isVisible={isSupplierModal}
+                        onClose={toggleSupplierModal}
+                        onReset={handleResetFilters}
+                        onApply={(selectedFilters) => {
                             setProductSupplier(selectedFilters.suppliers);
                             setProductSupplierName(selectedFilters.suppliersName);
                         }}
                     />
-                    {/* Add/Edit Button */}
-                    <TouchableOpacity style={styles.button} onPress={handleAddProduct}>
-                        <Text style={styles.buttonText}>Thêm</Text>
-                    </TouchableOpacity>
+
+
                 </View>
             </ScrollView>
+
+            <TouchableOpacity style={styles.button} onPress={handleAddProduct} disabled={isLoading}>
+                <Text style={styles.buttonText}>Thêm</Text>
+            </TouchableOpacity>
+
+            {isLoading && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator size="large" color="#3669c9" />
+                </View>
+            )}
         </View>
     );
 };
-// <UploadImage />
+
 
 const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Màu nền mờ
+        justifyContent: 'center', // Căn giữa theo chiều dọc
+        alignItems: 'center',    // Căn giữa theo chiều ngang
+        zIndex: 1,               // Đưa overlay lên trên
+    },
     container: {
         paddingHorizontal: 20,
         flex: 1,

@@ -16,11 +16,14 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
 import { Linking, Alert } from 'react-native';
 
-const Up_Image_Multi = ({ navigation }) => {
+const Up_Image_Multi = ({ onImagesSelected, initialImages = [] }) => {
 
-    const [selectedImages, setSelectedImages] = useState([]); // Trạng thái lưu trữ nhiều hình ảnh
+    // Extract productImagePath from initialImages and set as initial state for selectedImages
+    const [selectedImages, setSelectedImages] = useState(
+        initialImages.length > 0 ? initialImages.map(img => img.productImagePath) : []
+    );
     const [imageModalVisible, setImageModalVisible] = useState(false);
-    const [selectedImageForModal, setSelectedImageForModal] = useState(null); 
+    const [selectedImageForModal, setSelectedImageForModal] = useState(null);
 
     const openImagePicker = async () => {
         let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -39,35 +42,38 @@ const Up_Image_Multi = ({ navigation }) => {
 
         let imageResult = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsMultipleSelection: true,  // Cho phép chọn nhiều ảnh
-            // allowsEditing: true,
-            aspect: [4, 3],
+            allowsMultipleSelection: true,
             quality: 1,
         });
 
         if (!imageResult.canceled) {
-            setSelectedImages([...selectedImages, ...imageResult.assets.map(asset => asset.uri)]); // Thêm ảnh vào danh sách
+            const newImages = imageResult.assets.map(asset => asset.uri);
+            const updatedImages = [...selectedImages, ...newImages];
+            setSelectedImages(updatedImages);
+            onImagesSelected(updatedImages); // Send selected images URIs
         }
-        setImageModalVisible(false); // Đóng modal sau khi chọn ảnh
+        setImageModalVisible(false); // Close modal after selecting images
     };
+
     const removeImage = (uri) => {
-        setSelectedImages(selectedImages.filter(imageUri => imageUri !== uri)); // Xoá ảnh khỏi danh sách
-    }
-    const openImageModal = (uri) => {
-        setSelectedImageForModal(uri); // Cập nhật ảnh đã chọn
-        setImageModalVisible(true); // Mở modal để hiển thị ảnh
+        const updatedImages = selectedImages.filter(imageUri => imageUri !== uri);
+        setSelectedImages(updatedImages); // Remove image from the list
+        onImagesSelected(updatedImages); // Update selected images
     };
+
+    const openImageModal = (uri) => {
+        setSelectedImageForModal(uri); // Set selected image for modal
+        setImageModalVisible(true); // Open modal to display image
+    };
+
     return (
         <View style={styles.container}>
             <ScrollView>
-               
-
-                {/* Icon Image */}
                 <View style={styles.imageContainer}>
                     <FlatList
-                        data={[...selectedImages, '+']} // Thêm dấu "+" vào cuối danh sách ảnh
+                        data={[...selectedImages, '+']} // Add "+" at the end of the image list
                         keyExtractor={(item, index) => index.toString()}
-                        horizontal={true} // Hiển thị ngang
+                        horizontal={true} // Display horizontally
                         renderItem={({ item }) => {
                             if (item === '+') {
                                 return (
@@ -78,7 +84,6 @@ const Up_Image_Multi = ({ navigation }) => {
                             }
                             return (
                                 <View style={styles.imageWrapper}>
-                                    {/* Bấm vào hình để mở modal */}
                                     <TouchableOpacity onPress={() => openImageModal(item)}>
                                         <Image source={{ uri: item }} style={styles.imageIcon} />
                                     </TouchableOpacity>
@@ -95,15 +100,13 @@ const Up_Image_Multi = ({ navigation }) => {
                         showsHorizontalScrollIndicator={false}
                     />
                 </View>
-                 {/* Modal Hiển Thị Hình Ảnh */}
-                 <Modal
+                <Modal
                     visible={imageModalVisible}
                     transparent={true}
                     onRequestClose={() => setImageModalVisible(false)}
                 >
                     <View style={styles.modalBackground}>
                         <View style={styles.modalContainer}>
-                            {/* Hiển thị hình ảnh lớn trong modal */}
                             <Image source={{ uri: selectedImageForModal }} style={styles.fullImage} />
                             <TouchableOpacity
                                 style={styles.closeButton}
@@ -118,6 +121,8 @@ const Up_Image_Multi = ({ navigation }) => {
         </View>
     );
 };
+
+
 
 const styles = StyleSheet.create({
     imageContainer: {
@@ -142,7 +147,7 @@ const styles = StyleSheet.create({
         height: 150,
         marginLeft: 10,
         borderRadius: 10,
-        
+
     },
     removeButton: {
         position: 'absolute',
@@ -163,13 +168,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: 80,
         height: 80,
-        backgroundColor: '#f0f0f0', 
+        backgroundColor: '#f0f0f0',
         borderRadius: 10,
         borderWidth: 1,
         borderColor: '#ccc',
         marginVertical: 50,
         marginHorizontal: 10,
-        
+
     },
     plusText: {
         fontSize: 40,
