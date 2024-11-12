@@ -167,7 +167,11 @@ const AddProductScreen = ({ route, navigation }) => {
 
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !parentCategoryName && styles.inputError]} onPress={toggleFilterModal}>
-                        {parentCategoryName != null ? (<Text>{parentCategoryName}</Text>) : (<Text>Chưa Chọn Danh Mục Sản Phẩm</Text>)}
+                        {parentCategoryName != null && parentCategoryName !== "" ? (
+                            <Text>{parentCategoryName}</Text>
+                        ) : (
+                            <Text>Chưa Chọn Danh Mục Sản Phẩm</Text>
+                        )}
                     </TouchableOpacity>
 
                     <SelectorInCategory
@@ -176,9 +180,12 @@ const AddProductScreen = ({ route, navigation }) => {
                         onReset={handleResetFilters}
                         onApply={(selectedParent, selectedParentName) => {
                             setParentCategoryId(selectedParent);
-                            setParentCategoryName(selectedParentName);
+                            // Hiển thị danh sách tên đã chọn ngay lập tức
+                            const selectedCategoryNames = selectedParentName.join(', ');
+                            setParentCategoryName(selectedCategoryNames);
                         }}
                     />
+
 
                     <Text style={styles.label}>Thương Hiệu Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !productSupplier && styles.inputError]} onPress={toggleSupplierModal}>

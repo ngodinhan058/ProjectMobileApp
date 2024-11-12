@@ -41,6 +41,7 @@ const HomeAdminScreen = ({ navigation }) => {
                     image: item.categoryImgPath,
                     name: item.categoryName,
                     parent: item.categoryParent,
+                    categoryAll: categoryAll,
                 })}
             >
                 <View style={{ marginRight: 20 }}>

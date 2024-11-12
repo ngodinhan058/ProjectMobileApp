@@ -23,7 +23,7 @@ const EditProductScreen = ({ route, navigation }) => {
     const { id, image, name, parent } = route.params; // categoryId truyền từ màn hình trước
     const [categoryName, setcategoryName] = useState(name);
     const [categoryImg, setCategoryImg] = useState(image);
-    const [categoryStatusId, setCategoryStatusId] = useState('01000000-0000-0000-0000-000000000000');
+    const [categoryStatusId, setCategoryStatusId] = useState('02000000-0000-0000-0000-000000000000');
     const [dateOfBirth, setDateOfBirth] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [parentCategoryId, setParentCategoryId] = useState(parent); // ID của danh mục cha
@@ -117,7 +117,7 @@ const EditProductScreen = ({ route, navigation }) => {
 
                 {/* Chọn danh mục cha */}
                 <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
-                    {parentCategoryName ? (<Text>{parentCategoryName}</Text>) : (<Text>Chưa Chọn Danh Mục Sản Phẩm</Text>)}
+                    {id ? (<Text>Đã Chọn Danh Mục Cha</Text>) : (<Text>Chưa Chọn Danh Mục Cha</Text>)}
                 </TouchableOpacity>
 
                 {/* Modal để chọn danh mục cha */}
@@ -125,6 +125,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     isVisible={isFilterModalVisible}
                     onClose={toggleFilterModal}
                     onReset={handleResetFilters}
+                    categoriesProduct={id}
                     onApply={(selectedParent, selectedParentName) => {
                         setParentCategoryId(selectedParent);
                         setParentCategoryName(selectedParentName);
