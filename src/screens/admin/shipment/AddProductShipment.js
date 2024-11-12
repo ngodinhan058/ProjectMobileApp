@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Modal, TouchableOpacity, Button, Alert } from 'react-native';
 import axios from 'axios';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 import { BASE_URL } from '../../api/config';
 import { ScrollView } from 'react-native-gesture-handler';
 
 const ShipmentForm = () => {
-    const [shipmentDate, setShipmentDate] = useState('');
+    const [shipmentDate, setShipmentDate] = useState(new Date());
     const [shipmentDiscount, setShipmentDiscount] = useState('');
     const [shipmentShipCost, setShipmentShipCost] = useState('');
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [selectedSupplier, setSelectedSupplier] = useState('');
-
+    // const [dateOfBirth, setDateOfBirth] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [productPrice, setProductPrice] = useState('');
     const [productQuantity, setProductQuantity] = useState('');
 
@@ -120,10 +123,27 @@ const ShipmentForm = () => {
         padding: 5,
         borderColor: value ? 'black' : 'red',  // Red border if empty or undefined
     });
+    const onDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || shipmentDate;
+        setShowDatePicker(false);
+        setShipmentDate(currentDate);
+      };
     return (
         <View style={{ padding: 20 }}>
             <ScrollView>
-                <Text>Shipment Date:</Text>
+            <Text>Shipment Date:</Text>
+                {/* <TouchableOpacity  style={getInputStyle(shipmentDate)} onPress={() => setShowDatePicker(true)}>
+                    <Text>{shipmentDate ? shipmentDate.toDateString() : 'What is your date of birth?'}</Text>
+                </TouchableOpacity>
+
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={shipmentDate}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                )} */}
                 <TextInput
                     value={shipmentDate}
                     onChangeText={setShipmentDate}
