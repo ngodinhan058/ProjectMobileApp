@@ -83,6 +83,7 @@ import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 {
   /* Admin Shipment */
 }
+import HomeShipmentScreen from './src/screens/admin/shipment/HomeScreen';
 import AddProductShipment from './src/screens/admin/shipment/AddProductShipment';
 {
   /* Shipper */
@@ -363,6 +364,7 @@ function UserAdmin() {
 function ShipmentAdmin() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
       
     </Stack.Navigator>
@@ -371,7 +373,7 @@ function ShipmentAdmin() {
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
+      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin}/>
       <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
       <Drawer.Screen name="Danh Sách Shipment" component={ShipmentAdmin} />
