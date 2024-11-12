@@ -24,6 +24,7 @@ const EditProductScreen = ({ route, navigation }) => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [productId, setProductId] = useState(product?.productId);
+    const [categories, setCategories] = useState(product?.categories);
     const [selectedImages, setSelectedImages] = useState(product?.productImages || []);
     const [productSupplier, setProductSupplier] = useState(product?.productSupplier?.productSupplierSd);
     const [productSupplierName, setProductSupplierName] = useState(product?.productSupplier?.productSupplierName);
@@ -33,6 +34,7 @@ const EditProductScreen = ({ route, navigation }) => {
     const [isSupplierModal, setIsSupplierModal] = useState(false);
 
     const basePrice = parseInt(product?.productPrice.replace(/\D/g, ''), 10);
+
 
     const [productData, setProductData] = useState({
         productName: product?.productName || '',
@@ -44,12 +46,11 @@ const EditProductScreen = ({ route, navigation }) => {
         productImages: { productImageAlt: "Image of product" },
         post: { postContent: postDTO?.postContent, postName: postDTO?.postName } || {},
     });
-    console.log(productId);
-
     const [error, setError] = useState({
         productPriceError: false,
         productNameError: false,
     });
+    console.log(categories);
     const handleUpdateProduct = async () => {
         setIsLoading(true);
         const formData = new FormData();
@@ -86,9 +87,6 @@ const EditProductScreen = ({ route, navigation }) => {
                 method: 'PUT',
                 body: formData,
             });
-            console.log(response);
-
-
             if (response.status === 200) {
                 Alert.alert('Success', 'Product updated successfully.');
                 navigation.replace('ProductList');
@@ -159,17 +157,22 @@ const EditProductScreen = ({ route, navigation }) => {
 
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !parentCategoryName && styles.inputError]} onPress={toggleFilterModal}>
-                        {parentCategoryName ? <Text>{parentCategoryName}</Text> : <Text>Chưa Chọn Danh Mục Sản Phẩm</Text>}
+                        {categories ? <Text>Đã Chọn Danh Mục Sản Phẩm</Text> : <Text>Chưa Chọn Danh Mục Sản Phẩm</Text>}
                     </TouchableOpacity>
 
                     <SelectorInCategory
                         isVisible={isFilterModalVisible}
+                        categoriesProduct={categories.map(category => category.categoryId)}
                         onClose={toggleFilterModal}
                         onApply={(selectedParent, selectedParentName) => {
                             setParentCategoryId(selectedParent);
-                            setParentCategoryName(selectedParentName);
+
+                            // Hiển thị danh sách tên đã chọn ngay lập tức
+                            const selectedCategoryNames = selectedParentName.join(', ');
+                            setParentCategoryName(selectedCategoryNames);
                         }}
                     />
+
 
                     <Text style={styles.label}>Thương Hiệu Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !productSupplier && styles.inputError]} onPress={toggleSupplierModal}>
@@ -179,7 +182,7 @@ const EditProductScreen = ({ route, navigation }) => {
                     <Supplier
                         isVisible={isSupplierModal}
                         onClose={toggleSupplierModal}
-                        selectedProductSupplierSd ={productSupplier}
+                        selectedProductSupplierSd={productSupplier}
                         onReset={handleResetFilters}
                         onApply={(selectedFilters) => {
                             setProductSupplier(selectedFilters.suppliers);
@@ -271,6 +274,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
+        justifyContent: 'center'
     },
     buttonIcon: {
         color: '#3669c9',
