@@ -1,24 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 const HomeAdminScreen = ({ navigation }) => {
+    const [isLoading, setIsLoading] = useState(false);
     const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
     useEffect(() => {
+        setIsLoading(true);
         const apiUrl = `${BASE_URL}products`;
         axios.get(apiUrl)
             .then(response => {
                 const productData = response.data.data.content;
-                
                 setProductsState(productData);
+                setIsLoading(false);
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
     }, []);
-    const img = img ? item.productImages[0].productImagePath : null
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
@@ -27,7 +28,7 @@ const HomeAdminScreen = ({ navigation }) => {
             })}
         >
             <View style={{ marginRight: 20, }}>
-                <Image source={{ uri: img  }} style={styles.productIcon} />
+                <Image source={{ uri: item.productImages[0].productImagePath  }} style={styles.productIcon} />
             </View>
 
             <View style={styles.productDetails}>
@@ -67,14 +68,26 @@ const HomeAdminScreen = ({ navigation }) => {
 
 
             {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductShipment')}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductScreen')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
+            {isLoading && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator size="large" color="#3669c9" />
+                </View>
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
     container: {
         flex: 1,
         padding: 20,

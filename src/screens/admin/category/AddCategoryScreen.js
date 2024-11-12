@@ -22,12 +22,14 @@ import { BASE_URL } from '../../api/config';
 
 const AddCategoryScreen = ({ navigation }) => {
     const [categoryName, setCategoryName] = useState('');
-    const [categoryImg, setCategoryImg] = useState('');
-    const [categoryStatusId, setCategoryStatusId] = useState('01000000-0000-0000-0000-000000000000'); // Default Status ID
-    const [categoryParent, setCategoryParent] = useState('01000000-0000-0000-0000-000000000000'); // Default Parent ID
+    const [categoryImg, setCategoryImg] = useState('https://png.pngtree.com/png-clipart/20210309/original/pngtree-smartphone-mockup-with-notch-camera-png-image_5884920.jpg');
+    const [categoryStatusId, setCategoryStatusId] = useState('02000000-0000-0000-0000-000000000000');
+    const [categoryParent, setCategoryParent] = useState();
+    const [parentCategoryName, setParentCategoryName] = useState();
 
     const [categoryRelease, setCategoryRelease] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
 
     const onDateChange = (event, selectedDate) => {
@@ -35,28 +37,34 @@ const AddCategoryScreen = ({ navigation }) => {
         setShowDatePicker(false);
         setCategoryRelease(currentDate);
     };
-
+    
     const handleAddCategory = async () => {
         try {
-            // Gửi yêu cầu POST tới API
-            const response = await axios.post(`${BASE_URL}category`, {
+            const formattedDate = categoryRelease.toISOString().split('T')[0]; // Định dạng lại ngày
+            const payload = {
                 categoryName: categoryName,
-                categoryRelease: categoryRelease.toISOString().split('T')[0], // Chuyển ngày thành chuỗi định dạng 'YYYY-MM-DD'
                 statusId: categoryStatusId,
-                categoryParent: categoryParent,
+                categoryRelease: formattedDate,
+                categoryParent: categoryParent[0],
                 categoryImgPath: categoryImg,
-            });
-
-            // Kiểm tra kết quả trả về từ API
-            if (response.status === 201) {
-                Alert.alert('Thành công', 'Danh mục đã được thêm.');
-                navigation.goBack(); // Quay lại màn hình trước đó
-            }
+            };
+    
+            const apiUrl = `${BASE_URL}category`;
+            // Thực hiện yêu cầu cập nhật
+            const response = await axios.post(apiUrl, payload);
+            
+            alert('Category Updated Successfully');
+            navigation.replace('CategoryList');
         } catch (error) {
-            console.error('Lỗi khi thêm danh mục:', error);
-            Alert.alert('Lỗi', 'Không thể thêm danh mục.');
+            // Log lỗi chi tiết
+            console.error('Error updating category:', error);
+            alert('Failed to update category');
         }
+
     };
+    const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
+
+    const handleResetFilters = () => setCategoryParent(null);
 
     return (
         <View style={styles.container}>
@@ -101,23 +109,31 @@ const AddCategoryScreen = ({ navigation }) => {
                     )}
 
                     {/* Status Danh Mục */}
-                    <Text style={styles.label}>Status Danh Mục:</Text>
+                    {/* <Text style={styles.label}>Status Danh Mục:</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Nhập Status Danh Mục"
                         value={categoryStatusId}
                         onChangeText={setCategoryStatusId}
-                    />
+                    /> */}
 
                     {/* Parent Danh Mục */}
-                    <Text style={styles.label}>Parent Danh Mục:</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nhập Parent Danh Mục"
-                        value={categoryParent}
-                        onChangeText={setCategoryParent}
-                    />
+                    <Text style={styles.label}>Thêm Danh Mục Cha:</Text>
+                    {/* Chọn danh mục cha */}
+                    <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
+                        {parentCategoryName ? (<Text>{parentCategoryName}</Text>) : (<Text>Chưa Chọn Danh Mục Cha</Text>)}
+                    </TouchableOpacity>
 
+                    {/* Modal để chọn danh mục cha */}
+                    <SelectorInCategory
+                        isVisible={isFilterModalVisible}
+                        onClose={toggleFilterModal}
+                        onReset={handleResetFilters}
+                        onApply={(selectedParent, selectedParentName) => {
+                            setCategoryParent(selectedParent);
+                            setParentCategoryName(selectedParentName);
+                        }}
+                    />
                     {/* Add Button */}
                     <TouchableOpacity style={styles.button} onPress={handleAddCategory}>
                         <Text style={styles.buttonText}>Thêm</Text>

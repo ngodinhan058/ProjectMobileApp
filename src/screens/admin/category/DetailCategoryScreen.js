@@ -15,7 +15,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 function DetailScreen({ route, navigation }) {
-    const { id, image, name, parent } = route.params;
+    const { id, image, name, parent, categoryAll } = route.params;
 
     // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
@@ -34,8 +34,8 @@ function DetailScreen({ route, navigation }) {
 
         setIsOpen(!isOpen);
 
-          // Thực hiện animation xoay icon
-          Animated.timing(rotation, {
+        // Thực hiện animation xoay icon
+        Animated.timing(rotation, {
             toValue: isOpen ? 0 : 1,
             duration: 300,
             useNativeDriver: true, // Để hiệu ứng xoay mượt hơn
@@ -58,18 +58,82 @@ function DetailScreen({ route, navigation }) {
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
     });
-    const deleteCategory = async () => {
+    const deleteCategory = async () => { 
         try {
-            const response = await axios.delete(`${BASE_URL}category/${id}`);
-            console.log('Category deleted:', response.status); // Trạng thái thành công
-            // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
+            const payload = {
+                id: id
+            };
+            const apiUrl = `${BASE_URL}category`;
+            
+            // Using request config to add data in the body
+            const response = await axios.delete(apiUrl, { data: payload });
+            
             Alert.alert("Success", "Xoá Thành Công");
-            // Điều hướng hoặc cập nhật trạng thái nếu cần
+            navigation.replace('CategoryList');
         } catch (error) {
             console.error('Error deleting category:', error.response ? error.response.data : error.message);
             Alert.alert("Error", "Failed to delete category.");
         }
     };
+    
+
+    //     try {
+    //         const formattedDate = categoryRelease.toISOString().split('T')[0]; // Định dạng lại ngày
+    //         const payload = {
+    //             categoryName: categoryName,
+    //             statusId: categoryStatusId,
+    //             categoryRelease: formattedDate,
+    //             categoryParent: categoryParent[0],
+    //             categoryImgPath: categoryImg,
+    //         };
+    
+    //         const apiUrl = `${BASE_URL}category`;
+    //         // Thực hiện yêu cầu cập nhật
+    //         const response = await axios.post(apiUrl, payload);
+            
+    //         alert('Category Updated Successfully');
+    //         navigation.replace('CategoryList');
+    //     } catch (error) {
+    //         // Log lỗi chi tiết
+    //         console.error('Error updating category:', error);
+    //         alert('Failed to update category');
+    //     }
+
+    // };
+    
+    // Hàm tìm danh mục dựa trên categoryId trong cây phân cấp
+    const findCategoryById = (categoryId, categories) => {
+        for (const category of categories) {
+            if (category.categoryId === categoryId) {
+                return category; // Tìm thấy danh mục
+            }
+            // Nếu không tìm thấy, tiếp tục tìm trong categoryChildren
+            if (category.categoryChildren && category.categoryChildren.length > 0) {
+                const foundCategory = findCategoryById(categoryId, category.categoryChildren);
+                if (foundCategory) return foundCategory;
+            }
+        }
+        return null; // Trả về null nếu không tìm thấy
+    };
+
+    // Hàm lấy tên danh mục cha từ trên xuống dưới
+    const findParentCategoryNames = (categoryId, categories) => {
+        // Tìm danh mục hiện tại theo ID
+        const currentCategory = findCategoryById(categoryId, categories);
+
+        // Nếu không tìm thấy danh mục hoặc đã đến danh mục gốc
+        if (!currentCategory || currentCategory.categoryParent === null) {
+            return currentCategory ? currentCategory.categoryName : "";
+        }
+
+        // Tìm tên của danh mục cha (đệ quy gọi hàm với categoryParent)
+        const parentCategoryName = findParentCategoryNames(currentCategory.categoryParent, categories);
+
+        // Ghép tên của danh mục cha và tên của danh mục hiện tại thành chuỗi
+        return `${parentCategoryName} > ${currentCategory.categoryName}` ;
+    };
+
+
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -83,18 +147,28 @@ function DetailScreen({ route, navigation }) {
 
                     {/* Product Image */}
                     <View style={styles.productImgContainer}>
-                        <Image source={{ uri: image }}style={styles.productImg} />
-                        
+                        <Image source={{ uri: image }} style={styles.productImg} />
+
                     </View>
 
                     {/* Product info */}
                     <View style={styles.productInfo}>
                         <View>
+                        <Text style={styles.title}>Tên Danh Mục: </Text>
                             <Text style={styles.productName}>{name}</Text>
                         </View>
-                        <View>
-                            <Text style={styles.productName}>{parent}</Text>
-                        </View>
+
+                        {/* Hiển thị tên của categoryParent */}
+                        {parent ? <View>
+                            <Text style={styles.title}>
+                            Cây phân cấp Categories: 
+                            </Text>
+                            <Text style={styles.productName}>
+                                {findParentCategoryNames(parent, categoryAll)}
+                            </Text>
+                        </View> : <Text style={styles.title}>
+                            Không có danh mục cha
+                        </Text>}
 
                     </View>
                 </View>
@@ -103,19 +177,19 @@ function DetailScreen({ route, navigation }) {
             {/* Add Button */}
             <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
                 <Animated.Text style={[styles.editButtonText, { transform: [{ rotate: rotateIcon }] }]}>
-                ▶
+                    ▶
                 </Animated.Text>
             </TouchableOpacity>
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditCategoryScreen' , {id, image, name, parent})}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditCategoryScreen', { id, image, name, parent })}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
 
             <Animated.View style={[styles.subButton, { bottom: position1 }]}>
-            <TouchableOpacity style={styles.iconButton} onPress={() => {
+                <TouchableOpacity style={styles.iconButton} onPress={() => {
                     Alert.alert(
                         "Confirm Deletion",
                         "Bạn có chắc muốn xoá không??",
@@ -182,10 +256,17 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 10,
     },
-    productName: {
+    title: {
         textTransform: 'uppercase',
         fontSize: 20,
         fontWeight: '700',
+        marginVertical: 10
+    },
+    productName: {
+        textTransform: 'uppercase',
+        fontSize: 18,
+        fontWeight: '500',
+        marginHorizontal: 10
     },
     productPrice: {
         color: '#FE3A30',
@@ -236,11 +317,11 @@ const styles = StyleSheet.create({
     editButtonText: {
         fontSize: 40,
         color: '#fff',
-       marginLeft: 10,
-       marginBottom: 10,
-        
+        marginLeft: 10,
+        marginBottom: 10,
+
     },
-    
+
     subButton: {
         position: 'absolute',
         right: 35,
