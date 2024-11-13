@@ -6,15 +6,15 @@ import { BASE_URL } from '../../api/config';
 
 const HomeAdminScreen = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [SizeAll, setSizeAll] = useState([]);
+    const [SuppliersAll, setSuppliersAll] = useState([]);
 
     useEffect(() => {
         setIsLoading(true);
-        const apiUrl = `${BASE_URL}product-sizes/category`;
+        const apiUrl = `${BASE_URL}product-suppliers`;
         axios.get(apiUrl)
             .then(response => {
-                const sizeData = response.data.data;
-                setSizeAll(sizeData);
+                const SuppliersData = response.data.data.content;
+                setSuppliersAll(SuppliersData);
                 setIsLoading(false);
             })
             .catch(error => {
@@ -22,32 +22,32 @@ const HomeAdminScreen = ({ navigation }) => {
             });
     }, []);
 
-
     const renderProduct = ({ item }) => (
         <View>
             <TouchableOpacity
                 style={styles.productItem}
-                onPress={() => navigation.navigate('DetailSizeScreen', {
-                    id: item.productSizeId,
-                    name: item.productSizeName,
+                onPress={() => navigation.navigate('DetailSupplierScreen', {
+                    id: item.productSupplierSd,
+                    name: item.productSupplierName,
+                    image: item.productSupplierLogo,
                 })}
             >
-                <View style={{ width: 50, height: 50, backgroundColor: `${item.productSizeName}`, borderRadius: 50 }} ></View>
+                <View style={{ marginRight: 20 }}>
+                    <Image source={{ uri: item.productSupplierLogo }} style={styles.productIcon} />
+                </View>
                 <View style={styles.productDetails}>
                     <Text style={{
                         fontSize: 16,
                         fontWeight: 'bold',
-                        color: `${item.productSizeName}`,
+                        color: '#000',
                         marginLeft: 20
                         
-                    }}>{item.productSizeName}</Text>
+                    }}>{item.productSupplierName}</Text>
                 </View>
                 <Pressable>
                     <Icon name="angle-right" size={25} color="#000" />
                 </Pressable>
             </TouchableOpacity>
-
-            
         </View>
     );
 
@@ -65,14 +65,14 @@ const HomeAdminScreen = ({ navigation }) => {
             </View>
             {/* Product List */}
             <FlatList
-                data={SizeAll}
+                data={SuppliersAll}
                 renderItem={renderProduct}
-                keyExtractor={(item) => item.productSizeId}
+                keyExtractor={(item) => item.productSupplierSd}
                 style={styles.productList}
             />
 
             {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddSizeScreen')}>
+            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddSupplierScreen')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
             {isLoading && (
@@ -117,7 +117,8 @@ const styles = StyleSheet.create({
     productItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#eee',
+        backgroundColor: '#fff',
+        borderColor: '#ccc',
         borderWidth: 2,
         padding: 20,
         borderRadius: 10,
