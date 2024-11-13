@@ -191,7 +191,7 @@ function DetailScreen({ route, navigation }) {
             <Animated.View style={[styles.subButton, { bottom: position1 }]}>
                 <TouchableOpacity style={styles.iconButton} onPress={() => {
                     Alert.alert(
-                        "Confirm Deletion",
+                        "Xác Nhận!!!",
                         "Bạn có chắc muốn xoá không??",
                         [
                             {

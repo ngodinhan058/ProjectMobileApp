@@ -170,7 +170,7 @@ function NoLoginHome() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate('Home');
+            navigation.replace('Home');
           },
         })}
       >
@@ -286,7 +286,7 @@ function HaveLoginHome() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate('Home');
+            navigation.replace('Home');
           },
         })}
       >

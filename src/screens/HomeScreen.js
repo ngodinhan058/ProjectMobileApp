@@ -51,7 +51,7 @@ const HomeScreen = ({ onScroll }) => {
       setProductsState(productsData);
       setCategories(categoriesData);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.log('Error fetching data:', error);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -166,10 +166,6 @@ const HomeScreen = ({ onScroll }) => {
               horizontal
               data={productsState}
               renderItem={({ item }) => {
-                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
-                // const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-                //   ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
-                //   : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
                 return (
                   <ProductItem
                     id={item['productId']}
