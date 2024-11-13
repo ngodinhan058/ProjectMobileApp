@@ -15,7 +15,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 function DetailScreen({ route, navigation }) {
-    const { id, name } = route.params;
+    const { id, name, image } = route.params;
 
     // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
@@ -60,13 +60,13 @@ function DetailScreen({ route, navigation }) {
     });
     const deleteSize = async () => {
         try {
-            const apiUrl = `${BASE_URL}product-sizes/${id}`;
+            const apiUrl = `${BASE_URL}product-supplier/${id}`;
 
             // Using request config to add data in the body
             const response = await axios.delete(apiUrl);
 
             Alert.alert("Success", "Xoá Thành Công");
-            navigation.replace('SizeList');
+            navigation.replace('SupplierList');
         } catch (error) {
             console.error('Error deleting Size:', error.response ? error.response.data : error.message);
             Alert.alert("Error", "Failed to delete Size.");
@@ -85,21 +85,17 @@ function DetailScreen({ route, navigation }) {
                         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                             <Icon name="angle-left" size={35} color="#000" />
                         </Pressable>
-                        <Text style={styles.textHeader}>Chi Tiết Màu</Text>
+                        <Text style={styles.textHeader}>Chi Tiết Thương Hiệu</Text>
                     </View>
 
                     {/* Product Image */}
-                    <View style={{
-                        width: 200,
-                        height: 200,
-                        backgroundColor: `${name}`,
-                        borderRadius: 200
-                    }}>
+                    <View style={styles.productImgContainer}>
+                        <Image source={{ uri: image }} style={styles.productImg} />
                     </View>
                 </View>
                  {/* Product info */}
                  <View style={styles.productInfo}>
-                        <Text style={styles.title}>Mã Màu: </Text>
+                        <Text style={styles.title}>Tên Thương Hiệu: </Text>
                         <Text style={styles.productName}>{name}</Text>
                     </View>
             </ScrollView>
@@ -113,7 +109,7 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditSizeScreen', { id, name })}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditSupplierScreen', { id, name, image })}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
@@ -143,7 +139,7 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
         height: '100%',
-        backgroundColor: '#eee',
+        backgroundColor: '#fff',
     },
     iconHeader: {
         flexDirection: 'row',
@@ -208,6 +204,18 @@ const styles = StyleSheet.create({
     productStar: {
         flexDirection: 'row',
         gap: 5,
+    },
+    productImg: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 10,
+        resizeMode: 'contain',
+    },
+    productImgContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        height: 200,
+        position: 'relative',
     },
     totalSellProduct: {
         color: '#3A9B7A',

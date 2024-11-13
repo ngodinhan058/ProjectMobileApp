@@ -14,60 +14,70 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import UploadImage from '../../../components/Up_Image';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import SelectorInCategory from '../../../components/SelectorInCategory';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
+const EditProductScreen = ({ route, navigation }) => {
+    const { id, name, image } = route.params; // categoryId truyền từ màn hình trước
+    const [SupplierName, setSupplierName] = useState(name);
+    const [SupplierLogo, setSupplierLogo] = useState(image);
 
-const AddSizeScreen = ({ navigation }) => {
-    const [SizeName, setSizeName] = useState('#');
+    
+    // Hàm để cập nhật danh mục
+    const handleEditSupplier = async () => {
+       try {
+           const payload = {
+               productSupplierName: SupplierName,
+               productSupplierLogo: SupplierLogo, 
+           };
 
-    const handleAddSize = async () => {
-        // Validate SizeName format (e.g., #FFFFFF)
-        const colorCodePattern = /^#[0-9A-Fa-f]{6}$/;
-        if (!colorCodePattern.test(SizeName)) {
-            Alert.alert('Thông Báo', 'Sai định dạng mã màu # + từ 0-9, a-f, (7 kí tự)');
-            return;
-        }
+           const apiUrl = `${BASE_URL}product-supplier/${id}`;
+           const response = await axios.put(apiUrl, payload);
 
-        try {
-            const payload = {
-                productSizeName: SizeName,
-            };
-
-            const apiUrl = `${BASE_URL}product-sizes`;
-            const response = await axios.post(apiUrl, payload);
-
-            Alert.alert('Success', 'Size updated successfully');
-            navigation.replace('SizeList');
-        } catch (error) {
-            Alert.alert('Error', 'Failed to update Size');
-        }
+           Alert.alert('Success', 'Supplier updated successfully');
+           navigation.replace('SupplierList');
+       } catch (error) {
+           Alert.alert('Error', 'Failed to update Supplier');
+       }
     };
+    
 
     return (
         <View style={styles.container}>
-            <ScrollView>
-                <View style={styles.header}>
-                    <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Icon name="angle-left" size={35} color="#000" />
-                    </Pressable>
-                    <Text style={styles.textHeader}>Thêm Thông Tin Màu</Text>
-                </View>
-                <View style={styles.formContainer}>
-                    <Text style={styles.label}>Thêm Mã Màu: (ví dụ màu đen: #000000)</Text>
+        <ScrollView>
+            <View style={styles.header}>
+                <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <Icon name="angle-left" size={35} color="#000" />
+                </Pressable>
+                <Text style={styles.textHeader}>Sửa Thông Tin Thương Hiệu</Text>
+            </View>
+            <View style={styles.formContainer}>
+            <Text style={styles.label}>Sửa Logo Thương Hiệu</Text>
                     <TextInput
-                        style={styles.input}
-                        placeholder="Nhập Mã Màu"
-                        value={SizeName}
-                        onChangeText={setSizeName}
-                        maxLength={7} // Limit input length
-                    />
-                    <TouchableOpacity style={styles.button} onPress={handleAddSize}>
-                        <Text style={styles.buttonText}>Thêm</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        </View>
+                       style={styles.input}
+                       placeholder="Nhập Logo"
+                       value={SupplierLogo}
+                       onChangeText={setSupplierLogo}
+
+                   />
+                <Text style={styles.label}>Sửa Tên Thương Hiệu</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Nhập Thương Hiệu"
+                    value={SupplierName}
+                    onChangeText={setSupplierName}
+                />
+
+            
+                <TouchableOpacity style={styles.button} onPress={handleEditSupplier}>
+                    <Text style={styles.buttonText}>Sửa</Text>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
+    </View>
     );
 };
 
@@ -215,4 +225,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default AddSizeScreen;
+export default EditProductScreen;

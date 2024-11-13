@@ -86,12 +86,19 @@ import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 import HomeShipmentScreen from './src/screens/admin/shipment/HomeScreen';
 import AddProductShipment from './src/screens/admin/shipment/AddProductShipment';
 {
-  /* AdminCategory*/
+  /* Admin Size*/
 }
 import HomeSizeScreen from './src/screens/admin/size/HomeScreen';
 import AddSizeScreen from './src/screens/admin/size/AddSizeScreen';
 import EditSizeScreen from './src/screens/admin/size/EditSizeScreen';
 import DetailSizeScreen from './src/screens/admin/size/DetailSizeScreen';
+{
+  /* Admin Supplier*/
+}
+import HomeSupplierScreen from './src/screens/admin/supplier/HomeScreen';
+import AddSupplierScreen from './src/screens/admin/supplier/AddSupplierScreen';
+import EditSupplierScreen from './src/screens/admin/supplier/EditSupplierScreen';
+import DetailSupplierScreen from './src/screens/admin/supplier/DetailSupplierScreen';
 {
   /* Shipper */
 }
@@ -373,12 +380,7 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
-      <Stack.Screen
-        name="DetailCategoryScreen"
-        component={DetailCategoryScreen}
-      />
-      <Stack.Screen name="AddCategoryScreen" component={AddCategoryScreen} />
-      <Stack.Screen name="EditCategoryScreen" component={EditCategoryScreen} />
+      
     </Stack.Navigator>
   );
 }
@@ -397,6 +399,21 @@ function SizeAdmin() {
     </Stack.Navigator>
   );
 }
+{
+  /* Admin Supplier */
+}
+function SupplierAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SupplierList" component={HomeSupplierScreen} />
+      <Stack.Screen name="AddSupplierShipment" component={AddSupplierScreen} />
+      <Stack.Screen name="DetailSupplierScreen" component={DetailSupplierScreen} />
+      <Stack.Screen name="AddSupplierScreen" component={AddSupplierScreen} />
+      <Stack.Screen name="EditSupplierScreen" component={EditSupplierScreen} />
+      
+    </Stack.Navigator>
+  );
+}
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
@@ -405,7 +422,7 @@ function AdminDrawerNavigator() {
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
       <Drawer.Screen name="Danh Sách Nhập Hàng" component={ShipmentAdmin} />
       <Drawer.Screen name="Danh Sách Màu" component={SizeAdmin} />
-      <Drawer.Screen name="Danh Sách Thương Hiệu" component={ShipmentAdmin} />
+      <Drawer.Screen name="Danh Sách Thương Hiệu" component={SupplierAdmin} />
     </Drawer.Navigator>
   );
 }

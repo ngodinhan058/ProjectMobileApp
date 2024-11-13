@@ -19,28 +19,24 @@ import { BASE_URL } from '../../api/config';
 
 
 const AddSizeScreen = ({ navigation }) => {
-    const [SizeName, setSizeName] = useState('#');
+    const [SupplierName, setSupplierName] = useState('');
+    const [SupplierLogo, setSupplierLogo] = useState('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png');
 
-    const handleAddSize = async () => {
-        // Validate SizeName format (e.g., #FFFFFF)
-        const colorCodePattern = /^#[0-9A-Fa-f]{6}$/;
-        if (!colorCodePattern.test(SizeName)) {
-            Alert.alert('Thông Báo', 'Sai định dạng mã màu # + từ 0-9, a-f, (7 kí tự)');
-            return;
-        }
+    const handleAddSupplier = async () => {
 
         try {
             const payload = {
-                productSizeName: SizeName,
+                productSupplierName: SupplierName,
+                productSupplierLogo: SupplierLogo,
             };
 
-            const apiUrl = `${BASE_URL}product-sizes`;
+            const apiUrl = `${BASE_URL}product-supplier`;
             const response = await axios.post(apiUrl, payload);
 
-            Alert.alert('Success', 'Size updated successfully');
-            navigation.replace('SizeList');
+            Alert.alert('Success', 'Supplier updated successfully');
+            navigation.replace('SupplierList');
         } catch (error) {
-            Alert.alert('Error', 'Failed to update Size');
+            Alert.alert('Error', 'Failed to update Supplier');
         }
     };
 
@@ -51,18 +47,26 @@ const AddSizeScreen = ({ navigation }) => {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Thêm Thông Tin Màu</Text>
+                    <Text style={styles.textHeader}>Thêm Thông Tin Thương Hiệu</Text>
                 </View>
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Thêm Mã Màu: (ví dụ màu đen: #000000)</Text>
+                    <Text style={styles.label}>Thêm Logo Thương Hiệu</Text>
+                    <TextInput
+                       style={styles.input}
+                       placeholder="Nhập Mã Màu"
+                       value={SupplierLogo}
+                       onChangeText={setSupplierLogo}
+
+                   />
+                   <Text style={styles.label}>Thêm Tên Thương Hiệu</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Nhập Mã Màu"
-                        value={SizeName}
-                        onChangeText={setSizeName}
-                        maxLength={7} // Limit input length
+                        placeholder="Nhập Tên Thương Hiệu"
+                        value={SupplierName}
+                        onChangeText={setSupplierName}
+
                     />
-                    <TouchableOpacity style={styles.button} onPress={handleAddSize}>
+                    <TouchableOpacity style={styles.button} onPress={handleAddSupplier}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>

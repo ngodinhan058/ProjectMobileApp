@@ -58,7 +58,7 @@ const EditProductScreen = ({ route, navigation }) => {
                 <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Icon name="angle-left" size={35} color="#000" />
                 </Pressable>
-                <Text style={styles.textHeader}>Sửa Thông Tin Size</Text>
+                <Text style={styles.textHeader}>Sửa Thông Tin Màu</Text>
             </View>
             <View style={styles.formContainer}>
                 <Text style={styles.label}>Sửa Mã Màu: (ví dụ màu đen: #000000)</Text>
