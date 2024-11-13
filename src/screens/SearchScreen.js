@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import ProductItem from '../components/ProductItem';
-import Filter from '../components/Filter';
+import Filter from '../components/FilterSearch';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
 
@@ -12,12 +12,12 @@ const SearchScreen = ({ navigation, route }) => {
     const [maxPrice, setMaxPrice] = useState();
 
     const { query } = route.params;
+    
     const finalQuery = query || '';
 
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [appliedFilters, setAppliedFilters] = useState(null);
     const [searchQuery, setSearchQuery] = useState(finalQuery); // Lưu trữ trạng thái cho thanh tìm kiếm
-    const [categoryId, setCategoryId] = useState();
 
     const [sort, setSort] = useState(''); // Kích thước trang (số sản phẩm mỗi trang)
     const [direction, setDirection] = useState(''); // Kích thước trang (số sản phẩm mỗi trang)
@@ -46,8 +46,6 @@ const SearchScreen = ({ navigation, route }) => {
             setDirection(null);
             setSort(null);
         }
-       
-        setCategoryId(filters.categories)
     };
 
     const handleResetFilters = () => {
@@ -61,12 +59,10 @@ const SearchScreen = ({ navigation, route }) => {
         if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
         if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
         if (direction && direction !== "") queryParams.push(`direction=${direction}`);
-        if (sort && sort != "") queryParams.push(`sort=${sort}`);categoryId
+        if (sort && sort != "") queryParams.push(`sort=${sort}`);
         if (searchQuery !== null && searchQuery !== undefined) queryParams.push(`search=${searchQuery}`);
-        if (categoryId !== null && categoryId !== undefined) queryParams.push(`categoryId=${categoryId}`);
 
         apiUrl += queryParams.join('&');
-        console.log('sanpham', apiUrl)
         axios.get(apiUrl)
             .then(response => {
                 const { content } = response.data.data;
@@ -74,11 +70,10 @@ const SearchScreen = ({ navigation, route }) => {
                 setLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching data:', error);
                 setProductsState([]);
                 setLoading(true);
             });
-    }, [minPrice, maxPrice, searchQuery, sort, direction, categoryId]);
+    }, [minPrice, maxPrice, searchQuery, sort, direction]);
 
     const filteredSuggestions = productsState.filter(product =>
         product.productName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -122,24 +117,16 @@ const SearchScreen = ({ navigation, route }) => {
                 <FlatList
                     data={filteredSuggestions}
                     renderItem={({ item }) => {
-                        // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
-
-                        const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-                        ? (item.productImages.find(img => img.productImageIndex === 1)?.productImagePath || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png')
-                        : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';
-      
-
-
                         return (
                             <ProductItem
                                 id={item['productId']}
                                 name={item['productName']}
                                 price={item['productPriceSale']}
                                 oldPrice={item['productPrice']}
-                                image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                                image={item['productImages']?.[0].productImagePath}
                                 rating={item['productRating']}
                                 sale={item['productSale']}
-                                isLoading={false}  // Set isLoading to false when not loading
+                                isLoading={false} 
                             />
                         );
                     }}

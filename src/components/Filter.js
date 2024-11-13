@@ -5,33 +5,53 @@ import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 
 
-const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
-    const [categories, setCategories] = useState([]);
-    const [selectedCategories, setSelectedCategories] = useState(null);
+const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
+    const [Sizes, setSizes] = useState([]);
+    const [supplier, setSupplier] = useState([]);
 
+    const [selectedSizes, setSelectedSizes] = useState([]);
+    const [selectedSupplier, setSelectedSupplier] = useState([]);
 
+    const [loading, setLoading] = useState();
     const [priceRange, setPriceRange] = useState([0, 2000000]);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpandedSupplier, setIsExpandedSupplier] = useState(false);
     const [sortOption, setSortOption] = useState();
 
-    useEffect(() => {
-        let apiUrl = `${BASE_URL}categories`;
+    const fetchData = async () => {
+        try {
+            let supplierApiUrl = '';
+            let SizesApiUrl = '';
 
-        const fetchData = async () => {
-            try {
-                const response = await axios.get(apiUrl);
-                const data = response.data.data;
-                setCategories(data);
-                setSelectedCategories();
-            } catch (error) {
-                console.error('Error fetching data:', error.response ? error.response.data : error.message);
+            if (id === undefined) {
+                supplierApiUrl = `${BASE_URL}product-suppliers/category`;
+                SizesApiUrl = `${BASE_URL}product-sizes/category`;
+            } else {
+                supplierApiUrl = `${BASE_URL}product-suppliers/category/${id}?`;
+                SizesApiUrl = `${BASE_URL}product-sizes/category/${id}?`;
             }
-        };
 
+            const [supplierResponse, SizesResponse] = await Promise.all([
+                axios.get(supplierApiUrl),
+                axios.get(SizesApiUrl),
+            ]);
+            const supplierData = supplierResponse.data.data;
+
+            const SizesData = SizesResponse.data.data;
+            setSupplier(supplierData);
+            setSizes(SizesData);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
     }, []);
-
-
     const handleSliderChange = (values) => {
         setPriceRange(values);
     };
@@ -49,19 +69,25 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
             </>
         );
     };
-    const toggleCheckbox = (categoryId) => {
-        setSelectedCategories(categoryId);
+    const toggleRadiobox = (productSupplierSd) => {
+        const newSelectedSizes = selectedSizes.includes(productSupplierSd)
+            ? selectedSizes.filter((id) => id !== productSupplierSd)
+            : [...selectedSizes, productSupplierSd];
+
+        setSelectedSizes(newSelectedSizes); // Toggle the size ID in the array
+    };
+    const toggleCheckbox = (productSupllierId) => {
+        setSelectedSupplier(productSupllierId);
     };
     const handleSortChange = (value) => {
         setSortOption(value); // Cập nhật giá trị sort
     };
     const handleApply = () => {
-
-        // Tạo đối tượng filter chỉ chứa các category đã chọn và khoảng giá
         const selectedFilters = {
-            categories: selectedCategories, // Chỉ truyền ID các danh mục đã chọn
+            sizes: selectedSizes,
             priceRange,
             sort: sortOption,
+            supplier: selectedSupplier
         };
 
         // Gọi hàm onApply với dữ liệu lọc và đóng modal
@@ -70,18 +96,24 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
     };
 
     const handleReset = () => {
-        setSelectedCategories(null);
+        setSelectedSizes([]);
         setPriceRange([0, 2000000]);
         setSortOption(null);
         onReset();
+        onClose();
     };
 
     const toggleExpand = () => {
         setIsExpanded(!isExpanded);
     };
+    const toggleExpandSupplier = () => {
+        setIsExpandedSupplier(!isExpandedSupplier);
+    };
 
     // Hiển thị 4 mục đầu tiên hoặc tất cả tùy thuộc vào trạng thái
-    const categoriesToShow = isExpanded ? categories : categories.slice(0, 4);
+    const SizesToShow = isExpanded ? Sizes : Sizes.slice(0, 5);
+    const SupplierToShow = isExpandedSupplier ? supplier : supplier.slice(0, 4);
+
 
     return (
         <Modal
@@ -96,7 +128,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
             <View style={styles.container}>
                 <Text style={styles.title}>Bộ lọc và Sắp Xếp</Text>
-                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator= {false}>
+                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                     <View style={styles.sliderContainer}>
                         <Text style={styles.titleSmall}>Giá:</Text>
                         <MultiSlider
@@ -124,10 +156,48 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
 
                     <View style={styles.line}></View>
                     {/* Cập nhật cách hiển thị danh mục */}
-                    <Text style={styles.titleSmall}>Danh Mục:</Text>
+                    <Text style={styles.titleSmall}>Màu:</Text>
+                    <View style={styles.radioCheckContainer}>
+                        {SizesToShow.map((category, index) => (
+                            <View key={index} style={styles.checkboxRow}>
+                                <View style={styles.checkboxColumn}>
+                                    <TouchableOpacity
+                                        style={{
+                                            width: 62,
+                                            height: 55,
+                                            borderWidth: 2,
+                                            borderColor: '#000',
+                                            borderRadius: 10,
+                                            backgroundColor: `${category.productSizeName}`,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            padding: 5,
+                                            marginRight: 8,
+                                        }}
+                                        onPress={() => toggleRadiobox(category.productSizeId)}
+                                    >
 
+                                        {selectedSizes.includes(category.productSizeId) && (
+                                            <View style={styles.radioCheckedBox}>
+                                                <Text style={styles.tickCheckedBox}>✔</Text>
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ))}
+                    </View>
+                    {Sizes.length > 5 ? (<TouchableOpacity onPress={toggleExpand}>
+                        <Text style={styles.toggleButtonText}>
+                            {isExpanded ? 'Thu gọn lại' : 'Hiển thị thêm'}
+                        </Text>
+                    </TouchableOpacity>) : null}
+                    
+
+                    <View style={styles.line}></View>
+                    <Text style={styles.titleSmall}>Thương Hiệu:</Text>
                     <View style={styles.checkboxContainer}>
-                        {categoriesToShow.map((category, index) => {
+                        {SupplierToShow.map((supplier, index) => {
                             if (index % 2 === 0) {
                                 return (
                                     <View key={index} style={styles.checkboxRow}>
@@ -135,12 +205,12 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                                         <View style={styles.checkboxColumn}>
                                             <TouchableOpacity
                                                 style={styles.checkbox}
-                                                onPress={() => toggleCheckbox(categoriesToShow[index].categoryId)}
+                                                onPress={() => toggleCheckbox(SupplierToShow[index].productSupplierSd)}
                                             >
                                                 <Text style={styles.checkboxText}>
-                                                    {categoriesToShow[index].categoryName.charAt(0).toUpperCase() + categoriesToShow[index].categoryName.slice(1)}
+                                                    {SupplierToShow[index].productSupplierName.charAt(0).toUpperCase() + SupplierToShow[index].productSupplierName.slice(1)}
                                                 </Text>
-                                                {selectedCategories === categoriesToShow[index].categoryId && (
+                                                {selectedSupplier === SupplierToShow[index].productSupplierSd && (
                                                     <View style={styles.checkedBox}>
                                                         <Text style={styles.tickCheckedBox}>✔</Text>
                                                     </View>
@@ -149,16 +219,16 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                                         </View>
 
                                         {/* Second checkbox of the row */}
-                                        {categoriesToShow[index + 1] && (
+                                        {SupplierToShow[index + 1] && (
                                             <View style={styles.checkboxColumn}>
                                                 <TouchableOpacity
                                                     style={styles.checkbox}
-                                                    onPress={() => toggleCheckbox(categoriesToShow[index + 1].categoryId)}
+                                                    onPress={() => toggleCheckbox(SupplierToShow[index + 1].productSupplierSd)}
                                                 >
                                                     <Text style={styles.checkboxText}>
-                                                        {categoriesToShow[index + 1].categoryName.charAt(0).toUpperCase() + categoriesToShow[index + 1].categoryName.slice(1)}
+                                                        {SupplierToShow[index + 1].productSupplierName.charAt(0).toUpperCase() + SupplierToShow[index + 1].productSupplierName.slice(1)}
                                                     </Text>
-                                                    {selectedCategories === categoriesToShow[index + 1].categoryId && (
+                                                    {selectedSupplier === SupplierToShow[index + 1].productSupplierSd && (
                                                         <View style={styles.checkedBox}>
                                                             <Text style={styles.tickCheckedBox}>✔</Text>
                                                         </View>
@@ -172,11 +242,13 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                             }
                         })}
                     </View>
-                    <TouchableOpacity onPress={toggleExpand}>
+
+                    {supplier.length > 4 ? ( <TouchableOpacity onPress={toggleExpandSupplier}>
                         <Text style={styles.toggleButtonText}>
-                            {isExpanded ? 'Thu gọn lại' : 'Hiển thị thêm'}
+                            {isExpandedSupplier ? 'Thu gọn lại' : 'Hiển thị thêm'}
                         </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity>) : null}
+                   
                     <View style={styles.line}></View>
                     {/* Kết thúc danh mục */}
                     <Text style={styles.titleSmall}>Sắp Xếp:</Text>
@@ -269,7 +341,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 50,
         alignItems: 'center',
-        justifyContent:'center',
+        justifyContent: 'center',
         borderColor: '#000',
         borderWidth: 1,
         borderRadius: 10,
@@ -278,7 +350,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 50,
         alignItems: 'center',
-        justifyContent:'center',
+        justifyContent: 'center',
         backgroundColor: '#3669c9',
         borderRadius: 10,
     },
@@ -288,6 +360,12 @@ const styles = StyleSheet.create({
     checkboxContainer: {
         marginBottom: 20,
     },
+    radioCheckContainer: {
+        marginBottom: 20,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+    },
     checkboxRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -296,10 +374,11 @@ const styles = StyleSheet.create({
     checkboxColumn: {
         flexDirection: 'row',
         alignItems: 'center',
+        
     },
     checkbox: {
         width: 150,
-        height: 50,
+        height: 55,
         borderWidth: 2,
         borderColor: '#000',
         borderRadius: 10,
@@ -313,7 +392,14 @@ const styles = StyleSheet.create({
     },
     checkedBox: {
         width: 150,
-        height: 50,
+        height: 55,
+        borderWidth: 4,
+        borderRadius: 10,
+        borderColor: '#3669c9'
+    },
+    radioCheckedBox: {
+        width: 62,
+        height: 55,
         borderWidth: 4,
         borderRadius: 10,
         borderColor: '#3669c9'

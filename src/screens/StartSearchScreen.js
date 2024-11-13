@@ -55,7 +55,7 @@ const SearchScreen = ({ navigation, route }) => {
 
       setSuggestion(productsData);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.log('Error fetching data:', error);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -86,7 +86,7 @@ const SearchScreen = ({ navigation, route }) => {
       } else {
         setSuggestion([]); // Clear suggestions if search query is empty or too short
       }
-    }, 3000); // Wait for 3 seconds before fetching
+    }, 0); // Wait for 3 seconds before fetching
     setLoading(false);
 
     return () => {
@@ -143,11 +143,6 @@ const SearchScreen = ({ navigation, route }) => {
   //   product.name.toLowerCase().includes(searchQuery.toLowerCase())
   // );
   const handleSearch = async () => {
-    // Save the current search query to recent searches
-    // if (searchQuery && !recentSearches.includes(searchQuery)) {
-    //   setRecentSearches([searchQuery, ...recentSearches]);
-    // }
-
     if (recentSearches.includes(searchQuery)) {
       return; // Early return if term already exists
     }
@@ -166,12 +161,12 @@ const SearchScreen = ({ navigation, route }) => {
       setSearchQuery(term);
 
       // Uncomment to navigate to SearchScreen if needed
-      // navigation.replace('SearchScreen', { query: term });
+      navigation.replace('SearchScreen', { query: term });
     } catch (error) {
-      console.error('Error saving recent searches:', error);
+      console.log('Error saving recent searches:', error);
     }
     // Navigate to the search screen with the current query
-    navigation.replace('SearchScreen', { query: searchQuery });
+    // navigation.replace('SearchScreen', { query: searchQuery });
   };
 
   const searchInputRef = useRef(null);
@@ -198,7 +193,7 @@ const SearchScreen = ({ navigation, route }) => {
       // Uncomment to navigate to SearchScreen if needed
       //navigation.replace('SearchScreen', { query: term });
     } catch (error) {
-      console.error('Error saving recent searches:', error);
+      console.log('Error saving recent searches:', error);
     }
   };
 
@@ -257,7 +252,7 @@ const SearchScreen = ({ navigation, route }) => {
                       <View key={item.productId}>
                         <View style={styles.suggestionItem}>
                           <TouchableOpacity
-                            onPress={() => handleRecentSearchClick(item.name)}
+                            onPress={() => handleRecentSearchClick(item.productName)}
                             style={{
                               flexDirection: 'row',
                               alignItems: 'center',
@@ -277,62 +272,67 @@ const SearchScreen = ({ navigation, route }) => {
                     ))}
                   </ScrollView>
                 )}
+
               </>
             )}
           </View>
+
         ) : (
-          <View style={styles.recentSearchesContainer}>
-            <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
-            <ScrollView contentContainerStyle={styles.listContent}>
-              {recentSearchesShow.map((item, index) => (
-                <View key={index.toString()} style={styles.recentSearchItem}>
-                  <TouchableOpacity
-                    onPress={() => handleRecentSearchClick(item)}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Image
-                      source={require('../assets/clock.png')}
-                      style={styles.clock}
-                    />
-                    <Text style={styles.recentSearchText}>{item}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => removeSearchTerm(item)}>
-                    <Image
-                      source={require('../assets/iconClose.png')}
-                      style={styles.iconSmall}
-                    />
-                  </TouchableOpacity>
+          <>
+            <View style={styles.recentSearchesContainer}>
+              <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
+              <ScrollView contentContainerStyle={styles.listContent}>
+                {recentSearchesShow.map((item, index) => (
+                  <View key={index.toString()} style={styles.recentSearchItem}>
+                    <TouchableOpacity
+                      onPress={() => handleRecentSearchClick(item)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Image
+                        source={require('../assets/clock.png')}
+                        style={styles.clock}
+                      />
+                      <Text style={styles.recentSearchText}>{item}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => removeSearchTerm(item)}>
+                      <Image
+                        source={require('../assets/iconClose.png')}
+                        style={styles.iconSmall}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+              <TouchableOpacity
+                onPress={toggleExpand}
+                style={{
+                  marginBottom: 10,
+                  color: '#3669c9',
+                }}
+              >
+                <Text style={{ color: '#C4C5C4', textAlign: 'center' }}>
+                  {isFilterModalVisible ? 'Collapse' : 'Show More'}
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+            <View style={styles.greySection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
+              </View>
+              <ScrollView contentContainerStyle={styles.listContent}>
+                <View style={styles.columnWrapper}>
+                  {featuredProducts.map((item) => (
+                    <ProductItem key={item.id} {...item} />
+                  ))}
                 </View>
-              ))}
-            </ScrollView>
-            <TouchableOpacity
-              onPress={toggleExpand}
-              style={{
-                marginBottom: 10,
-                color: '#3669c9',
-              }}
-            >
-              <Text style={{ color: '#C4C5C4', textAlign: 'center' }}>
-                {isFilterModalVisible ? 'Collapse' : 'Show More'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              </ScrollView>
+            </View>
+          </>
         )}
-      </View>
-      <View style={styles.greySection}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.listContent}>
-          <View style={styles.columnWrapper}>
-            {featuredProducts.map((item) => (
-              <ProductItem key={item.id} {...item} />
-            ))}
-          </View>
-        </ScrollView>
       </View>
     </ScrollView>
   );
@@ -396,8 +396,6 @@ const styles = {
   suggestionText: { fontSize: 16 },
   greySection: {
     width: '100%',
-    paddingHorizontal: 20,
-    backgroundColor: '#fafafa',
     paddingTop: 20,
     borderRadius: 30,
   },
