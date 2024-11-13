@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Pressable,
+  Alert,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './api/config';
 
 const LoginScreen = ({ navigation }) => {
@@ -22,16 +30,22 @@ const LoginScreen = ({ navigation }) => {
 
   const login = async (email, password) => {
     try {
-      console.log({ userEmail: email, userPassword: password });
-      const response = await axios.post(`${BASE_URL}users`, {
+      const response = await axios.post(`${BASE_URL}auth/login`, {
         userEmail: email,
-        userPasswordLevel2: password,
+        userPassword: password,
       });
-      const userData = response.data.data;
-      await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
+
+      const userData = response.data.result;
+      await AsyncStorage.setItem(
+        'userData',
+        JSON.stringify({ username: email, token: userData.token })
+      ); // Lưu thông tin người dùng
       return userData;
     } catch (error) {
-      console.error('Login failed', error.response ? error.response.data : error.message);
+      console.error(
+        'Login failed',
+        error.response ? error.response.data : error.message
+      );
       throw error; // Ném lỗi để có thể hiển thị thông báo
     }
   };
@@ -55,13 +69,18 @@ const LoginScreen = ({ navigation }) => {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.innerContainer}>
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
 
         <Text style={styles.title}>Chào Mừng Bạn Quay Lại</Text>
         <Text style={styles.titleBold}>Mega Mall</Text>
-        <Text style={styles.subtitle}>Nhập Email/Tên Đăng Nhập, và Mật khẩu để đăng nhập</Text>
+        <Text style={styles.subtitle}>
+          Nhập Email/Tên Đăng Nhập, và Mật khẩu để đăng nhập
+        </Text>
 
         <Text style={styles.label}>Tên Đăng Nhập/ Email</Text>
         <TextInput
@@ -86,7 +105,11 @@ const LoginScreen = ({ navigation }) => {
             style={styles.eyeButton}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <Icon name={showPassword ? "eye" : "eye-slash"} size={20} color="#C4C4C4" />
+            <Icon
+              name={showPassword ? 'eye' : 'eye-slash'}
+              size={20}
+              color="#C4C4C4"
+            />
           </Pressable>
         </View>
 
@@ -101,17 +124,26 @@ const LoginScreen = ({ navigation }) => {
           >
             <Text style={styles.signInText}>Đăng Nhập</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => navigation.goBack()}
+          >
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.footerContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('ResetPassScreen')}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ResetPassScreen')}
+          >
             <Text style={styles.footerText}>Quên Mật Khẩu</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('SignUpScreen')}>
-            <Text style={{ color: '#3669c9', fontSize: 14, fontWeight: 'bold' }}>Sign Up</Text>
+            <Text
+              style={{ color: '#3669c9', fontSize: 14, fontWeight: 'bold' }}
+            >
+              Sign Up
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

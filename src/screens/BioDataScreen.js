@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet, Button, Pressable, Image, TouchableWithoutFeedback } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  StyleSheet,
+  Button,
+  Pressable,
+  Image,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BiodataScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
@@ -26,10 +38,34 @@ const BiodataScreen = ({ navigation }) => {
     setDateOfBirth(currentDate);
   };
 
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem('userData');
+
+        console.log(savedCart);
+
+        if (savedCart) {
+          const { username, token } = JSON.parse(savedCart);
+          setUser({ username, token });
+        }
+      } catch (error) {
+        console.error('Error loading cart from AsyncStorage:', error);
+      }
+    };
+
+    loadUser();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.iconHeader}>
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
         <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
@@ -38,10 +74,12 @@ const BiodataScreen = ({ navigation }) => {
       <View style={styles.avatarContainer}>
         <Image
           style={styles.avatar}
-          source={{ uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389' }} // URL hình ảnh đại diện
+          source={{
+            uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
+          }} // URL hình ảnh đại diện
         />
-        <Text style={styles.nameText}>Yourname</Text>
-        <Text style={styles.emailText}>youremail@gmail.com</Text>
+        <Text style={styles.nameText}>{user.username}</Text>
+        <Text style={styles.emailText}>{user.username}</Text>
       </View>
 
       {/* First Name */}
@@ -70,19 +108,31 @@ const BiodataScreen = ({ navigation }) => {
       />
 
       {/* Gender */}
-      <TouchableOpacity style={styles.input} onPress={() => setIsGenderModalVisible(true)}>
+      <TouchableOpacity
+        style={styles.input}
+        onPress={() => setIsGenderModalVisible(true)}
+      >
         <Text>{gender ? gender : 'Select your gender'}</Text>
       </TouchableOpacity>
 
       {/* Gender Selection Modal */}
-      <Modal visible={isGenderModalVisible} transparent={true} animationType="slide">
-        <TouchableWithoutFeedback onPress={() => setIsGenderModalVisible(false)}>
+      <Modal
+        visible={isGenderModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <TouchableWithoutFeedback
+          onPress={() => setIsGenderModalVisible(false)}
+        >
           <View style={styles.modalContainer}>
             <FlatList
               data={genderOptions}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.optionButton} onPress={() => handleGenderSelect(item)}>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() => handleGenderSelect(item)}
+                >
                   <Text style={styles.optionText}>{item}</Text>
                 </TouchableOpacity>
               )}
@@ -92,8 +142,15 @@ const BiodataScreen = ({ navigation }) => {
       </Modal>
 
       {/* Date of Birth */}
-      <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-        <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'What is your date of birth?'}</Text>
+      <TouchableOpacity
+        style={styles.input}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text>
+          {dateOfBirth
+            ? dateOfBirth.toDateString()
+            : 'What is your date of birth?'}
+        </Text>
       </TouchableOpacity>
 
       {showDatePicker && (
@@ -141,12 +198,11 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 100,
     borderWidth: 2,
-    borderColor: '#fff'
+    borderColor: '#fff',
   },
   avatarContainer: {
     justifyContent: 'space-between',
     alignItems: 'center',
-
   },
   avatarCircle: {
     width: 100,

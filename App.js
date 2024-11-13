@@ -136,7 +136,6 @@ import ChatScreen from './src/screens/shipper/ChatScreen';
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
 
-
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -168,9 +167,7 @@ function NoLoginHome() {
 
   return (
     <Tab.Navigator
-      tabBar={(props) => (
-        <Footer {...props} isVisible={isFooterVisible} />
-      )}
+      tabBar={(props) => <Footer {...props} isVisible={isFooterVisible} />}
     >
       <Tab.Screen
         name="Mega Mall"
@@ -192,9 +189,12 @@ function NoLoginHome() {
         )}
       </Tab.Screen>
 
-      <Tab.Screen name="Wishlist" options={{
-        header: () => <Header />,
-      }}>
+      <Tab.Screen
+        name="Wishlist"
+        options={{
+          header: () => <Header />,
+        }}
+      >
         {() => <WishListScreen onScroll={handleScroll} />}
       </Tab.Screen>
       <Tab.Screen
@@ -206,27 +206,52 @@ function NoLoginHome() {
           blur: () => setIsFooterVisible(true),
         }}
       />
-      <Tab.Screen name="Login" component={LoginStack} options={{ headerShown: false }} listeners={{
-        focus: () => setIsFooterVisible(false),
-        blur: () => setIsFooterVisible(true),
-      }} />
+      <Tab.Screen
+        name="Login"
+        component={LoginStack}
+        options={{ headerShown: false }}
+        listeners={{
+          focus: () => setIsFooterVisible(false),
+          blur: () => setIsFooterVisible(true),
+        }}
+      />
     </Tab.Navigator>
   );
 }
 
 function HomeStack({ onScroll, setIsFooterVisible }) {
   const screens = [
-    { name: "Home", component: HomeScreen, showFooter: true },
-    { name: "ProductByCateScreen", component: ProductByCateScreen, showFooter: true },
-    { name: "SearchScreen", component: SearchScreen, showFooter: true },
-    { name: "StartSearchScreen", component: StartSearchScreen, showFooter: true },
-    { name: "ProductDetailScreen", component: ProductDetailScreen, showFooter: true },
-    { name: "NewsScreen", component: NewsScreen, showFooter: true },
-    { name: "NewsDetailScreen", component: NewsDetailScreen, showFooter: true },
-    { name: "AddedProductToWishlist", component: AddedProductToWishlist, showFooter: false },
-    { name: "AddToCartScreen", component: AddToCartScreen, showFooter: false }, // Ẩn Footer cho màn AddToCartScreen
-    { name: "ReviewProductScreen", component: ReviewProductScreen, showFooter: true },
-    { name: "SuccessScreen", component: SuccessScreen, showFooter: true },
+    { name: 'Home', component: HomeScreen, showFooter: true },
+    {
+      name: 'ProductByCateScreen',
+      component: ProductByCateScreen,
+      showFooter: true,
+    },
+    { name: 'SearchScreen', component: SearchScreen, showFooter: true },
+    {
+      name: 'StartSearchScreen',
+      component: StartSearchScreen,
+      showFooter: true,
+    },
+    {
+      name: 'ProductDetailScreen',
+      component: ProductDetailScreen,
+      showFooter: true,
+    },
+    { name: 'NewsScreen', component: NewsScreen, showFooter: true },
+    { name: 'NewsDetailScreen', component: NewsDetailScreen, showFooter: true },
+    {
+      name: 'AddedProductToWishlist',
+      component: AddedProductToWishlist,
+      showFooter: true,
+    },
+    { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false }, // Ẩn Footer cho màn AddToCartScreen
+    {
+      name: 'ReviewProductScreen',
+      component: ReviewProductScreen,
+      showFooter: true,
+    },
+    { name: 'SuccessScreen', component: SuccessScreen, showFooter: true },
   ];
 
   return (
@@ -240,7 +265,9 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
             focus: () => setIsFooterVisible(screen.showFooter), // Thiết lập hiển thị Footer khi focus vào màn hình
           }}
         >
-          {(props) => React.createElement(screen.component, { ...props, onScroll })}
+          {(props) =>
+            React.createElement(screen.component, { ...props, onScroll })
+          }
         </Stack.Screen>
       ))}
     </Stack.Navigator>
@@ -256,9 +283,7 @@ function HaveLoginHome() {
   };
   return (
     <Tab.Navigator
-      tabBar={(props) => (
-        <Footer {...props} isVisible={isFooterVisible} />
-      )}
+      tabBar={(props) => <Footer {...props} isVisible={isFooterVisible} />}
     >
       <Tab.Screen
         name="Mega Mall"
@@ -272,17 +297,34 @@ function HaveLoginHome() {
           },
         })}
       >
-        {() => <HomeStack onScroll={handleScroll} setIsFooterVisible={setIsFooterVisible} />}
+        {() => (
+          <HomeStack
+            onScroll={handleScroll}
+            setIsFooterVisible={setIsFooterVisible}
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="Wishlist" options={{
-        header: () => <Header />,
-      }}>
+      <Tab.Screen
+        name="Wishlist"
+        options={{
+          header: () => <Header />,
+        }}
+      >
         {() => <WishListScreen onScroll={handleScroll} />}
       </Tab.Screen>
-      <Tab.Screen name="MyOrderScreen" component={MyOrderScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Login" options={{ headerShown: false }} >
-        {() => <HaveLoginStack onScroll={handleScroll} setIsFooterVisible={setIsFooterVisible}/>}
+      <Tab.Screen
+        name="MyOrderScreen"
+        component={MyOrderScreen}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen name="Login" options={{ headerShown: false }}>
+        {() => (
+          <HaveLoginStack
+            onScroll={handleScroll}
+            setIsFooterVisible={setIsFooterVisible}
+          />
+        )}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -292,9 +334,8 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     // { name: "CompletedOrderConfirmationScreen" ,component : CompletedOrderConfirmationScreen},
     // { name: "RejectOrderConfirmationScreen" ,component : RejectOrderConfirmationScreen},
     // { name: "OrderConfirmationScreen" ,component : OrderConfirmationScreen},
-    { name: "ProfileScreen", component: ProfileScreen, showFooter: true },
-    { name: "BioDataScreen", component: BioDataScreen, showFooter: false },
-
+    { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
+    { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -307,12 +348,13 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
             focus: () => setIsFooterVisible(screen.showFooter),
           }}
         >
-          {(props) => React.createElement(screen.component, { ...props, onScroll })}
+          {(props) =>
+            React.createElement(screen.component, { ...props, onScroll })
+          }
         </Stack.Screen>
       ))}
     </Stack.Navigator>
   );
-
 }
 {
   /* Admin Product */
@@ -373,12 +415,7 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
-      <Stack.Screen
-        name="DetailCategoryScreen"
-        component={DetailCategoryScreen}
-      />
-      <Stack.Screen name="AddCategoryScreen" component={AddCategoryScreen} />
-      <Stack.Screen name="EditCategoryScreen" component={EditCategoryScreen} />
+      
     </Stack.Navigator>
   );
 }
@@ -400,7 +437,7 @@ function SizeAdmin() {
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin}/>
+      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
       <Drawer.Screen name="Danh Sách Nhập Hàng" component={ShipmentAdmin} />
@@ -564,16 +601,37 @@ function Accouting() {
     </Stack.Navigator>
   );
 }
+
 export default function App() {
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem('userData');
+
+        if (savedCart) {
+          const { username, token } = JSON.parse(savedCart);
+          setUser({ username, token });
+        }
+      } catch (error) {
+        console.error('Error loading cart from AsyncStorage:', error);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  console.log(user);
+
   return (
     <NavigationContainer>
-      {/* <HaveLoginHome /> */}
+      <HaveLoginHome />
       {/* <NoLoginHome /> */}
-      <AdminDrawerNavigator /> 
+      {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
-
     </NavigationContainer>
   );
 }
