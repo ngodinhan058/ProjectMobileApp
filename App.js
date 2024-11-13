@@ -86,6 +86,13 @@ import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 import HomeShipmentScreen from './src/screens/admin/shipment/HomeScreen';
 import AddProductShipment from './src/screens/admin/shipment/AddProductShipment';
 {
+  /* AdminCategory*/
+}
+import HomeSizeScreen from './src/screens/admin/size/HomeScreen';
+import AddSizeScreen from './src/screens/admin/size/AddSizeScreen';
+import EditSizeScreen from './src/screens/admin/size/EditSizeScreen';
+import DetailSizeScreen from './src/screens/admin/size/DetailSizeScreen';
+{
   /* Shipper */
 }
 import ShipperHomeScreen from './src/screens/shipper/ShipperHomeScreen';
@@ -408,6 +415,22 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
+      
+    </Stack.Navigator>
+  );
+}
+{
+  /* Admin Size */
+}
+function SizeAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SizeList" component={HomeSizeScreen} />
+      <Stack.Screen name="AddSizeShipment" component={AddSizeScreen} />
+      <Stack.Screen name="DetailSizeScreen" component={DetailSizeScreen} />
+      <Stack.Screen name="AddSizeScreen" component={AddSizeScreen} />
+      <Stack.Screen name="EditSizeScreen" component={EditSizeScreen} />
+      
     </Stack.Navigator>
   );
 }
@@ -417,7 +440,9 @@ function AdminDrawerNavigator() {
       <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
-      <Drawer.Screen name="Danh Sách Shipment" component={ShipmentAdmin} />
+      <Drawer.Screen name="Danh Sách Nhập Hàng" component={ShipmentAdmin} />
+      <Drawer.Screen name="Danh Sách Màu" component={SizeAdmin} />
+      <Drawer.Screen name="Danh Sách Thương Hiệu" component={ShipmentAdmin} />
     </Drawer.Navigator>
   );
 }
