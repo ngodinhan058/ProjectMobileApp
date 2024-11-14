@@ -71,11 +71,11 @@ const HomeAdminScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductScreen')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
-            {isLoading && (
+            {/* {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#3669c9" />
                 </View>
-            )}
+            )} */}
         </View>
     );
 };

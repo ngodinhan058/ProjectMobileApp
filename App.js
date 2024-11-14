@@ -648,9 +648,9 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <HaveLoginHome />
+      {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
-      {/* <AdminDrawerNavigator />  */}
+      <AdminDrawerNavigator /> 
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}

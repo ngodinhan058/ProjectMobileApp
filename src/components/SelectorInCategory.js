@@ -170,40 +170,36 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset, categoriesPr
     const [categoryAll, setCategoryAll] = useState([]);
 
     useEffect(() => {
-    let apiUrl = `${BASE_URL}categories`;
-    axios.get(apiUrl)
-        .then(response => {
-            const ctgData = response.data.data;
-            setCategoryAll(ctgData);
+        let apiUrl = `${BASE_URL}categories`;
+        axios.get(apiUrl)
+            .then(response => {
+                const ctgData = response.data.data;
+                setCategoryAll(ctgData);
 
-            // Kiểm tra và tự động chọn danh mục nếu `categoriesProduct` có dữ liệu
-            if (categoriesProduct && categoriesProduct.length > 0) {
-                const initialSelected = {};
+                // Kiểm tra và chỉ set giá trị ban đầu nếu `categoriesProduct` có dữ liệu
+                if (categoriesProduct && categoriesProduct.length > 0) {
+                    const initialSelected = {};
 
-                // Hàm đệ quy để chọn tất cả các danh mục cha và con dựa trên `categoriesProduct`
-                const selectCategories = (categories) => {
-                    categories.forEach(category => {
-                        // Nếu `categoryId` có trong `categoriesProduct`, đánh dấu là đã chọn
-                        if (categoriesProduct.includes(category.categoryId)) {
-                            initialSelected[category.categoryId] = true;
-                        }
-                        // Tiếp tục duyệt qua các danh mục con
-                        if (category.categoryChildren && category.categoryChildren.length > 0) {
-                            selectCategories(category.categoryChildren);
-                        }
-                    });
-         
-                };
+                    // Hàm đệ quy để đặt giá trị ban đầu cho selectedCategories
+                    const selectCategories = (categories) => {
+                        categories.forEach(category => {
+                            if (categoriesProduct.includes(category.categoryId)) {
+                                initialSelected[category.categoryId] = true;
+                            }
+                            if (category.categoryChildren && category.categoryChildren.length > 0) {
+                                selectCategories(category.categoryChildren);
+                            }
+                        });
+                    };
 
-                selectCategories(ctgData);
-                setSelectedCategories(initialSelected);
-                
-            }
-        })
-        .catch(error => {
-            console.error('Lỗi khi lấy dữ liệu:', error);
-        });
-}, [categoriesProduct]); // Lắng nghe sự thay đổi của `categoriesProduct`
+                    selectCategories(ctgData);
+                    setSelectedCategories((prevSelected) => ({ ...prevSelected, ...initialSelected }));
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi lấy dữ liệu:', error);
+            });
+    }, [categoriesProduct]);
 
     const filterCategories = (categories) => {
         if (!searchText) return categories;
@@ -216,72 +212,57 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset, categoriesPr
         });
     };
 
-    
     const handleApply = () => {
-        // Lấy danh sách ID của các danh mục đã chọn
         const selectedCategoryIds = Object.keys(selectedCategories).filter(
             (categoryId) => selectedCategories[categoryId] === true
         );
-    
+
         if (selectedCategoryIds.length === 0) {
-            // Hiển thị thông báo nếu chưa có danh mục nào được chọn
             Alert.alert("Thông báo", "Vui lòng chọn ít nhất một danh mục trước khi áp dụng.");
-            return; // Dừng lại nếu chưa có danh mục nào được chọn
+            return;
         }
-    
-        // Hàm tìm tên danh mục, tìm đệ quy trong categoryChildren nếu cần
+
         const findCategoryName = (categoryId, categories) => {
             for (const category of categories) {
-                // Kiểm tra nếu categoryId trùng khớp
                 if (category.categoryId === categoryId) {
-                    return category.categoryName; // Trả về tên nếu tìm thấy
+                    return category.categoryName;
                 }
-                // Nếu không trùng khớp, tìm tiếp trong categoryChildren nếu có
                 if (category.categoryChildren && category.categoryChildren.length > 0) {
                     const childCategoryName = findCategoryName(categoryId, category.categoryChildren);
-                    if (childCategoryName) return childCategoryName; // Trả về tên nếu tìm thấy trong danh mục con
+                    if (childCategoryName) return childCategoryName;
                 }
             }
-            return null; // Trả về null nếu không tìm thấy
+            return null;
         };
-    
-        // Lấy tên của các danh mục đã chọn dựa trên các ID đã chọn
+
         const selectedCategoryNames = selectedCategoryIds.map((categoryId) => {
             return findCategoryName(categoryId, categoryAll) || "Unknown Category";
         });
-    
-        // Truyền cả ID và tên danh mục vào hàm onApply
+
         onApply(selectedCategoryIds, selectedCategoryNames);
         onClose();
     };
+
     const toggleExpand = (categoryId) => {
         setExpandedCategories({
             ...expandedCategories,
             [categoryId]: !expandedCategories[categoryId],
         });
     };
+
     const toggleCategorySelection = (categoryId) => {
-        const newSelectedCategories = {
-            ...selectedCategories,
-            [categoryId]: !selectedCategories[categoryId],
-        };
-        
-        setSelectedCategories(newSelectedCategories);
-    
-        // Lấy danh sách ID và tên các danh mục đã chọn
-        const selectedCategoryIds = Object.keys(newSelectedCategories).filter(
-            (id) => newSelectedCategories[id]
-        );
-    
-        const selectedCategoryNames = selectedCategoryIds.map((id) => {
-            const category = categoryAll.find((cat) => cat.categoryId === id);
-            return category ? category.categoryName : null;
-        }).filter(Boolean);
-    
-        // Truyền ID và tên danh mục vào `onApply` ngay lập tức
-        onApply(selectedCategoryIds, selectedCategoryNames);
+        setSelectedCategories(prevSelected => ({
+            ...prevSelected,
+            [categoryId]: !prevSelected[categoryId],
+        }));
     };
-    
+    const handleReset = () => {
+        const selectedCategoryIds = null;
+        const selectedCategoryNames = null;
+
+        onReset(selectedCategoryIds, selectedCategoryNames);
+        onClose();
+    };
 
     const renderCategories = (categories, categoryLevel = 0) => {
         return categories.map((category) => (
@@ -317,11 +298,7 @@ const SelectorInCategory = ({ isVisible, onClose, onApply, onReset, categoriesPr
         ));
     };
 
-    const handleReset = () => {
-        setSelectedCategories({});
-        onReset(null, null);
-        onClose();
-    };
+
 
     return (
         <Modal

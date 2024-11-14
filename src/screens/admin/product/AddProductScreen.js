@@ -33,12 +33,11 @@ const AddProductScreen = ({ route, navigation }) => {
 
     const [productData, setProductData] = useState({
         productName: '',
-        productPrice: '',
         productYearOfManufacture: 2024,
         sizesProduct: [
             {
-                productSizeId: "00000000-0000-0000-0000-000000000000",
-                productSizeQuantity: 5
+                sizeId: "00000000-0000-0000-0000-000000000000",
+                productQuantity: 5
             }
         ],
         productSupplier: productSupplier,
@@ -50,7 +49,6 @@ const AddProductScreen = ({ route, navigation }) => {
     });
 
     const [error, setError] = useState({
-        productPriceError: false,
         productNameError: false
     });
 
@@ -59,7 +57,6 @@ const AddProductScreen = ({ route, navigation }) => {
         const formData = new FormData();
         const params = {
             productName: productData.productName,
-            productPrice: productData.productPrice,
             productYearOfManufacture: productData.productYearOfManufacture,
             sizesProduct: productData.sizesProduct,
             productSupplier: productSupplier,
@@ -105,7 +102,6 @@ const AddProductScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         setError({
-            productPriceError: productData.productPrice <= 0 || isNaN(productData.productPrice),
             productNameError: productData.productName === ''
         });
         if (postDTO) {
@@ -144,7 +140,7 @@ const AddProductScreen = ({ route, navigation }) => {
                         value={productData.postName}
                         onChangeText={(text) => setProductData({ ...productData, productName: text })}
                     />
-                    <Text style={styles.label}>Giá Sản Phẩm:</Text>
+                    {/* <Text style={styles.label}>Giá Sản Phẩm:</Text>
                     <TextInput
                         style={[styles.input, error.productPriceError && styles.inputError]}
                         placeholder="Thêm Giá Sản Phẩm"
@@ -157,7 +153,7 @@ const AddProductScreen = ({ route, navigation }) => {
                             });
                         }}
                         keyboardType="numeric"
-                    />
+                    /> */}
 
 
                     <Text style={styles.label}>Post Sản Phẩm:</Text>
