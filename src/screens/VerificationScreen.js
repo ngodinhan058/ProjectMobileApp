@@ -1,18 +1,29 @@
-import React, { useState, useRef, useEffect  } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import axios from 'axios';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { BASE_URL } from './api/config';
 
-
-const VerificationScreen = ({ navigation }) => {
-  const [code, setCode] = useState(['', '', '', '']);
+const VerificationScreen = ({ route, navigation }) => {
+  const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
   const inputRefs = useRef([]);
+
+  console.log(code.join('').length);
+
+  const { email } = route.params;
 
   useEffect(() => {
     const allFilled = code.every((digit) => digit !== '');
     setIsButtonEnabled(allFilled);
   }, [code]);
-
 
   const handleInputChange = (text, index) => {
     let newCode = [...code];
@@ -20,7 +31,7 @@ const VerificationScreen = ({ navigation }) => {
     setCode(newCode);
 
     // Nếu người dùng nhập 1 ký tự và nó không phải là ký tự cuối, focus vào ô tiếp theo
-    if (text && index < 3) {
+    if (text && index < code.length - 1) {
       inputRefs.current[index + 1].focus();
     }
   };
@@ -31,60 +42,140 @@ const VerificationScreen = ({ navigation }) => {
       inputRefs.current[index - 1].focus();
     }
   };
+  console.log({ email });
+
+  const enterEmail = async (email) => {
+    try {
+      const response = await axios.post(`${BASE_URL}auth/create-email`, {
+        userEmail: email,
+      });
+      const userData = response.data;
+
+      //await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
+      return userData;
+    } catch (error) {
+      // console.log(error.response.data.error);
+
+      // console.error(
+      //   'Send otp throw email failed',
+      //   error.response ? error.response.data : error.message
+      // );
+      throw error; // Ném lỗi để có thể hiển thị thông báo
+    }
+  };
+
+  const handleGetOTP = async () => {
+    try {
+      const userData = await enterEmail(email); // Gọi API để kiểm tra
+      //Alert.alert('Thành công', 'Đăng nhập thành công!');
+      navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
+    } catch (error) {
+      //Alert.alert('Thất bại', error.response.data.error);
+    }
+  };
+
+  const verifyOTP = async (otp) => {
+    try {
+      console.log(`${BASE_URL}?email=${email}&otp=${otp}`);
+
+      const response = await axios.post(
+        `${BASE_URL}auth/verify?email=${email}&otp=${otp}`
+      );
+
+      console.log(`${BASE_URL}?email=${email}&otp=${otp}`);
+
+      const userData = response.data;
+      //await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
+      return userData;
+    } catch (error) {
+      console.log(error);
+
+      console.error(
+        'Send otp throw email failed',
+        error.response ? error.response.data : error.message
+      );
+      throw error; // Ném lỗi để có thể hiển thị thông báo
+    }
+  };
+
+  const handleVerifyOTP = async (otp) => {
+    try {
+      navigation.navigate('PasswordScreen', { userEmail: email });
+
+      //const userData = await verifyOTP(otp); // Gọi API để kiểm tra
+    } catch (error) {
+      Alert.alert(
+        'Thất bại',
+        error.response ? error.response.data : error.message
+      );
+    }
+  };
+
+  useEffect(() => {
+    handleGetOTP();
+  }, []);
+
+  const handleNextVerifyOTP = () => {
+    handleVerifyOTP(code.join(''));
+  };
 
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
-      enableOnAndroid={true}  // Kích hoạt hỗ trợ trên Android
-      extraHeight={150}  // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-200}  // Tùy chỉnh thêm khoảng cách cuộn
-      keyboardShouldPersistTaps="handled"  // Xử lý khi nhấn ngoài input
+      enableOnAndroid={true} // Kích hoạt hỗ trợ trên Android
+      extraHeight={150} // Điều chỉnh khoảng cách bàn phím với nội dung
+      extraScrollHeight={-200} // Tùy chỉnh thêm khoảng cách cuộn
+      keyboardShouldPersistTaps="handled" // Xử lý khi nhấn ngoài input
     >
-    <View style={{flex:1, justifyContent: 'center',}}>
-      {/* Tiêu đề */}
-      <Text style={styles.title}>Xác Thực</Text>
-      <Text style={styles.subtitle}>
-        Chúng tôi đã gửi mã xác minh tới ****
-        <Text style={styles.changeNumber}> Thay đổi?</Text>
-      </Text>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        {/* Tiêu đề */}
+        <Text style={styles.title}>Xác Thực</Text>
+        <Text style={styles.subtitle}>
+          Chúng tôi đã gửi mã xác minh tới ****
+          <Text style={styles.changeNumber}> Thay đổi?</Text>
+        </Text>
 
-      {/* Input Mã xác nhận */}
-      <View style={styles.codeContainer}>
-        {code.map((digit, index) => (
-          <TextInput
-            key={index}
-            style={styles.input}
-            keyboardType="numeric"
-            maxLength={1}
-            value={digit}
-            onChangeText={(text) => handleInputChange(text, index)}
-            onKeyPress={(e) => handleKeyPress(e, index)}
-            ref={(ref) => (inputRefs.current[index] = ref)}  // Lưu ref vào mảng
-          />
-        ))}
-      </View>
+        {/* Input Mã xác nhận */}
+        <View style={styles.codeContainer}>
+          {code.map((digit, index) => (
+            <TextInput
+              key={index}
+              style={styles.input}
+              keyboardType="numeric"
+              maxLength={1}
+              value={digit}
+              onChangeText={(text) => handleInputChange(text, index)}
+              onKeyPress={(e) => handleKeyPress(e, index)}
+              ref={(ref) => (inputRefs.current[index] = ref)} // Lưu ref vào mảng
+            />
+          ))}
+        </View>
 
-      <TouchableOpacity>
-        <Text style={styles.resendCode}>Gửi Lại Mã</Text>
-      </TouchableOpacity>
+        <TouchableOpacity>
+          <Text style={styles.resendCode}>Gửi Lại Mã</Text>
+        </TouchableOpacity>
 
-      {/* Nút Continue và Cancel */}
-      <View style={styles.buttonContainer}>
-      <TouchableOpacity
+        {/* Nút Continue và Cancel */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
             style={[
               styles.continueButton,
               { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' }, // Change color based on button state
             ]}
             disabled={!isButtonEnabled} // Disable button if not enabled
-            onPress={() => navigation.navigate('PasswordScreen')}
+            //onPress={() => navigation.navigate('PasswordScreen')}
+            onPress={handleNextVerifyOTP}
           >
             <Text style={styles.continueText}>Tiếp Tục</Text>
           </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.cancelText}>Huỷ</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.cancelText}>Huỷ</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
     </KeyboardAwareScrollView>
   );
 };
@@ -117,7 +208,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    width: 70,
+    width: 40,
     borderRadius: 10,
     backgroundColor: '#F8F8F8',
     textAlign: 'center',

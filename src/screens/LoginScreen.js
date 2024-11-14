@@ -54,11 +54,13 @@ const LoginScreen = ({ navigation }) => {
     try {
       const userData = await login(email, password); // Gọi API để kiểm tra
       Alert.alert('Thành công', 'Đăng nhập thành công!');
-      navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
+      navigation.navigate('HaveLoginHome'); // Điều hướng sau khi đăng nhập
     } catch (error) {
       Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
     }
   };
+
+  console.log(navigatio);
 
   return (
     <KeyboardAwareScrollView

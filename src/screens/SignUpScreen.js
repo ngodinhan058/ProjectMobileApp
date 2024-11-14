@@ -15,14 +15,30 @@ const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [userName, setUserName] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
 
   useEffect(() => {
-    // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
-    if (email.trim() !== '' && userName.trim() !== '') {
-      setIsButtonEnabled(true);
-    } else {
-      setIsButtonEnabled(false);
-    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const validateInputs = () => {
+      // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
+      if (email.trim() !== '' && emailRegex.test(email)) {
+        setIsButtonEnabled(true);
+      } else {
+        setIsButtonEnabled(false);
+      }
+
+      setIsEmailValid(emailRegex.test(email));
+    };
+
+    const timeoutId = setTimeout(() => {
+      validateInputs();
+    }, 2000); // Wait for 2000 milliseconds (2 seconds)
+
+    // Cleanup function to clear timeout if values change
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [email, userName]);
 
   const enterEmail = async (email) => {
@@ -52,6 +68,7 @@ const SignUpScreen = ({ navigation }) => {
       Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
     }
   };
+
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
@@ -90,9 +107,15 @@ const SignUpScreen = ({ navigation }) => {
           style={styles.input}
           placeholder="Nhập Email"
           placeholderTextColor="#C4C4C4"
-          value={userName}
-          onChangeText={setUserName}
+          value={email}
+          onChangeText={(e) => setEmail(e)}
+          keyboardType="email-address"
         />
+        {!isEmailValid && email.trim() !== '' && (
+          <Text style={{ color: 'red' }}>
+            Please enter a valid email address.
+          </Text>
+        )}
 
         {/* Nút Sign In và Cancel */}
         <View style={styles.buttonContainer}>
@@ -102,7 +125,9 @@ const SignUpScreen = ({ navigation }) => {
               { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
             ]}
             disabled={!isButtonEnabled}
-            onPress={() => navigation.navigate('VerificationScreen')} // Gọi hàm đăng nhập khi nhấn nút
+            onPress={() =>
+              navigation.navigate('VerificationScreen', { email: email })
+            } // Gọi hàm đăng nhập khi nhấn nút
           >
             <Text style={styles.signInText}>Tiếp tục</Text>
           </TouchableOpacity>

@@ -648,8 +648,8 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <HaveLoginHome />
-      {/* <NoLoginHome /> */}
+      {Object.keys(user).length !== 0 && <HaveLoginHome />}
+      {Object.keys(user).length === 0 && <NoLoginHome />}
       {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
