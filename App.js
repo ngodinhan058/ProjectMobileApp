@@ -86,6 +86,20 @@ import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 import HomeShipmentScreen from './src/screens/admin/shipment/HomeScreen';
 import AddProductShipment from './src/screens/admin/shipment/AddProductShipment';
 {
+  /* Admin Size*/
+}
+import HomeSizeScreen from './src/screens/admin/size/HomeScreen';
+import AddSizeScreen from './src/screens/admin/size/AddSizeScreen';
+import EditSizeScreen from './src/screens/admin/size/EditSizeScreen';
+import DetailSizeScreen from './src/screens/admin/size/DetailSizeScreen';
+{
+  /* Admin Supplier*/
+}
+import HomeSupplierScreen from './src/screens/admin/supplier/HomeScreen';
+import AddSupplierScreen from './src/screens/admin/supplier/AddSupplierScreen';
+import EditSupplierScreen from './src/screens/admin/supplier/EditSupplierScreen';
+import DetailSupplierScreen from './src/screens/admin/supplier/DetailSupplierScreen';
+{
   /* Shipper */
 }
 import ShipperHomeScreen from './src/screens/shipper/ShipperHomeScreen';
@@ -170,7 +184,7 @@ function NoLoginHome() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate('Home');
+            navigation.replace('Home');
           },
         })}
       >
@@ -286,7 +300,7 @@ function HaveLoginHome() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate('Home');
+            navigation.replace('Home');
           },
         })}
       >
@@ -408,6 +422,37 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
+      
+    </Stack.Navigator>
+  );
+}
+{
+  /* Admin Size */
+}
+function SizeAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SizeList" component={HomeSizeScreen} />
+      <Stack.Screen name="AddSizeShipment" component={AddSizeScreen} />
+      <Stack.Screen name="DetailSizeScreen" component={DetailSizeScreen} />
+      <Stack.Screen name="AddSizeScreen" component={AddSizeScreen} />
+      <Stack.Screen name="EditSizeScreen" component={EditSizeScreen} />
+      
+    </Stack.Navigator>
+  );
+}
+{
+  /* Admin Supplier */
+}
+function SupplierAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SupplierList" component={HomeSupplierScreen} />
+      <Stack.Screen name="AddSupplierShipment" component={AddSupplierScreen} />
+      <Stack.Screen name="DetailSupplierScreen" component={DetailSupplierScreen} />
+      <Stack.Screen name="AddSupplierScreen" component={AddSupplierScreen} />
+      <Stack.Screen name="EditSupplierScreen" component={EditSupplierScreen} />
+      
     </Stack.Navigator>
   );
 }
@@ -417,7 +462,9 @@ function AdminDrawerNavigator() {
       <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
-      <Drawer.Screen name="Danh Sách Shipment" component={ShipmentAdmin} />
+      <Drawer.Screen name="Danh Sách Nhập Hàng" component={ShipmentAdmin} />
+      <Drawer.Screen name="Danh Sách Màu" component={SizeAdmin} />
+      <Drawer.Screen name="Danh Sách Thương Hiệu" component={SupplierAdmin} />
     </Drawer.Navigator>
   );
 }

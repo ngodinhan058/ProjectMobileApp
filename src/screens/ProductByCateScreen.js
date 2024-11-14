@@ -4,49 +4,12 @@ import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
+import ScrollHandler from '../components/ScrollHandler';
 import { BASE_URL } from './api/config';
 
-
-const featuredProducts = [
-  {
-    id: '1',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-  {
-    id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'Macbook',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-  {
-    id: '3',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'Wireless',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-  {
-    id: '4',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-
-];
-
-
-const ProductByCateScreen = ({ route, navigation }) => {
+const ProductByCateScreen = ({ route, navigation, onScroll }) => {
   // Kiểm tra nếu route.params tồn tại và lấy giá trị query, nếu không có thì để là chuỗi rỗng
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState();
   const { query = '' } = route?.params || {};
   const { id, image, name } = route.params;
   const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
@@ -54,34 +17,76 @@ const ProductByCateScreen = ({ route, navigation }) => {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const [minPrice, setMinPrice] = useState();
   const [maxPrice, setMaxPrice] = useState();
-  const [categoryId, setCategoryId] = useState([]);
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState();
+
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [isScrollingUp, setIsScrollingUp] = useState(false); // Track scroll direction
 
   const [appliedFilters, setAppliedFilters] = useState(null);
 
+  const renderProductItem = (item) => {
 
-  useEffect(() => {
+    return (
+      <ProductItem
+        id={item.productId}
+        name={item.productName}
+        price={item.productPriceSale}
+        oldPrice={item.productPrice}
+        image={item['productImages']?.[0].productImagePath}
+        rating={item.productRating}
+        sale={item.productSale}
+        isLoading={false}
+      />
+    );
+  };
 
-    let apiUrl = `${BASE_URL}products/filters?`;
-    const queryParams = [];
-    if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
-    if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
-    if (id !== null && id !== "") queryParams.push(`categoryId=${id}`);
-
-    apiUrl += queryParams.join('&');
-    console.log(apiUrl)
-    axios.get(apiUrl)
-      .then(response => {
+    // Fetch data function
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        let apiUrl = `${BASE_URL}products/filters?`;
+        const queryParams = [];
+  
+        // Add query parameters based on the current filter state
+        if (minPrice !== null && minPrice !== undefined) queryParams.push(`minPrice=${minPrice}`);
+        if (maxPrice !== null && maxPrice !== undefined) queryParams.push(`maxPrice=${maxPrice}`);
+        if (id !== null && id !== "") queryParams.push(`categoryId=${id}`);
+        if (Array.isArray(selectedSizes) && selectedSizes.length !== 0) {
+          queryParams.push(`sizeIds=${selectedSizes.join(',')}`);
+        }
+        if (Array.isArray(selectedSupplier) && selectedSupplier.length !== 0) {
+          queryParams.push(`supplierIds=${selectedSizes.join(',')}`);
+        }
+  
+        apiUrl += queryParams.join('&');
+        console.log('API URL:', apiUrl);
+  
+        // Fetch data from API
+        const response = await axios.get(apiUrl);
         const { content } = response.data.data;
         setProductsState(content);
+      } catch (error) {
+        console.log('Error fetching data:', error);
+        setProductsState([]);  // Handle error by setting empty array or error state
+      } finally {
         setLoading(false);
-      })
-      .catch(error => {
-        // console.error('Error fetching data:', error);
-        setProductsState([]);
-        setLoading(true);
-      });
-  }, [minPrice, maxPrice, id]);
+        setRefreshing(false); // Stop refreshing animation if used
+      }
+    };
+  
+    // Call fetchData when dependencies change
+    useEffect(() => {
+      fetchData();
+    }, [minPrice, maxPrice, id, selectedSizes, selectedSupplier]);
 
+
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setLoading(true);
+    fetchData();
+  }, []);
   const handleSearch = () => {
     navigation.replace('SearchScreen', { query: searchQuery });
   };
@@ -91,12 +96,15 @@ const ProductByCateScreen = ({ route, navigation }) => {
   const toggleFilterModal = () => {
     setIsFilterModalVisible(!isFilterModalVisible);
   };
+  console.log(selectedSizes);
 
   const handleApplyFilters = (filters) => {
     setAppliedFilters(filters);
     setMinPrice(filters.priceRange[0]); // Sử dụng trực tiếp giá trị từ filters
     setMaxPrice(filters.priceRange[1]); // Sử dụng trực tiếp giá trị từ filters
-    setCategoryId(filters.categories)
+    setSelectedSizes(filters.sizes);
+    setSelectedSupplier(filters.supplier);
+
   };
 
 
@@ -136,6 +144,7 @@ const ProductByCateScreen = ({ route, navigation }) => {
 
       <Filter
         isVisible={isFilterModalVisible}
+        id={id}
         onClose={toggleFilterModal}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
@@ -143,33 +152,15 @@ const ProductByCateScreen = ({ route, navigation }) => {
 
       {/* Danh sách sản phẩm dạng lưới */}
       {productsState.length > 0 ? (
-        <FlatList
-          data={filteredSuggestions}
-          renderItem={({ item }) => {
-            // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
-
-            const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-              ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-              : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
-            return (
-              <ProductItem
-                id={item['productId']}
-                name={item['productName']}
-                price={item['productPriceSale']}
-                oldPrice={item['productPrice']}
-                image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
-                rating={item['productRating']}
-                sale={item['productSale']}
-                isLoading={false}  // Set isLoading to false when not loading
-              />
-            );
-          }}
-          keyExtractor={(item) => item['productId'].toString()}
-          showsHorizontalScrollIndicator={false}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={styles.listContent}
-        />
+        <ScrollHandler onScroll={onScroll} refreshing={refreshing} onRefresh={onRefresh}>
+            <View style={styles.gridContainer}>
+              {filteredSuggestions.map((item, index) => (
+                <View key={index} style={styles.itemWrapper}>
+                  {renderProductItem(item)}
+                </View>
+              ))}
+            </View>
+        </ScrollHandler>
 
       ) :
         <View style={{ position: 'relative' }}>
@@ -210,7 +201,7 @@ const styles = StyleSheet.create({
   searchBar: {
     position: 'relative',
     marginVertical: 10,
-    marginTop: 30,
+    marginTop: 10,
   },
   searchInput: {
     width: '80%',
@@ -246,13 +237,19 @@ const styles = StyleSheet.create({
     left: '70%',
     top: -35,
   },
-  listContent: {
-    paddingVertical: 10,
-  },
-  columnWrapper: {
+
+  // columnWrapper: {
+  //   justifyContent: 'space-between',
+  // },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-
+  itemWrapper: {
+    width: '50%',  // 2 columns layout, adjust the width as needed
+    marginTop: 10,
+  },
 });
 
 export default ProductByCateScreen;
