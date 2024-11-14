@@ -24,6 +24,8 @@ function AddToCartScreen({ navigation }) {
   const [selectedPaymentUse, setSelectedPaymentUse] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
   const [invoiceOption, setInvoiceOption] = useState(false);
+  const [idCart, setIdCart] = useState([]);
+
   const [cartData, setCartData] = useState([]);
   const [cartDataUser, setCartDataUser] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,40 +77,42 @@ function AddToCartScreen({ navigation }) {
   // console.log(userInfo?.userId);
 
 
-  useEffect(() => {
-    if (userInfo?.userId == null) {
-      // Nếu userId không có, lấy dữ liệu giỏ hàng từ AsyncStorage
-      const loadCartData = async () => {
-        try {
-          const savedCart = await AsyncStorage.getItem('cart');
-          if (savedCart) {
-            const { items } = JSON.parse(savedCart);
-            setCartData(items); // Lưu cart vào state
-          }
-        } catch (error) {
-          console.error("Error loading cart from AsyncStorage:", error);
-        }
-      };
 
-      loadCartData();
+
+  const fetchData = async () => {
+    if (userInfo?.userId == null) {
+      // Lấy dữ liệu giỏ hàng từ AsyncStorage nếu userId không tồn tại
+      try {
+        const savedCart = await AsyncStorage.getItem('cart');
+        if (savedCart) {
+          const { items } = JSON.parse(savedCart);
+          setCartData(items); // Lưu giỏ hàng vào state
+        }
+      } catch (error) {
+        console.error("Error loading cart from AsyncStorage:", error);
+      }
     } else {
-      // Nếu userId có, lấy dữ liệu giỏ hàng từ API
+      // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
       setIsLoading(true);
       const apiUrl = `${BASE_URL}carts/user/${userInfo.userId}`;
-      axios.get(apiUrl)
-        .then(response => {
-          const userData = response.data.data.cartItem;
-          const cartTotal = response.data.data.productTotalPrice
-          setCartDataUser(userData); // Lưu giỏ hàng vào state
-          setTotal(cartTotal)
-          setIsLoading(false);
-        })
-        .catch(error => {
-          console.log('Error fetching data:', error);
-        });
+      try {
+        const response = await axios.get(apiUrl);
+        const userData = response.data.data.cartItem;
+        const cartTotal = response.data.data.productTotalPrice;
+        const idCart = response.data.data.cartId;
+        setIdCart(idCart)
+        setCartDataUser(userData); // Lưu giỏ hàng vào state
+        setTotal(cartTotal);
+      } catch (error) {
+        console.log('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
+  };
+  useEffect(() => {
+    fetchData();
   }, [userInfo?.userId]); // Chạy lại khi userInfo?.userId thay đổi
-
 
 
 
@@ -135,6 +139,56 @@ function AddToCartScreen({ navigation }) {
       saveCartData(updatedCart);
     }
   };
+  const handleQuantityChangeUser = (id, number, sizeId) => {
+    if (number == true) {
+      const cartItemData = {
+        cartItem: {
+          productQuantity: 1,
+          productId: id,
+          sizeId: sizeId
+        }
+      };
+      
+      try {
+        // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+        const response = axios.delete(`${BASE_URL}cart/${idCart}`, { data: cartItemData });
+
+        if (response.status === 200 || 201) {
+          console.log("Sản phẩm đã được xoá:", response.data);
+          fetchData();
+
+        } else {
+          console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+        }
+      } catch (error) {
+        console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+      }
+    }
+    else {
+      const cartItemData = {
+        cartItem: {
+          productQuantity: 1,
+          productId: id,
+          sizeId: sizeId
+        }
+      };
+      console.log(cartItemData);
+
+      try {
+        // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+        const response = axios.put(`${BASE_URL}cart/${idCart}`, cartItemData );
+        if (response.status === 200 || 201) {
+          console.log("Sản phẩm đã được thêm:");
+          fetchData();
+
+        } else {
+          console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+        }
+      } catch (error) {
+        console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+      }
+    }
+  };
 
   // Delete item from cart
   const handleDelete = (id) => {
@@ -143,30 +197,30 @@ function AddToCartScreen({ navigation }) {
     saveCartData(updatedCart);
   };
   // Delete item from cart
-  const handleDeleteUser = (id, quantity, size) => {
+  const handleDeleteUser = async (id, quantity, size) => {
     const cartItemData = {
       cartItem: {
-        productQuantity: quantity,
+        pproductQuantity: 0,
         productId: id,
         sizeId: size
       }
     };
-    console.log(cartItemData);
-
     try {
-      // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
-      const response = axios.delete(`${BASE_URL}cart/01000000-0000-0000-0000-000000000000`, cartItemData);
+      // Sử dụng await để chờ phản hồi từ API
+      const response = await axios.delete(`${BASE_URL}cart/${idCart}`, { data: cartItemData });
 
       if (response.status === 200) {
         console.log("Sản phẩm đã được xoá:", response.data);
+        fetchData();
         // Cập nhật state giỏ hàng nếu cần
       } else {
         console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
     } catch (error) {
-      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error.message);
     }
   };
+
 
   // Save updated cart to AsyncStorage
   const saveCartData = async (updatedCart) => {
@@ -211,11 +265,12 @@ function AddToCartScreen({ navigation }) {
                       name={item.productName}
                       price={item.productPrice}
                       quantity={item.productQuantity}
+                      sizeId={item.productSizeId}
                       size={item.productSize}
                       image={item.productImage}
                       total={(item.productTotalPrice).toLocaleString() + " ₫"}
                       onDelete={handleDeleteUser}
-                      onQuantityChange={handleQuantityChange}
+                      onQuantityChange={handleQuantityChangeUser}
                     />
                   ))
                 ) : (
@@ -399,11 +454,11 @@ function AddToCartScreen({ navigation }) {
           </Modal>
         </View>
       </View>
-      {isLoading && (
+      {/* {isLoading && (
         <View style={styles.overlay}>
           <ActivityIndicator size="large" color="#3669c9" />
         </View>
-      )}
+      )} */}
     </View>
   );
 }

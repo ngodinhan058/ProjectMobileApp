@@ -6,7 +6,7 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-const CartItem = ({ id, name, price, quantity, size, image, total, onDelete, onQuantityChange }) => {
+const CartItem = ({ id, name, price, quantity, sizeId, size, image, total, onDelete, onQuantityChange }) => {
     const truncateName = (text) => {
         return text.length > 10 ? text.substring(0, 10) + '...' : text;
     };
@@ -14,23 +14,23 @@ const CartItem = ({ id, name, price, quantity, size, image, total, onDelete, onQ
     const [userInfo, setUserInfo] = useState(null);
     useEffect(() => {
         const fetchUserInfo = async () => {
-          try {
-            // Lấy dữ liệu từ AsyncStorage
-            const userInfoString = await AsyncStorage.getItem('userInfo');
-    
-            // Nếu có dữ liệu thì parse nó thành JSON
-            if (userInfoString) {
-              const userInfoData = JSON.parse(userInfoString);
-              setUserInfo(userInfoData); // Lưu vào state
+            try {
+                // Lấy dữ liệu từ AsyncStorage
+                const userInfoString = await AsyncStorage.getItem('userInfo');
+
+                // Nếu có dữ liệu thì parse nó thành JSON
+                if (userInfoString) {
+                    const userInfoData = JSON.parse(userInfoString);
+                    setUserInfo(userInfoData); // Lưu vào state
+                }
+            } catch (error) {
+                console.error('Error fetching user info from AsyncStorage:', error);
             }
-          } catch (error) {
-            console.error('Error fetching user info from AsyncStorage:', error);
-          }
         };
-    
+
         fetchUserInfo();
-      }, []);
-      console.log(userInfo?.userId);
+    }, []);
+    console.log(userInfo?.userId);
 
     return (
         <View
@@ -59,16 +59,29 @@ const CartItem = ({ id, name, price, quantity, size, image, total, onDelete, onQ
                 <View>
                     <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{truncateName(name)}</Text>
                     <Text style={{ fontSize: 14, color: 'gray' }}>{price}</Text>
-                    
+
                     <View style={{ flexDirection: 'row', alignItems: 'center' }} >
                         <View><Text style={{ fontSize: 12, color: 'gray' }}>Màu:</Text></View>
-                        <View style={{ width: 12, height: 12, backgroundColor: `${size}`, borderRadius: 12, marginLeft: 5 }}/>
+                        <View style={{ width: 12, height: 12, backgroundColor: `${size}`, borderRadius: 12, marginLeft: 5 }} />
                     </View>
                 </View>
             </View>
-
-            {/* Middle Section with Quantity and Arrows */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+            {userInfo?.userId ? (<View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+                <Text style={{ fontSize: 18, }}>{quantity}</Text>
+                <TouchableOpacity onPress={() => onQuantityChange(id, number = true, sizeId)}>
+                    <Image
+                        style={{ width: 14, height: 10.5, position: 'absolute', top: 3 }}
+                        source={require('../assets/arrowDown.png')}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => onQuantityChange(id, number = false, sizeId)}>
+                    <Image
+                        style={{ width: 14, height: 10.5, position: 'absolute', top: -12 }}
+                        source={require('../assets/arrowUp.png')}
+                    />
+                </TouchableOpacity>
+            </View>
+            ) : (<View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
                 <Text style={{ fontSize: 18, }}>{quantity}</Text>
                 <TouchableOpacity onPress={() => onQuantityChange(id, quantity - 1, price)}>
                     <Image
@@ -83,25 +96,29 @@ const CartItem = ({ id, name, price, quantity, size, image, total, onDelete, onQ
                     />
                 </TouchableOpacity>
             </View>
+            )}
+
+
+
             {userInfo?.userId ? (<View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={{ fontSize: 15, fontWeight: 'bold', marginRight: 15 }}>{total}</Text>
-                <TouchableOpacity onPress={() => onDelete(id, quantity, size)}>
+                <TouchableOpacity onPress={() => onDelete(id, quantity, sizeId)}>
                     <Image
                         style={{ width: 20, height: 20, marginRight: 5 }}
                         source={require('../assets/trash.png')}
                     />
                 </TouchableOpacity>
-            </View>) 
-            : (<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ fontSize: 15, fontWeight: 'bold', marginRight: 15 }}>{total}</Text>
-                <TouchableOpacity onPress={() => onDelete(id)}>
-                    <Image
-                        style={{ width: 20, height: 20, marginRight: 5 }}
-                        source={require('../assets/trash.png')}
-                    />
-                </TouchableOpacity>
-            </View>)}
-            
+            </View>)
+                : (<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', marginRight: 15 }}>{total}</Text>
+                    <TouchableOpacity onPress={() => onDelete(id)}>
+                        <Image
+                            style={{ width: 20, height: 20, marginRight: 5 }}
+                            source={require('../assets/trash.png')}
+                        />
+                    </TouchableOpacity>
+                </View>)}
+
         </View>
 
 

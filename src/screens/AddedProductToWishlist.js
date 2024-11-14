@@ -132,6 +132,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   //Cart
   const [cart, setCart] = useState([]);
   const [cartData, setCartData] = useState([]);
+  const [idCart, setIdCart] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState('');
   const [errorCheck, setErrorCheck] = useState(false);
@@ -139,6 +140,26 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   // Hàm để tính thời gian hết hạn của cart
   const getExpiryTime = () => Date.now() + 24 * 60 * 60 * 1000; // 24 giờ
+
+
+  const fetchDataCart = async () => {
+    if (userInfo?.userId != null) {
+      const apiUrl = `${BASE_URL}carts/user/${userInfo.userId}`;
+      try {
+        const response = await axios.get(apiUrl);
+       
+        const idCart = response.data.data.cartId;
+        setIdCart(idCart)
+       
+      } catch (error) {
+        console.log('Error fetching data:', error);
+      }
+    };
+  }
+  useEffect(() => {
+    fetchDataCart();
+  }, [userInfo?.userId]); // Chạy lại khi userInfo?.userId thay đổi
+
 
   useEffect(() => {
     if (selectedSize && quantity >= 0) {
@@ -304,11 +325,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     try {
       // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
-      const response = await axios.put(`${BASE_URL}cart/01000000-0000-0000-0000-000000000000`, cartItemData);
+      const response = await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData);
 
       if (response.status === 200) {
         console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-        // Cập nhật state giỏ hàng nếu cần
+        navigation.navigate('AddToCartScreen')
       } else {
         console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
@@ -688,118 +709,118 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
           </TouchableOpacity>
         </View>
-        {!userInfo?.userId ? 
-        (<View style={{ flex: 1, position: 'relative', }}>
-          {/* Số lượng */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
-            <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={{
-                width: 50,
-                height: 40,
-                borderColor: '#ccc',
-                borderWidth: 2,
-                textAlign: 'center',
-                fontSize: 16,
-                fontWeight: 'bold',
-                color: '#3669c9',
+        {!userInfo?.userId ?
+          (<View style={{ flex: 1, position: 'relative', }}>
+            {/* Số lượng */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
+              <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
+              </TouchableOpacity>
+              <TextInput
+                style={{
+                  width: 50,
+                  height: 40,
+                  borderColor: '#ccc',
+                  borderWidth: 2,
+                  textAlign: 'center',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: '#3669c9',
 
-                borderColor: errorCheckQuantity ? 'red' : '#ccc',
-                backgroundColor: '#fff',
+                  borderColor: errorCheckQuantity ? 'red' : '#ccc',
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+
+                }}
+                value={String(quantity)}
+                onChangeText={handleInputChange}
+                keyboardType="numeric"
+              />
+
+              <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Thêm vào giỏ hàng */}
+            <TouchableOpacity
+              style={{
+
+                backgroundColor: '#3669C9',
+                borderColor: '#ccc',
+                borderWidth: 1,
+                padding: 20,
                 borderRadius: 10,
 
               }}
-              value={String(quantity)}
-              onChangeText={handleInputChange}
-              keyboardType="numeric"
-            />
-
-            <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Thêm vào giỏ hàng */}
-          <TouchableOpacity
-            style={{
-
-              backgroundColor: '#3669C9',
-              borderColor: '#ccc',
-              borderWidth: 1,
-              padding: 20,
-              borderRadius: 10,
-
-            }}
-            onPress={handleAddToCart}
-          >
-            <Text
-              style={{
-
-                fontWeight: '600',
-                color: '#fff',
-              }}
+              onPress={handleAddToCart}
             >
-              Thêm vào giỏ hàng
-            </Text>
-          </TouchableOpacity>
-        </View>) : (<View style={{ flex: 1, position: 'relative', }}>
-          {/* Số lượng */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
-            <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={{
-                width: 50,
-                height: 40,
-                borderColor: '#ccc',
-                borderWidth: 2,
-                textAlign: 'center',
-                fontSize: 16,
-                fontWeight: 'bold',
-                color: '#3669c9',
+              <Text
+                style={{
 
-                borderColor: errorCheckQuantity ? 'red' : '#ccc',
-                backgroundColor: '#fff',
+                  fontWeight: '600',
+                  color: '#fff',
+                }}
+              >
+                Thêm vào giỏ hàng
+              </Text>
+            </TouchableOpacity>
+          </View>) : (<View style={{ flex: 1, position: 'relative', }}>
+            {/* Số lượng */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
+              <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
+              </TouchableOpacity>
+              <TextInput
+                style={{
+                  width: 50,
+                  height: 40,
+                  borderColor: '#ccc',
+                  borderWidth: 2,
+                  textAlign: 'center',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: '#3669c9',
+
+                  borderColor: errorCheckQuantity ? 'red' : '#ccc',
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+
+                }}
+                value={String(quantity)}
+                onChangeText={handleInputChange}
+                keyboardType="numeric"
+              />
+
+              <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Thêm vào giỏ hàng */}
+            <TouchableOpacity
+              style={{
+
+                backgroundColor: '#3669C9',
+                borderColor: '#ccc',
+                borderWidth: 1,
+                padding: 20,
                 borderRadius: 10,
 
               }}
-              value={String(quantity)}
-              onChangeText={handleInputChange}
-              keyboardType="numeric"
-            />
-
-            <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Thêm vào giỏ hàng */}
-          <TouchableOpacity
-            style={{
-
-              backgroundColor: '#3669C9',
-              borderColor: '#ccc',
-              borderWidth: 1,
-              padding: 20,
-              borderRadius: 10,
-
-            }}
-            onPress={handleAddToCartUser}
-          >
-            <Text
-              style={{
-
-                fontWeight: '600',
-                color: '#fff',
-              }}
+              onPress={handleAddToCartUser}
             >
-              Thêm vào giỏ hàng
-            </Text>
-          </TouchableOpacity>
-        </View>)}
+              <Text
+                style={{
+
+                  fontWeight: '600',
+                  color: '#fff',
+                }}
+              >
+                Thêm vào giỏ hàng
+              </Text>
+            </TouchableOpacity>
+          </View>)}
 
 
       </View>
