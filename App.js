@@ -11,6 +11,9 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+
+import { ROLE_USER, ROLE_ADMIN } from './src/constants/Role';
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -142,6 +145,7 @@ import ChatScreen from './src/screens/shipper/ChatScreen';
 
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
+import { jwtDecode } from 'jwt-decode';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -422,7 +426,6 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
-      
     </Stack.Navigator>
   );
 }
@@ -437,7 +440,6 @@ function SizeAdmin() {
       <Stack.Screen name="DetailSizeScreen" component={DetailSizeScreen} />
       <Stack.Screen name="AddSizeScreen" component={AddSizeScreen} />
       <Stack.Screen name="EditSizeScreen" component={EditSizeScreen} />
-      
     </Stack.Navigator>
   );
 }
@@ -449,10 +451,12 @@ function SupplierAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SupplierList" component={HomeSupplierScreen} />
       <Stack.Screen name="AddSupplierShipment" component={AddSupplierScreen} />
-      <Stack.Screen name="DetailSupplierScreen" component={DetailSupplierScreen} />
+      <Stack.Screen
+        name="DetailSupplierScreen"
+        component={DetailSupplierScreen}
+      />
       <Stack.Screen name="AddSupplierScreen" component={AddSupplierScreen} />
       <Stack.Screen name="EditSupplierScreen" component={EditSupplierScreen} />
-      
     </Stack.Navigator>
   );
 }
@@ -627,30 +631,69 @@ function Accouting() {
 export default function App() {
   const [user, setUser] = useState({});
 
-  useEffect(() => {
-    const loadUser = async () => {
+  // useEffect(() => {
+  //   const loadUser = async () => {
+  //     try {
+  //       const savedCart = await AsyncStorage.getItem('userData');
+
+  //       if (savedCart) {
+  //         const { username, token } = JSON.parse(savedCart);
+
+  //         const decoded = jwtDecode(token);
+  //         console.log('Decoded JWT:', decoded);
+
+  //         setUser({ username, token });
+  //       } else {
+  //         setUser({});
+  //       }
+
+  //       console.log('Clear', savedCart);
+  //     } catch (error) {
+  //       console.error('Error loading cart from AsyncStorage:', error);
+  //     }
+  //   };
+
+  //   loadUser();
+
+  //   // // Set up an interval to call a function every second
+  //   // const intervalId = setInterval(() => {
+  //   //   console.log('User state every second:', user); // Log the user state every second
+  //   //   // You can call any function here instead of logging
+  //   // }, 1000); // 1000 milliseconds = 1 second
+
+  //   // // Clean up the interval on component unmount
+  //   // return () => clearInterval(intervalId);
+  // }, []);
+
+  const handleStateChange = async (state) => {
+    const currentRoute = state.routes[state.index];
+    console.log('Current Route:', currentRoute.name);
+
+    // If you want to fetch user data each time the navigation state changes
+    if (currentRoute.name === 'Mega Mall') {
       try {
         const savedCart = await AsyncStorage.getItem('userData');
-
         if (savedCart) {
           const { username, token } = JSON.parse(savedCart);
-          setUser({ username, token });
+          const decoded = jwtDecode(token);
+          setUser({ username, token, role: decoded.scope.split(' ')[0] }); // Update user state if necessary
+        } else {
+          setUser({});
         }
       } catch (error) {
-        console.error('Error loading cart from AsyncStorage:', error);
+        console.error('Error fetching user data on navigation:', error);
       }
-    };
-
-    loadUser();
-  }, []);
-
-  console.log(user);
-
+    }
+  };
   return (
-    <NavigationContainer>
-      {Object.keys(user).length !== 0 && <HaveLoginHome />}
+    <NavigationContainer onStateChange={handleStateChange}>
+      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+        <HaveLoginHome />
+      )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
-      {/* <AdminDrawerNavigator />  */}
+      {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
+        <AdminDrawerNavigator />
+      )}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
