@@ -651,7 +651,7 @@ export default function App() {
   useEffect(() => {
     // Gọi API lấy thông tin người dùng nếu token có giá trị
     const loadUserInfo = async () => {
-      if (user.token) {
+      if (user) {
         try {
           const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
             method: 'GET',
@@ -684,8 +684,9 @@ export default function App() {
         }
       }
       else {
-        await AsyncStorage.removeItem('userData');
         await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('userData');
+
       }
     };
 
