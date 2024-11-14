@@ -28,26 +28,22 @@ const EditProductScreen = ({ route, navigation }) => {
     const [selectedImages, setSelectedImages] = useState(product?.productImages || []);
     const [productSupplier, setProductSupplier] = useState(product?.productSupplier?.productSupplierSd);
     const [productSupplierName, setProductSupplierName] = useState(product?.productSupplier?.productSupplierName);
-    const [parentCategoryId, setParentCategoryId] = useState(product?.categories?.categoryId || null);
+    const [parentCategoryId, setParentCategoryId] = useState(categories.map(category => category.categoryId));
     const [parentCategoryName, setParentCategoryName] = useState(product?.categories?.categoryName || null);
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isSupplierModal, setIsSupplierModal] = useState(false);
 
-    const basePrice = parseInt(product?.productPrice.replace(/\D/g, ''), 10);
-
 
     const [productData, setProductData] = useState({
         productName: product?.productName || '',
-        productPrice: basePrice,
         productYearOfManufacture: product?.productYearOfManufacture || 2024,
         sizesProduct: product?.sizesProduct || [
-            { productSizeId: "00000000-0000-0000-0000-000000000000", productSizeQuantity: 5 }
+            { sizeId: "00000000-0000-0000-0000-000000000000", productQuantity: 10 }
         ],
         productImages: { productImageAlt: "Image of product" },
         post: { postContent: postDTO?.postContent, postName: postDTO?.postName } || {},
     });
     const [error, setError] = useState({
-        productPriceError: false,
         productNameError: false,
     });
     console.log(categories);
@@ -56,7 +52,6 @@ const EditProductScreen = ({ route, navigation }) => {
         const formData = new FormData();
         const params = {
             productName: productData.productName,
-            productPrice: productData.productPrice,
             productYearOfManufacture: productData.productYearOfManufacture,
             sizesProduct: productData.sizesProduct,
             productSupplier: productSupplier,
@@ -104,10 +99,9 @@ const EditProductScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         setError({
-            productPriceError: productData.productPrice <= 0 || isNaN(productData.productPrice),
             productNameError: productData.productName === '',
         });
-    }, [productData.productPrice, productData.productName]);
+    }, [productData.productName]);
 
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
@@ -135,20 +129,7 @@ const EditProductScreen = ({ route, navigation }) => {
                         value={productData.productName}
                         onChangeText={(text) => setProductData({ ...productData, productName: text })}
                     />
-                    <Text style={styles.label}>Giá Sản Phẩm:</Text>
-                    <TextInput
-                        style={[styles.input, error.productPriceError && styles.inputError]}
-                        placeholder="Sửa Giá Sản Phẩm"
-                        value={productData.productPrice.toString()}
-                        onChangeText={(text) => {
-                            const numericValue = parseFloat(text);
-                            setProductData({
-                                ...productData,
-                                productPrice: isNaN(numericValue) ? '' : numericValue,
-                            });
-                        }}
-                        keyboardType="numeric"
-                    />
+                    
 
                     <Text style={styles.label}>Post Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !postDTO && styles.inputError]} onPress={() => navigation.navigate('EditPostScreen', { savedData: { postName: postDTO?.postName, postContent: postDTO?.postContent } })}>

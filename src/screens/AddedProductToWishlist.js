@@ -326,7 +326,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     try {
       // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
       const response = await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData);
-
+      console.log(response);
+      
       if (response.status === 200) {
         console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
         navigation.navigate('AddToCartScreen')
