@@ -104,8 +104,34 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setSelectedSize(sizeName);
     }
   };
+
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        // Lấy dữ liệu từ AsyncStorage
+        const userInfoString = await AsyncStorage.getItem('userInfo');
+
+        // Nếu có dữ liệu thì parse nó thành JSON
+        if (userInfoString) {
+          const userInfoData = JSON.parse(userInfoString);
+          setUserInfo(userInfoData); // Lưu vào state
+        }
+      } catch (error) {
+        console.error('Error fetching user info from AsyncStorage:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+  console.log(userInfo?.userId);
+
+
+
   //Cart
   const [cart, setCart] = useState([]);
+  const [cartData, setCartData] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState('');
   const [errorCheck, setErrorCheck] = useState(false);
@@ -226,6 +252,71 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setCart([...cart, newProduct]);
     }
   };
+
+
+
+  const handleAddToCartUser = async () => {
+    if (!selectedSize) {
+      setError('Vui lòng chọn kích thước sản phẩm');
+      setErrorCheck(false);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    if (quantity < 1) {
+      setError('Vui lòng chọn số lượng hợp lệ');
+      setErrorCheck(false);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    const selectedProductSize = productsState.productSizes.find(
+      (size) => size.productSizeName === selectedSize
+    );
+
+    if (!selectedProductSize) {
+      setError('Kích thước sản phẩm không tồn tại');
+      setErrorCheck(false);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    const availableQuantity = selectedProductSize.productSizeQuantity.productSizeQuantity;
+    if (quantity > availableQuantity) {
+      setError(`Số lượng yêu cầu vượt quá số lượng tồn kho (${availableQuantity} sản phẩm)`);
+      setErrorCheck(false);
+      setErrorCheckQuantity(true);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    setError('');
+    setErrorCheck(false);
+
+    // Chuẩn bị dữ liệu để gửi đến API
+    const cartItemData = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId
+      }
+    };
+
+    try {
+      // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+      const response = await axios.put(`${BASE_URL}cart/01000000-0000-0000-0000-000000000000`, cartItemData);
+
+      if (response.status === 200) {
+        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+        // Cập nhật state giỏ hàng nếu cần
+      } else {
+        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+      }
+    } catch (error) {
+      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+    }
+  };
+
 
   const handleQuantityChange = (amount) => {
     setQuantity(Math.max(1, quantity + amount));
@@ -597,7 +688,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1, position: 'relative', }}>
+        {!userInfo?.userId ? 
+        (<View style={{ flex: 1, position: 'relative', }}>
           {/* Số lượng */}
           <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
             <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
@@ -652,7 +744,64 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               Thêm vào giỏ hàng
             </Text>
           </TouchableOpacity>
-        </View>
+        </View>) : (<View style={{ flex: 1, position: 'relative', }}>
+          {/* Số lượng */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
+            <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
+            </TouchableOpacity>
+            <TextInput
+              style={{
+                width: 50,
+                height: 40,
+                borderColor: '#ccc',
+                borderWidth: 2,
+                textAlign: 'center',
+                fontSize: 16,
+                fontWeight: 'bold',
+                color: '#3669c9',
+
+                borderColor: errorCheckQuantity ? 'red' : '#ccc',
+                backgroundColor: '#fff',
+                borderRadius: 10,
+
+              }}
+              value={String(quantity)}
+              onChangeText={handleInputChange}
+              keyboardType="numeric"
+            />
+
+            <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Thêm vào giỏ hàng */}
+          <TouchableOpacity
+            style={{
+
+              backgroundColor: '#3669C9',
+              borderColor: '#ccc',
+              borderWidth: 1,
+              padding: 20,
+              borderRadius: 10,
+
+            }}
+            onPress={handleAddToCartUser}
+          >
+            <Text
+              style={{
+
+                fontWeight: '600',
+                color: '#fff',
+              }}
+            >
+              Thêm vào giỏ hàng
+            </Text>
+          </TouchableOpacity>
+        </View>)}
+
+
       </View>
     </View>
 
