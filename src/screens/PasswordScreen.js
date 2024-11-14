@@ -12,7 +12,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const PasswordScreen = ({ route, navigation }) => {
-  const [username, setUsername] = useState('');
   const [firstName, setFirstname] = useState('');
   const [lastName, setLastname] = useState('');
   const [sdt, setSdt] = useState('');
@@ -20,36 +19,29 @@ const PasswordScreen = ({ route, navigation }) => {
   const [password, setPassword] = useState('');
   const [passwordAgain, setPasswordAgain] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isButtonEnabled, setIsButtonEnabled] = useState(false);
-  const [usernameWarning, setUsernameWarning] = useState('');
+  const [isButtonEnabled, setIsButtonEnabled] = useState(true);
   const [passwordWarning, setPasswordWarning] = useState('');
+  const [isValidLastname, setIsValidLastname] = useState(true);
+  const [isValidFirstname, setIsValidFistame] = useState(true);
+  const [isValidSdt, setIsValidSdt] = useState(true);
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
 
   const { userEmail } = route.params;
 
   useEffect(() => {
-    const usernameRegex = /^(?=.*\d)(?=.*[@#])[A-Za-z\d@#]{8,}$/;
-    const isUserNameValid = usernameRegex.test(username);
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;"',.<>?])[A-Za-z\d!@#$%^&*()_+{}\[\]:;"',.<>?]{8,}$/;
-    const isPasswordValid = passwordRegex.test(password);
-    // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
-    if (password.length >= 8) {
-      setIsButtonEnabled(true);
-    } else {
-      setIsButtonEnabled(false);
+    const phoneNumberRegex = /^\d{10}$/;
+
+    if (sdt.length !== 0) {
+      setIsValidSdt(phoneNumberRegex.test(sdt));
     }
 
-    // Enable button only if all conditions are met
+    if (password.length !== 0) {
+      setIsPasswordValid(passwordRegex.test(password));
+    }
 
     const validateInputs = () => {
-      if (username.length !== 0 && !isUserNameValid) {
-        setUsernameWarning(
-          'Tên  phải chứa ít nhất 8 ký tự, ký tự đặc biệt và số.'
-        );
-      } else {
-        setUsernameWarning('');
-      }
-
       // Set warning message for password if invalid
       if (password.length !== 0 && !isPasswordValid) {
         setPasswordWarning(
@@ -58,10 +50,6 @@ const PasswordScreen = ({ route, navigation }) => {
       } else {
         setPasswordWarning('');
       }
-
-      setIsButtonEnabled(
-        isUserNameValid && isPasswordValid && password === passwordAgain
-      );
     };
 
     const timeoutId = setTimeout(() => {
@@ -72,7 +60,7 @@ const PasswordScreen = ({ route, navigation }) => {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [password, username]);
+  }, [password, sdt]);
 
   const register = async (body) => {
     try {
@@ -107,23 +95,30 @@ const PasswordScreen = ({ route, navigation }) => {
 
   // Hàm giả lập đăng nhập
   const handleLogin = () => {
-    handleRegister({
-      userPassword: password,
-      userPhone: '+1234567890',
-      userBirthday: '1990-01-01 00:00:00',
-      userAddress: '',
-      userLastName: '111',
-      userFirstName: '1',
-    });
-    // Kiểm tra thông tin đăng nhập (giả)
-    if (password === passwordAgain) {
-      // Đăng nhập thành công
-      Alert.alert('Thành công', 'Đăng nhập thành công!');
-    } else {
-      // Đăng nhập thất bại
-      Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
+    if (
+      isPasswordValid &&
+      isValidFirstname &&
+      isValidLastname &&
+      isValidSdt &&
+      isPasswordValid &&
+      password === passwordAgain
+    ) {
+      handleRegister({
+        userPassword: password,
+        userPhone: sdt,
+        userAddress: address,
+        userLastName: lastName,
+        userFirstName: firstName,
+      });
     }
+
+    setIsValidFistame(firstName.length !== 0);
+    setIsValidLastname(lastName.length !== 0);
+    setIsValidSdt(sdt.length !== 0 ? isValidSdt : false);
+    setIsPasswordValid(password.length !== 0);
   };
+
+  console.log('sdt', sdt);
 
   return (
     <KeyboardAwareScrollView
@@ -164,8 +159,14 @@ const PasswordScreen = ({ route, navigation }) => {
           placeholder="Nhập họ"
           placeholderTextColor="#C4C4C4"
           value={firstName}
-          onChangeText={(e) => setFirstname(e)}
+          onChangeText={setFirstname}
         />
+        {!isValidFirstname && (
+          <Text style={{ color: 'red' }}>
+            <Icon name="exclamation-triangle" size={15} color="red" />
+            Họ không được để trống
+          </Text>
+        )}
 
         <Text style={styles.label}>Tên đệm và tên</Text>
         <TextInput
@@ -175,7 +176,7 @@ const PasswordScreen = ({ route, navigation }) => {
           value={lastName}
           onChangeText={(e) => setLastname(e)}
         />
-        {lastName.length === 0 && (
+        {!isValidLastname && (
           <Text style={{ color: 'red' }}>
             <Icon name="exclamation-triangle" size={15} color="red" />
             Tên đệm và tên không được để trống
@@ -188,13 +189,15 @@ const PasswordScreen = ({ route, navigation }) => {
           placeholder="Nhập số điện thoại"
           placeholderTextColor="#C4C4C4"
           value={sdt}
-          onChangeText={(e) => setSdt(e)}
+          onChangeText={setSdt}
           keyboardType="numeric"
         />
-        <Text style={{ color: '#C4C4C4' }}>
-          <Icon name="info-circle" size={15} color="#C4C4C4" /> số điện thoại
-          gồm 10 ký tự
-        </Text>
+        {!isValidSdt && (
+          <Text style={{ color: 'red' }}>
+            <Icon name="exclamation-triangle" size={15} color="red" /> số điện
+            thoại gồm 10 ký tự
+          </Text>
+        )}
         {/* Input Address*/}
         <Text style={styles.label}>Địa Chỉ</Text>
         <TextInput
@@ -202,7 +205,7 @@ const PasswordScreen = ({ route, navigation }) => {
           placeholder="Nhập Địa Chỉ"
           placeholderTextColor="#C4C4C4"
           value={address}
-          onChangeText={(e) => setAdrress(e)}
+          onChangeText={setAdrress}
         />
 
         {/* Input Password */}
@@ -214,7 +217,7 @@ const PasswordScreen = ({ route, navigation }) => {
             placeholderTextColor="#C4C4C4"
             secureTextEntry={!showPassword}
             value={password}
-            onChangeText={(e) => setPassword(e)}
+            onChangeText={setPassword}
           />
           <Pressable
             style={styles.eyeButton}
@@ -227,10 +230,13 @@ const PasswordScreen = ({ route, navigation }) => {
             />
           </Pressable>
         </View>
-        <Text style={{ color: '#C4C4C4' }}>
-          <Icon name="info-circle" size={15} color="#C4C4C4" /> Mật khẩu phải có
-          8 ký tự trở lên
-        </Text>
+        {!isPasswordValid && (
+          <Text style={{ color: 'red' }}>
+            <Icon name="exclamation-triangle" size={15} color="red" /> Mật khẩu
+            phải chứa ít nhất 8 ký tự bao gồm chữ hoa, thường, số và ký tự đặc
+            biệt
+          </Text>
+        )}
         {/* Input Again Password */}
         <Text style={styles.label}>Nhập Lại Mật Khẩu</Text>
         <View style={styles.passwordContainer}>
@@ -253,7 +259,7 @@ const PasswordScreen = ({ route, navigation }) => {
             />
           </Pressable>
         </View>
-        {password !== passwordAgain && (
+        {passwordAgain.length !== 0 && password !== passwordAgain && (
           <Text style={{ color: 'red' }}>
             <Icon name="exclamation-triangle" size={15} color="red" /> Mật khẩu
             không giống nhau
@@ -263,14 +269,10 @@ const PasswordScreen = ({ route, navigation }) => {
         {/* Nút Sign In và Cancel */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[
-              styles.signInButton,
-              { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
-            ]}
-            disabled={!isButtonEnabled}
+            style={[styles.signInButton, { backgroundColor: '#3669c9' }]}
             onPress={handleLogin} // Gọi hàm đăng nhập khi nhấn nút
           >
-            <Text style={styles.signInText}>Đăng Nhập</Text>
+            <Text style={styles.signInText}>Đăng ký</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton}>
             <Text style={styles.cancelText} onPress={() => navigation.goBack()}>

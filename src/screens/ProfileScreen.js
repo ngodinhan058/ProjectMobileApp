@@ -36,8 +36,16 @@ const ProfileScreen = ({ navigation }) => {
     loadUser();
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userData');
+      Alert.alert('Thành công', 'Đăng xuất thành công!');
+      navigation.navigate('Home'); // Điều hướng sau khi đăng nhập
+    } catch (error) {
+      Alert.alert('Thất bại', error);
+    }
+  };
   // Logout function
-  const handleLogout = async () => {};
 
   return (
     <ScrollView style={styles.container}>
