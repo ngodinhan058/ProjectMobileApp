@@ -10,9 +10,12 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
+import { BASE_URL } from './api/config';
+import axios from 'axios';
 
 const PasswordScreen = ({ route, navigation }) => {
-  const [username, setUsername] = useState('');
   const [firstName, setFirstname] = useState('');
   const [lastName, setLastname] = useState('');
   const [sdt, setSdt] = useState('');
@@ -20,36 +23,39 @@ const PasswordScreen = ({ route, navigation }) => {
   const [password, setPassword] = useState('');
   const [passwordAgain, setPasswordAgain] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isButtonEnabled, setIsButtonEnabled] = useState(false);
-  const [usernameWarning, setUsernameWarning] = useState('');
+  const [showPasswordAgain, setShowPasswordAgain] = useState(false);
+  const [isButtonEnabled, setIsButtonEnabled] = useState(true);
   const [passwordWarning, setPasswordWarning] = useState('');
+  const [isValidLastname, setIsValidLastname] = useState(true);
+  const [isValidFirstname, setIsValidFistame] = useState(true);
+  const [isValidSdt, setIsValidSdt] = useState(true);
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
+  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [date, setDate] = useState(new Date());
 
   const { userEmail } = route.params;
 
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || dateOfBirth;
+    setShowDatePicker(false);
+    setDateOfBirth(currentDate);
+  };
+
   useEffect(() => {
-    const usernameRegex = /^(?=.*\d)(?=.*[@#])[A-Za-z\d@#]{8,}$/;
-    const isUserNameValid = usernameRegex.test(username);
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;"',.<>?])[A-Za-z\d!@#$%^&*()_+{}\[\]:;"',.<>?]{8,}$/;
-    const isPasswordValid = passwordRegex.test(password);
-    // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
-    if (password.length >= 8) {
-      setIsButtonEnabled(true);
-    } else {
-      setIsButtonEnabled(false);
+    const phoneNumberRegex = /^\d{10}$/;
+
+    if (sdt.length !== 0) {
+      setIsValidSdt(phoneNumberRegex.test(sdt));
     }
 
-    // Enable button only if all conditions are met
+    if (password.length !== 0) {
+      setIsPasswordValid(passwordRegex.test(password));
+    }
 
     const validateInputs = () => {
-      if (username.length !== 0 && !isUserNameValid) {
-        setUsernameWarning(
-          'Tên  phải chứa ít nhất 8 ký tự, ký tự đặc biệt và số.'
-        );
-      } else {
-        setUsernameWarning('');
-      }
-
       // Set warning message for password if invalid
       if (password.length !== 0 && !isPasswordValid) {
         setPasswordWarning(
@@ -58,10 +64,6 @@ const PasswordScreen = ({ route, navigation }) => {
       } else {
         setPasswordWarning('');
       }
-
-      setIsButtonEnabled(
-        isUserNameValid && isPasswordValid && password === passwordAgain
-      );
     };
 
     const timeoutId = setTimeout(() => {
@@ -72,58 +74,71 @@ const PasswordScreen = ({ route, navigation }) => {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [password, username]);
+  }, [password, sdt]);
 
   const register = async (body) => {
     try {
       const response = await axios.post(
-        `${BASE_URL}auth/register?userEmail=${email}`,
-        body
+        `${BASE_URL}auth/register?userEmail=${userEmail}`,
+        body,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       );
-      const userData = response.data;
+      console.log(response);
+
+      Alert.alert('Thành công', 'Đăng ký thành công!');
 
       //await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
-      return userData;
     } catch (error) {
-      // console.log(error.response.data.error);
-
-      // console.error(
-      //   'Send otp throw email failed',
-      //   error.response ? error.response.data : error.message
-      // );
+      //Alert.alert('Thất bại', 'Quá trình đăng ký có lỗi.');
       throw error; // Ném lỗi để có thể hiển thị thông báo
     }
   };
 
-  const handleRegister = async (body) => {
-    try {
-      const userData = await register(body); // Gọi API để kiểm tra
-      //Alert.alert('Thành công', 'Đăng nhập thành công!');
-      //navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
-    } catch (error) {
-      //Alert.alert('Thất bại', error.response.data.error);
-    }
+  const formatDateToString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    return `${year}-${month}-${day}`;
   };
 
   // Hàm giả lập đăng nhập
-  const handleLogin = () => {
-    handleRegister({
-      userPassword: password,
-      userPhone: '+1234567890',
-      userBirthday: '1990-01-01 00:00:00',
-      userAddress: '',
-      userLastName: '111',
-      userFirstName: '1',
-    });
-    // Kiểm tra thông tin đăng nhập (giả)
-    if (password === passwordAgain) {
-      // Đăng nhập thành công
-      Alert.alert('Thành công', 'Đăng nhập thành công!');
-    } else {
-      // Đăng nhập thất bại
-      Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
+  const handleLogin = async () => {
+    if (
+      isPasswordValid &&
+      isValidFirstname &&
+      isValidLastname &&
+      isValidSdt &&
+      isPasswordValid &&
+      password === passwordAgain
+    ) {
+      try {
+        await register({
+          userPassword: password,
+          userPhone: sdt,
+          userLastName: lastName,
+          userFirstName: firstName,
+          userBirthday: formatDateToString(dateOfBirth),
+        });
+        navigation.navigate('LoginScreen'); // Điều hướng sau khi đăng nhập
+      } catch (error) {
+        throw error;
+        //Alert.alert('Thất bại', 'Đăng ký thất bại');
+      }
     }
+
+    setIsValidFistame(firstName.length !== 0);
+    setIsValidLastname(lastName.length !== 0);
+    setIsValidSdt(sdt.length !== 0 ? isValidSdt : false);
+    setIsPasswordValid(password.length !== 0);
   };
+
+  const formattedDate = `${dateOfBirth.getDate()}/${
+    dateOfBirth.getMonth() + 1
+  }/${dateOfBirth.getFullYear()}`;
 
   return (
     <KeyboardAwareScrollView
@@ -141,13 +156,11 @@ const PasswordScreen = ({ route, navigation }) => {
         >
           <Icon name="arrow-left" size={20} color="#000" />
         </Pressable>
-
         {/* Tiêu đề */}
         <Text style={styles.title}>Thông Tin & Mật Khẩu</Text>
         <Text style={styles.subtitle}>
           Hoàn thành dữ liệu cuối cùng sau đây để vào ứng dụng Mega Mall
         </Text>
-
         {/* Input Fullname*/}
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -157,16 +170,20 @@ const PasswordScreen = ({ route, navigation }) => {
           value={userEmail}
           editable={false}
         />
-
         <Text style={styles.label}>Họ</Text>
         <TextInput
           style={styles.input}
           placeholder="Nhập họ"
           placeholderTextColor="#C4C4C4"
           value={firstName}
-          onChangeText={(e) => setFirstname(e)}
+          onChangeText={setFirstname}
         />
-
+        {!isValidFirstname && (
+          <Text style={{ color: 'red' }}>
+            <Icon name="exclamation-triangle" size={15} color="red" />
+            Họ không được để trống
+          </Text>
+        )}
         <Text style={styles.label}>Tên đệm và tên</Text>
         <TextInput
           style={styles.input}
@@ -175,26 +192,47 @@ const PasswordScreen = ({ route, navigation }) => {
           value={lastName}
           onChangeText={(e) => setLastname(e)}
         />
-        {lastName.length === 0 && (
+        {!isValidLastname && (
           <Text style={{ color: 'red' }}>
             <Icon name="exclamation-triangle" size={15} color="red" />
             Tên đệm và tên không được để trống
           </Text>
         )}
-
         <Text style={styles.label}>Số điện thoại</Text>
         <TextInput
           style={styles.input}
           placeholder="Nhập số điện thoại"
           placeholderTextColor="#C4C4C4"
           value={sdt}
-          onChangeText={(e) => setSdt(e)}
+          onChangeText={setSdt}
           keyboardType="numeric"
         />
-        <Text style={{ color: '#C4C4C4' }}>
-          <Icon name="info-circle" size={15} color="#C4C4C4" /> số điện thoại
-          gồm 10 ký tự
-        </Text>
+        {!isValidSdt && (
+          <Text style={{ color: 'red' }}>
+            <Icon name="exclamation-triangle" size={15} color="red" /> số điện
+            thoại gồm 10 ký tự
+          </Text>
+        )}
+        {/* Date of Birth Selection */}
+        <Text style={styles.label}>Ngày/Tháng/Năm sinh </Text>
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text>
+            {dateOfBirth ? formattedDate : 'What is your date of birth?'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Day Picker */}
+        {showDatePicker && (
+          <DateTimePicker
+            value={dateOfBirth}
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+          />
+        )}
         {/* Input Address*/}
         <Text style={styles.label}>Địa Chỉ</Text>
         <TextInput
@@ -202,9 +240,8 @@ const PasswordScreen = ({ route, navigation }) => {
           placeholder="Nhập Địa Chỉ"
           placeholderTextColor="#C4C4C4"
           value={address}
-          onChangeText={(e) => setAdrress(e)}
+          onChangeText={setAdrress}
         />
-
         {/* Input Password */}
         <Text style={styles.label}>Mật Khẩu</Text>
         <View style={styles.passwordContainer}>
@@ -214,7 +251,7 @@ const PasswordScreen = ({ route, navigation }) => {
             placeholderTextColor="#C4C4C4"
             secureTextEntry={!showPassword}
             value={password}
-            onChangeText={(e) => setPassword(e)}
+            onChangeText={setPassword}
           />
           <Pressable
             style={styles.eyeButton}
@@ -227,10 +264,13 @@ const PasswordScreen = ({ route, navigation }) => {
             />
           </Pressable>
         </View>
-        <Text style={{ color: '#C4C4C4' }}>
-          <Icon name="info-circle" size={15} color="#C4C4C4" /> Mật khẩu phải có
-          8 ký tự trở lên
-        </Text>
+        {!isPasswordValid && (
+          <Text style={{ color: 'red' }}>
+            <Icon name="exclamation-triangle" size={15} color="red" /> Mật khẩu
+            phải chứa ít nhất 8 ký tự bao gồm chữ hoa, thường, số và ký tự đặc
+            biệt
+          </Text>
+        )}
         {/* Input Again Password */}
         <Text style={styles.label}>Nhập Lại Mật Khẩu</Text>
         <View style={styles.passwordContainer}>
@@ -238,39 +278,34 @@ const PasswordScreen = ({ route, navigation }) => {
             style={styles.inputPassword}
             placeholder="Mật Khẩu"
             placeholderTextColor="#C4C4C4"
-            secureTextEntry={!showPassword}
+            secureTextEntry={!showPasswordAgain}
             value={passwordAgain}
             onChangeText={setPasswordAgain}
           />
           <Pressable
             style={styles.eyeButton}
-            onPress={() => setShowPassword(!showPassword)}
+            onPress={() => setShowPasswordAgain(!showPasswordAgain)}
           >
             <Icon
-              name={showPassword ? 'eye' : 'eye-slash'}
+              name={showPasswordAgain ? 'eye' : 'eye-slash'}
               size={20}
               color="#C4C4C4"
             />
           </Pressable>
         </View>
-        {password !== passwordAgain && (
+        {passwordAgain.length !== 0 && password !== passwordAgain && (
           <Text style={{ color: 'red' }}>
             <Icon name="exclamation-triangle" size={15} color="red" /> Mật khẩu
             không giống nhau
           </Text>
         )}
-
         {/* Nút Sign In và Cancel */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[
-              styles.signInButton,
-              { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
-            ]}
-            disabled={!isButtonEnabled}
+            style={[styles.signInButton, { backgroundColor: '#3669c9' }]}
             onPress={handleLogin} // Gọi hàm đăng nhập khi nhấn nút
           >
-            <Text style={styles.signInText}>Đăng Nhập</Text>
+            <Text style={styles.signInText}>Đăng ký</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton}>
             <Text style={styles.cancelText} onPress={() => navigation.goBack()}>
@@ -384,6 +419,12 @@ const styles = StyleSheet.create({
   signUpText: {
     fontSize: 14,
     color: '#0066FF',
+  },
+  input: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
   },
 });
 export default PasswordScreen;
