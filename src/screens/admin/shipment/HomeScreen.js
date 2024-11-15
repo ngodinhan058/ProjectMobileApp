@@ -24,7 +24,7 @@ const HomeAdminScreen = ({ navigation }) => {
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('DetailScreen', {
+            onPress={() => navigation.navigate('DetailProductShipment', {
                 id: item.shipmentId
             })}
         >

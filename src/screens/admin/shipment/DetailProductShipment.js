@@ -14,33 +14,29 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import ImageViewer from 'react-native-image-zoom-viewer';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 function DetailScreen({ route, navigation }) {
     const { id } = route.params;
-
-    // State quản lý việc nút mở rộng được mở hay không
+    const [shipmentData, setShipmentData] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [animation] = useState(new Animated.Value(0)); // giá trị hoạt ảnh
+    const [animation] = useState(new Animated.Value(0));
     const [rotation] = useState(new Animated.Value(0));
-    const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        setIsLoading(true);
-        const apiUrl = `${BASE_URL}product/${id}`;
+        const apiUrl = `${BASE_URL}shipment/${id}`;
         axios.get(apiUrl)
             .then(response => {
-                const productData = response.data.data;
-                setProductsState(productData);
+                setShipmentData(response.data);
                 setIsLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching data:', error);
-            })
+                console.log('Error fetching shipment data:', error);
+            });
     }, [id]);
+
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
 
@@ -77,33 +73,24 @@ function DetailScreen({ route, navigation }) {
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
     });
-    const deleteProduct = async () => {
+    const deleteShipment = async () => {
         setIsLoading(true);
         try {
-            await axios.delete(`${BASE_URL}product/${id}`);
-            // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
-            Alert.alert("Success", "Xoá Thành Công");
-            navigation.replace("ProductList")
-            // Điều hướng hoặc cập nhật trạng thái nếu cần
+            await axios.delete(`${BASE_URL}shipment/${id}`);
+            Alert.alert("Success", "Shipment deleted successfully");
+            navigation.replace("ShipmentList");
         } catch (error) {
-            console.error('Error deleting category:', error.response ? error.response.data : error.message);
-            Alert.alert("Error", "Failed to delete category.");
+            console.log('Error deleting shipment:', error);
+            Alert.alert("Error", "Failed to delete shipment.");
         } finally {
-            setIsLoading(false);  // Set loading to false when request completes
+            setIsLoading(false);
         }
     };
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [isModalVisible, setModalVisible] = useState(false);
 
-    const openModal = (imagePath) => {
-        setSelectedImage([{ url: imagePath }]);
-        setModalVisible(true);
-    };
+    if (isLoading) {
+        return <ActivityIndicator size="large" color="#3669c9" />;
+    }
 
-    const closeModal = () => {
-        setModalVisible(false);
-        setSelectedImage(null);
-    };
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -112,79 +99,35 @@ function DetailScreen({ route, navigation }) {
                         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                             <Icon name="angle-left" size={35} color="#000" />
                         </Pressable>
-                        <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
+                        <Text style={styles.textHeader}>Chi Tiết Lô Hàng</Text>
                     </View>
 
-                    {/* Product Image */}
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-                        <FlatList
-                            data={productsState.productImages}
-                            horizontal
-                            pagingEnabled
-                            showsHorizontalScrollIndicator={false}
-                            keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
+                    {/* Shipment Information */}
+                    <View style={styles.shipmentInfo}>
+                        <Text style={styles.shipmentDate}>Date: {shipmentData.shipmentDate}</Text>
+                        <Text style={styles.shipmentDiscount}>Discount: {shipmentData.shipmentDiscount}%</Text>
+                        <Text style={styles.shipmentShipCost}>Shipping Cost: {shipmentData.shipmentShipCost} VND</Text>
+
+                        <View style={styles.supplierInfo}>
+                            <Text style={styles.supplierTitle}>Supplier:</Text>
+                            <Text style={styles.supplierName}>{shipmentData.productSupplier?.productSupplierName}</Text>
+                            <Image source={{ uri: shipmentData.productSupplier?.productSupplierLogo }} style={styles.supplierLogo} />
+                        </View>
+                    </View>
+
+                    {/* Shipment Products */}
+                    <View style={styles.productList}>
+                        <Text style={styles.sectionTitle}>Products</Text>
+                        {/* <FlatList
+                            data={shipmentData.shipmentProducts}
+                            keyExtractor={(item, index) => `${item.shipmentProductQuantity}-${index}`}
                             renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
-                                    <View style={{ marginHorizontal: 5 }}>
-                                        <Image
-                                            source={{ uri: item.productImagePath }}
-                                            style={{ width: 345, height: 350, resizeMode: 'contain' }}
-                                        />
-                                    </View>
-                                </TouchableOpacity>
+                                <View style={styles.productItem}>
+                                    <Text style={styles.productQuantity}>Quantity: {item.shipmentProductQuantity}</Text>
+                                    <Text style={styles.productPrice}>Price: {item.shipmentProductPrice} VND</Text>
+                                </View>
                             )}
-                        />
-                        <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
-                            <View style={styles.modalBackground}>
-                                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-                                    <Text style={styles.closeText}>X</Text>
-                                </TouchableOpacity>
-                                {selectedImage && (
-                                    <ImageViewer
-                                        imageUrls={selectedImage} // Thư viện yêu cầu array của các object với key `url`
-                                        enableSwipeDown
-                                        onSwipeDown={closeModal}
-                                        renderIndicator={() => null}
-                                        style={styles.fullScreenImage} // Ẩn số chỉ mục ảnh
-                                    />
-                                )}
-                            </View>
-                        </Modal>
-                    </View>
-
-                    {/* Product info */}
-                    <View style={styles.productInfo}>
-                        <View>
-                            <Text style={styles.productName}>{productsState.productName}</Text>
-                        </View>
-
-                        <View>
-                            <Text style={styles.originalPrice}>{productsState.productPrice}</Text>
-                            <Text style={styles.productPrice}>
-                                {productsState.productPriceSale}
-                            </Text>
-                            <Text style={styles.productSale}>
-                                Sale: {productsState.productSale}%
-                            </Text>
-                        </View>
-
-                        <View style={styles.SoldProductInfo}>
-                            <View style={styles.productStar}>
-                                <Image source={require('../../../assets/star.png')} />
-                                <Text>{productsState.productRating}</Text>
-                            </View>
-                            <View>
-                                <Text style={styles.totalSellProduct}>Số lượng còn lại: {productsState.productQuantity}</Text>
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Description Product */}
-                    <View>
-                        <Text style={styles.descriptionProductTitle}>Thông Tin Sản Phẩm</Text>
-                        <Text style={styles.descriptionProductText}>
-                            {productsState?.post?.postContent}
-                        </Text>
+                        /> */}
                     </View>
                 </View>
             </ScrollView>
@@ -220,7 +163,7 @@ function DetailScreen({ route, navigation }) {
 
             <Animated.View style={[styles.subButton, { bottom: position1 }]}>
 
-            <TouchableOpacity style={styles.iconButton} onPress={() => {
+                <TouchableOpacity style={styles.iconButton} onPress={() => {
                     Alert.alert(
                         "Xác Nhận!!!",
                         "Bạn có chắc muốn xoá không??",
@@ -236,6 +179,7 @@ function DetailScreen({ route, navigation }) {
                     <Icon name="trash" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
+
             {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#3669c9" />
@@ -246,18 +190,8 @@ function DetailScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-    overlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1,
-    },
     container: {
-        padding: 20,
-        height: '100%',
-        backgroundColor: '#fff',
-        paddingHorizontal: 20,
+        flex: 1, backgroundColor: '#fff', padding: 20,
     },
     iconHeader: {
         flexDirection: 'row',
@@ -275,69 +209,17 @@ const styles = StyleSheet.create({
     backButton: {
         marginRight: 10,
     },
-    productImgContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        height: 200,
-        position: 'relative',
-    },
-    productImg: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 10,
-    },
-    numberOfImage: {
-        position: 'absolute',
-        left: '10%',
-        bottom: '10%',
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    productInfo: {
-        flexDirection: 'column',
-        marginTop: 10,
-        marginBottom: 10,
-    },
-    productName: {
-        textTransform: 'uppercase',
-        fontSize: 20,
-        fontWeight: '700',
-    },
-    productPrice: {
-        color: '#FE3A30',
-        fontWeight: '500',
-        fontSize: 18,
-    },
-    productSale: {
-        fontSize: 15,
-    },
-    originalPrice: {
-        fontSize: 14,
-        color: '#888',
-        textDecorationLine: 'line-through',
-        marginTop: 10,
-    },
-    SoldProductInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    productStar: {
-        flexDirection: 'row',
-        gap: 5,
-    },
-    totalSellProduct: {
-        color: '#3A9B7A',
-    },
-    descriptionProductTitle: {
-        fontWeight: '800',
-        fontSize: 16,
-        paddingTop: 10,
-    },
-    descriptionProductText: {
-        lineHeight: 24,
-        paddingBottom: 10,
-    },
+    shipmentDate: { fontSize: 16, marginBottom: 5 },
+    shipmentDiscount: { fontSize: 16, marginBottom: 5 },
+    shipmentShipCost: { fontSize: 16, marginBottom: 5 },
+    supplierInfo: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+    supplierTitle: { fontSize: 16, fontWeight: 'bold' },
+    supplierName: { fontSize: 16, marginLeft: 5 },
+    supplierLogo: { width: 40, height: 40, borderRadius: 20, marginLeft: 10 },
+    sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+    productItem: { padding: 10, backgroundColor: '#f0f0f0', marginBottom: 5, borderRadius: 5 },
+    productQuantity: { fontSize: 16 },
+    productPrice: { fontSize: 16 },
     editButton: {
         position: 'absolute',
         bottom: 30,
@@ -400,10 +282,6 @@ const styles = StyleSheet.create({
     closeText: {
         color: '#fff',
         fontSize: 24,
-    },
-    fullScreenImage: {
-        width: '100%',
-        height: '90%',
     },
 
 });

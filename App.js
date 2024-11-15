@@ -85,6 +85,8 @@ import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 }
 import HomeShipmentScreen from './src/screens/admin/shipment/HomeScreen';
 import AddProductShipment from './src/screens/admin/shipment/AddProductShipment';
+import DetailProductShipment from './src/screens/admin/shipment/DetailProductShipment';
+import EditProductShipment from './src/screens/admin/shipment/EditProductShipment';
 {
   /* Admin Size*/
 }
@@ -425,6 +427,8 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
+      <Stack.Screen name="DetailProductShipment" component={DetailProductShipment} />
+      <Stack.Screen name="EditProductShipment" component={EditProductShipment} />
 
     </Stack.Navigator>
   );
@@ -464,7 +468,7 @@ function AdminDrawerNavigator() {
     <Drawer.Navigator>
       <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
-      <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
+      {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
       <Drawer.Screen name="Danh Sách Nhập Hàng" component={ShipmentAdmin} />
       <Drawer.Screen name="Danh Sách Màu" component={SizeAdmin} />
       <Drawer.Screen name="Danh Sách Thương Hiệu" component={SupplierAdmin} />
@@ -633,8 +637,8 @@ export default function App() {
 
   useEffect(() => {
     const loadUser = async () => {
-      try {userData
-        const savedUser = await AsyncStorage.getItem('');
+      try {
+        const savedUser = await AsyncStorage.getItem('userData');
         // const savedUser = await AsyncStorage.removeItem('userData');
         if (savedUser) {
           const { username, token } = JSON.parse(savedUser);
@@ -692,12 +696,13 @@ export default function App() {
 
     loadUserInfo();
   }, [user.token]);
+console.log(user.token);
 
   return (
     <NavigationContainer>
-      {/* {Object.keys(userData).length !== 0 && <HaveLoginHome />}
-      {Object.keys(userData).length === 0 && <NoLoginHome />} */}
-      <AdminDrawerNavigator /> 
+      {Object.keys(userData).length !== 0 && <HaveLoginHome />}
+      {Object.keys(userData).length === 0 && <NoLoginHome />}
+      {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}

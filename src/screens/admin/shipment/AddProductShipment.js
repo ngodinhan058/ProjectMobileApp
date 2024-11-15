@@ -69,16 +69,30 @@ const ShipmentForm = () => {
 
     const handleEditProduct = (productId) => {
         setSelectedProductForEdit(productId);
-        setModalVisibility({ ...modalVisibility, productEdit: true });
+        // setModalVisibility({ ...modalVisibility, productEdit: true });
     };
 
     // Hàm xử lý chọn kích thước cho từng sản phẩm
     const handleSelectSize = (productId, sizeId) => {
-                        setSelectedSize((prevSelectedSizes) => ({
-                            ...prevSelectedSizes,
-                            [productId]: sizeId, // Lưu kích thước của từng sản phẩm theo productId
-                        }));
+        setSelectedSize((prevSelectedSizes) => {
+            const existingSizes = prevSelectedSizes[productId] || [];
+            if (existingSizes.includes(sizeId)) {
+                // Remove size if already selected
+                return {
+                    ...prevSelectedSizes,
+                    [productId]: existingSizes.filter((id) => id !== sizeId),
+                };
+            } else {
+                // Add size if not already selected
+                return {
+                    ...prevSelectedSizes,
+                    [productId]: [...existingSizes, sizeId],
+                };
+            }
+        });
     };
+
+
 
     const handleSaveProductDetails = () => {
         setProductDetails({
@@ -123,7 +137,7 @@ const ShipmentForm = () => {
                 sizeProduct: selectedSize[productId], // Thêm size cho từng sản phẩm
             })),
         };
-console.log(formData);
+        console.log(formData);
 
         try {
             // Gửi dữ liệu formData đến API
@@ -251,7 +265,7 @@ console.log(formData);
                         </View>
                     </View>
                 </Modal>
- 
+
 
                 {selectedProducts.map((productId) => (
                     <TouchableOpacity key={productId} onPress={() => handleEditProduct(productId)}>
@@ -265,7 +279,9 @@ console.log(formData);
                             </Text>
                             <TouchableOpacity onPress={() => setModalVisibility({ ...modalVisibility, sizeSelection: productId })}>
                                 <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                                    {selectedSize[productId] ? `Đã chọn màu: ${selectedSize[productId]}` : 'Choose Màu'}
+                                    {selectedSize[productId] && selectedSize[productId].length > 0
+                                        ? `Đã chọn Màu: ${selectedSize[productId].join(', ')}`
+                                        : 'Chọn Màu'}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -288,7 +304,6 @@ console.log(formData);
                                     <TouchableOpacity
                                         onPress={() => {
                                             handleSelectSize(modalVisibility.sizeSelection, item.productSizeId);
-                                            setModalVisibility({ ...modalVisibility, sizeSelection: null });
                                         }}
                                     >
                                         <Text style={{ padding: 10, borderBottomWidth: 1 }}>
