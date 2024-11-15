@@ -19,7 +19,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { BASE_URL } from './src/screens/api/config';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
@@ -254,7 +254,7 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     {
       name: 'AddedProductToWishlist',
       component: AddedProductToWishlist,
-      showFooter: true,
+      showFooter: false,
     },
     { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false }, // Ẩn Footer cho màn AddToCartScreen
     {
@@ -263,6 +263,9 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       showFooter: true,
     },
     { name: 'SuccessScreen', component: SuccessScreen, showFooter: true },
+    { name: 'OrderConfirmationScreen', component: OrderConfirmationScreen, showFooter: false, },
+    { name: 'CompletedOrderConfirmationScreen', component: CompletedOrderConfirmationScreen, showFooter: false },
+    { name: 'RejectOrderConfirmationScreen', component: RejectOrderConfirmationScreen, showFooter: false },
   ];
 
   return (
@@ -426,6 +429,7 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
+
     </Stack.Navigator>
   );
 }
@@ -440,6 +444,7 @@ function SizeAdmin() {
       <Stack.Screen name="DetailSizeScreen" component={DetailSizeScreen} />
       <Stack.Screen name="AddSizeScreen" component={AddSizeScreen} />
       <Stack.Screen name="EditSizeScreen" component={EditSizeScreen} />
+      
     </Stack.Navigator>
   );
 }
@@ -457,6 +462,7 @@ function SupplierAdmin() {
       />
       <Stack.Screen name="AddSupplierScreen" component={AddSupplierScreen} />
       <Stack.Screen name="EditSupplierScreen" component={EditSupplierScreen} />
+      
     </Stack.Navigator>
   );
 }
@@ -630,6 +636,7 @@ function Accouting() {
 
 export default function App() {
   const [user, setUser] = useState({});
+  const [userData, setUserData] = useState({});
 
   // useEffect(() => {
   //   const loadUser = async () => {
@@ -676,27 +683,26 @@ export default function App() {
     ) {
       try {
         const savedCart = await AsyncStorage.getItem('userData');
+
         if (savedCart) {
           const { username, token } = JSON.parse(savedCart);
-          const decoded = jwtDecode(token);
-          setUser({ username, token, role: decoded.scope.split(' ')[0] }); // Update user state if necessary
-        } else {
-          setUser({});
+          setUser({ username, token });
         }
       } catch (error) {
-        console.error('Error fetching user data on navigation:', error);
+        console.error('Error loading cart from AsyncStorage:', error);
       }
-    }
-  };
+    };
+
+    loadUser();
+  }, []);
+
+  console.log(user);
+
   return (
-    <NavigationContainer onStateChange={handleStateChange}>
-      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
-        <HaveLoginHome />
-      )}
+    <NavigationContainer>
+      {Object.keys(user).length !== 0 && <HaveLoginHome />}
       {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
-        <AdminDrawerNavigator />
-      )}
+      {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}

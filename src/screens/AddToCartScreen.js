@@ -8,54 +8,115 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CartItem from '../components/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from './api/config';
+import axios from 'axios';
+
 
 function AddToCartScreen({ navigation }) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Tiền mặt');
   const [selectedPaymentIcon, setSelectedPaymentIcon] = useState(require('../assets/wallet.png'));
+  const [selectedPaymentUse, setSelectedPaymentUse] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
   const [invoiceOption, setInvoiceOption] = useState(false);
+  const [idCart, setIdCart] = useState([]);
+
   const [cartData, setCartData] = useState([]);
+  const [cartDataUser, setCartDataUser] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [total, setTotal] = useState();
+
 
   const paymentOptions = [
-    { label: 'Tiền mặt', icon: require('../assets/wallet.png') },
-    { label: 'Ví ZaloPay', icon: require('../assets/star.png') },
-    { label: 'Ví MoMo', icon: require('../assets/star.png') },
-    { label: 'Ví ShopeePay', icon: require('../assets/star.png') },
+    { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true },
+    { label: 'Ví Mega (Đang cập nhập)', icon: require('../assets/star.png'), use: false },
+    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false },
   ];
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
-  const handleSelectPayment = (method, methodIcon) => {
-    setSelectedPaymentMethod(method)
-    setSelectedPaymentIcon(methodIcon)
-    toggleModal();
+  const handleSelectPayment = (method, methodIcon, use) => {
+
+    if (use == false) {
+      Alert.alert("Thông Báo", "Phương Thức Đang Cập Nhập")
+    } else {
+      setSelectedPaymentMethod(method)
+      setSelectedPaymentIcon(methodIcon)
+      toggleModal();
+
+    }
   };
-
-
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
-    const loadCartData = async () => {
+    const fetchUserInfo = async () => {
+      try {
+        // Lấy dữ liệu từ AsyncStorage
+        const userInfoString = await AsyncStorage.getItem('userInfo');
+
+        // Nếu có dữ liệu thì parse nó thành JSON
+        if (userInfoString) {
+          const userInfoData = JSON.parse(userInfoString);
+          setUserInfo(userInfoData); // Lưu vào state
+        }
+      } catch (error) {
+        console.error('Error fetching user info from AsyncStorage:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+  // console.log(userInfo?.userId);
+
+
+
+
+  const fetchData = async () => {
+    if (userInfo?.userId == null) {
+      // Lấy dữ liệu giỏ hàng từ AsyncStorage nếu userId không tồn tại
       try {
         const savedCart = await AsyncStorage.getItem('cart');
         if (savedCart) {
           const { items } = JSON.parse(savedCart);
-          setCartData(items);
+          setCartData(items); // Lưu giỏ hàng vào state
         }
       } catch (error) {
         console.error("Error loading cart from AsyncStorage:", error);
       }
-    };
+    } else {
+      // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
+      setIsLoading(true);
+      const apiUrl = `${BASE_URL}carts/user/${userInfo.userId}`;
+      try {
+        const response = await axios.get(apiUrl);
+        const userData = response.data.data.cartItem;
+        const cartTotal = response.data.data.productTotalPrice;
+        const idCart = response.data.data.cartId;
+        setIdCart(idCart)
+        setCartDataUser(userData); // Lưu giỏ hàng vào state
+        setTotal(cartTotal);
+      } catch (error) {
+        console.log('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, [userInfo?.userId]); // Chạy lại khi userInfo?.userId thay đổi
 
-    loadCartData();
-  }, []);
-  // Update quantity in cart
+
+
+
   const handleQuantityChange = (id, newQuantity, price) => {
     const basePrice = parseInt(price.replace(/\D/g, ''), 10);
     if (newQuantity === 0) {
@@ -78,6 +139,56 @@ function AddToCartScreen({ navigation }) {
       saveCartData(updatedCart);
     }
   };
+  const handleQuantityChangeUser = (id, number, sizeId) => {
+    if (number == true) {
+      const cartItemData = {
+        cartItem: {
+          productQuantity: 1,
+          productId: id,
+          sizeId: sizeId
+        }
+      };
+      
+      try {
+        // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+        const response = axios.delete(`${BASE_URL}cart/${idCart}`, { data: cartItemData });
+
+        if (response.status === 200 || 201) {
+          console.log("Sản phẩm đã được xoá:", response.data);
+          fetchData();
+
+        } else {
+          console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+        }
+      } catch (error) {
+        console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+      }
+    }
+    else {
+      const cartItemData = {
+        cartItem: {
+          productQuantity: 1,
+          productId: id,
+          sizeId: sizeId
+        }
+      };
+      console.log(cartItemData);
+
+      try {
+        // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+        const response = axios.put(`${BASE_URL}cart/${idCart}`, cartItemData );
+        if (response.status === 200 || 201) {
+          console.log("Sản phẩm đã được thêm:");
+          fetchData();
+
+        } else {
+          console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+        }
+      } catch (error) {
+        console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+      }
+    }
+  };
 
   // Delete item from cart
   const handleDelete = (id) => {
@@ -85,6 +196,31 @@ function AddToCartScreen({ navigation }) {
     setCartData(updatedCart);
     saveCartData(updatedCart);
   };
+  // Delete item from cart
+  const handleDeleteUser = async (id, quantity, size) => {
+    const cartItemData = {
+      cartItem: {
+        pproductQuantity: 0,
+        productId: id,
+        sizeId: size
+      }
+    };
+    try {
+      // Sử dụng await để chờ phản hồi từ API
+      const response = await axios.delete(`${BASE_URL}cart/${idCart}`, { data: cartItemData });
+
+      if (response.status === 200) {
+        console.log("Sản phẩm đã được xoá:", response.data);
+        fetchData();
+        // Cập nhật state giỏ hàng nếu cần
+      } else {
+        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+      }
+    } catch (error) {
+      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error.message);
+    }
+  };
+
 
   // Save updated cart to AsyncStorage
   const saveCartData = async (updatedCart) => {
@@ -112,30 +248,55 @@ function AddToCartScreen({ navigation }) {
               }}
             >
               <Image source={require('../assets/location.png')} style={{ width: 18, height: 18 }} />
-              <Text style={{ flex: 2 }}>21/8 Đường 35, Khu phố B</Text>
-              <Image source={require('../assets/edit.png')} style={{ width: 18, height: 18 }} />
+              <Text style={{ flex: 2 }}>{userInfo?.userAddress}</Text>
+              {/* <Image source={require('../assets/edit.png')} style={{ width: 18, height: 18 }} /> */}
             </View>
           </View>
 
           <View style={{ marginHorizontal: 2 }}>
-            {cartData.length > 0 ? (
-              cartData.map((item) => (
-                <CartItem
-                  key={item.id}
-                  id={item.id}
-                  name={item.name}
-                  price={item.price}
-                  quantity={item.quantity}
-                  size={item.size}
-                  image={item.image}
-                  total={item.total}
-                  onDelete={handleDelete}
-                  onQuantityChange={handleQuantityChange}
-                />
-              ))
-            ) : (
-              <Text>Giỏ hàng của bạn trống</Text>
-            )}
+
+            {
+              userInfo?.userId ? (
+                cartDataUser.length > 0 ? (
+                  cartDataUser.map((item, index) => (
+                    <CartItem
+                      key={index}
+                      id={item.productId}
+                      name={item.productName}
+                      price={item.productPrice}
+                      quantity={item.productQuantity}
+                      sizeId={item.productSizeId}
+                      size={item.productSize}
+                      image={item.productImage}
+                      total={(item.productTotalPrice).toLocaleString() + " ₫"}
+                      onDelete={handleDeleteUser}
+                      onQuantityChange={handleQuantityChangeUser}
+                    />
+                  ))
+                ) : (
+                  <Text>Giỏ hàng của bạn trống</Text>
+                )
+              ) : (
+                cartData.length > 0 ? (
+                  cartData.map((item, index) => (
+                    <CartItem
+                      key={item.id}
+                      id={item.id}
+                      name={item.name}
+                      price={item.price}
+                      quantity={item.quantity}
+                      size={item.size}
+                      image={item.image}
+                      total={item.total}
+                      onDelete={handleDelete}
+                      onQuantityChange={handleQuantityChange}
+                    />
+                  ))
+                ) : (
+                  <Text>Giỏ hàng của bạn trống</Text>
+                )
+              )
+            }
           </View>
 
           <View style={{ marginTop: 10, gap: 10 }}>
@@ -189,9 +350,9 @@ function AddToCartScreen({ navigation }) {
               }}
             >
               <Text>Tổng tạm tính</Text>
-              <Text style={{ color: '#3669C9' }}>10.000.000đ</Text>
+              <Text style={{ color: '#3669C9' }}>{total}</Text>
             </View>
-            <View
+            {/* <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -220,7 +381,7 @@ function AddToCartScreen({ navigation }) {
             >
               <Text>Phí giao hàng</Text>
               <Text style={{ color: '#3669C9' }}>10.000.000đ</Text>
-            </View>
+            </View> */}
           </View>
         </View>
       </ScrollView>
@@ -246,7 +407,7 @@ function AddToCartScreen({ navigation }) {
             <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
           <View style={{ justifyContent: 'center' }}>
-            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>10.000.000đ</Text>
+            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>{total}</Text>
           </View>
         </View>
 
@@ -260,6 +421,7 @@ function AddToCartScreen({ navigation }) {
               padding: 20,
               borderRadius: 10,
             }}
+            onPress={() => navigation.navigate('OrderConfirmationScreen')}
           >
             <Text
               style={{ textAlign: 'center', fontWeight: '600', color: '#fff' }}
@@ -276,34 +438,39 @@ function AddToCartScreen({ navigation }) {
                   <TouchableOpacity
                     key={index}
                     style={styles.option}
-                    onPress={() => handleSelectPayment(option.label, option.icon)}
+                    onPress={() => handleSelectPayment(option.label, option.icon, option.use)}
                   >
                     <Image source={option.icon} style={styles.optionIcon} />
                     <Text style={styles.optionLabel}>{option.label}</Text>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity
-                  style={styles.invoiceOption}
-                  onPress={() => setInvoiceOption(!invoiceOption)}
-                >
-                  <Text style={styles.invoiceText}>Hóa đơn đỏ</Text>
-                </TouchableOpacity>
 
                 {/* Nút đóng modal */}
                 <TouchableOpacity style={styles.closeButton} onPress={toggleModal}>
-                  <Text style={styles.closeButtonText}>Xác Nhận</Text>
+                  <Text style={styles.closeButtonText}>Đóng</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </Modal>
         </View>
       </View>
-
+      {/* {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )} */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   paymentMethod: {
     flexDirection: 'row',
     justifyContent: 'space-between',

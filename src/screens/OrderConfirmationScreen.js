@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +11,26 @@ import {
 } from 'react-native';
 
 function OrderConfirmationScreen({ navigation }) {
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        // Lấy dữ liệu từ AsyncStorage
+        const userInfoString = await AsyncStorage.getItem('userInfo');
+
+        // Nếu có dữ liệu thì parse nó thành JSON
+        if (userInfoString) {
+          const userInfoData = JSON.parse(userInfoString);
+          setUserInfo(userInfoData); // Lưu vào state
+        }
+      } catch (error) {
+        console.error('Error fetching user info from AsyncStorage:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
   return (
     <ScrollView style={{ padding: 20, backgroundColor: '#fff' }}>
       <View style={{ gap: 10 }}>
@@ -26,7 +47,7 @@ function OrderConfirmationScreen({ navigation }) {
           >
             <Image
               style={{ width: 32, height: 32, borderRadius: 50 }}
-              source={require('../assets/new3.png')}
+              source={require('../assets/wait.png')}
             />
           </View>
 

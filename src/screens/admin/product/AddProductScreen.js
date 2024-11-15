@@ -33,12 +33,10 @@ const AddProductScreen = ({ route, navigation }) => {
 
     const [productData, setProductData] = useState({
         productName: '',
-        productPrice: '',
         productYearOfManufacture: 2024,
         sizesProduct: [
             {
-                productSizeId: "00000000-0000-0000-0000-000000000000",
-                productSizeQuantity: 5
+                sizeId: "00000000-0000-0000-0000-000000000000"
             }
         ],
         productSupplier: productSupplier,
@@ -50,7 +48,6 @@ const AddProductScreen = ({ route, navigation }) => {
     });
 
     const [error, setError] = useState({
-        productPriceError: false,
         productNameError: false
     });
 
@@ -59,7 +56,6 @@ const AddProductScreen = ({ route, navigation }) => {
         const formData = new FormData();
         const params = {
             productName: productData.productName,
-            productPrice: productData.productPrice,
             productYearOfManufacture: productData.productYearOfManufacture,
             sizesProduct: productData.sizesProduct,
             productSupplier: productSupplier,
@@ -105,7 +101,6 @@ const AddProductScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         setError({
-            productPriceError: productData.productPrice <= 0 || isNaN(productData.productPrice),
             productNameError: productData.productName === ''
         });
         if (postDTO) {
@@ -116,7 +111,7 @@ const AddProductScreen = ({ route, navigation }) => {
                 productSupplier: productSupplier,
             }));
         }
-    }, [postDTO, productData.productPrice, productData.productName]);
+    }, [postDTO, productData.productName]);
 
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
@@ -144,22 +139,6 @@ const AddProductScreen = ({ route, navigation }) => {
                         value={productData.postName}
                         onChangeText={(text) => setProductData({ ...productData, productName: text })}
                     />
-                    <Text style={styles.label}>Giá Sản Phẩm:</Text>
-                    <TextInput
-                        style={[styles.input, error.productPriceError && styles.inputError]}
-                        placeholder="Thêm Giá Sản Phẩm"
-                        value={productData.productPrice.toString()} // Convert to string for display
-                        onChangeText={(text) => {
-                            const numericValue = parseFloat(text);
-                            setProductData({
-                                ...productData,
-                                productPrice: isNaN(numericValue) ? '' : numericValue // Store as number
-                            });
-                        }}
-                        keyboardType="numeric"
-                    />
-
-
                     <Text style={styles.label}>Post Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !postDTO && styles.inputError]} onPress={() => navigation.navigate('AddPostScreen', { savedData: postDTO })}>
                         {postDTO ? (<Text>Đã Thêm Post Sản Phẩm</Text>) : (<Text>Chưa Thêm Post Sản Phẩm</Text>)}

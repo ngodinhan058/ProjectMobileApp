@@ -37,7 +37,6 @@ const EditProductScreen = ({ route, navigation }) => {
        try {
            const payload = {
                productSizeName: SizeName,
-               productSizeType: sizeType,  // Ensure sizeType is a string
            };
 
            const apiUrl = `${BASE_URL}product-sizes/${id}`;
