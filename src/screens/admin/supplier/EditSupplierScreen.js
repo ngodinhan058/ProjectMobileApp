@@ -41,6 +41,8 @@ const EditProductScreen = ({ route, navigation }) => {
            navigation.replace('SupplierList');
        } catch (error) {
            Alert.alert('Error', 'Failed to update Supplier');
+           console.error('Error', 'Failed to update Size' + {error});
+
        }
     };
     
