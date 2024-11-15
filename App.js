@@ -633,8 +633,8 @@ export default function App() {
 
   useEffect(() => {
     const loadUser = async () => {
-      try {
-        const savedUser = await AsyncStorage.getItem('userData');
+      try {userData
+        const savedUser = await AsyncStorage.getItem('');
         // const savedUser = await AsyncStorage.removeItem('userData');
         if (savedUser) {
           const { username, token } = JSON.parse(savedUser);

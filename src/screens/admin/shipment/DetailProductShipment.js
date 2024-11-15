@@ -1,0 +1,411 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    Animated,
+    Pressable,
+    FlatList,
+    Alert,
+    Modal,
+    ActivityIndicator,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import axios from 'axios';
+import { BASE_URL } from '../../api/config';
+
+function DetailScreen({ route, navigation }) {
+    const { id } = route.params;
+
+    // State quản lý việc nút mở rộng được mở hay không
+    const [isOpen, setIsOpen] = useState(false);
+    const [animation] = useState(new Animated.Value(0)); // giá trị hoạt ảnh
+    const [rotation] = useState(new Animated.Value(0));
+    const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        setIsLoading(true);
+        const apiUrl = `${BASE_URL}product/${id}`;
+        axios.get(apiUrl)
+            .then(response => {
+                const productData = response.data.data;
+                setProductsState(productData);
+                setIsLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            })
+    }, [id]);
+    const toggleMenu = () => {
+        const toValue = isOpen ? 0 : 1;
+
+        // Thực hiện animation
+        Animated.timing(animation, {
+            toValue,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+
+        setIsOpen(!isOpen);
+
+        // Thực hiện animation xoay icon
+        Animated.timing(rotation, {
+            toValue: isOpen ? 0 : 1,
+            duration: 300,
+            useNativeDriver: true, // Để hiệu ứng xoay mượt hơn
+        }).start();
+
+        setIsOpen(!isOpen);
+    };
+
+    // Tạo hiệu ứng mở các nút theo chiều dọc
+    const position1 = animation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [30, 160], // Chuyển từ vị trí của editButton lên trên
+    });
+    const position2 = animation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [30, 100], // Chuyển từ vị trí của editButton lên trên
+    });
+    // Tạo hiệu ứng xoay dựa trên giá trị của rotation
+    const rotateIcon = rotation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
+    });
+    const deleteProduct = async () => {
+        setIsLoading(true);
+        try {
+            await axios.delete(`${BASE_URL}product/${id}`);
+            // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
+            Alert.alert("Success", "Xoá Thành Công");
+            navigation.replace("ProductList")
+            // Điều hướng hoặc cập nhật trạng thái nếu cần
+        } catch (error) {
+            console.error('Error deleting category:', error.response ? error.response.data : error.message);
+            Alert.alert("Error", "Failed to delete category.");
+        } finally {
+            setIsLoading(false);  // Set loading to false when request completes
+        }
+    };
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [isModalVisible, setModalVisible] = useState(false);
+
+    const openModal = (imagePath) => {
+        setSelectedImage([{ url: imagePath }]);
+        setModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setSelectedImage(null);
+    };
+    return (
+        <View style={styles.container}>
+            <ScrollView>
+                <View>
+                    <View style={styles.iconHeader}>
+                        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                            <Icon name="angle-left" size={35} color="#000" />
+                        </Pressable>
+                        <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
+                    </View>
+
+                    {/* Product Image */}
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+                        <FlatList
+                            data={productsState.productImages}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
+                                    <View style={{ marginHorizontal: 5 }}>
+                                        <Image
+                                            source={{ uri: item.productImagePath }}
+                                            style={{ width: 345, height: 350, resizeMode: 'contain' }}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                        />
+                        <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
+                            <View style={styles.modalBackground}>
+                                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                                    <Text style={styles.closeText}>X</Text>
+                                </TouchableOpacity>
+                                {selectedImage && (
+                                    <ImageViewer
+                                        imageUrls={selectedImage} // Thư viện yêu cầu array của các object với key `url`
+                                        enableSwipeDown
+                                        onSwipeDown={closeModal}
+                                        renderIndicator={() => null}
+                                        style={styles.fullScreenImage} // Ẩn số chỉ mục ảnh
+                                    />
+                                )}
+                            </View>
+                        </Modal>
+                    </View>
+
+                    {/* Product info */}
+                    <View style={styles.productInfo}>
+                        <View>
+                            <Text style={styles.productName}>{productsState.productName}</Text>
+                        </View>
+
+                        <View>
+                            <Text style={styles.originalPrice}>{productsState.productPrice}</Text>
+                            <Text style={styles.productPrice}>
+                                {productsState.productPriceSale}
+                            </Text>
+                            <Text style={styles.productSale}>
+                                Sale: {productsState.productSale}%
+                            </Text>
+                        </View>
+
+                        <View style={styles.SoldProductInfo}>
+                            <View style={styles.productStar}>
+                                <Image source={require('../../../assets/star.png')} />
+                                <Text>{productsState.productRating}</Text>
+                            </View>
+                            <View>
+                                <Text style={styles.totalSellProduct}>Số lượng còn lại: {productsState.productQuantity}</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Description Product */}
+                    <View>
+                        <Text style={styles.descriptionProductTitle}>Thông Tin Sản Phẩm</Text>
+                        <Text style={styles.descriptionProductText}>
+                            {productsState?.post?.postContent}
+                        </Text>
+                    </View>
+                </View>
+            </ScrollView>
+
+            {/* Add Button */}
+            <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
+                <Animated.Text style={[styles.editButtonText, { transform: [{ rotate: rotateIcon }] }]}>
+                    ▶
+                </Animated.Text>
+            </TouchableOpacity>
+
+            {/* Các nút con */}
+            <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => {
+                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
+                        navigation.navigate('EditProductScreen', {
+                            product: productsState,
+                            postDTO: {
+                                postName,
+                                postContent,
+                                postImagePath,
+                                postType,
+                                postStatusId: postStatus?.postStatusId
+                            }
+                        });
+                    }}
+                >
+                    <Icon name="pencil" size={20} color="#fff" />
+                </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View style={[styles.subButton, { bottom: position1 }]}>
+
+            <TouchableOpacity style={styles.iconButton} onPress={() => {
+                    Alert.alert(
+                        "Xác Nhận!!!",
+                        "Bạn có chắc muốn xoá không??",
+                        [
+                            {
+                                text: "Huỷ",
+                                style: "cancel"
+                            },
+                            { text: "Có", onPress: deleteProduct }
+                        ]
+                    );
+                }}>
+                    <Icon name="trash" size={20} color="#fff" />
+                </TouchableOpacity>
+            </Animated.View>
+            {isLoading && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator size="large" color="#3669c9" />
+                </View>
+            )}
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
+    container: {
+        padding: 20,
+        height: '100%',
+        backgroundColor: '#fff',
+        paddingHorizontal: 20,
+    },
+    iconHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        paddingBottom: 10,
+    },
+    textHeader: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        textAlign: 'center',
+        flex: 1,
+    },
+    backButton: {
+        marginRight: 10,
+    },
+    productImgContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        height: 200,
+        position: 'relative',
+    },
+    productImg: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 10,
+    },
+    numberOfImage: {
+        position: 'absolute',
+        left: '10%',
+        bottom: '10%',
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    productInfo: {
+        flexDirection: 'column',
+        marginTop: 10,
+        marginBottom: 10,
+    },
+    productName: {
+        textTransform: 'uppercase',
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    productPrice: {
+        color: '#FE3A30',
+        fontWeight: '500',
+        fontSize: 18,
+    },
+    productSale: {
+        fontSize: 15,
+    },
+    originalPrice: {
+        fontSize: 14,
+        color: '#888',
+        textDecorationLine: 'line-through',
+        marginTop: 10,
+    },
+    SoldProductInfo: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    productStar: {
+        flexDirection: 'row',
+        gap: 5,
+    },
+    totalSellProduct: {
+        color: '#3A9B7A',
+    },
+    descriptionProductTitle: {
+        fontWeight: '800',
+        fontSize: 16,
+        paddingTop: 10,
+    },
+    descriptionProductText: {
+        lineHeight: 24,
+        paddingBottom: 10,
+    },
+    editButton: {
+        position: 'absolute',
+        bottom: 30,
+        right: 30,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#3669c9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 99,
+    },
+    editButtonText: {
+        fontSize: 40,
+        color: '#fff',
+        marginLeft: 10,
+        marginBottom: 10,
+
+    },
+
+    subButton: {
+        position: 'absolute',
+        right: 35,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#ff5757',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    subButtonPen: {
+        position: 'absolute',
+        right: 35,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#3669c9',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 1,
+    },
+    closeText: {
+        color: '#fff',
+        fontSize: 24,
+    },
+    fullScreenImage: {
+        width: '100%',
+        height: '90%',
+    },
+
+});
+
+export default DetailScreen;

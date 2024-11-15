@@ -74,10 +74,10 @@ const ShipmentForm = () => {
 
     // Hàm xử lý chọn kích thước cho từng sản phẩm
     const handleSelectSize = (productId, sizeId) => {
-                        setSelectedSize((prevSelectedSizes) => ({
-                            ...prevSelectedSizes,
-                            [productId]: sizeId, // Lưu kích thước của từng sản phẩm theo productId
-                        }));
+        setSelectedSize((prevSelectedSizes) => ({
+            ...prevSelectedSizes,
+            [productId]: sizeId, // Lưu kích thước của từng sản phẩm theo productId
+        }));
     };
 
     const handleSaveProductDetails = () => {
@@ -123,7 +123,7 @@ const ShipmentForm = () => {
                 sizeProduct: selectedSize[productId], // Thêm size cho từng sản phẩm
             })),
         };
-console.log(formData);
+        console.log(formData);
 
         try {
             // Gửi dữ liệu formData đến API
@@ -240,7 +240,7 @@ console.log(formData);
                                     <TouchableOpacity onPress={() => handleSelectProduct(item.productId)}>
                                         <Text style={{ padding: 10, borderBottomWidth: 1 }}>
                                             {item.productName}
-                                            {selectedProducts.includes(item.productId) && ' (Selected)'}
+                                            {selectedProducts.includes(item.productId) && ' (Selected)' && setProductsName(item.productName).includes(item.productId)}
                                         </Text>
                                     </TouchableOpacity>
                                 )}
@@ -251,7 +251,7 @@ console.log(formData);
                         </View>
                     </View>
                 </Modal>
- 
+
 
                 {selectedProducts.map((productId) => (
                     <TouchableOpacity key={productId} onPress={() => handleEditProduct(productId)}>
