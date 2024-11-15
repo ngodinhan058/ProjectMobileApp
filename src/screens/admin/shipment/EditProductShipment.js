@@ -6,108 +6,71 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { BASE_URL } from '../../api/config';
 import { ScrollView } from 'react-native-gesture-handler';
 
-const ShipmentForm = () => {
-    const [shipmentDate, setShipmentDate] = useState('2024-11-11');
+const ShipmentForm = ({ route, navigation }) => {
+    const { id } = route.params;
+    // const [id, setid] = useState(null);
+    const [shipmentDate, setShipmentDate] = useState('');
     const [shipmentDiscount, setShipmentDiscount] = useState('');
     const [shipmentShipCost, setShipmentShipCost] = useState('');
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [selectedSupplier, setSelectedSupplier] = useState('');
     const [selectedSize, setSelectedSize] = useState({});
     const [productDetails, setProductDetails] = useState({});
-    const [modalVisibility, setModalVisibility] = useState({
-        productSelection: false,
-        supplierSelection: false,
-        sizeSelection: false,
-        productEdit: false,
-    });
-    const [selectedProductForEdit, setSelectedProductForEdit] = useState(null);
-    const [productPrice, setProductPrice] = useState('');
-    const [productQuantity, setProductQuantity] = useState('');
-    const [products, setProducts] = useState([]);
-    const [productsName, setProductsName] = useState([]);
-    const [suppliers, setSuppliers] = useState([]);
-    const [sizes, setSizes] = useState([]);
 
+    // Load shipment data when the screen loads, for an existing shipment ID
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchShipmentData();
+    }, [id]);
 
-    const fetchData = async () => {
+    const fetchShipmentData = async () => {
         try {
-            const productsApiUrl = `${BASE_URL}products`;
-            const suppliersApiUrl = `${BASE_URL}product-suppliers/category`;
-            const sizesApiUrl = `${BASE_URL}product-sizes/category`;
+            const shipmentDataUrl = `${BASE_URL}shipment/${id}`;
+            const { data } = await axios.get(shipmentDataUrl);
 
-            const [productsResponse, suppliersResponse, sizesResponse] = await Promise.all([
-                axios.get(productsApiUrl),
-                axios.get(suppliersApiUrl),
-                axios.get(sizesApiUrl),
-            ]);
+            // Populate the form fields with existing shipment data
+            setShipmentDate(data.shipmentDate);
+            setShipmentDiscount(data.shipmentDiscount.toString());
+            setShipmentShipCost(data.shipmentShipCost.toString());
+            setSelectedSupplier(data.supplierId);
+            setSelectedProducts(data.shipmentProducts.map((p) => p.productId));
 
-            setProducts(productsResponse.data.data.content);
-            setSuppliers(suppliersResponse.data.data);
-            setSizes(sizesResponse.data.data);
+            // Set details of each product and size
+            const initialProductDetails = {};
+            const initialSizes = {};
+            data.shipmentProducts.forEach((product) => {
+                initialProductDetails[product.productId] = {
+                    price: product.productPrice,
+                    quantity: product.productQuantity,
+                };
+                initialSizes[product.productId] = product.sizeProduct;
+            });
+            setProductDetails(initialProductDetails);
+            setSelectedSize(initialSizes);
         } catch (error) {
-            console.log('Error fetching data:', error);
+            console.error('Error fetching shipment data:', error);
         }
-    };
-
-    const handleSelectProduct = (productId) => {
-        setSelectedProducts((prevSelectedProducts) => {
-            if (prevSelectedProducts.includes(productId)) {
-                return prevSelectedProducts.filter((id) => id !== productId);
-            } else {
-                return [...prevSelectedProducts, productId];
-            }
-        });
-    };
-
-    const handleSelectSupplier = (supplierId) => {
-        setSelectedSupplier(supplierId);
-        setModalVisibility({ ...modalVisibility, supplierSelection: false });
     };
 
     const handleEditProduct = (productId) => {
         setSelectedProductForEdit(productId);
-        // setModalVisibility({ ...modalVisibility, productEdit: true });
+        setModalVisibility({ ...modalVisibility, productEdit: true });
     };
 
-    // Hàm xử lý chọn kích thước cho từng sản phẩm
-    const handleSelectSize = (productId, sizeId) => {
-        setSelectedSize((prevSelectedSizes) => {
-            const existingSizes = prevSelectedSizes[productId] || [];
-            if (existingSizes.includes(sizeId)) {
-                // Remove size if already selected
-                return {
-                    ...prevSelectedSizes,
-                    [productId]: existingSizes.filter((id) => id !== sizeId),
-                };
-            } else {
-                // Add size if not already selected
-                return {
-                    ...prevSelectedSizes,
-                    [productId]: [...existingSizes, sizeId],
-                };
-            }
-        });
-    };
-
-
-
+    // Save the updated product details
     const handleSaveProductDetails = () => {
-        setProductDetails({
-            ...productDetails,
+        setProductDetails((prevDetails) => ({
+            ...prevDetails,
             [selectedProductForEdit]: {
                 price: productPrice,
                 quantity: productQuantity,
             },
-        });
+        }));
         setModalVisibility({ ...modalVisibility, productEdit: false });
     };
 
-
+    // Submit updated shipment data
     const handleSubmit = async () => {
-        // Kiểm tra điều kiện hợp lệ cho dữ liệu nhập
+        // Validation: ensure required fields are filled in
         if (
             !shipmentDate ||
             !shipmentDiscount ||
@@ -117,47 +80,39 @@ const ShipmentForm = () => {
                 (productId) =>
                     !productDetails[productId]?.price ||
                     !productDetails[productId]?.quantity ||
-                    !selectedSize[productId] // Kiểm tra xem size có được chọn cho mỗi sản phẩm không
+                    !selectedSize[productId]
             )
         ) {
-            Alert.alert('Thông Báo', 'Vui Lòng Kiểm Tra Kĩ');
+            Alert.alert('Notice', 'Please complete all required fields');
             return;
         }
 
-        // Tạo dữ liệu form để gửi lên server
-        const formData = {
-            shipmentDate: shipmentDate, // Định dạng ngày thành "YYYY-MM-DD"
+        // Prepare the data to update the shipment
+        const updatedShipmentData = {
+            shipmentDate,
             shipmentDiscount: parseFloat(shipmentDiscount),
             shipmentShipCost: parseFloat(shipmentShipCost),
             supplierId: selectedSupplier,
             shipmentProducts: selectedProducts.map((productId) => ({
                 productId,
-                productPrice: productDetails[productId]?.price,
-                productQuantity: productDetails[productId]?.quantity,
-                sizeProduct: selectedSize[productId], // Thêm size cho từng sản phẩm
+                productPrice: productDetails[productId].price,
+                productQuantity: productDetails[productId].quantity,
+                sizeProduct: selectedSize[productId],
             })),
         };
-        console.log(formData);
 
         try {
-            // Gửi dữ liệu formData đến API
-            const response = await axios.post(`${BASE_URL}shipment`, formData, {
+            // Send the update request to the server
+            const response = await axios.put(`${BASE_URL}shipment/${id}`, updatedShipmentData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
 
-            console.log('Form submitted:', response.data);
-            Alert.alert('Success', 'Tạo Lô Hàng Thành Công');
+            Alert.alert('Success', 'Shipment updated successfully');
         } catch (error) {
-            // Xử lý lỗi nếu có phản hồi từ server hoặc lỗi kết nối
-            if (error.response && error.response.data) {
-                console.log('Error response:', error.response.data);
-                Alert.alert('Lỗi', error.response.data.message || 'Lỗi khi tạo lô hàng');
-            } else {
-                console.error('Error:', error.message);
-                Alert.alert('Lỗi', 'Lỗi mạng hoặc không thể kết nối đến server');
-            }
+            console.error('Error updating shipment:', error);
+            Alert.alert('Error', 'Failed to update shipment');
         }
     };
 
@@ -254,7 +209,7 @@ const ShipmentForm = () => {
                                     <TouchableOpacity onPress={() => handleSelectProduct(item.productId)}>
                                         <Text style={{ padding: 10, borderBottomWidth: 1 }}>
                                             {item.productName}
-                                            {selectedProducts.includes(item.productId) && ' (Selected)'}
+                                            {selectedProducts.includes(item.productId) && ' (Selected)' && setProductsName(item.productName).includes(item.productId)}
                                         </Text>
                                     </TouchableOpacity>
                                 )}
@@ -279,9 +234,7 @@ const ShipmentForm = () => {
                             </Text>
                             <TouchableOpacity onPress={() => setModalVisibility({ ...modalVisibility, sizeSelection: productId })}>
                                 <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                                    {selectedSize[productId] && selectedSize[productId].length > 0
-                                        ? `Đã chọn Màu: ${selectedSize[productId].join(', ')}`
-                                        : 'Chọn Màu'}
+                                    {selectedSize[productId] ? `Đã chọn màu: ${selectedSize[productId]}` : 'Choose Màu'}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -304,6 +257,7 @@ const ShipmentForm = () => {
                                     <TouchableOpacity
                                         onPress={() => {
                                             handleSelectSize(modalVisibility.sizeSelection, item.productSizeId);
+                                            setModalVisibility({ ...modalVisibility, sizeSelection: null });
                                         }}
                                     >
                                         <Text style={{ padding: 10, borderBottomWidth: 1 }}>

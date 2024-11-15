@@ -9,7 +9,7 @@ const HomeAdminScreen = ({ navigation }) => {
     const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
     useEffect(() => {
         setIsLoading(true);
-        const apiUrl = `${BASE_URL}products`;
+        const apiUrl = `${BASE_URL}shipments`;
         axios.get(apiUrl)
             .then(response => {
                 const productData = response.data.data.content;
@@ -20,22 +20,23 @@ const HomeAdminScreen = ({ navigation }) => {
                 console.error('Error fetching data:', error);
             });
     }, []);
+    
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => navigation.navigate('DetailScreen', {
-                id: item.productId
+            onPress={() => navigation.navigate('DetailProductShipment', {
+                id: item.shipmentId
             })}
         >
             <View style={{ marginRight: 20, }}>
-                <Image source={{ uri: item.productImages[0].productImagePath  }} style={styles.productIcon} />
+                {/* <Image source={{ uri: item.productImages[0].productImagePath  }} style={styles.productIcon} /> */}
             </View>
 
             <View style={styles.productDetails}>
-                <Text style={styles.productCode}>{item.productName}</Text>
-                <Text style={styles.productStatus}>Số Lượng Tồn: {item.productQuantity}</Text>
+                <Text style={styles.productCode}>Ngày {item.shipmentDate}</Text>
+                <Text style={styles.productStatus}>Giảm Giá: {item.shipmentDiscount}</Text>
                 <View style={styles.line}></View>
-                <Text style={styles.productCode}>Giá: {item.productPrice}</Text>
+                <Text style={styles.productCode}>Hãng: {item.productSupplier?.productSupplierName}</Text>
             </View>
             <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
@@ -62,7 +63,7 @@ const HomeAdminScreen = ({ navigation }) => {
                 <FlatList
                 data={productsState}
                 renderItem={renderProduct}
-                keyExtractor={(item) => item.productId.toString()}
+                keyExtractor={(item) => item.shipmentId}
                 style={styles.productList}
             />) : null}
 
