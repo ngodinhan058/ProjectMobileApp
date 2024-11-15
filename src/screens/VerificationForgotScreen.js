@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TextInput,
+  ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
@@ -14,6 +15,7 @@ const VerificationForgotScreen = ({ navigation, route }) => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
   const inputRefs = useRef([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { email } = route.params;
 
@@ -41,12 +43,16 @@ const VerificationForgotScreen = ({ navigation, route }) => {
   };
 
   const handleGetOTP = async () => {
+    setIsLoading(true);
+
     try {
       const userData = await enterEmail(email); // Gọi API để kiểm tra
       //Alert.alert('Thành công', 'Đăng nhập thành công!');
       navigation.navigate('Mega Mall'); // Điều hướng sau khi đăng nhập
     } catch (error) {
       //Alert.alert('Thất bại', error.response.data.error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -151,11 +157,23 @@ const VerificationForgotScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </View>
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </KeyboardAwareScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flexGrow: 1,
     paddingHorizontal: 20,
