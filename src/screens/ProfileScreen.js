@@ -8,54 +8,13 @@ import {
   TouchableOpacity,
   Pressable,
   FlatList,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import IconI from 'react-native-vector-icons/Ionicons';
 import ProductItem from '../components/ProductItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const featuredProducts = [
-  {
-    id: '1',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86',
-  },
-  {
-    id: '2',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86',
-  },
-  {
-    id: '3',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86',
-  },
-  {
-    id: '4',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86',
-  },
-];
+import { CommonActions } from '@react-navigation/native';
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState({});
@@ -64,8 +23,6 @@ const ProfileScreen = ({ navigation }) => {
     const loadUser = async () => {
       try {
         const savedCart = await AsyncStorage.getItem('userData');
-
-        console.log(savedCart);
 
         if (savedCart) {
           const { username, token } = JSON.parse(savedCart);
@@ -79,7 +36,16 @@ const ProfileScreen = ({ navigation }) => {
     loadUser();
   }, []);
 
-  console.log(user);
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userData');
+      Alert.alert('Thành công', 'Đăng xuất thành công!');
+      navigation.navigate('Home'); // Điều hướng sau khi đăng nhập
+    } catch (error) {
+      Alert.alert('Thất bại', error);
+    }
+  };
+  // Logout function
 
   return (
     <ScrollView style={styles.container}>
@@ -91,6 +57,9 @@ const ProfileScreen = ({ navigation }) => {
           <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
         <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
+        <Pressable style={styles.logoutButton} onPress={handleLogout}>
+          <IconI name="log-out-outline" size={25} color="#fff" />
+        </Pressable>
       </View>
       <View style={styles.whiteSection}>
         {/* Header thông tin cá nhân */}
@@ -184,26 +153,6 @@ const ProfileScreen = ({ navigation }) => {
               <Text style={styles.text}>Trả Hàng</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
-
-      {/* Sản phẩm bạn có thể thích */}
-
-      <View style={styles.suggestionsSection}>
-        <Text style={styles.sectionTitle}>Có thể bạn thích:</Text>
-
-        <View style={styles.productGrid}>
-          {featuredProducts.map((product, index) => (
-            <View key={product.id}>
-              <ProductItem
-                name={product.name}
-                price={product.price}
-                rating={product.rating}
-                review={product.review}
-                image={product.image}
-              />
-            </View>
-          ))}
         </View>
       </View>
     </ScrollView>
@@ -363,6 +312,11 @@ const styles = StyleSheet.create({
   productReviews: {
     fontSize: 12,
     color: '#999',
+  },
+  logoutButton: {
+    padding: 5,
+    borderRadius: 50,
+    backgroundColor: '#d9534f', // Change to your desired color
   },
 });
 

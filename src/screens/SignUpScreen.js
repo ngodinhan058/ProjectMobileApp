@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -7,15 +8,19 @@ import {
   StyleSheet,
   Pressable,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { BASE_URL } from './api/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [userName, setUserName] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -42,31 +47,32 @@ const SignUpScreen = ({ navigation }) => {
   }, [email, userName]);
 
   const enterEmail = async (email) => {
+    setIsLoading(true);
+
     try {
-      console.log({ userEmail: email, userPassword: password });
+      console.log({ userEmail: email });
       const response = await axios.post(`${BASE_URL}auth/create-email`, {
         userEmail: email,
       });
+
       const userData = response.data;
       await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
       return userData;
     } catch (error) {
-      console.error(
-        'Login failed',
-        error.response ? error.response.data : error.message
-      );
+      console.log(error);
+      Alert.alert('Thất bại', 'Tài khoản đã tồn tại');
+
       throw error; // Ném lỗi để có thể hiển thị thông báo
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleLogin = async () => {
     try {
       const userData = await enterEmail(email); // Gọi API để kiểm tra
-      Alert.alert('Thành công', 'Đăng nhập thành công!');
-      navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
-    } catch (error) {
-      Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
-    }
+      navigation.navigate('VerificationScreen', { email: email });
+    } catch (error) {}
   };
 
   return (
@@ -112,9 +118,7 @@ const SignUpScreen = ({ navigation }) => {
           keyboardType="email-address"
         />
         {!isEmailValid && email.trim() !== '' && (
-          <Text style={{ color: 'red' }}>
-            Please enter a valid email address.
-          </Text>
+          <Text style={{ color: 'red' }}>Nhập đúng địa chỉ email.</Text>
         )}
 
         {/* Nút Sign In và Cancel */}
@@ -125,9 +129,7 @@ const SignUpScreen = ({ navigation }) => {
               { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
             ]}
             disabled={!isButtonEnabled}
-            onPress={() =>
-              navigation.navigate('VerificationScreen', { email: email })
-            } // Gọi hàm đăng nhập khi nhấn nút
+            onPress={handleLogin}
           >
             <Text style={styles.signInText}>Tiếp tục</Text>
           </TouchableOpacity>
@@ -152,6 +154,11 @@ const SignUpScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </KeyboardAwareScrollView>
   );
 };
@@ -258,6 +265,13 @@ const styles = StyleSheet.create({
   signUpText: {
     fontSize: 14,
     color: '#0066FF',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 export default SignUpScreen;

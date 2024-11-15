@@ -1,5 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Animated, Easing } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Image,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  Animated,
+  Easing,
+} from 'react-native';
 import ProductItem from '../components/ProductItem';
 import CategoriesItem from '../components/CategoryItem';
 import SaleItem from '../components/SaleItem';
@@ -9,24 +21,69 @@ import axios from 'axios';
 import { BASE_URL } from './api/config';
 import ScrollHandler from '../components/ScrollHandler';
 
-
 const saleProducts = [
-  { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
-  { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, name: 'TMA-2 HD Wireless', salePrice: '1.500.000', originalPrice: '2.500.000', rating: '4.6', reviews: '86' },
+  {
+    id: '1',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+    },
+    name: 'TMA-2 HD Wireless',
+    salePrice: '1.500.000',
+    originalPrice: '2.500.000',
+    rating: '4.6',
+    reviews: '86',
+  },
+  {
+    id: '2',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+    },
+    name: 'TMA-2 HD Wireless',
+    salePrice: '1.500.000',
+    originalPrice: '2.500.000',
+    rating: '4.6',
+    reviews: '86',
+  },
 ];
 const news = [
-  { id: '1', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-  { id: '2', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-
+  {
+    id: '1',
+    title: 'Philosophy That Addresses Topics Such As Goodness',
+    description: 'Agar tetap kinclong, bodi motor ten...',
+    date: '13 Jan 2021',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+    },
+  },
+  {
+    id: '2',
+    title: 'Philosophy That Addresses Topics Such As Goodness',
+    description: 'Agar tetap kinclong, bodi motor ten...',
+    date: '13 Jan 2021',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+    },
+  },
 ];
 const banners = [
-  { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-  { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' }, },
-
+  {
+    id: '1',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
+    },
+  },
+  {
+    id: '2',
+    image: {
+      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
+    },
+  },
 ];
 
 const HomeScreen = ({ onScroll }) => {
-  {/* Loading Banner */ }
+  {
+    /* Loading Banner */
+  }
   const [loading, setLoading] = useState(true);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
@@ -69,10 +126,12 @@ const HomeScreen = ({ onScroll }) => {
     fetchData();
   }, []);
 
-
-
   return (
-    <ScrollHandler onScroll={onScroll} refreshing={refreshing} onRefresh={onRefresh}>
+    <ScrollHandler
+      onScroll={onScroll}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+    >
       {/* Bắt đầu phần với background #fff */}
       <View style={styles.container}>
         <View style={styles.whiteSection}>
@@ -80,7 +139,9 @@ const HomeScreen = ({ onScroll }) => {
           <View style={styles.line}></View>
           {/* Thanh tìm kiếm */}
           <View style={styles.searchBar}>
-            <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('StartSearchScreen')}
+            >
               <Text style={styles.searchInput}>Search Product Name</Text>
               <Image
                 source={require('../assets/iconSeach.png')}
@@ -93,21 +154,31 @@ const HomeScreen = ({ onScroll }) => {
           {loading ? (
             <View>
               <View style={styles.banner}>
-                <Image source={banners.image}  />
+                <Image source={banners.image} />
               </View>
 
-              <Animated.View style={[styles.skeletonText, {
-                backgroundColor: shimmerAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
-                })
-              }]} />
-              <Animated.View style={[styles.skeletonTextSmall, {
-                backgroundColor: shimmerAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
-                })
-              }]} />
+              <Animated.View
+                style={[
+                  styles.skeletonText,
+                  {
+                    backgroundColor: shimmerAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
+                    }),
+                  },
+                ]}
+              />
+              <Animated.View
+                style={[
+                  styles.skeletonTextSmall,
+                  {
+                    backgroundColor: shimmerAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
+                    }),
+                  },
+                ]}
+              />
             </View>
           ) : (
             <>
@@ -127,8 +198,7 @@ const HomeScreen = ({ onScroll }) => {
             </>
           )}
           {/* Danh mục sản phẩm */}
-          <View style={{
-          }}>
+          <View style={{}}>
             <View style={styles.sectionHeader}>
               <Text style={styles.textBold}>Danh Mục Sản Phẩm</Text>
               <Text style={styles.seeAll}></Text>
@@ -152,13 +222,22 @@ const HomeScreen = ({ onScroll }) => {
         </View>
       </View>
 
-
       {/* Sản phẩm nổi bật */}
       <View style={styles.containerPro}>
         <View style={styles.greySection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
+            <TouchableOpacity
+              style={{
+                padding: 15,
+                marginVertical: 25,
+                borderRadius: 10,
+                alignItems: 'center',
+              }}
+              onPress={() => navigation.navigate('SeeAllProductScreen')}
+            >
+              <Text style={styles.seeAll}>Xem Tất Cả</Text>
+            </TouchableOpacity>
           </View>
 
           {productsState.length > 0 ? (
@@ -172,10 +251,10 @@ const HomeScreen = ({ onScroll }) => {
                     name={item['productName']}
                     price={item['productPriceSale']}
                     oldPrice={item['productPrice']}
-                    image={item['productImages']?.[0].productImagePath}  // Truyền URL của ảnh đầu tiên vào prop images
+                    image={item['productImages']?.[0].productImagePath} // Truyền URL của ảnh đầu tiên vào prop images
                     rating={item['productRating']}
                     sale={item['productSale']}
-                    isLoading={loading}  // Set isLoading to false when not loading
+                    isLoading={loading} // Set isLoading to false when not loading
                   />
                 );
               }}
@@ -186,7 +265,10 @@ const HomeScreen = ({ onScroll }) => {
           ) : null}
 
           {/* Banner phụ */}
-          <Image source={require('../assets/banner2.png')} style={{ width: 370, height: 180, marginBottom: 10 }} />
+          <Image
+            source={require('../assets/banner2.png')}
+            style={{ width: 370, height: 180, marginBottom: 10 }}
+          />
 
           {/* Best Sellers */}
           <View style={styles.sectionHeader}>
@@ -225,7 +307,10 @@ const HomeScreen = ({ onScroll }) => {
           ) : null} */}
 
           {/* Banner phụ 2 */}
-          <Image source={require('../assets/banner3.png')} style={{ width: 380, height: 190, marginBottom: 10 }} />
+          <Image
+            source={require('../assets/banner3.png')}
+            style={{ width: 380, height: 190, marginBottom: 10 }}
+          />
 
           {/* New Arrivals */}
           <View style={styles.sectionHeader}>
@@ -321,7 +406,6 @@ const HomeScreen = ({ onScroll }) => {
               description={news.description}
               date={news.date}
               image={news.image}
-
             />
           ))}
           <TouchableOpacity
@@ -333,7 +417,8 @@ const HomeScreen = ({ onScroll }) => {
               borderColor: '#000',
               borderStyle: 'solid',
               alignItems: 'center',
-            }} onPress={() => navigation.navigate('NewsScreen')}
+            }}
+            onPress={() => navigation.navigate('NewsScreen')}
           >
             <Text>Xem Tất Cả Bản Tin</Text>
           </TouchableOpacity>
@@ -347,12 +432,12 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 20,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   },
   containerPro: {
     width: '100%',
     paddingHorizontal: 20,
-    backgroundColor: '#fafafa'
+    backgroundColor: '#fafafa',
   },
   line: {
     width: '100%',
@@ -408,7 +493,8 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   banner: {
-    marginBottom: 20, l: 0
+    marginBottom: 20,
+    l: 0,
   },
   bannerImage: {
     width: 300,

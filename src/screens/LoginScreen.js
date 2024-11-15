@@ -36,6 +36,7 @@ const LoginScreen = ({ navigation }) => {
       });
 
       const userData = response.data.result;
+
       await AsyncStorage.setItem(
         'userData',
         JSON.stringify({ username: email, token: userData.token })
@@ -54,13 +55,11 @@ const LoginScreen = ({ navigation }) => {
     try {
       const userData = await login(email, password); // Gọi API để kiểm tra
       Alert.alert('Thành công', 'Đăng nhập thành công!');
-      navigation.navigate('Home'); // Điều hướng sau khi đăng nhập
+      navigation.navigate('Mega Mall'); // Điều hướng sau khi đăng nhập
     } catch (error) {
       Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
     }
   };
-
-
 
   return (
     <KeyboardAwareScrollView
