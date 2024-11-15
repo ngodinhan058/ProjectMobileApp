@@ -63,7 +63,7 @@ const SignUpScreen = ({ navigation }) => {
     try {
       const userData = await enterEmail(email); // Gọi API để kiểm tra
       Alert.alert('Thành công', 'Đăng nhập thành công!');
-      navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
+      navigation.replace('Mega Mall'); // Điều hướng sau khi đăng nhập
     } catch (error) {
       Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
     }
@@ -112,9 +112,7 @@ const SignUpScreen = ({ navigation }) => {
           keyboardType="email-address"
         />
         {!isEmailValid && email.trim() !== '' && (
-          <Text style={{ color: 'red' }}>
-            Please enter a valid email address.
-          </Text>
+          <Text style={{ color: 'red' }}>Nhập đúng đại chỉ email.</Text>
         )}
 
         {/* Nút Sign In và Cancel */}

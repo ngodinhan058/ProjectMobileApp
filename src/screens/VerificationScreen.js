@@ -68,7 +68,7 @@ const VerificationScreen = ({ route, navigation }) => {
     try {
       const userData = await enterEmail(email); // Gọi API để kiểm tra
       //Alert.alert('Thành công', 'Đăng nhập thành công!');
-      navigation.replace('HaveLoginHome'); // Điều hướng sau khi đăng nhập
+      navigation.navigate('PasswordScreen'); // Điều hướng sau khi đăng nhập
     } catch (error) {
       //Alert.alert('Thất bại', error.response.data.error);
     }
@@ -100,9 +100,8 @@ const VerificationScreen = ({ route, navigation }) => {
 
   const handleVerifyOTP = async (otp) => {
     try {
+      const userData = await verifyOTP(otp); // Gọi API để kiểm tra
       navigation.navigate('PasswordScreen', { userEmail: email });
-
-      //const userData = await verifyOTP(otp); // Gọi API để kiểm tra
     } catch (error) {
       Alert.alert(
         'Thất bại',

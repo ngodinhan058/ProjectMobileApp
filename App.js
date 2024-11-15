@@ -670,7 +670,10 @@ export default function App() {
     console.log('Current Route:', currentRoute.name);
 
     // If you want to fetch user data each time the navigation state changes
-    if (currentRoute.name === 'Mega Mall') {
+    if (
+      currentRoute.name === 'Mega Mall' ||
+      currentRoute.name === 'Danh Sách Người Dùng'
+    ) {
       try {
         const savedCart = await AsyncStorage.getItem('userData');
         if (savedCart) {
