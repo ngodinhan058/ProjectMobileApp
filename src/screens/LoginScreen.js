@@ -36,6 +36,7 @@ const LoginScreen = ({ navigation }) => {
       });
 
       const userData = response.data.result;
+
       await AsyncStorage.setItem(
         'userData',
         JSON.stringify({ username: email, token: userData.token })

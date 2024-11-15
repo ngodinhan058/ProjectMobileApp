@@ -146,6 +146,7 @@ import ChatScreen from './src/screens/shipper/ChatScreen';
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
 import { jwtDecode } from 'jwt-decode';
+import SeeAllProductScreen from './src/components/SeeAllProductScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -234,6 +235,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
   const screens = [
     { name: 'Home', component: HomeScreen, showFooter: true },
     {
+      name: 'SeeAllProductScreen',
+      component: SeeAllProductScreen,
+      showFooter: true,
+    },
+    {
       name: 'ProductByCateScreen',
       component: ProductByCateScreen,
       showFooter: true,
@@ -263,9 +269,21 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       showFooter: true,
     },
     { name: 'SuccessScreen', component: SuccessScreen, showFooter: true },
-    { name: 'OrderConfirmationScreen', component: OrderConfirmationScreen, showFooter: false, },
-    { name: 'CompletedOrderConfirmationScreen', component: CompletedOrderConfirmationScreen, showFooter: false },
-    { name: 'RejectOrderConfirmationScreen', component: RejectOrderConfirmationScreen, showFooter: false },
+    {
+      name: 'OrderConfirmationScreen',
+      component: OrderConfirmationScreen,
+      showFooter: false,
+    },
+    {
+      name: 'CompletedOrderConfirmationScreen',
+      component: CompletedOrderConfirmationScreen,
+      showFooter: false,
+    },
+    {
+      name: 'RejectOrderConfirmationScreen',
+      component: RejectOrderConfirmationScreen,
+      showFooter: false,
+    },
   ];
 
   return (
@@ -429,7 +447,6 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
-
     </Stack.Navigator>
   );
 }
@@ -444,7 +461,6 @@ function SizeAdmin() {
       <Stack.Screen name="DetailSizeScreen" component={DetailSizeScreen} />
       <Stack.Screen name="AddSizeScreen" component={AddSizeScreen} />
       <Stack.Screen name="EditSizeScreen" component={EditSizeScreen} />
-      
     </Stack.Navigator>
   );
 }
@@ -462,7 +478,6 @@ function SupplierAdmin() {
       />
       <Stack.Screen name="AddSupplierScreen" component={AddSupplierScreen} />
       <Stack.Screen name="EditSupplierScreen" component={EditSupplierScreen} />
-      
     </Stack.Navigator>
   );
 }
@@ -686,22 +701,73 @@ export default function App() {
 
         if (savedCart) {
           const { username, token } = JSON.parse(savedCart);
-          setUser({ username, token });
+          const decoded = jwtDecode(token);
+          console.log(decoded);
+
+          setUser({ username, token, role: decoded.scope.split(' ')[0] });
+        } else {
+          setUser({});
         }
       } catch (error) {
         console.error('Error loading cart from AsyncStorage:', error);
       }
+    }
+  };
+
+  useEffect(() => {
+    // Gọi API lấy thông tin người dùng nếu token có giá trị
+    const loadUserInfo = async () => {
+      if (user) {
+        try {
+          const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${user.token}`,
+            },
+          });
+
+          // Kiểm tra mã trạng thái phản hồi
+          if (response.ok) {
+            const result = await response.json();
+            console.log('API response data:', result.data);
+
+            if (result) {
+              setUserData(result.data); // Lưu thông tin người dùng vào state
+
+              // Lưu thông tin người dùng vào AsyncStorage
+              await AsyncStorage.setItem(
+                'userInfo',
+                JSON.stringify(result.data)
+              );
+              console.log('User info saved to AsyncStorage');
+            } else {
+              console.log('No data in API response');
+            }
+          } else {
+            console.log('Failed to fetch user info. Status:', response.status);
+          }
+        } catch (error) {
+          console.error('Error fetching user info:', error);
+        }
+      } else {
+        await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('userData');
+      }
     };
 
-    loadUser();
-  }, []);
-
-  console.log(user);
+    loadUserInfo();
+  }, [user.token]);
 
   return (
-    <NavigationContainer>
-      {Object.keys(user).length !== 0 && <HaveLoginHome />}
+    <NavigationContainer onStateChange={handleStateChange}>
+      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+        <HaveLoginHome />
+      )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
+      {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
+        <AdminDrawerNavigator />
+      )}
       {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}

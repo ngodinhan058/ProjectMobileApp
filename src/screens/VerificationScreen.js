@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { BASE_URL } from './api/config';
@@ -14,6 +15,8 @@ import { BASE_URL } from './api/config';
 const VerificationScreen = ({ route, navigation }) => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const inputRefs = useRef([]);
 
   console.log(code.join('').length);
@@ -45,6 +48,8 @@ const VerificationScreen = ({ route, navigation }) => {
   console.log({ email });
 
   const enterEmail = async (email) => {
+    setIsLoading(true);
+
     try {
       const response = await axios.post(`${BASE_URL}auth/create-email`, {
         userEmail: email,
@@ -61,6 +66,8 @@ const VerificationScreen = ({ route, navigation }) => {
       //   error.response ? error.response.data : error.message
       // );
       throw error; // Ném lỗi để có thể hiển thị thông báo
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,7 +75,7 @@ const VerificationScreen = ({ route, navigation }) => {
     try {
       const userData = await enterEmail(email); // Gọi API để kiểm tra
       //Alert.alert('Thành công', 'Đăng nhập thành công!');
-      navigation.navigate('PasswordScreen'); // Điều hướng sau khi đăng nhập
+      navigation.navigate('PasswordScreen', { userEmail: email }); // Điều hướng sau khi đăng nhập
     } catch (error) {
       //Alert.alert('Thất bại', error.response.data.error);
     }
@@ -175,11 +182,24 @@ const VerificationScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </KeyboardAwareScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flexGrow: 1,
     paddingHorizontal: 20,
