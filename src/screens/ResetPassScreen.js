@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Pressable,
+  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -17,6 +18,7 @@ import { BASE_URL } from './api/config';
 const ResetPassScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
@@ -28,6 +30,8 @@ const ResetPassScreen = ({ navigation }) => {
   }, [email]);
 
   const enterEmail = async (email) => {
+    setIsLoading(true);
+
     try {
       console.log({ userEmail: email });
       const response = await axios.post(
@@ -38,6 +42,8 @@ const ResetPassScreen = ({ navigation }) => {
       return userData;
     } catch (error) {
       throw error; // Ném lỗi để có thể hiển thị thông báo
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,11 +108,23 @@ const ResetPassScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </KeyboardAwareScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
