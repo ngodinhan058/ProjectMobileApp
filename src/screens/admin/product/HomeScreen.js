@@ -57,6 +57,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
         const handlePress = () => {
             scale.value = withTiming(0.95, { duration: 100 });
+            navigation.navigate('DetailScreen', { id: item.productId })
             setTimeout(() => {
                 scale.value = withTiming(1, { duration: 100 });
             }, 100);
@@ -151,11 +152,11 @@ const HomeAdminScreen = ({ navigation }) => {
                     <Icon name="add-circle" size={40} color="#fff" />
                 </LinearGradient>
             </TouchableOpacity>
-            {isLoading && (
+            {/* {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#2196F3" />
                 </View>
-            )}
+            )} */}
         </View>
     );
 };
@@ -173,6 +174,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     header: {
+        paddingTop: 40,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -218,6 +220,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 220,
         borderRadius: 10,
+        resizeMode: 'contain'
     },
     productTitle: {
         fontSize: 18,
@@ -307,6 +310,7 @@ const styles = StyleSheet.create({
     },
     productItem: {
         marginBottom: 20,
+        
     },
     productList: {
         paddingHorizontal: 10,

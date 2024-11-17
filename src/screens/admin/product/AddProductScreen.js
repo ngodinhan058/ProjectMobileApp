@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SelectorInCategory from '../../../components/SelectorInCategory';
 import Supplier from '../../../components/Supplier';
+import Size from '../../../components/Size';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import UploadImage from '../../../components/Up_Image_Multi';
@@ -23,18 +24,21 @@ const AddProductScreen = ({ route, navigation }) => {
     const [productSupplierName, setProductSupplierName] = useState();
     const [parentCategoryId, setParentCategoryId] = useState(null);
     const [parentCategoryName, setParentCategoryName] = useState(null);
+    const [productSize, setProductSize] = useState(null);
+    const [productSizeName, setProductSizeName] = useState(null);
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isSupplierModal, setIsSupplierModal] = useState(false);
+    const [isSizeModal, setIsSizeModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedImages, setSelectedImages] = useState([]);
     const { postDTO } = route.params || {};
-
+    
     const [productData, setProductData] = useState({
         productName: '',
         productYearOfManufacture: 2024,
         sizesProduct: [
             {
-                sizeId: "00000000-0000-0000-0000-000000000000"
+                sizeId: productSize
             }
         ],
         productSupplier: productSupplier,
@@ -44,6 +48,7 @@ const AddProductScreen = ({ route, navigation }) => {
             productImageAlt: "Image of product",
         }
     });
+    console.log(productData);
 
     const [error, setError] = useState({
         productNameError: false
@@ -100,16 +105,20 @@ const AddProductScreen = ({ route, navigation }) => {
                 categories: parentCategoryId,
                 post: postDTO,
                 productSupplier: productSupplier,
+                sizesProduct: productSize.map(id => ({ sizeId: id })),
             }));
         }
-    }, [postDTO, productData.productName]);
+    }, [postDTO, productData.productName, productSize, parentCategoryId]);
 
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
+    const toggleSizeModal = () => setIsSizeModal(!isSizeModal);
 
     const handleResetFilters = () => {
         setParentCategoryId(null);
         setParentCategoryName(null);
+        setProductSize(null);
+        setProductSizeName(null);
     };
 
     return (
@@ -170,6 +179,22 @@ const AddProductScreen = ({ route, navigation }) => {
                             setProductSupplierName(selectedFilters.suppliersName);
                         }}
                     />
+                    <Text style={styles.label}>Màu Sản Phẩm:</Text>
+                    <TouchableOpacity style={[styles.input, !productSize && styles.inputError]} onPress={toggleSizeModal}>
+                        {productSize != null ? (<Text>{productSizeName}</Text>) : (<Text>Chưa Chọn Màu Sản Phẩm</Text>)}
+                    </TouchableOpacity>
+                    <Size
+                        isVisible={isSizeModal}
+                        onClose={toggleSizeModal}
+                        onReset={handleResetFilters}
+                        onApply={(selectedSizeId, selectedSizeName) => {
+                            setProductSize(selectedSizeId);
+                            const selectedSizeNames = selectedSizeName.join(', ');
+                            setProductSizeName(selectedSizeNames);
+                           
+                        }}
+                        
+                    />
                 </View>
             </ScrollView>
 
@@ -199,6 +224,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     header: {
+        paddingTop: 40,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
