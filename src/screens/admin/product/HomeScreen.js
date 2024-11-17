@@ -20,6 +20,8 @@ const HomeAdminScreen = ({ navigation }) => {
                 console.error('Error fetching data:', error);
             });
     }, []);
+    console.log(productsState.productImages);
+    
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
@@ -28,7 +30,7 @@ const HomeAdminScreen = ({ navigation }) => {
             })}
         >
             <View style={{ marginRight: 20, }}>
-                <Image source={{ uri: item.productImages[0].productImagePath  }} style={styles.productIcon} />
+                {/* <Image source={{ uri: item.productImages[0].productImagePath  }} style={styles.productIcon} /> */}
             </View>
 
             <View style={styles.productDetails}>
