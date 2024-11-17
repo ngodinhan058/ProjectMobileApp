@@ -55,7 +55,7 @@ import WishListScreen from './src/screens/WishListScreen';
 }
 import AddProductScreen from './src/screens/admin/product/AddProductScreen';
 import EditProductScreen from './src/screens/admin/product/EditProductScreen';
-import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
+import HomeAdminScreen from './src/screens/admin/product/HomeAdminScreen';
 import DetailScreen from './src/screens/admin/product/DetailProductScreen';
 {
   /* AdminCategory*/
