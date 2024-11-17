@@ -17,15 +17,15 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function DetailScreen({ route, navigation }) {
     const { id } = route.params;
 
-    // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
-    const [animation] = useState(new Animated.Value(0)); // giá trị hoạt ảnh
+    const [animation] = useState(new Animated.Value(0));
     const [rotation] = useState(new Animated.Value(0));
-    const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
+    const [productsState, setProductsState] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -41,10 +41,10 @@ function DetailScreen({ route, navigation }) {
                 console.error('Error fetching data:', error);
             })
     }, [id]);
+
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
 
-        // Thực hiện animation
         Animated.timing(animation, {
             toValue,
             duration: 300,
@@ -53,45 +53,42 @@ function DetailScreen({ route, navigation }) {
 
         setIsOpen(!isOpen);
 
-        // Thực hiện animation xoay icon
         Animated.timing(rotation, {
             toValue: isOpen ? 0 : 1,
             duration: 300,
-            useNativeDriver: true, // Để hiệu ứng xoay mượt hơn
+            useNativeDriver: true,
         }).start();
 
         setIsOpen(!isOpen);
     };
 
-    // Tạo hiệu ứng mở các nút theo chiều dọc
     const position1 = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [30, 160], // Chuyển từ vị trí của editButton lên trên
+        outputRange: [30, 160],
     });
     const position2 = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [30, 100], // Chuyển từ vị trí của editButton lên trên
+        outputRange: [30, 100],
     });
-    // Tạo hiệu ứng xoay dựa trên giá trị của rotation
     const rotateIcon = rotation.interpolate({
         inputRange: [0, 1],
-        outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
+        outputRange: ['0deg', '90deg'],
     });
+
     const deleteProduct = async () => {
         setIsLoading(true);
         try {
             await axios.delete(`${BASE_URL}product/${id}`);
-            // Có thể cần thêm logic để cập nhật giao diện sau khi xóa thành công
             Alert.alert("Success", "Xoá Thành Công");
-            navigation.replace("ProductList")
-            // Điều hướng hoặc cập nhật trạng thái nếu cần
+            navigation.replace("ProductList");
         } catch (error) {
             console.error('Error deleting category:', error.response ? error.response.data : error.message);
             Alert.alert("Error", "Failed to delete category.");
         } finally {
-            setIsLoading(false);  // Set loading to false when request completes
+            setIsLoading(false);
         }
     };
+
     const [selectedImage, setSelectedImage] = useState(null);
     const [isModalVisible, setModalVisible] = useState(false);
 
@@ -104,99 +101,93 @@ function DetailScreen({ route, navigation }) {
         setModalVisible(false);
         setSelectedImage(null);
     };
+
     return (
         <View style={styles.container}>
             <ScrollView>
-                <View>
-                    <View style={styles.iconHeader}>
-                        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-                            <Icon name="angle-left" size={35} color="#000" />
-                        </Pressable>
-                        <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
-                    </View>
+                <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
+                    <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Icon name="angle-left" size={35} color="#fff" />
+                    </Pressable>
+                    <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
+                </LinearGradient>
 
-                    {/* Product Image */}
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-                        <FlatList
-                            data={productsState.productImages}
-                            horizontal
-                            pagingEnabled
-                            showsHorizontalScrollIndicator={false}
-                            keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
-                                    <View style={{ marginHorizontal: 5 }}>
-                                        <Image
-                                            source={{ uri: item.productImagePath }}
-                                            style={{ width: 345, height: 350, resizeMode: 'contain' }}
-                                        />
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                        />
-                        <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
-                            <View style={styles.modalBackground}>
-                                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-                                    <Text style={styles.closeText}>X</Text>
-                                </TouchableOpacity>
-                                {selectedImage && (
-                                    <ImageViewer
-                                        imageUrls={selectedImage} // Thư viện yêu cầu array của các object với key `url`
-                                        enableSwipeDown
-                                        onSwipeDown={closeModal}
-                                        renderIndicator={() => null}
-                                        style={styles.fullScreenImage} // Ẩn số chỉ mục ảnh
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+                    <FlatList
+                        data={productsState.productImages}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
+                                <View style={{ marginHorizontal: 5 }}>
+                                    <Image
+                                        source={{ uri: item.productImagePath }}
+                                        style={{ width: 345, height: 350, resizeMode: 'contain' }}
                                     />
-                                )}
-                            </View>
-                        </Modal>
-                    </View>
-
-                    {/* Product info */}
-                    <View style={styles.productInfo}>
-                        <View>
-                            <Text style={styles.productName}>{productsState.productName}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                    />
+                    <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
+                        <View style={styles.modalBackground}>
+                            <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                                <Icon name="times" size={30} color="#fff" />
+                            </TouchableOpacity>
+                            {selectedImage && (
+                                <ImageViewer
+                                    imageUrls={selectedImage}
+                                    enableSwipeDown
+                                    onSwipeDown={closeModal}
+                                    renderIndicator={() => null}
+                                    style={styles.fullScreenImage}
+                                />
+                            )}
                         </View>
+                    </Modal>
+                </View>
 
-                        <View>
-                            <Text style={styles.originalPrice}>{productsState.productPrice}</Text>
-                            <Text style={styles.productPrice}>
-                                {productsState.productPriceSale}
-                            </Text>
-                            <Text style={styles.productSale}>
-                                Sale: {productsState.productSale}%
-                            </Text>
-                        </View>
-
-                        <View style={styles.SoldProductInfo}>
-                            <View style={styles.productStar}>
-                                <Image source={require('../../../assets/star.png')} />
-                                <Text>{productsState.productRating}</Text>
-                            </View>
-                            <View>
-                                <Text style={styles.totalSellProduct}>Số lượng còn lại: {productsState.productQuantity}</Text>
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Description Product */}
+                <View style={styles.productInfo}>
                     <View>
-                        <Text style={styles.descriptionProductTitle}>Thông Tin Sản Phẩm</Text>
-                        <Text style={styles.descriptionProductText}>
-                            {productsState?.post?.postContent}
+                        <Text style={styles.productName}>{productsState.productName}</Text>
+                    </View>
+
+                    <View>
+                        <Text style={styles.originalPrice}>{productsState.productPrice}</Text>
+                        <Text style={styles.productPrice}>
+                            {productsState.productPriceSale}
+                        </Text>
+                        <Text style={styles.productSale}>
+                            Sale: {productsState.productSale}%
                         </Text>
                     </View>
+
+                    <View style={styles.SoldProductInfo}>
+                        <View style={styles.productStar}>
+                            <Image source={require('../../../assets/star.png')} />
+                            <Text>{productsState.productRating}</Text>
+                        </View>
+                        <View>
+                            <Text style={styles.totalSellProduct}>Số lượng còn lại: {productsState.productQuantity}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View>
+                    <Text style={styles.descriptionProductTitle}>Thông Tin Sản Phẩm</Text>
+                    <Text style={styles.descriptionProductText}>
+                        {productsState?.post?.postContent}
+                    </Text>
                 </View>
             </ScrollView>
 
-            {/* Add Button */}
             <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
-                <Animated.Text style={[styles.editButtonText, { transform: [{ rotate: rotateIcon }] }]}>
-                    ▶
-                </Animated.Text>
+                <Animated.View style={{ transform: [{ rotate: rotateIcon }] }}>
+                    <Icon name="cog" size={30} color="#fff" />
+                </Animated.View>
             </TouchableOpacity>
 
-            {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
                 <TouchableOpacity
                     style={styles.iconButton}
@@ -214,13 +205,14 @@ function DetailScreen({ route, navigation }) {
                         });
                     }}
                 >
-                    <Icon name="pencil" size={20} color="#fff" />
+                    <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.iconButtonGradient}>
+                        <Icon name="pencil" size={20} color="#fff" />
+                    </LinearGradient>
                 </TouchableOpacity>
             </Animated.View>
 
             <Animated.View style={[styles.subButton, { bottom: position1 }]}>
-
-            <TouchableOpacity style={styles.iconButton} onPress={() => {
+                <TouchableOpacity style={styles.iconButton} onPress={() => {
                     Alert.alert(
                         "Xác Nhận!!!",
                         "Bạn có chắc muốn xoá không??",
@@ -233,7 +225,9 @@ function DetailScreen({ route, navigation }) {
                         ]
                     );
                 }}>
-                    <Icon name="trash" size={20} color="#fff" />
+                    <LinearGradient colors={['#FF5252', '#FF1744']} style={styles.iconButtonGradient}>
+                        <Icon name="trash" size={20} color="#fff" />
+                    </LinearGradient>
                 </TouchableOpacity>
             </Animated.View>
             {isLoading && (
@@ -254,50 +248,37 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     container: {
-        padding: 20,
-        height: '100%',
-        backgroundColor: '#fff',
-        paddingHorizontal: 20,
+        flex: 1,
+        backgroundColor: '#f5f5f5',
     },
-    iconHeader: {
+    header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '100%',
-        paddingBottom: 10,
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        marginBottom: 15,
+        borderRadius: 10,
     },
     textHeader: {
         fontWeight: 'bold',
         fontSize: 18,
         textAlign: 'center',
+        color: '#fff',
         flex: 1,
     },
     backButton: {
-        marginRight: 10,
-    },
-    productImgContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        height: 200,
-        position: 'relative',
-    },
-    productImg: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 10,
-    },
-    numberOfImage: {
-        position: 'absolute',
-        left: '10%',
-        bottom: '10%',
-        color: '#fff',
-        fontSize: 16,
+        fontSize: 24,
         fontWeight: 'bold',
+        color: '#fff',
+        marginRight: 10,
     },
     productInfo: {
         flexDirection: 'column',
         marginTop: 10,
         marginBottom: 10,
+        paddingHorizontal: 20,
     },
     productName: {
         textTransform: 'uppercase',
@@ -333,10 +314,12 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         fontSize: 16,
         paddingTop: 10,
+        paddingHorizontal: 20,
     },
     descriptionProductText: {
         lineHeight: 24,
         paddingBottom: 10,
+        paddingHorizontal: 20,
     },
     editButton: {
         position: 'absolute',
@@ -355,16 +338,13 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginLeft: 10,
         marginBottom: 10,
-
     },
-
     subButton: {
         position: 'absolute',
         right: 35,
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#ff5757',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -374,13 +354,19 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#3669c9',
         justifyContent: 'center',
         alignItems: 'center',
     },
     iconButton: {
         width: 50,
         height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconButtonGradient: {
+        width: '100%',
+        height: '100%',
         borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
@@ -405,7 +391,6 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '90%',
     },
-
 });
 
 export default DetailScreen;

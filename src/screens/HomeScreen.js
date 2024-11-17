@@ -226,11 +226,9 @@ const HomeScreen = ({ onScroll }) => {
       <View style={styles.containerPro}>
         <View style={styles.greySection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
+            <Text style={styles.textBold}>Tất cả sản phẩm</Text>
             <TouchableOpacity
               style={{
-                padding: 15,
-                marginVertical: 25,
                 borderRadius: 10,
                 alignItems: 'center',
               }}
@@ -240,9 +238,8 @@ const HomeScreen = ({ onScroll }) => {
             </TouchableOpacity>
           </View>
 
-          {productsState.length > 0 ? (
+          {/* {productsState.length > 0 ? (
             <FlatList
-              horizontal
               data={productsState}
               renderItem={({ item }) => {
                 return (
@@ -261,167 +258,30 @@ const HomeScreen = ({ onScroll }) => {
               keyExtractor={(item) => item['productId'].toString()}
               showsHorizontalScrollIndicator={false}
               style={styles.productList}
+              numColumns={2}
+              columnWrapperStyle={styles.columnWrapper}
+              contentContainerStyle={styles.listContent}
             />
+          ) : null} */}
+
+          {productsState.length > 0 ? (
+            <View style={styles.gridContainer}>
+              {productsState.map((item, index) => (
+                <View key={index} style={styles.itemWrapper}>
+                  <ProductItem
+                    id={item['productId']}
+                    name={item['productName']}
+                    price={item['productPriceSale']}
+                    oldPrice={item['productPrice']}
+                    image={item['productImages']?.[0].productImagePath} 
+                    rating={item['productRating']}
+                    sale={item['productSale']}
+                    isLoading={loading} 
+                  />
+                </View>
+              ))}
+            </View>
           ) : null}
-
-          {/* Banner phụ */}
-          <Image
-            source={require('../assets/banner2.png')}
-            style={{ width: 370, height: 180, marginBottom: 10 }}
-          />
-
-          {/* Best Sellers */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Đã Bán Nhiều Nhất</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
-          </View>
-          {/* {productsState.length > 0 ? (
-            <FlatList
-              horizontal
-              data={productsState}
-              renderItem={({ item }) => {
-                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
-
-                const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
-
-
-                return (
-                  <ProductItem
-                    id={item['productId']}
-                    name={item['productName']}
-                    price={item['productPriceSale']}
-                    oldPrice={item['productPrice']}
-                    image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
-                    rating={item['productRating']}
-                    sale={item['productSale']}
-                    isLoading={loading}  // Set isLoading to false when not loading
-                  />
-                );
-              }}
-              keyExtractor={(item) => item['productId'].toString()}
-              showsHorizontalScrollIndicator={false}
-              style={styles.productList}
-            />
-          ) : null} */}
-
-          {/* Banner phụ 2 */}
-          <Image
-            source={require('../assets/banner3.png')}
-            style={{ width: 380, height: 190, marginBottom: 10 }}
-          />
-
-          {/* New Arrivals */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Sản Phẩm Mới</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
-          </View>
-          {/* {productsState.length > 0 ? (
-            <FlatList
-              horizontal
-              data={productsState}
-              keyExtractor={(item) => item['productId'].toString()}
-              renderItem={({ item }) => {
-                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
-
-                const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
-
-
-                return (
-                  <ProductItem
-                    id={item['productId']}
-                    name={item['productName']}
-                    price={item['productPriceSale']}
-                    oldPrice={item['productPrice']}
-                    image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
-                    rating={item['productRating']}
-                    sale={item['productSale']}
-                    isLoading={loading}  // Set isLoading to false when not loading
-                  />
-                );
-              }}
-              showsHorizontalScrollIndicator={false}
-              style={styles.productList}
-            />
-          ) : null} */}
-          {/* Top Rated Product */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Lượt Đánh Giá Cao Nhất</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
-          </View>
-          {/* {productsState.length > 0 ? (
-            <FlatList
-              horizontal
-              data={productsState}
-              renderItem={({ item }) => {
-                // Kiểm tra xem mảng productImages có tồn tại và có ít nhất 1 phần tử
-
-                const imageUrl = Array.isArray(item.productImages) && item.productImages.length > 0
-                  ? item.productImages[0].productImagePath  // Lấy ảnh đầu tiên từ mảng
-                  : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/langvi-300px-No_image_available.svg.png';  // Đường dẫn ảnh mặc định nếu không có ảnh
-
-
-                return (
-                  <ProductItem
-                    id={item['productId']}
-                    name={item['productName']}
-                    price={item['productPriceSale']}
-                    oldPrice={item['productPrice']}
-                    image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
-                    rating={item['productRating']}
-                    sale={item['productSale']}
-                    isLoading={loading}  // Set isLoading to false when not loading
-                  />
-                );
-              }}
-              keyExtractor={(item) => item['productId'].toString()}
-              showsHorizontalScrollIndicator={false}
-              style={styles.productList}
-            />
-          ) : null} */}
-          {/* Special Offers */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Giảm Giá Đặc Biệt</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
-          </View>
-          <FlatList
-            horizontal
-            data={saleProducts}
-            renderItem={({ item }) => <SaleItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
-          {/* News */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Bản Tin Mới</Text>
-          </View>
-          {news.map((news) => (
-            <NewItem
-              key={news.id}
-              title={news.title}
-              description={news.description}
-              date={news.date}
-              image={news.image}
-            />
-          ))}
-          <TouchableOpacity
-            style={{
-              padding: 15,
-              marginVertical: 25,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: '#000',
-              borderStyle: 'solid',
-              alignItems: 'center',
-            }}
-            onPress={() => navigation.navigate('NewsScreen')}
-          >
-            <Text>Xem Tất Cả Bản Tin</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </ScrollHandler>
@@ -433,6 +293,15 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     backgroundColor: '#fff',
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  itemWrapper: {
+    width: '50%',  // 2 columns layout, adjust the width as needed
+    marginTop: 10,
   },
   containerPro: {
     width: '100%',
@@ -564,6 +433,12 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginBottom: 20,
     marginLeft: '20%',
+  },
+  listContent: {
+    paddingVertical: 10,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
   },
 });
 

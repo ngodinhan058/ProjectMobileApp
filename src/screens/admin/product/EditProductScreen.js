@@ -18,6 +18,7 @@ import SelectorInCategory from '../../../components/SelectorInCategory';
 import Supplier from '../../../components/Supplier';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const EditProductScreen = ({ route, navigation }) => {
     const { product, postDTO } = route.params || {}; // Lấy dữ liệu sản phẩm từ `route.params`
@@ -63,8 +64,9 @@ const EditProductScreen = ({ route, navigation }) => {
 
 
         if (selectedImages && selectedImages.length > 0) {
-            selectedImages.forEach((imageUri, index) => {
-                if (imageUri) {
+            selectedImages.forEach((image, index) => {
+                if (image) {
+                    const imageUri = image instanceof Object ? image.uri : image;
                     const fileType = imageUri.split('.').pop();
                     const newFile = {
                         uri: imageUri,
@@ -113,13 +115,12 @@ const EditProductScreen = ({ route, navigation }) => {
     return (
         <View style={styles.container}>
             <ScrollView>
-                <View style={styles.header}>
+                <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Icon name="angle-left" size={35} color="#000" />
+                        <Icon name="angle-left" size={35} color="#fff" />
                     </Pressable>
                     <Text style={styles.textHeader}>Chỉnh Sửa Thông Tin Sản Phẩm</Text>
-                </View>
-
+                </LinearGradient>
                 <UploadImage onImagesSelected={setSelectedImages} initialImages={selectedImages} />
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Tên Sản Phẩm:</Text>
@@ -129,37 +130,28 @@ const EditProductScreen = ({ route, navigation }) => {
                         value={productData.productName}
                         onChangeText={(text) => setProductData({ ...productData, productName: text })}
                     />
-                    
-
                     <Text style={styles.label}>Post Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !postDTO && styles.inputError]} onPress={() => navigation.navigate('EditPostScreen', { savedData: { postName: postDTO?.postName, postContent: postDTO?.postContent } })}>
                         {postDTO ? <Text>Đã Thêm Post Sản Phẩm</Text> : <Text>Chưa Thêm Post Sản Phẩm</Text>}
                     </TouchableOpacity>
-
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !parentCategoryName && styles.inputError]} onPress={toggleFilterModal}>
                         {categories ? <Text>Đã Chọn Danh Mục Sản Phẩm</Text> : <Text>Chưa Chọn Danh Mục Sản Phẩm</Text>}
                     </TouchableOpacity>
-
                     <SelectorInCategory
                         isVisible={isFilterModalVisible}
                         categoriesProduct={categories.map(category => category.categoryId)}
                         onClose={toggleFilterModal}
                         onApply={(selectedParent, selectedParentName) => {
                             setParentCategoryId(selectedParent);
-
-                            // Hiển thị danh sách tên đã chọn ngay lập tức
                             const selectedCategoryNames = selectedParentName.join(', ');
                             setParentCategoryName(selectedCategoryNames);
                         }}
                     />
-
-
                     <Text style={styles.label}>Thương Hiệu Sản Phẩm:</Text>
                     <TouchableOpacity style={[styles.input, !productSupplier && styles.inputError]} onPress={toggleSupplierModal}>
                         {productSupplierName != null ? (<Text>{productSupplierName}</Text>) : (<Text>Chưa Chọn Thương Hiệu Sản Phẩm</Text>)}
                     </TouchableOpacity>
-
                     <Supplier
                         isVisible={isSupplierModal}
                         onClose={toggleSupplierModal}
@@ -170,14 +162,11 @@ const EditProductScreen = ({ route, navigation }) => {
                             setProductSupplierName(selectedFilters.suppliersName);
                         }}
                     />
-
                 </View>
             </ScrollView>
-
             <TouchableOpacity style={styles.button} onPress={handleUpdateProduct} disabled={isLoading}>
                 <Text style={styles.buttonText}>Cập Nhật</Text>
             </TouchableOpacity>
-
             {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#3669c9" />
@@ -195,57 +184,35 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     container: {
-        paddingHorizontal: 20,
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f5f5f5',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '100%',
-        paddingVertical: 20,
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        marginBottom: 15,
+        borderRadius: 10,
     },
     textHeader: {
         fontWeight: 'bold',
         fontSize: 18,
         textAlign: 'center',
+        color: '#fff',
         flex: 1,
     },
     backButton: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
+        color: '#fff',
         marginRight: 10,
-    },
-    imageContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    imageIcon: {
-        width: 155,
-        height: 140,
-        marginVertical: 20,
     },
     formContainer: {
         flex: 1,
-    },
-    quantityContainer: {
-        marginBottom: 20,
-    },
-
-    quantityPlus: {
-        position: 'absolute',
-        right: 10,
-        top: 0,
-        zIndex: 99,
-    },
-    quantityMinus: {
-        position: 'absolute',
-        right: 10,
-        bottom: 15,
-        zIndex: 99,
+        paddingHorizontal: 20,
     },
     input: {
         position: 'relative',
@@ -255,108 +222,29 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
-        justifyContent: 'center'
+        justifyContent: 'center',
+        backgroundColor: '#fff',
     },
-    buttonIcon: {
-        color: '#3669c9',
-        fontSize: 20,
-        fontWeight: 'bold',
+    inputError: {
+        borderColor: 'red',
     },
     label: {
         fontSize: 16,
         marginBottom: 10,
     },
-    dropdown: {
-        padding: 15,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        marginBottom: 20,
-    },
-    selectedValue: {
-        fontSize: 16,
-    },
-
-    modalView: {
-        position: 'absolute',
-        width: '90%',
-        marginHorizontal: 20,
-        padding: 30,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        height: 400
-    },
-    modalItem: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        width: '100%',
-    },
-    modalText: {
-        fontSize: 16,
-    },
     button: {
         width: '100%',
-        backgroundColor: '#3669c9',
+        backgroundColor: '#2196F3',
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: 'center',
         marginTop: 10,
     },
-    buttonPost: {
-        width: '40%',
-        backgroundColor: '#3669c9',
-        paddingVertical: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginVertical: 10,
-        marginLeft: '60%'
-    },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
-
     },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Làm nền modal tối
-    },
-    searchBar: {
-        position: 'relative',
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    searchInput: {
-        flex: 1,
-        height: 50,
-        backgroundColor: '#FAFAFA',
-        borderRadius: 10,
-        padding: 10,
-    },
-    icon: {
-        width: 20,
-        height: 20,
-        marginLeft: 10,
-    },
-    iconCenter: {
-        width: 20,
-        height: 20,
-        position: 'absolute',
-        alignContent: 'center',
-        top: 15,
-    },
-
 });
 
 export default EditProductScreen;

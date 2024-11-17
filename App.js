@@ -55,7 +55,7 @@ import WishListScreen from './src/screens/WishListScreen';
 }
 import AddProductScreen from './src/screens/admin/product/AddProductScreen';
 import EditProductScreen from './src/screens/admin/product/EditProductScreen';
-import HomeAdminScreen from './src/screens/admin/product/HomeAdminScreen';
+import HomeAdminScreen from './src/screens/admin/product/HomeScreen';
 import DetailScreen from './src/screens/admin/product/DetailProductScreen';
 {
   /* AdminCategory*/
@@ -488,12 +488,12 @@ function SupplierAdmin() {
 function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
-      <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
+      <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+      <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
-      <Drawer.Screen name="Danh Sách Nhập Hàng" component={ShipmentAdmin} />
-      <Drawer.Screen name="Danh Sách Màu" component={SizeAdmin} />
-      <Drawer.Screen name="Danh Sách Thương Hiệu" component={SupplierAdmin} />
+      <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
+      <Drawer.Screen name="Màu" component={SizeAdmin} />
+      <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
     </Drawer.Navigator>
   );
 }
@@ -771,7 +771,9 @@ console.log(user.token);
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
-        <AdminDrawerNavigator />
+        // <AdminDrawerNavigator />
+        <HaveLoginHome />
+
       )}
       {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
