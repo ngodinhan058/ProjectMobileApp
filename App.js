@@ -487,7 +487,7 @@ function SupplierAdmin() {
 }
 function AdminDrawerNavigator() {
   return (
-    <Drawer.Navigator>
+    <Drawer.Navigator  screenOptions={{ headerShown: false, }}>
       <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
@@ -766,16 +766,16 @@ console.log(user.token);
 
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+      {/*  Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
         <HaveLoginHome />
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
-        // <AdminDrawerNavigator />
+        <AdminDrawerNavigator />
         <HaveLoginHome />
 
-      )}
-      {/* <AdminDrawerNavigator />  */}
+      )*/}
+      <AdminDrawerNavigator /> 
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}

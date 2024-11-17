@@ -124,7 +124,7 @@ function DetailScreen({ route, navigation }) {
                                 <View style={{ marginHorizontal: 5 }}>
                                     <Image
                                         source={{ uri: item.productImagePath }}
-                                        style={{ width: 345, height: 350, resizeMode: 'contain' }}
+                                        style={{padding: 190, resizeMode: 'contain', alignItems: 'center' }}
                                     />
                                 </View>
                             </TouchableOpacity>
@@ -252,6 +252,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     header: {
+        paddingTop: 40,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
