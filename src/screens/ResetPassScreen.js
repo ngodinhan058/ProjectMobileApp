@@ -1,11 +1,24 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { BASE_URL } from './api/config';
 
 const ResetPassScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
@@ -16,25 +29,56 @@ const ResetPassScreen = ({ navigation }) => {
     }
   }, [email]);
 
+  const enterEmail = async (email) => {
+    setIsLoading(true);
+
+    try {
+      console.log({ userEmail: email });
+      const response = await axios.post(
+        `${BASE_URL}auth/forgot?email=${email}`
+      );
+
+      const userData = response.data;
+      return userData;
+    } catch (error) {
+      throw error; // Ném lỗi để có thể hiển thị thông báo
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    try {
+      const userData = await enterEmail(email); // Gọi API để kiểm tra
+      navigation.navigate('VerificationForgotScreen', { userEmail: email });
+    } catch (error) {
+      //Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
+    }
+  };
 
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
-      enableOnAndroid={true}  // Kích hoạt hỗ trợ trên Android
-      extraHeight={150}  // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-280}  // Tùy chỉnh thêm khoảng cách cuộn
-      keyboardShouldPersistTaps="handled"  // Xử lý khi nhấn ngoài input
+      enableOnAndroid={true} // Kích hoạt hỗ trợ trên Android
+      extraHeight={150} // Điều chỉnh khoảng cách bàn phím với nội dung
+      extraScrollHeight={-280} // Tùy chỉnh thêm khoảng cách cuộn
+      keyboardShouldPersistTaps="handled" // Xử lý khi nhấn ngoài input
     >
-      <View style={{ flex: 1, }}>
+      <View style={{ flex: 1 }}>
         {/* Nút quay lại */}
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
 
         {/* Tiêu đề */}
         <Text style={styles.title}>Quên Mật Khẩu</Text>
         <Text style={styles.titleBold}>Mega Mall</Text>
-        <Text style={styles.subtitle}>Nhập email/ Số điện thoại để lấy mã xác nhận</Text>
+        <Text style={styles.subtitle}>
+          Nhập email/ Số điện thoại để lấy mã xác nhận
+        </Text>
         {/* Input email/ Số điện thoại */}
         <Text style={styles.label}>Email/ Số điện thoại</Text>
         <TextInput
@@ -53,22 +97,34 @@ const ResetPassScreen = ({ navigation }) => {
               { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
             ]}
             disabled={!isButtonEnabled}
-            onPress={() => navigation.navigate('VerificationForgotScreen')} // Gọi hàm đăng nhập khi nhấn nút
+            onPress={handleReset} // Gọi hàm đăng nhập khi nhấn nút
           >
             <Text style={styles.signInText}>Tiếp tục</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton}>
-            <Text style={styles.cancelText} onPress={() => navigation.goBack()}>Cancel</Text>
+            <Text style={styles.cancelText} onPress={() => navigation.goBack()}>
+              Cancel
+            </Text>
           </TouchableOpacity>
         </View>
-
-        
       </View>
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </KeyboardAwareScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -159,7 +215,7 @@ const styles = StyleSheet.create({
   footerContainer: {
     flexDirection: 'row',
     marginTop: '98%',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   footerText: {
     fontSize: 14,

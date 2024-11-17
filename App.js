@@ -11,6 +11,9 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+
+import { ROLE_USER, ROLE_ADMIN } from './src/constants/Role';
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -85,6 +88,8 @@ import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
 }
 import HomeShipmentScreen from './src/screens/admin/shipment/HomeScreen';
 import AddProductShipment from './src/screens/admin/shipment/AddProductShipment';
+import DetailProductShipment from './src/screens/admin/shipment/DetailProductShipment';
+import EditProductShipment from './src/screens/admin/shipment/EditProductShipment';
 {
   /* Admin Size*/
 }
@@ -142,6 +147,8 @@ import ChatScreen from './src/screens/shipper/ChatScreen';
 
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
+import { jwtDecode } from 'jwt-decode';
+import SeeAllProductScreen from './src/components/SeeAllProductScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -230,6 +237,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
   const screens = [
     { name: 'Home', component: HomeScreen, showFooter: true },
     {
+      name: 'SeeAllProductScreen',
+      component: SeeAllProductScreen,
+      showFooter: true,
+    },
+    {
       name: 'ProductByCateScreen',
       component: ProductByCateScreen,
       showFooter: true,
@@ -259,9 +271,21 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       showFooter: true,
     },
     { name: 'SuccessScreen', component: SuccessScreen, showFooter: true },
-    { name: 'OrderConfirmationScreen', component: OrderConfirmationScreen, showFooter: false, },
-    { name: 'CompletedOrderConfirmationScreen', component: CompletedOrderConfirmationScreen, showFooter: false },
-    { name: 'RejectOrderConfirmationScreen', component: RejectOrderConfirmationScreen, showFooter: false },
+    {
+      name: 'OrderConfirmationScreen',
+      component: OrderConfirmationScreen,
+      showFooter: false,
+    },
+    {
+      name: 'CompletedOrderConfirmationScreen',
+      component: CompletedOrderConfirmationScreen,
+      showFooter: false,
+    },
+    {
+      name: 'RejectOrderConfirmationScreen',
+      component: RejectOrderConfirmationScreen,
+      showFooter: false,
+    },
   ];
 
   return (
@@ -425,7 +449,8 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
-
+      <Stack.Screen name="DetailProductShipment" component={DetailProductShipment} />
+      <Stack.Screen name="EditProductShipment" component={EditProductShipment} />
     </Stack.Navigator>
   );
 }
@@ -440,7 +465,6 @@ function SizeAdmin() {
       <Stack.Screen name="DetailSizeScreen" component={DetailSizeScreen} />
       <Stack.Screen name="AddSizeScreen" component={AddSizeScreen} />
       <Stack.Screen name="EditSizeScreen" component={EditSizeScreen} />
-
     </Stack.Navigator>
   );
 }
@@ -452,10 +476,12 @@ function SupplierAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SupplierList" component={HomeSupplierScreen} />
       <Stack.Screen name="AddSupplierShipment" component={AddSupplierScreen} />
-      <Stack.Screen name="DetailSupplierScreen" component={DetailSupplierScreen} />
+      <Stack.Screen
+        name="DetailSupplierScreen"
+        component={DetailSupplierScreen}
+      />
       <Stack.Screen name="AddSupplierScreen" component={AddSupplierScreen} />
       <Stack.Screen name="EditSupplierScreen" component={EditSupplierScreen} />
-
     </Stack.Navigator>
   );
 }
@@ -464,7 +490,7 @@ function AdminDrawerNavigator() {
     <Drawer.Navigator>
       <Drawer.Screen name="Danh Sách Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Sách Danh Mục" component={CategoryAdmin} />
-      <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} />
+      {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
       <Drawer.Screen name="Danh Sách Nhập Hàng" component={ShipmentAdmin} />
       <Drawer.Screen name="Danh Sách Màu" component={SizeAdmin} />
       <Drawer.Screen name="Danh Sách Thương Hiệu" component={SupplierAdmin} />
@@ -631,22 +657,66 @@ export default function App() {
   const [user, setUser] = useState({});
   const [userData, setUserData] = useState({});
 
-  useEffect(() => {
-    const loadUser = async () => {
+  // useEffect(() => {
+  //   const loadUser = async () => {
+  //     try {
+  //       const savedCart = await AsyncStorage.getItem('userData');
+
+  //       if (savedCart) {
+  //         const { username, token } = JSON.parse(savedCart);
+
+  //         const decoded = jwtDecode(token);
+  //         console.log('Decoded JWT:', decoded);
+
+  //         setUser({ username, token });
+  //       } else {
+  //         setUser({});
+  //       }
+
+  //       console.log('Clear', savedCart);
+  //     } catch (error) {
+  //       console.error('Error loading cart from AsyncStorage:', error);
+  //     }
+  //   };
+
+  //   loadUser();
+
+  //   // // Set up an interval to call a function every second
+  //   // const intervalId = setInterval(() => {
+  //   //   console.log('User state every second:', user); // Log the user state every second
+  //   //   // You can call any function here instead of logging
+  //   // }, 1000); // 1000 milliseconds = 1 second
+
+  //   // // Clean up the interval on component unmount
+  //   // return () => clearInterval(intervalId);
+  // }, []);
+
+  const handleStateChange = async (state) => {
+    const currentRoute = state.routes[state.index];
+    console.log('Current Route:', currentRoute.name);
+
+    // If you want to fetch user data each time the navigation state changes
+    if (
+      currentRoute.name === 'Mega Mall' ||
+      currentRoute.name === 'Danh Sách Người Dùng'
+    ) {
       try {
-        const savedUser = await AsyncStorage.getItem('userData');
-        // const savedUser = await AsyncStorage.removeItem('userData');
-        if (savedUser) {
-          const { username, token } = JSON.parse(savedUser);
-          setUser({ username, token });
+        const savedCart = await AsyncStorage.getItem('userData');
+
+        if (savedCart) {
+          const { username, token } = JSON.parse(savedCart);
+          const decoded = jwtDecode(token);
+          console.log(decoded);
+
+          setUser({ username, token, role: decoded.scope.split(' ')[0] });
+        } else {
+          setUser({});
         }
       } catch (error) {
-        console.error('Error loading user from AsyncStorage:', error);
+        console.error('Error loading cart from AsyncStorage:', error);
       }
-    };
-
-    loadUser();
-  }, []);
+    }
+  };
 
   useEffect(() => {
     // Gọi API lấy thông tin người dùng nếu token có giá trị
@@ -657,47 +727,53 @@ export default function App() {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${user.token}`
-            }
+              Authorization: `Bearer ${user.token}`,
+            },
           });
 
           // Kiểm tra mã trạng thái phản hồi
           if (response.ok) {
             const result = await response.json();
-            console.log("API response data:", result.data);
+            console.log('API response data:', result.data);
 
             if (result) {
               setUserData(result.data); // Lưu thông tin người dùng vào state
 
               // Lưu thông tin người dùng vào AsyncStorage
-              await AsyncStorage.setItem('userInfo', JSON.stringify(result.data));
-              console.log("User info saved to AsyncStorage");
+              await AsyncStorage.setItem(
+                'userInfo',
+                JSON.stringify(result.data)
+              );
+              console.log('User info saved to AsyncStorage');
             } else {
-              console.log("No data in API response");
+              console.log('No data in API response');
             }
           } else {
-            console.log("Failed to fetch user info. Status:", response.status);
-
+            console.log('Failed to fetch user info. Status:', response.status);
           }
         } catch (error) {
           console.error('Error fetching user info:', error);
         }
-      }
-      else {
+      } else {
         await AsyncStorage.removeItem('userInfo');
         await AsyncStorage.removeItem('userData');
-
       }
     };
 
     loadUserInfo();
   }, [user.token]);
+console.log(user.token);
 
   return (
-    <NavigationContainer>
-      {/* {Object.keys(userData).length !== 0 && <HaveLoginHome />}
-      {Object.keys(userData).length === 0 && <NoLoginHome />} */}
-      <AdminDrawerNavigator /> 
+    <NavigationContainer onStateChange={handleStateChange}>
+      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+        <HaveLoginHome />
+      )}
+      {Object.keys(user).length === 0 && <NoLoginHome />}
+      {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
+        <AdminDrawerNavigator />
+      )}
+      {/* <AdminDrawerNavigator />  */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}
