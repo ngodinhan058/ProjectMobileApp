@@ -46,6 +46,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   // Hàm lấy sản phẩm liên quan
   const fetchRelatedProducts = async (categoryId) => {
+    console.log("cấc", categoryId);
+    
     const categoriesApiUrl = `${BASE_URL}products/relate/${categoryId}`; // API lấy sản phẩm liên quan theo categoryId
     try {
       const response = await axios.get(categoriesApiUrl, {
@@ -53,7 +55,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           'ngrok-skip-browser-warning': 'true',
         },
       });
-      return response.data.data.content; // Trả về dữ liệu sản phẩm liên quan
+      return response.data.data; // Trả về dữ liệu sản phẩm liên quan
     } catch (error) {
       console.error('Lỗi khi lấy sản phẩm liên quan:', error);
       throw error; // Ném lỗi để xử lý ở nơi gọi
@@ -63,7 +65,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const fetchData = async () => {
     try {
       const productsData = await fetchProductData(id);
-      const categoryId = productsData.categories[0].categoryId;
+      const categoryId = productsData?.categories?.[0]?.categoryId;
       const image = productsData.productImages[0].productImagePath;
       const productRelateData = await fetchRelatedProducts(categoryId);
 
@@ -76,6 +78,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       console.log('Lỗi khi lấy dữ liệu:', error); // Log lỗi nếu có
     }
   };
+
+  
   useEffect(() => {
     scrollRef.current.scrollTo({ y: 0, animated: true });
     fetchData(); // Lấy dữ liệu khi component lần đầu render
@@ -147,10 +151,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       const apiUrl = `${BASE_URL}carts/user/${userInfo.userId}`;
       try {
         const response = await axios.get(apiUrl);
-       
+
         const idCart = response.data.data.cartId;
         setIdCart(idCart)
-       
+
       } catch (error) {
         console.log('Error fetching data:', error);
       }
@@ -327,7 +331,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
       const response = await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData);
       console.log(response);
-      
+
       if (response.status === 200) {
         console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
         navigation.navigate('AddToCartScreen')
@@ -414,9 +418,39 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           </View>
           {/* Product info */}
           <View style={styles.productInfo}>
-            <View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.productName}>{productsState.productName}</Text>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  padding: 10,
+                  borderRadius: 10,
+                  backgroundColor: '#FE3A30',
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontWeight: '600',
+                      color: '#FFF',
+                    }}
+                  >
 
+                  </Text>
+                  <Image
+                    style={{ width: 20, height: 20, tintColor: '#fff' }}
+                    source={require('../assets/heart.png')}
+                  />
+                </View>
+              </TouchableOpacity>
             </View>
 
             <View>
@@ -675,41 +709,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
         </View>
       </ScrollView>
-      <View style={{ flexDirection: 'row', height: '37%', paddingHorizontal: 20, gap: 10, justifyContent: 'center', backgroundColor: '#fff', paddingTop: 8, }}>
-        <View>
-          <TouchableOpacity
-            style={{
-              width: '100%',
-              backgroundColor: '#fff',
-              borderColor: '#ccc',
-              borderWidth: 1,
-              padding: 20,
-              borderRadius: 10,
-              backgroundColor: '#FE3A30',
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontWeight: '600',
-                  color: '#FFF',
-                }}
-              >
-
-              </Text>
-              <Image
-                style={{ width: 20, height: 20, tintColor: '#fff' }}
-                source={require('../assets/heart.png')}
-              />
-            </View>
-          </TouchableOpacity>
-        </View>
+      <View style={{ flexDirection: 'row', height: '35%', paddingHorizontal: 20, gap: 10, justifyContent: 'center', backgroundColor: '#fff', paddingTop: 8, }}>
         {!userInfo?.userId ?
           (<View style={{ flex: 1, position: 'relative', }}>
             {/* Số lượng */}
