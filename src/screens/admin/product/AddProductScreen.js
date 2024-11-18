@@ -18,6 +18,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import UploadImage from '../../../components/Up_Image_Multi';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Notifier, NotifierComponents } from 'react-native-notifier';
 
 const AddProductScreen = ({ route, navigation }) => {
     const [productSupplier, setProductSupplier] = useState();
@@ -54,6 +55,7 @@ const AddProductScreen = ({ route, navigation }) => {
         productNameError: false
     });
 
+
     const handleAddProduct = async () => {
         setIsLoading(true);
         const formData = new FormData();
@@ -65,9 +67,9 @@ const AddProductScreen = ({ route, navigation }) => {
             categories: parentCategoryId,
             post: postDTO,
             productImage: productData.productImages,
-        }
+        };
         formData.append('params', JSON.stringify(params));
-
+    
         selectedImages.forEach((imageUri, index) => {
             const fileType = imageUri.split('.').pop();
             const newFile = {
@@ -77,19 +79,33 @@ const AddProductScreen = ({ route, navigation }) => {
             };
             formData.append('file', newFile);
         });
-
+    
         try {
             const response = await fetch(`${BASE_URL}product`, {
                 method: 'POST',
                 body: formData,
             });
             if (response.status === 201) {
-                Alert.alert('Success', 'Product added successfully.');
+                Notifier.showNotification({
+                    title: 'Success',
+                    description: 'Product added successfully.',
+                    Component: NotifierComponents.Alert,
+                    componentProps: {
+                        alertType: 'success',
+                    },
+                });
                 navigation.replace('ProductList');
             }
         } catch (error) {
             console.error('Error adding product:', error);
-            Alert.alert('Error', 'Unable to add product due to a network error.');
+            Notifier.showNotification({
+                title: 'Error',
+                description: 'Unable to add product due to a network error.',
+                Component: NotifierComponents.Alert,
+                componentProps: {
+                    alertType: 'error',
+                },
+            });
         } finally {
             setIsLoading(false);
         }
@@ -105,7 +121,7 @@ const AddProductScreen = ({ route, navigation }) => {
                 categories: parentCategoryId,
                 post: postDTO,
                 productSupplier: productSupplier,
-                sizesProduct: productSize.map(id => ({ sizeId: id })),
+                sizesProduct: productSize ? productSize.map(id => ({ sizeId: id })) : null,
             }));
         }
     }, [postDTO, productData.productName, productSize, parentCategoryId]);
