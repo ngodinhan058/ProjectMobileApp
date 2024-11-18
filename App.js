@@ -259,7 +259,7 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       component: AddedProductToWishlist,
       showFooter: false,
     },
-    { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false }, // Ẩn Footer cho màn AddToCartScreen
+    { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false },
     {
       name: 'ReviewProductScreen',
       component: ReviewProductScreen,

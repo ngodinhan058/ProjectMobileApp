@@ -4,6 +4,7 @@ import { View, TouchableOpacity, StyleSheet, Text, Easing } from 'react-native';
 
 // Sử dụng React.memo để tránh render lại nếu props không thay đổi
 const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
+  if (!isVisible) return null
   const handlePress = useCallback(
     (routeName) => {
       navigation.navigate(routeName);
