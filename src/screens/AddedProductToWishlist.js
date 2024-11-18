@@ -46,7 +46,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   // Hàm lấy sản phẩm liên quan
   const fetchRelatedProducts = async (categoryId) => {
-    console.log("cấc", categoryId);
+    // console.log("cấc", categoryId);
     
     const categoriesApiUrl = `${BASE_URL}products/relate/${categoryId}`; // API lấy sản phẩm liên quan theo categoryId
     try {
@@ -129,7 +129,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     fetchUserInfo();
   }, []);
-  console.log(userInfo?.userId);
+  // console.log(userInfo);
 
 
 
@@ -235,10 +235,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       return;
     }
 
-    const availableQuantity = selectedProductSize.productSizeQuantity.productSizeQuantity;
-    if (quantity > availableQuantity) {
-      setError(`Số lượng yêu cầu vượt quá số lượng tồn kho (${availableQuantity} sản phẩm)`);
-      setErrorCheck(false);
+    
+    if (quantity > 20) {
+      setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
+      console.log("Số lượng yêu cầu là 20 (${availableQuantity} sản phẩm)`);");
+      
       setErrorCheckQuantity(true);
       setTimeout(() => setErrorCheck(true), 0);
       return;
@@ -306,12 +307,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       return;
     }
 
-    const availableQuantity = selectedProductSize.productSizeQuantity.productSizeQuantity;
-    if (quantity > availableQuantity) {
-      setError(`Số lượng yêu cầu vượt quá số lượng tồn kho (${availableQuantity} sản phẩm)`);
-      setErrorCheck(false);
-      setErrorCheckQuantity(true);
-      setTimeout(() => setErrorCheck(true), 0);
+    if (quantity > 20) {
+      setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
+      console.log("Số lượng yêu cầu là 20 (${availableQuantity} sản phẩm)`);");
+      
+      setErrorCheckQuantity(false);
+      setTimeout(() => setErrorCheckQuantity(true), 5);
       return;
     }
 
@@ -329,8 +330,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     try {
       // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
-      const response = await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData);
-      console.log(response);
+      const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
+      // console.log(response);
 
       if (response.status === 200) {
         console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
@@ -789,7 +790,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
                 }}
                 value={String(quantity)}
-                onChangeText={handleInputChange}
+                onChangeText={(text) => {
+                  // Ensure the text contains only numbers and is at most 2 characters long
+                  const validText = text.replace(/[^0-9]/g, '').slice(0, 3);
+                  handleInputChange(validText);
+                }}
                 keyboardType="numeric"
               />
 
@@ -801,13 +806,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             {/* Thêm vào giỏ hàng */}
             <TouchableOpacity
               style={{
-
                 backgroundColor: '#3669C9',
                 borderColor: '#ccc',
                 borderWidth: 1,
                 padding: 20,
                 borderRadius: 10,
-
               }}
               onPress={handleAddToCartUser}
             >
@@ -822,8 +825,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               </Text>
             </TouchableOpacity>
           </View>)}
-
-
       </View>
     </View>
 
