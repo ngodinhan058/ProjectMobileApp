@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const CategoryItem = ({ id, image, name,isLoading }) => {
+const CategoryItem = ({ id, image, name, isLoading }) => {
 
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
@@ -26,7 +26,7 @@ const CategoryItem = ({ id, image, name,isLoading }) => {
     ).start();
   }, [shimmerAnim]);
   return (
-    <View>
+    <View style={{paddingHorizontal: 10}}>
       {isLoading ? (
         // Skeleton with shimmer effect while loading
         <View>
@@ -40,11 +40,14 @@ const CategoryItem = ({ id, image, name,isLoading }) => {
         </View>
       ) : (
         <>
-          <TouchableOpacity onPress={() => navigation.navigate('ProductByCateScreen',{ id, image, name })}>
-            <View style={styles.categoryItem}>
-              <Image source={{ uri: image }} style={styles.categoryImage} />
-            </View>
-            <Text style={styles.categoryName}>{name}</Text>
+          <TouchableOpacity
+            style={styles.categoryButton}
+            onPress={() => navigation.navigate('ProductByCateScreen', { id: id })}
+          >
+            <Image source={{ uri: image }} style={styles.categoryImage} />
+            <Text style={styles.categoryName} numberOfLines={2}>
+              {name}
+            </Text>
           </TouchableOpacity>
         </>
       )}
@@ -54,36 +57,45 @@ const CategoryItem = ({ id, image, name,isLoading }) => {
 
 const styles = StyleSheet.create({
   skeletonItem: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
-    marginBottom: 10,
-    position: 'relative',
-    borderRadius: 10,
-    marginRight: 30,
+    width: 100,
+    height: 100,
     alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 12,
+    marginVertical: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  // Style khi hết loading
-  categoryItem: {
-    position: 'relative',
-    backgroundColor: '#A1CCF5',
-    borderRadius: 10,
-    marginRight: 30,
+
+  categoryButton: {
+    width: 100,
+    height: 100,
     alignItems: 'center',
-    width: 48,
-    height: 48,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 12,
+    marginVertical: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   categoryImage: {
-    position: 'absolute',
-    width: 30,
-    height: 30,
-    marginTop: 9,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 8,
   },
   categoryName: {
-    width: 48,
-    marginTop: 8,
-    textAlign: 'center'
-
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: '#222',
   },
 });
 
