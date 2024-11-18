@@ -51,11 +51,9 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
         );
     };
     const toggleCateCheckbox = (categoriesId) => {
-        const newselectedCategories = selectedCategories.includes(categoriesId)
-            ? selectedCategories.filter((id) => id !== categoriesId)
-            : [...selectedCategories, categoriesId];
-
-        setSelectedCategories(newselectedCategories);
+        setSelectedCategories((prevSelected) =>
+            prevSelected === categoriesId ? null : categoriesId
+        );
     };
 
     const handleSortChange = (value) => {
@@ -66,7 +64,8 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
             sizes: selectedSizes,
             priceRange,
             sort: sortOption,
-            supplier: selectedSupplier
+            supplier: selectedSupplier,
+            categories: selectedCategories,
         };
 
         // Gọi hàm onApply với dữ liệu lọc và đóng modal
@@ -101,8 +100,8 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
                 supplierApiUrl = `${BASE_URL}product-suppliers/category`;
                 SizesApiUrl = `${BASE_URL}product-sizes/category`;
             } else {
-                supplierApiUrl = `${BASE_URL}product-suppliers/category/${selectedCategories.join(',')}`;
-                SizesApiUrl = `${BASE_URL}product-sizes/category/${selectedCategories.join(',')}`;
+                supplierApiUrl = `${BASE_URL}product-suppliers/category/${selectedCategories}`;
+                SizesApiUrl = `${BASE_URL}product-sizes/category/${selectedCategories}`;
             }
 
             // Debug URL

@@ -44,6 +44,7 @@ const HomeScreen = () => {
   const [maxPrice, setMaxPrice] = useState();
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState();
+  const [selectedCategories, setSelectedCategories] = useState();
 
   const [appliedFilters, setAppliedFilters] = useState(null);
 
@@ -59,13 +60,15 @@ const HomeScreen = () => {
       // Add query parameters based on the current filter state
       if (minPrice !== null && minPrice !== undefined) queryParams.append('minPrice', minPrice);
       if (maxPrice !== null && maxPrice !== undefined) queryParams.append('maxPrice', maxPrice);
+      if (selectedCategories && selectedCategories.length > 0) {
+        queryParams.append('categoryId', selectedCategories);
+      }
       if (Array.isArray(selectedSizes) && selectedSizes.length > 0) {
         queryParams.append('sizeIds', selectedSizes.join(','));
       }
       if (Array.isArray(selectedSupplier) && selectedSupplier.length > 0) {
         queryParams.append('supplierIds', selectedSupplier.join(','));
       }
-
       const finalProductsApiUrl = productsApiUrl + queryParams.toString();
       console.log('Products API URL:', finalProductsApiUrl);
 
@@ -93,7 +96,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     fetchData();
-  }, [minPrice, maxPrice, selectedSizes, selectedSupplier]);
+  }, [minPrice, maxPrice, selectedSizes, selectedSupplier, selectedCategories]);
 
   // Filters
   const toggleFilterModal = () => {
@@ -105,6 +108,7 @@ const HomeScreen = () => {
     setMaxPrice(filters.priceRange[1]);
     setSelectedSizes(filters.sizes);
     setSelectedSupplier(filters.supplier);
+    setSelectedCategories(filters.categories)
   };
   //Kết thúc
 
