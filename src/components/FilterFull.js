@@ -8,9 +8,11 @@ import { BASE_URL } from '../screens/api/config';
 const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
     const [Sizes, setSizes] = useState([]);
     const [supplier, setSupplier] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     const [selectedSizes, setSelectedSizes] = useState([]);
     const [selectedSupplier, setSelectedSupplier] = useState([]);
+    const [selectedCategories, setSelectedCategories] = useState([]);
 
     const [loading, setLoading] = useState();
     const [priceRange, setPriceRange] = useState([0, 2000000]);
@@ -18,40 +20,7 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
     const [isExpandedSupplier, setIsExpandedSupplier] = useState(false);
     const [sortOption, setSortOption] = useState();
 
-    const fetchData = async () => {
-        try {
-            let supplierApiUrl = '';
-            let SizesApiUrl = '';
 
-            if (id === undefined) {
-                supplierApiUrl = `${BASE_URL}product-suppliers/category`;
-                SizesApiUrl = `${BASE_URL}product-sizes/category`;
-            } else {
-                supplierApiUrl = `${BASE_URL}product-suppliers/category/${id}?`;
-                SizesApiUrl = `${BASE_URL}product-sizes/category/${id}?`;
-            }
-
-            const [supplierResponse, SizesResponse] = await Promise.all([
-                axios.get(supplierApiUrl),
-                axios.get(SizesApiUrl),
-            ]);
-            const supplierData = supplierResponse.data.data;
-
-            const SizesData = SizesResponse.data.data;
-            setSupplier(supplierData);
-            setSizes(SizesData);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setTimeout(() => {
-                setLoading(false);
-            }, 1000);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
     const handleSliderChange = (values) => {
         setPriceRange(values);
     };
@@ -77,8 +46,18 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
         setSelectedSizes(newSelectedSizes); // Toggle the size ID in the array
     };
     const toggleCheckbox = (productSupllierId) => {
-        setSelectedSupplier(productSupllierId);
+        setSelectedSupplier((prevSelected) =>
+            prevSelected === productSupllierId ? null : productSupllierId
+        );
     };
+    const toggleCateCheckbox = (categoriesId) => {
+        const newselectedCategories = selectedCategories.includes(categoriesId)
+            ? selectedCategories.filter((id) => id !== categoriesId)
+            : [...selectedCategories, categoriesId];
+
+        setSelectedCategories(newselectedCategories);
+    };
+
     const handleSortChange = (value) => {
         setSortOption(value); // Cập nhật giá trị sort
     };
@@ -100,6 +79,7 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
         setPriceRange([0, 2000000]);
         setSortOption(null);
         setSelectedSupplier();
+        setSelectedCategories([]);
         onReset();
         onClose();
     };
@@ -110,11 +90,55 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
     const toggleExpandSupplier = () => {
         setIsExpandedSupplier(!isExpandedSupplier);
     };
+    const fetchData = async () => {
+        try {
+            let supplierApiUrl = '';
+            let SizesApiUrl = '';
+            const CategoryApiUrl = `${BASE_URL}categories`;
 
+            // Xây dựng URL dựa trên selectedCategories
+            if (!selectedCategories || selectedCategories.length === 0) {
+                supplierApiUrl = `${BASE_URL}product-suppliers/category`;
+                SizesApiUrl = `${BASE_URL}product-sizes/category`;
+            } else {
+                supplierApiUrl = `${BASE_URL}product-suppliers/category/${selectedCategories.join(',')}`;
+                SizesApiUrl = `${BASE_URL}product-sizes/category/${selectedCategories.join(',')}`;
+            }
+
+            // Debug URL
+            console.log('Supplier API URL:', supplierApiUrl);
+            console.log('Sizes API URL:', SizesApiUrl);
+
+            // Gọi API song song
+            const [supplierResponse, SizesResponse, CategoriesResponse] = await Promise.all([
+                axios.get(supplierApiUrl),
+                axios.get(SizesApiUrl),
+                axios.get(CategoryApiUrl),
+            ]);
+
+            // Cập nhật state
+            setSupplier(supplierResponse.data.data);
+            setSizes(SizesResponse.data.data);
+            setCategories(CategoriesResponse.data.data);
+        } catch (error) {
+            console.error('Error fetching data:', error.message || error);
+        } finally {
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
+        }
+    };
+
+    // Lắng nghe thay đổi selectedCategories và gọi API
+    useEffect(() => {
+        if (selectedCategories) {
+            fetchData();
+        }
+    }, [selectedCategories]);
     // Hiển thị 4 mục đầu tiên hoặc tất cả tùy thuộc vào trạng thái
     const SizesToShow = isExpanded ? Sizes : Sizes.slice(0, 5);
     const SupplierToShow = isExpandedSupplier ? supplier : supplier.slice(0, 4);
-
+    const categoriesToShow = isExpanded ? categories : categories.slice(0, 4);
 
     return (
         <Modal
@@ -155,8 +179,65 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
                         </View>
                     </View>
 
-                    <View style={styles.line}></View>
                     {/* Cập nhật cách hiển thị danh mục */}
+                    <View style={styles.line}></View>
+                    <Text style={styles.titleSmall}>Danh Mục</Text>
+
+                    <View style={styles.checkboxContainer}>
+                        {categoriesToShow.map((category, index) => {
+                            if (index % 2 === 0) {
+                                return (
+                                    <View key={index} style={styles.checkboxRow}>
+                                        {/* Checkbox đầu tiên trong dòng */}
+                                        <View style={styles.checkboxColumn}>
+                                            <TouchableOpacity
+                                                style={styles.checkbox}
+                                                onPress={() => toggleCateCheckbox(categoriesToShow[index].categoryId)}
+                                            >
+                                                <Text style={styles.checkboxText}>
+                                                    {categoriesToShow[index].categoryName.charAt(0).toUpperCase() +
+                                                        categoriesToShow[index].categoryName.slice(1)}
+                                                </Text>
+                                                {selectedCategories.includes(categoriesToShow[index].categoryId) && (
+                                                    <View style={styles.checkedBox}>
+                                                        <Text style={styles.tickCheckedBox}>✔</Text>
+                                                    </View>
+                                                )}
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        {/* Checkbox thứ hai trong dòng */}
+                                        {categoriesToShow[index + 1] && (
+                                            <View style={styles.checkboxColumn}>
+                                                <TouchableOpacity
+                                                    style={styles.checkbox}
+                                                    onPress={() => toggleCateCheckbox(categoriesToShow[index + 1].categoryId)}
+                                                >
+                                                    <Text style={styles.checkboxText}>
+                                                        {categoriesToShow[index + 1].categoryName.charAt(0).toUpperCase() +
+                                                            categoriesToShow[index + 1].categoryName.slice(1)}
+                                                    </Text>
+                                                    {selectedCategories.includes(categoriesToShow[index + 1].categoryId) && (
+                                                        <View style={styles.checkedBox}>
+                                                            <Text style={styles.tickCheckedBox}>✔</Text>
+                                                        </View>
+                                                    )}
+                                                </TouchableOpacity>
+                                            </View>
+                                        )}
+                                    </View>
+                                );
+                            }
+                        })}
+                    </View>
+
+                    <TouchableOpacity onPress={toggleExpand}>
+                        <Text style={styles.toggleButtonText}>
+                            {isExpanded ? 'Thu gọn lại' : 'Hiển thị thêm'}
+                        </Text>
+                    </TouchableOpacity>
+                    {/* Cập nhật cách hiển thị danh mục */}
+
                     <Text style={styles.titleSmall}>Màu:</Text>
                     <View style={styles.radioCheckContainer}>
                         {SizesToShow.map((category, index) => (
@@ -193,7 +274,7 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
                             {isExpanded ? 'Thu gọn lại' : 'Hiển thị thêm'}
                         </Text>
                     </TouchableOpacity>) : null}
-                    
+
 
                     <View style={styles.line}></View>
                     <Text style={styles.titleSmall}>Thương Hiệu:</Text>
@@ -244,12 +325,12 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
                         })}
                     </View>
 
-                    {supplier.length > 4 ? ( <TouchableOpacity onPress={toggleExpandSupplier}>
+                    {supplier.length > 4 ? (<TouchableOpacity onPress={toggleExpandSupplier}>
                         <Text style={styles.toggleButtonText}>
                             {isExpandedSupplier ? 'Thu gọn lại' : 'Hiển thị thêm'}
                         </Text>
                     </TouchableOpacity>) : null}
-                   
+
                     <View style={styles.line}></View>
                     {/* Kết thúc danh mục */}
                     <Text style={styles.titleSmall}>Sắp Xếp:</Text>
@@ -375,7 +456,7 @@ const styles = StyleSheet.create({
     checkboxColumn: {
         flexDirection: 'row',
         alignItems: 'center',
-        
+
     },
     checkbox: {
         width: 150,

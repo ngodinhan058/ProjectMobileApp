@@ -174,10 +174,6 @@ function LoginStack() {
 function NoLoginHome() {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
 
-  // Hàm callback để cập nhật trạng thái hiển thị của footer
-  const handleScroll = (isVisible) => {
-    setIsFooterVisible(isVisible);
-  };
 
   return (
     <Tab.Navigator
@@ -197,7 +193,6 @@ function NoLoginHome() {
       >
         {() => (
           <HomeStack
-            onScroll={handleScroll}
             setIsFooterVisible={setIsFooterVisible}
           />
         )}
@@ -209,10 +204,10 @@ function NoLoginHome() {
           header: () => <Header />,
         }}
       >
-        {() => <WishListScreen onScroll={handleScroll} />}
+        {() => <WishListScreen/>}
       </Tab.Screen>
       <Tab.Screen
-        name="MyOrderScreen"
+        name="Order"
         component={MyOrderScreen}
         options={{ headerShown: false }}
         listeners={{
@@ -311,10 +306,6 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
 function HaveLoginHome() {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
 
-  // Hàm callback để cập nhật trạng thái hiển thị của footer
-  const handleScroll = (isVisible) => {
-    setIsFooterVisible(isVisible);
-  };
   return (
     <Tab.Navigator
       tabBar={(props) => <Footer {...props} isVisible={isFooterVisible} />}
@@ -333,7 +324,6 @@ function HaveLoginHome() {
       >
         {() => (
           <HomeStack
-            onScroll={handleScroll}
             setIsFooterVisible={setIsFooterVisible}
           />
         )}
@@ -345,17 +335,16 @@ function HaveLoginHome() {
           header: () => <Header />,
         }}
       >
-        {() => <WishListScreen onScroll={handleScroll} />}
+        {() => <WishListScreen/>}
       </Tab.Screen>
       <Tab.Screen
-        name="MyOrderScreen"
+        name="Order"
         component={MyOrderScreen}
         options={{ headerShown: false }}
       />
       <Tab.Screen name="Login" options={{ headerShown: false }}>
         {() => (
           <HaveLoginStack
-            onScroll={handleScroll}
             setIsFooterVisible={setIsFooterVisible}
           />
         )}
@@ -775,7 +764,9 @@ console.log(user.token);
         <HaveLoginHome />
 
       )*/}
-      <AdminDrawerNavigator /> 
+      {/* <AdminDrawerNavigator />  */}
+      <HaveLoginHome />
+
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
       {/* <Accouting /> */}

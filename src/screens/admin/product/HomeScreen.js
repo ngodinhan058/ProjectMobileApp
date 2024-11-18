@@ -55,9 +55,13 @@ const HomeAdminScreen = ({ navigation }) => {
             };
         });
 
+        const navigateToDetail = () => {
+            navigation.navigate('DetailScreen', { id: item.productId });
+        };
+        
         const handlePress = () => {
             scale.value = withTiming(0.95, { duration: 100 });
-            navigation.navigate('DetailScreen', { id: item.productId })
+            navigateToDetail();
             setTimeout(() => {
                 scale.value = withTiming(1, { duration: 100 });
             }, 100);
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     header: {
-        paddingTop: 40,
+
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
