@@ -162,6 +162,7 @@ function LoginStack() {
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
       <Stack.Screen name="PasswordScreen" component={PasswordScreen} />
       <Stack.Screen name="ResetPassScreen" component={ResetPassScreen} />
+      <Stack.Screen name="Home" component={HaveLoginHome} />
       <Stack.Screen
         name="VerificationForgotScreen"
         component={VerificationForgotScreen}
@@ -370,6 +371,7 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     // { name: "OrderConfirmationScreen" ,component : OrderConfirmationScreen},
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
+    { name: 'LoginScreen', component: LoginScreen, showFooter: false },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -387,6 +389,7 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
           }
         </Stack.Screen>
       ))}
+      <Stack.Screen name="NoLoginHome" component={NoLoginHome} />
     </Stack.Navigator>
   );
 }
@@ -487,7 +490,7 @@ function SupplierAdmin() {
 }
 function AdminDrawerNavigator() {
   return (
-    <Drawer.Navigator  screenOptions={{ headerShown: false, }}>
+    <Drawer.Navigator>
       <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
@@ -654,8 +657,6 @@ function Accouting() {
 }
 
 export default function App() {
-  const [user, setUser] = useState({});
-  const [userData, setUserData] = useState({});
 
   // useEffect(() => {
   //   const loadUser = async () => {
@@ -691,94 +692,69 @@ export default function App() {
   //   // return () => clearInterval(intervalId);
   // }, []);
 
-  const handleStateChange = async (state) => {
-    const currentRoute = state.routes[state.index];
-    console.log('Current Route:', currentRoute.name);
 
-    // If you want to fetch user data each time the navigation state changes
-    if (
-      currentRoute.name === 'Mega Mall' ||
-      currentRoute.name === 'Danh Sách Người Dùng'
-    ) {
-      try {
-        const savedCart = await AsyncStorage.getItem('userData');
 
-        if (savedCart) {
-          const { username, token } = JSON.parse(savedCart);
-          const decoded = jwtDecode(token);
-          console.log(decoded);
+  const [user, setUser] = useState(null); // Trạng thái người dùng (null khi chưa kiểm tra)
+  const [isChecking, setIsChecking] = useState(true); // Trạng thái kiểm tra ban đầu
 
-          setUser({ username, token, role: decoded.scope.split(' ')[0] });
+  // Hàm kiểm tra và tải thông tin token
+  const checkToken = async () => {
+    setIsChecking(true);
+    try {
+      const savedUserData = await AsyncStorage.getItem('userData');
+      if (savedUserData) {
+        const { token } = JSON.parse(savedUserData);
+
+        // Kiểm tra token còn hạn không
+        const decoded = jwtDecode(token);
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        if (decoded.exp > currentTime) {
+          // Token còn hạn
+          const username = decoded.sub; // Giả định username được lưu trong `sub`
+          const role = decoded.scope.split(' ')[0]; // Phân quyền
+          setUser({ username, token, role });
         } else {
-          setUser({});
+          // Token hết hạn
+          await AsyncStorage.removeItem('userData');
+          setUser(null);
         }
-      } catch (error) {
-        console.error('Error loading cart from AsyncStorage:', error);
+      } else {
+        setUser(null); // Không có token
       }
+    } catch (error) {
+      console.error('Error checking token:', error);
+      setUser(null);
+    } finally {
+      setIsChecking(false);
     }
   };
 
+  // Gọi hàm kiểm tra token khi app khởi động
   useEffect(() => {
-    // Gọi API lấy thông tin người dùng nếu token có giá trị
-    const loadUserInfo = async () => {
-      if (user) {
-        try {
-          const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user.token}`,
-            },
-          });
+    checkToken();
+  }, []);
 
-          // Kiểm tra mã trạng thái phản hồi
-          if (response.ok) {
-            const result = await response.json();
-            console.log('API response data:', result.data);
-
-            if (result) {
-              setUserData(result.data); // Lưu thông tin người dùng vào state
-
-              // Lưu thông tin người dùng vào AsyncStorage
-              await AsyncStorage.setItem(
-                'userInfo',
-                JSON.stringify(result.data)
-              );
-              console.log('User info saved to AsyncStorage');
-            } else {
-              console.log('No data in API response');
-            }
-          } else {
-            console.log('Failed to fetch user info. Status:', response.status);
-          }
-        } catch (error) {
-          console.error('Error fetching user info:', error);
-        }
-      } else {
-        await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('userData');
-      }
-    };
-
-    loadUserInfo();
-  }, [user.token]);
-console.log(user.token);
+  // Điều hướng dựa trên trạng thái người dùng
+  if (isChecking) {
+    // Hiển thị màn hình chờ trong khi kiểm tra token
+    return (
+      <View> 
+        <Text>Wait</Text>
+      </View>
+    );
+  }
 
   return (
-    <NavigationContainer onStateChange={handleStateChange}>
-      {/*  Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
-        <HaveLoginHome />
-      )}
-      {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
-        <AdminDrawerNavigator />
-        <HaveLoginHome />
-
-      )*/}
-      <AdminDrawerNavigator /> 
-      {/* <InventoryDrawerNavigator /> */}
-      {/* <ShipperDrawerNavigator /> */}
-      {/* <Accouting /> */}
+    <NavigationContainer>
+      {user?.role === ROLE_USER && <HaveLoginHome />}
+      {user?.role === ROLE_ADMIN && <AdminDrawerNavigator />}
+      {!user && <NoLoginHome />}
     </NavigationContainer>
   );
-}
+};
+
+{/* <AdminDrawerNavigator /> */ }
+{/* <InventoryDrawerNavigator /> */ }
+{/* <ShipperDrawerNavigator /> */ }
+{/* <Accouting /> */ }

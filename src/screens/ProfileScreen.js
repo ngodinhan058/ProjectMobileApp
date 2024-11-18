@@ -40,7 +40,7 @@ const ProfileScreen = ({ navigation }) => {
     try {
       await AsyncStorage.removeItem('userData');
       Alert.alert('Thành công', 'Đăng xuất thành công!');
-      navigation.navigate('Home'); // Điều hướng sau khi đăng nhập
+      navigation.replace('LoginScreen');
     } catch (error) {
       Alert.alert('Thất bại', error);
     }
