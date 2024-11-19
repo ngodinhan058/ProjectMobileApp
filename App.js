@@ -449,8 +449,14 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
-      <Stack.Screen name="DetailProductShipment" component={DetailProductShipment} />
-      <Stack.Screen name="EditProductShipment" component={EditProductShipment} />
+      <Stack.Screen
+        name="DetailProductShipment"
+        component={DetailProductShipment}
+      />
+      <Stack.Screen
+        name="EditProductShipment"
+        component={EditProductShipment}
+      />
     </Stack.Navigator>
   );
 }
@@ -655,6 +661,7 @@ function Accouting() {
 
 export default function App() {
   const [user, setUser] = useState({});
+  const [initialState, setInitialState] = useState(null);
   const [userData, setUserData] = useState({});
 
   // useEffect(() => {
@@ -680,38 +687,37 @@ export default function App() {
   //   };
 
   //   loadUser();
-
-  //   // // Set up an interval to call a function every second
-  //   // const intervalId = setInterval(() => {
-  //   //   console.log('User state every second:', user); // Log the user state every second
-  //   //   // You can call any function here instead of logging
-  //   // }, 1000); // 1000 milliseconds = 1 second
-
-  //   // // Clean up the interval on component unmount
-  //   // return () => clearInterval(intervalId);
   // }, []);
+  const getItem = async () => {
+    try {
+      const savedCart = await AsyncStorage.getItem('userData');
+
+      if (savedCart) {
+        const { username, token } = JSON.parse(savedCart);
+        const decoded = jwtDecode(token);
+        console.log(decoded);
+
+        setUser({ username, token, role: decoded.scope.split(' ')[0] });
+      } else {
+        setUser({});
+      }
+    } catch (error) {
+      console.error('Error loading cart from AsyncStorage:', error);
+    }
+  };
 
   const handleStateChange = async (state) => {
-    const currentRoute = state.routes[state.index];
+    const currentRoute = state?.routes[state.index];
     console.log('Current Route:', currentRoute.name);
 
     // If you want to fetch user data each time the navigation state changes
     if (
       currentRoute.name === 'Mega Mall' ||
-      currentRoute.name === 'Danh Sách Người Dùng'
+      currentRoute.name === 'Danh Sách Người Dùng' ||
+      currentRoute.name === 'Danh Sách Danh Mục'
     ) {
       try {
-        const savedCart = await AsyncStorage.getItem('userData');
-
-        if (savedCart) {
-          const { username, token } = JSON.parse(savedCart);
-          const decoded = jwtDecode(token);
-          console.log(decoded);
-
-          setUser({ username, token, role: decoded.scope.split(' ')[0] });
-        } else {
-          setUser({});
-        }
+        getItem();
       } catch (error) {
         console.error('Error loading cart from AsyncStorage:', error);
       }
@@ -719,53 +725,93 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Gọi API lấy thông tin người dùng nếu token có giá trị
-    const loadUserInfo = async () => {
-      if (user) {
-        try {
-          const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user.token}`,
-            },
-          });
+    getItem();
+  }, []);
 
-          // Kiểm tra mã trạng thái phản hồi
-          if (response.ok) {
-            const result = await response.json();
-            console.log('API response data:', result.data);
+  // useEffect(() => {
+  //   // Gọi API lấy thông tin người dùng nếu token có giá trị
+  //   const loadUserInfo = async () => {
+  //     if (user) {
+  //       try {
+  //         const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+  //           method: 'GET',
+  //           headers: {
+  //             'Content-Type': 'application/json',
+  //             Authorization: `Bearer ${user.token}`,
+  //           },
+  //         });
 
-            if (result) {
-              setUserData(result.data); // Lưu thông tin người dùng vào state
+  //         // Kiểm tra mã trạng thái phản hồi
+  //         if (response.ok) {
+  //           const result = await response.json();
+  //           console.log('API response data:', result.data);
 
-              // Lưu thông tin người dùng vào AsyncStorage
-              await AsyncStorage.setItem(
-                'userInfo',
-                JSON.stringify(result.data)
-              );
-              console.log('User info saved to AsyncStorage');
-            } else {
-              console.log('No data in API response');
-            }
-          } else {
-            console.log('Failed to fetch user info. Status:', response.status);
-          }
-        } catch (error) {
-          console.error('Error fetching user info:', error);
-        }
-      } else {
-        await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('userData');
-      }
-    };
+  //           if (result) {
+  //             setUserData(result.data); // Lưu thông tin người dùng vào state
 
-    loadUserInfo();
-  }, [user.token]);
-console.log(user.token);
+  //             // Lưu thông tin người dùng vào AsyncStorage
+  //             await AsyncStorage.setItem(
+  //               'userInfo',
+  //               JSON.stringify(result.data)
+  //             );
+  //             console.log('User info saved to AsyncStorage');
+  //           } else {
+  //             console.log('No data in API response');
+  //           }
+  //         } else {
+  //           console.log('Failed to fetch user info. Status:', response.status);
+  //         }
+  //       } catch (error) {
+  //         console.error('Error fetching user info:', error);
+  //       }
+  //     } else {
+  //       await AsyncStorage.removeItem('userInfo');
+  //       await AsyncStorage.removeItem('userData');
+  //     }
+  //   };
+
+  //   loadUserInfo();
+  // }, [user.token]);
+  // console.log(user.token);
+
+  // Thiết lập initialState cho NavigationContainer
+  useEffect(() => {
+    if (user.token) {
+      setInitialState({
+        index: 0,
+        routes: [
+          {
+            name:
+              user?.role === ROLE_USER
+                ? 'HaveLoginHome'
+                : user?.role === ROLE_ADMIN
+                ? 'AdminDrawerNavigator'
+                : 'Mega Mall',
+          }, // Thay đổi tên route tương ứng nếu cần
+        ],
+      });
+    } else {
+      setInitialState({
+        index: 0,
+        routes: [
+          { name: 'NoLoginHome' }, // Thay đổi tên route tương ứng nếu cần
+        ],
+      });
+    }
+  }, [user]); // Chạy khi user thay đổi
+
+  console.log('ïnitial state', initialState);
+
+  // Nếu initialState chưa được thiết lập, trả về null hoặc loading
+  if (initialState === null) {
+    return null; // Hoặc bạn có thể hiển thị một loading indicator
+  }
 
   return (
-    <NavigationContainer onStateChange={handleStateChange}>
+    <NavigationContainer
+      onStateChange={handleStateChange}
+      initialState={initialState}
+    >
       {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
         <HaveLoginHome />
       )}
