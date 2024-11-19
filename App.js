@@ -521,7 +521,7 @@ function AdminDrawerNavigator() {
     <Drawer.Navigator>
       <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
-      {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
+      <Drawer.Screen name="Người Dùng" component={UserAdmin} />
       <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
       <Drawer.Screen name="Màu" component={SizeAdmin} />
       <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
@@ -800,16 +800,16 @@ console.log(user.token);
 
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {/*  Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
         <HaveLoginHome />
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
         <AdminDrawerNavigator />
-        <HaveLoginHome />
+        // <HaveLoginHome />
 
-      )*/}
-      <AdminDrawerNavigator /> 
+      )}
+      {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
