@@ -11,7 +11,6 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-
 import { ROLE_USER, ROLE_ADMIN } from './src/constants/Role';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -800,7 +799,7 @@ console.log(user.token);
 
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+      {/* {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
         <HaveLoginHome />
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
@@ -808,8 +807,8 @@ console.log(user.token);
         <AdminDrawerNavigator />
         // <HaveLoginHome />
 
-      )}
-      {/* <AdminDrawerNavigator />  */}
+      )} */}
+      <AdminDrawerNavigator /> 
       {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}

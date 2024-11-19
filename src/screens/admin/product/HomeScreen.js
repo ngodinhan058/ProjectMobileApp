@@ -20,13 +20,31 @@ import Animated, {
     useAnimatedStyle,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import AlertComponent from '../../../components/AlertComponent';
+
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
-const HomeAdminScreen = ({ navigation }) => {
+const HomeAdminScreen = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [productsState, setProductsState] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
+
+
+    const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
+    const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
+
+    useEffect(() => {
+        if (alertVisible) {
+            // Tự động ẩn thông báo sau 2 giây
+            const timer = setTimeout(() => {
+                setIsAlertVisible(false);
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [alertVisible]);
+
 
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
@@ -161,6 +179,20 @@ const HomeAdminScreen = ({ navigation }) => {
                     <ActivityIndicator size="large" color="#2196F3" />
                 </View>
             )} */}
+             {isAlertVisible && (
+                <AlertComponent
+                    title={alertType === 'success' ? 'Success' : 'Error'}
+                    description={
+                        alertType === 'success'
+                            ? 'Product added successfully.'
+                            : 'Failed to add product.'
+                    }
+                    alertType={alertType}
+                    visible={isAlertVisible}
+                    onClose={() => setIsAlertVisible(false)}
+                />
+            )}
+            
         </View>
     );
 };

@@ -64,9 +64,9 @@ const HomeAdminScreen = ({ navigation }) => {
         'Error fetching data:',
         error.response ? error.response.data : error.message
       );
-    }finally {
+    } finally {
       setRefreshing(false);
-  }
+    }
   };
 
   useEffect(() => {
@@ -81,7 +81,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
   // Lọc danh sách người dùng theo role
   const filterByRole = (role) => {
-    return usersState.filter((item) => item.role === role);
+    return usersState.filter((item) => item.roles?.roleName === role);
   };
 
   // Render từng sản phẩm (người dùng)
@@ -90,22 +90,23 @@ const HomeAdminScreen = ({ navigation }) => {
       style={styles.productItem}
       onPress={() =>
         navigation.navigate('DetailUserScreen', {
-          image: { uri: item['userImagePath'] },
-          email: item['userEmail'],
-          first_name: item['user_first_name'],
-          last_name: item['user_last_name'],
-          id_image_front: {
-            uri: 'https://cdn.tgdd.vn/Files/2021/04/18/1344478/cach-lam-can-cuoc-cong-dan-cccd-online_800x450.jpg',
-          },
-          id_image_back: { uri: item.iCard.imageBackPath },
-          pass: item.pass,
-          birthday: item['userBirthday'],
-          address: item['userAddress'],
-          phone: item['userPhone'],
-          money: item['userMoney'],
-          role: item.role,
-          rank: item.rank,
-          number_id: item.iCard.idCardNumber,
+          id: item['userId'],
+          // image: { uri: item['userImagePath'] },
+          // email: item['userEmail'],
+          // first_name: item['user_first_name'],
+          // last_name: item['user_last_name'],
+          // id_image_front: {
+          //   uri: 'https://cdn.tgdd.vn/Files/2021/04/18/1344478/cach-lam-can-cuoc-cong-dan-cccd-online_800x450.jpg',
+          // },
+          // id_image_back: { uri: item.iCard.imageBackPath },
+          // pass: item.pass,
+          // birthday: item['userBirthday'],
+          // address: item['userAddress'],
+          // phone: item['userPhone'],
+          // money: item['userMoney'],
+          // role: item.role,
+          // rank: item.rank,
+          // number_id: item.iCard.idCardNumber,
         })
       }
     >
@@ -135,27 +136,27 @@ const HomeAdminScreen = ({ navigation }) => {
   // Các Scene tương ứng với mỗi tab (mỗi role)
   const CustomerRoute = () => (
     <FlatList
-      data={usersState}
+      data={filterByRole('USER')}
       renderItem={renderProduct}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.userId}
       style={styles.productList}
     />
   );
 
   const StaffRoute = () => (
     <FlatList
-      data={filterByRole('staff')}
+      data={filterByRole('ADMIN')}
       renderItem={renderProduct}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.userId}
       style={styles.productList}
     />
   );
 
   const ShipperRoute = () => (
     <FlatList
-      data={filterByRole('shipper')}
+      data={filterByRole('SHIPPER')}
       renderItem={renderProduct}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.userId}
       style={styles.productList}
     />
   );
@@ -163,9 +164,9 @@ const HomeAdminScreen = ({ navigation }) => {
   // State để quản lý tab hiện tại
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: 'customer', title: 'Customer' },
-    { key: 'staff', title: 'Staff' },
-    { key: 'shipper', title: 'Shipper' },
+    { key: 'ADMIN', title: 'Customer' },
+    { key: 'USER', title: 'Staff' },
+    { key: 'SHIPPER', title: 'Shipper' },
   ]);
 
   const handleLogout = async () => {
@@ -179,7 +180,9 @@ const HomeAdminScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+    }>
       <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
         <View style={styles.headerContent}>
           <Image
@@ -194,25 +197,25 @@ const HomeAdminScreen = ({ navigation }) => {
       </LinearGradient>
 
       {/* Tab View */}
-      {/* <TabView
-                navigationState={{ index, routes }}
-                renderScene={SceneMap({
-                    customer: CustomerRoute,
-                    staff: StaffRoute,
-                    shipper: ShipperRoute,
-                })}
-                onIndexChange={setIndex}
-                initialLayout={{ width: layout.width }}
-                renderTabBar={(props) => (
-                    <TabBar
-                        {...props}
-                        indicatorStyle={{ backgroundColor: '#3669c9' }}
-                        style={{ backgroundColor: 'white' }}
-                        labelStyle={{ color: '#000' }}
-                    />
-                )}
-            /> */}
-      <FlatList
+      <TabView
+        navigationState={{ index, routes }}
+        renderScene={SceneMap({
+          USER: CustomerRoute,
+          ADMIN: StaffRoute,
+          SHIPPER: ShipperRoute,
+        })}
+        onIndexChange={setIndex}
+        initialLayout={{ width: layout.width }}
+        renderTabBar={(props) => (
+          <TabBar
+            {...props}
+            indicatorStyle={{ backgroundColor: '#3669c9' }}
+            style={{ backgroundColor: 'white' }}
+            labelStyle={{ color: '#000' }}
+          />
+        )}
+      />
+      {/* <FlatList
         data={usersState}
         renderItem={renderProduct}
         keyExtractor={(item) => item.id}
@@ -220,14 +223,16 @@ const HomeAdminScreen = ({ navigation }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-      />
+      /> */}
 
       {/* Add Button */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AddUserScreen')}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.addButtonGradient}>
+          <Icon name="add-circle" size={40} color="#fff" />
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
@@ -312,16 +317,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#3669c9',
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.30,
+    shadowRadius: 4.65,
   },
-  addButtonText: {
-    fontSize: 40,
-    color: '#fff',
+  addButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32.5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
