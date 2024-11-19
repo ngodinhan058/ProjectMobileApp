@@ -178,7 +178,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     header: {
-
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -212,13 +211,10 @@ const styles = StyleSheet.create({
         margin: 8,
         backgroundColor: '#fff',
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 3,
-        },
-        shadowOpacity: 0.27,
-        shadowRadius: 4.65,
-        elevation: 6,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+        elevation: 4,
     },
     productImage: {
         width: '100%',

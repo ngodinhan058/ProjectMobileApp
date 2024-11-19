@@ -105,6 +105,20 @@ import AddSupplierScreen from './src/screens/admin/supplier/AddSupplierScreen';
 import EditSupplierScreen from './src/screens/admin/supplier/EditSupplierScreen';
 import DetailSupplierScreen from './src/screens/admin/supplier/DetailSupplierScreen';
 {
+  /* Admin Permission*/
+}
+import HomePermissionScreen from './src/screens/admin/permission/HomeScreen';
+import AddPermissionScreen from './src/screens/admin/permission/AddPermissionScreen';
+import EditPermissionScreen from './src/screens/admin/permission/EditPermissionScreen';
+import DetailPermissionScreen from './src/screens/admin/permission/DetailPermissionScreen';
+{
+  /* Admin Role*/
+}
+import HomeRoleScreen from './src/screens/admin/role/HomeScreen';
+import AddRoleScreen from './src/screens/admin/role/AddRoleScreen';
+import EditRoleScreen from './src/screens/admin/role/EditRoleScreen';
+import DetailRoleScreen from './src/screens/admin/role/DetailRoleScreen';
+{
   /* Shipper */
 }
 import ShipperHomeScreen from './src/screens/shipper/ShipperHomeScreen';
@@ -474,15 +488,46 @@ function SupplierAdmin() {
     </Stack.Navigator>
   );
 }
+{
+  /* Admin Permission */
+}
+function PermissionAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="PermissionList" component={HomePermissionScreen} />
+      <Stack.Screen name="AddPermissionShipment" component={AddPermissionScreen} />
+      <Stack.Screen name="DetailPermissionScreen" component={DetailPermissionScreen} />
+      <Stack.Screen name="AddPermissionScreen" component={AddPermissionScreen} />
+      <Stack.Screen name="EditPermissionScreen" component={EditPermissionScreen} />
+    </Stack.Navigator>
+  );
+}
+{
+  /* Admin Role */
+}
+function RoleAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="RoleList" component={HomeRoleScreen} />
+      <Stack.Screen name="AddRoleShipment" component={AddRoleScreen} />
+      <Stack.Screen name="DetailRoleScreen" component={DetailRoleScreen} />
+      <Stack.Screen name="AddRoleScreen" component={AddRoleScreen} />
+      <Stack.Screen name="EditRoleScreen" component={EditRoleScreen} />
+    </Stack.Navigator>
+  );
+}
 function AdminDrawerNavigator() {
   return (
-    <Drawer.Navigator  screenOptions={{ headerShown: false, }}>
+    <Drawer.Navigator>
       <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
       <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
       <Drawer.Screen name="Màu" component={SizeAdmin} />
       <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
+      <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
+      <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+
     </Drawer.Navigator>
   );
 }
@@ -764,8 +809,8 @@ console.log(user.token);
         <HaveLoginHome />
 
       )*/}
-      {/* <AdminDrawerNavigator />  */}
-      <HaveLoginHome />
+      <AdminDrawerNavigator /> 
+      {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
