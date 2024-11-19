@@ -10,14 +10,21 @@ import {
   FlatList,
   Pressable,
   TextInput,
-  Button,
+  TouchableWithoutFeedback,
+  useWindowDimensions,
+  useAnimatedValue,
+  ImageBackground,
+  Animated,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
+import AlertComponent from '../components/AlertComponent';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 
 function AddedProductToWishlist({ route, navigation, onScroll }) {
   const scrollRef = React.useRef();
@@ -27,6 +34,24 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [image, setImage] = useState(); // Dữ liệu sản phẩm
   const [selectedSize, setSelectedSize] = useState(); // Đặt size mặc định
   const { id } = route.params;
+
+  const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState('success');
+  useEffect(() => {
+    if (alertVisible) {
+      // Tự động ẩn thông báo sau 2 giây
+      const timer = setTimeout(() => {
+        setIsAlertVisible(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [alertVisible]);
+
+  const scrollX = useAnimatedValue(0);
+
+  const { width: windowWidth } = useWindowDimensions();
 
   // Hàm lấy dữ liệu sản phẩm
   const fetchProductData = async (id) => {
@@ -47,7 +72,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   // Hàm lấy sản phẩm liên quan
   const fetchRelatedProducts = async (categoryId) => {
     // console.log("cấc", categoryId);
-    
+
     const categoriesApiUrl = `${BASE_URL}products/relate/${categoryId}`; // API lấy sản phẩm liên quan theo categoryId
     try {
       const response = await axios.get(categoriesApiUrl, {
@@ -79,7 +104,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     }
   };
 
-  
+
   useEffect(() => {
     scrollRef.current.scrollTo({ y: 0, animated: true });
     fetchData(); // Lấy dữ liệu khi component lần đầu render
@@ -87,17 +112,23 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isBuyModalVisible, setIsBuyModalVisible] = useState(false);
+
   const [selectedImage, setSelectedImage] = useState(null);
 
   const openModal = (imagePath) => {
     setSelectedImage([{ url: imagePath }]);
     setModalVisible(true);
   };
-
   const closeModal = () => {
     setModalVisible(false);
     setSelectedImage(null);
   };
+  const openModalBuy = () => {
+    setIsBuyModalVisible(true);
+  };
+  const closeModalBuy = () => setIsBuyModalVisible(false);
+
 
 
   const handleSelectSize = (sizeName) => {
@@ -166,10 +197,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   useEffect(() => {
-    if (selectedSize && quantity >= 0) {
-      setError('');
+    if (selectedSize) {
+      setErrorCheck(false)
     }
-  }, [selectedSize, quantity]);
+  }, [selectedSize]);
 
   useEffect(() => {
     const loadCart = async () => {
@@ -235,11 +266,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       return;
     }
 
-    
+
     if (quantity > 20) {
       setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
       console.log("Số lượng yêu cầu là 20 (${availableQuantity} sản phẩm)`);");
-      
+
       setErrorCheckQuantity(true);
       setTimeout(() => setErrorCheck(true), 0);
       return;
@@ -283,15 +314,19 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   const handleAddToCartUser = async () => {
     if (!selectedSize) {
-      setError('Vui lòng chọn kích thước sản phẩm');
+      setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
       setTimeout(() => setErrorCheck(true), 0);
       return;
     }
 
     if (quantity < 1) {
-      setError('Vui lòng chọn số lượng hợp lệ');
+      setError('Vui Lòng Chọn Số Lượng Hợp Lệ');
       setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
       setTimeout(() => setErrorCheck(true), 0);
       return;
     }
@@ -303,14 +338,17 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     if (!selectedProductSize) {
       setError('Kích thước sản phẩm không tồn tại');
       setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
       setTimeout(() => setErrorCheck(true), 0);
       return;
     }
 
     if (quantity > 20) {
       setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
-      console.log("Số lượng yêu cầu là 20 (${availableQuantity} sản phẩm)`);");
-      
+      setAlertType('error');
+      setAlertVisible(true);
+
       setErrorCheckQuantity(false);
       setTimeout(() => setErrorCheckQuantity(true), 5);
       return;
@@ -335,7 +373,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
       if (response.status === 200) {
         console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-        navigation.navigate('AddToCartScreen')
+        closeModalBuy();
+        navigation.navigate('AddToCartScreen', {
+          alertVisible: true,
+          alertType: 'success',
+      })
       } else {
         console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
@@ -382,7 +424,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </Pressable>
           </View>
 
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+          <View>
             <FlatList
               data={productsState.productImages}
               horizontal
@@ -391,15 +433,25 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
               renderItem={({ item }) => (
                 <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
-                  <View style={{ marginHorizontal: 5 }}>
+                  <View style={{
+                    marginHorizontal: 5,
+                    justifyContent: 'center',
+                    alignItems: 'center', // Đảm bảo hình ảnh luôn căn giữa
+                    flex: 1
+                  }}>
                     <Image
                       source={{ uri: item.productImagePath }}
-                      style={{ width: 345, height: 350, resizeMode: 'contain' }}
+                      style={{
+                        width: windowWidth - 50, // Chiều rộng hình ảnh là 90% chiều rộng màn hình
+                        height: 350, // Chiều cao cố định
+                        resizeMode: 'contain', // Đảm bảo hình ảnh không bị kéo dãn, giữ tỷ lệ gốc
+                      }}
                     />
                   </View>
                 </TouchableOpacity>
               )}
             />
+
             <Modal visible={isModalVisible} transparent={true} onRequestClose={closeModal}>
               <View style={styles.modalBackground}>
                 <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
@@ -417,6 +469,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               </View>
             </Modal>
           </View>
+
+
+
+
           {/* Product info */}
           <View style={styles.productInfo}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -482,37 +538,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               </View>
             </View>
 
-            <View style={styles.productOptions}>
-              {loading ? (
-                <Text>Loading...</Text> // Nếu không có thư viện, hãy thử thay bằng <Text>Loading...</Text>
-              ) : (
-                <View style={styles.sizesContainer}>
-                  {productsState.productSizes.map((size) => (
-                    <TouchableOpacity
-                      key={size.productSizeId}
-                      style={[
-                        styles.sizeOption,
-                        selectedSize === size.productSizeName && styles.selected,
-                        size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
-                        errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
-                      ]}
-                      onPress={() => handleSelectSize(size.productSizeName)}
-                      disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
-                    >
-                      <Text
-                        style={
-                          selectedSize === size.productSizeName
-                            ? { color: '#fff' } // Màu trắng khi được chọn
-                            : { color: '#000' } // Màu đen khi không được chọn
-                        }
-                      >
-                        {size.productSizeName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
+
           </View>
 
           {/* Description Product */}
@@ -695,7 +721,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   name={item['productName']}
                   price={item['productPriceSale']}
                   oldPrice={item['productPrice']}
-                  image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                  image={item.productImages?.[0]?.productImagePath}  // Truyền URL của ảnh đầu tiên vào prop images
                   rating={item['productRating']}
                   sale={item['productSale']}
                   isLoading={false}  // Set isLoading to false when not loading
@@ -710,122 +736,263 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
         </View>
       </ScrollView>
-      <View style={{ flexDirection: 'row', height: '35%', paddingHorizontal: 20, gap: 10, justifyContent: 'center', backgroundColor: '#fff', paddingTop: 8, }}>
+      <View style={{
+        flexDirection: 'row', height: '35%', paddingHorizontal: 20, gap: 10, justifyContent: 'center', backgroundColor: '#fff', paddingTop: 8, textAlign: 'center',
+        borderTopWidth: 1, borderColor: '#DDD'
+      }}>
         {!userInfo?.userId ?
-          (<View style={{ flex: 1, position: 'relative', }}>
-            {/* Số lượng */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
-              <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
-              </TouchableOpacity>
-              <TextInput
+          (<>
+
+            <View style={{ flex: 1, position: 'relative', }}>
+              {/* Số lượng */}
+              <TouchableOpacity
                 style={{
-                  width: 50,
-                  height: 40,
-                  borderColor: '#ccc',
-                  borderWidth: 2,
-                  textAlign: 'center',
-                  fontSize: 16,
-                  fontWeight: 'bold',
-                  color: '#3669c9',
-
-                  borderColor: errorCheckQuantity ? 'red' : '#ccc',
-                  backgroundColor: '#fff',
+                  borderColor: '#3669C9',
+                  borderWidth: 1,
+                  paddingHorizontal: 20,
+                  paddingVertical: 20,
                   borderRadius: 10,
-
                 }}
-                value={String(quantity)}
-                onChangeText={handleInputChange}
-                keyboardType="numeric"
-              />
-
-              <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
+                onPress={openModalBuy}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#3669C9',
+                  }}
+                >
+                  Thêm vào giỏ hàng
+                </Text>
               </TouchableOpacity>
             </View>
-
-            {/* Thêm vào giỏ hàng */}
-            <TouchableOpacity
-              style={{
-
-                backgroundColor: '#3669C9',
-                borderColor: '#ccc',
-                borderWidth: 1,
-                padding: 20,
-                borderRadius: 10,
-
-              }}
-              onPress={handleAddToCart}
-            >
-              <Text
+            <View style={{ flex: 1, position: 'relative', }}>
+              {/* Số lượng */}
+              <TouchableOpacity
                 style={{
-
-                  fontWeight: '600',
-                  color: '#fff',
-                }}
-              >
-                Thêm vào giỏ hàng
-              </Text>
-            </TouchableOpacity>
-          </View>) : (<View style={{ flex: 1, position: 'relative', }}>
-            {/* Số lượng */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', zIndex: 9, right: 0, top: 5, }}>
-              <TouchableOpacity onPress={() => handleQuantityChange(-1)} style={{ padding: 10, }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff', }}>-</Text>
-              </TouchableOpacity>
-              <TextInput
-                style={{
-                  width: 50,
-                  height: 40,
+                  backgroundColor: '#3669C9',
                   borderColor: '#ccc',
-                  borderWidth: 2,
-                  textAlign: 'center',
-                  fontSize: 16,
-                  fontWeight: 'bold',
-                  color: '#3669c9',
-
-                  borderColor: errorCheckQuantity ? 'red' : '#ccc',
-                  backgroundColor: '#fff',
+                  borderWidth: 1,
+                  padding: 20,
                   borderRadius: 10,
-
                 }}
-                value={String(quantity)}
-                onChangeText={(text) => {
-                  // Ensure the text contains only numbers and is at most 2 characters long
-                  const validText = text.replace(/[^0-9]/g, '').slice(0, 3);
-                  handleInputChange(validText);
-                }}
-                keyboardType="numeric"
-              />
-
-              <TouchableOpacity onPress={() => handleQuantityChange(1)} style={{ padding: 10, right: 2 }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#fff' }}>+</Text>
+                onPress={openModalBuy}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}
+                >
+                  Mua Ngay
+                </Text>
               </TouchableOpacity>
             </View>
-
-            {/* Thêm vào giỏ hàng */}
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#3669C9',
-                borderColor: '#ccc',
-                borderWidth: 1,
-                padding: 20,
-                borderRadius: 10,
-              }}
-              onPress={handleAddToCartUser}
-            >
-              <Text
+          </>) :
+          (<>
+            <View style={{ position: 'relative', }}>
+              {/* Số lượng */}
+              <TouchableOpacity
                 style={{
-
-                  fontWeight: '600',
-                  color: '#fff',
+                  padding: 10,
+                  borderRadius: 10,
                 }}
+                onPress={() => navigation.navigate('ChatScreen')}
               >
-                Thêm vào giỏ hàng
-              </Text>
-            </TouchableOpacity>
-          </View>)}
+                <Ionicons name="chatbox-ellipses-outline" size={30} color="#3669C9" />
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#3669C9',
+                    marginTop: 3,
+                  }}
+                >
+                  Chat
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1, position: 'relative', }}>
+              {/* Số lượng */}
+              <TouchableOpacity
+                style={{
+                  borderColor: '#3669C9',
+                  borderWidth: 1,
+                  paddingHorizontal: 20,
+                  paddingVertical: 11,
+                  borderRadius: 10,
+                }}
+                onPress={openModalBuy}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#3669C9',
+                  }}
+                >
+                  Thêm vào giỏ hàng
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1, position: 'relative', }}>
+              {/* Số lượng */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#3669C9',
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  padding: 20,
+                  borderRadius: 10,
+                }}
+                onPress={openModalBuy}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}
+                >
+                  Mua Ngay
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>)}
       </View>
+
+      <Modal
+        visible={isBuyModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeModalBuy}
+      >
+        <TouchableWithoutFeedback onPress={closeModalBuy}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+
+        <View style={styles.modalContainer}>
+          <ScrollView>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Thêm giỏ hàng</Text>
+            </View>
+            <View style={styles.line}></View>
+            {/* Product Info */}
+            <View style={{ flexDirection: 'row', }}>
+              <View style={styles.productInfo}>
+                <Image
+                  source={{ uri: image }}
+                  style={styles.productImage}
+                />
+
+              </View>
+              <View>
+                <View style={styles.productDetails}>
+                  <Text style={{ fontSize: 20, fontWeight: '500' }}>{productsState.productName}</Text>
+                  <Text style={{ color: '#FE3A30', fontWeight: '500', fontSize: 19, marginVertical: 10 }}>{productsState.productPriceSale}</Text>
+                </View>
+                {/* Quantity Selector */}
+                <View style={styles.quantitySelector}>
+                  {/* Decrease Button */}
+
+                  <TouchableOpacity
+                    onPress={() => handleQuantityChange(-1)}
+                    style={styles.quantityButtonLeft}
+                  >
+                    <Text style={styles.quantityText}>-</Text>
+                  </TouchableOpacity>
+
+                  {/* Quantity Input */}
+                  <TextInput
+                    style={{
+                      width: 50,
+                      height: 30,
+                      borderColor: errorCheckQuantity ? 'red' : '#ccc',
+                      borderWidth: 1,
+                      textAlign: 'center',
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                      color: '#3669c9',
+                      backgroundColor: '#fff',
+                    }}
+                    value={String(quantity)}
+                    onChangeText={(text) => {
+                      const validText = text.replace(/[^0-9]/g, '').slice(0, 3);
+                      handleInputChange(validText);
+                    }}
+                    keyboardType="numeric"
+                  />
+
+                  {/* Increase Button */}
+                  <TouchableOpacity
+                    onPress={() => handleQuantityChange(1)}
+                    style={styles.quantityButtonRight}
+                  >
+                    <Text style={styles.quantityText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </View>
+            <View style={styles.line}></View>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Màu: </Text>
+            </View>
+            <View style={styles.productOptions}>
+              {loading ? (
+                <Text>Loading...</Text> // Nếu không có thư viện, hãy thử thay bằng <Text>Loading...</Text>
+              ) : (
+                <View style={styles.sizesContainer}>
+                  {productsState.productSizes.map((size) => (
+                    <TouchableOpacity
+                      key={size.productSizeId}
+                      style={[
+                        styles.sizeOption,
+                        selectedSize === size.productSizeName && styles.selected,
+                        size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
+                        errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
+                      ]}
+                      onPress={() => handleSelectSize(size.productSizeName)}
+                      disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
+                    >
+                      <Text
+                        style={
+                          selectedSize === size.productSizeName
+                            ? { color: '#fff' } // Màu trắng khi được chọn
+                            : { color: '#000' } // Màu đen khi không được chọn
+                        }
+                      >
+                        {size.productSizeName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          </ScrollView>
+
+          {/* Confirm Button */}
+          <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
+            <Text style={styles.confirmButtonText}>Mua ngay</Text>
+          </TouchableOpacity>
+        </View>
+        <AlertComponent
+          title={alertType === 'success' ? "Success" : "Error"}
+          description={
+            alertType === 'success'
+              ? "Thêm Sản Phẩm Thành Công"
+              : error
+          }
+          alertType={alertType}
+          visible={alertVisible}
+          onClose={() => setAlertVisible(false)}
+        />
+      </Modal>
+
+
+
     </View>
 
 
@@ -834,6 +1001,65 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 }
 
 const styles = StyleSheet.create({
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'relative',
+  },
+  modalContainer: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '60%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalTitle: { fontSize: 18, fontWeight: 'bold' },
+  productImage: { width: 120, height: 120, resizeMode: 'contain', borderWidth: 1, borderColor: '#CCC', borderRadius: 15, marginRight: 20, },
+
+  quantitySelector: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  quantityButtonLeft: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderLeftWidth: 1,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    borderTopLeftRadius: 5,
+    borderBottomLeftRadius: 5,
+  },
+  quantityButtonRight: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+  },
+  quantityText: { fontSize: 20, textAlign: 'center', marginBottom: 5 },
+  confirmButton: {
+    backgroundColor: '#0056b3',
+    paddingVertical: 15,
+    borderRadius: 5,
+  },
+  confirmButtonText: { color: '#fff', textAlign: 'center', fontSize: 16 },
+
   productDetailContainer: {
     flex: 1,
     backgroundColor: '#FFF',
@@ -869,21 +1095,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 350,
   },
-
-  numberOfImage: {
-    position: 'absolute',
-    left: '10%',
-    bottom: '10%',
-
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  scrollContainer: {
+    height: 320,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    resizeMode: 'contain',
+  },
+  card: {
+    flex: 1,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+    marginHorizontal: 16,
+    borderRadius: 16,
   },
 
-  productInfo: {
-    flexDirection: 'column',
-    marginTop: 10,
-    marginBottom: 10,
+  normalDot: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    backgroundColor: 'silver',
+    marginHorizontal: 4,
+  },
+  indicatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+
+  line: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 20,
   },
 
   productName: {
@@ -903,9 +1150,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     marginBottom: 10,
   },
-  currencyHighlight: {
-    fontWeight: 'bold',
-  },
+
 
   SoldProductInfo: {
     flexDirection: 'row',
@@ -1036,15 +1281,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8, // Đổ bóng đậm hơn
   },
   disabled: {
-    backgroundColor: '#e0e0e0', // Màu nền cho kích cỡ không khả dụng
-    color: '#aaa', // Màu chữ cho kích cỡ không khả dụng
+    backgroundColor: '#e0e0e0',
+    color: '#aaa',
     opacity: 0.6,
     textDecorationLine: 'line-through',
   },
   flashBorder: {
-    borderColor: 'red', // Viền màu đỏ cho hiệu ứng chớp
+    borderColor: 'red',
     borderWidth: 2,
-    // Để tạo hiệu ứng flash, bạn có thể sử dụng thư viện 'react-native-reanimated' hoặc 'react-native-animatable'
   },
 });
 export default AddedProductToWishlist;

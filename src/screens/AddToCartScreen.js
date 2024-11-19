@@ -16,9 +16,10 @@ import CartItem from '../components/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './api/config';
 import axios from 'axios';
+import AlertComponent from '../components/AlertComponent';
 
 
-function AddToCartScreen({ navigation }) {
+function AddToCartScreen({ route, navigation }) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Tiền mặt');
   const [selectedPaymentIcon, setSelectedPaymentIcon] = useState(require('../assets/wallet.png'));
   const [selectedPaymentUse, setSelectedPaymentUse] = useState(true);
@@ -29,7 +30,14 @@ function AddToCartScreen({ navigation }) {
   const [cartData, setCartData] = useState([]);
   const [cartDataUser, setCartDataUser] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [productsState, setProductsState] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
+
+  const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
+  const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
+
+  
   const [total, setTotal] = useState();
 
 
@@ -148,7 +156,7 @@ function AddToCartScreen({ navigation }) {
           sizeId: sizeId
         }
       };
-      
+
       try {
         // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
         const response = axios.delete(`${BASE_URL}cart/${idCart}`, { data: cartItemData });
@@ -176,7 +184,7 @@ function AddToCartScreen({ navigation }) {
 
       try {
         // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
-        const response = axios.put(`${BASE_URL}cart/${idCart}`, cartItemData );
+        const response = axios.put(`${BASE_URL}cart/${idCart}`, cartItemData);
         if (response.status === 200 || 201) {
           console.log("Sản phẩm đã được thêm:");
           fetchData();
@@ -454,6 +462,19 @@ function AddToCartScreen({ navigation }) {
           </Modal>
         </View>
       </View>
+ 
+        <AlertComponent
+          title={alertType === 'success' ? 'Success' : 'Error'}
+          description={
+            alertType === 'success'
+              ? 'Thêm Sản Phẩm Thành Công.'
+              : 'Thêm Sản Phẩm Thất Bại.'
+          }
+          alertType={alertType}
+          visible={isAlertVisible}
+          onClose={() => setIsAlertVisible(false)}
+        />
+
       {/* {isLoading && (
         <View style={styles.overlay}>
           <ActivityIndicator size="large" color="#3669c9" />

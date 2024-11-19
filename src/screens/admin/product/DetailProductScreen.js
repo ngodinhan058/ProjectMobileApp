@@ -12,6 +12,7 @@ import {
     Alert,
     Modal,
     ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -21,6 +22,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 function DetailScreen({ route, navigation }) {
     const { id } = route.params;
+    const { width: windowWidth } = useWindowDimensions();
 
     const [isOpen, setIsOpen] = useState(false);
     const [animation] = useState(new Animated.Value(0));
@@ -112,7 +114,7 @@ function DetailScreen({ route, navigation }) {
                     <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
                 </LinearGradient>
 
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+                <View>
                     <FlatList
                         data={productsState.productImages}
                         horizontal
@@ -121,10 +123,19 @@ function DetailScreen({ route, navigation }) {
                         keyExtractor={(item, index) => `${item.productImageIndex}-${index}`}
                         renderItem={({ item }) => (
                             <TouchableOpacity onPress={() => openModal(item.productImagePath)}>
-                                <View style={{ marginHorizontal: 5 }}>
+                                <View style={{
+                                    marginHorizontal: 5,
+                                    justifyContent: 'center',
+                                    alignItems: 'center', // Đảm bảo hình ảnh luôn căn giữa
+                                    flex: 1
+                                }}>
                                     <Image
                                         source={{ uri: item.productImagePath }}
-                                        style={{padding: 190, resizeMode: 'contain', alignItems: 'center' }}
+                                        style={{
+                                            width: windowWidth - 50, // Chiều rộng hình ảnh là 90% chiều rộng màn hình
+                                            height: 350, // Chiều cao cố định
+                                            resizeMode: 'contain', // Đảm bảo hình ảnh không bị kéo dãn, giữ tỷ lệ gốc
+                                        }}
                                     />
                                 </View>
                             </TouchableOpacity>

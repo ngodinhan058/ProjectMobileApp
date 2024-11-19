@@ -19,6 +19,7 @@ import { BASE_URL } from '../../api/config';
 import UploadImage from '../../../components/Up_Image_Multi';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Notifier, NotifierComponents } from 'react-native-notifier';
+import AlertComponent from '../../../components/AlertComponent';
 
 const AddProductScreen = ({ route, navigation }) => {
     const [productSupplier, setProductSupplier] = useState();
@@ -30,10 +31,14 @@ const AddProductScreen = ({ route, navigation }) => {
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isSupplierModal, setIsSupplierModal] = useState(false);
     const [isSizeModal, setIsSizeModal] = useState(false);
+
     const [isLoading, setIsLoading] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertType, setAlertType] = useState('success');
+
     const [selectedImages, setSelectedImages] = useState([]);
     const { postDTO } = route.params || {};
-    
+
     const [productData, setProductData] = useState({
         productName: '',
         productYearOfManufacture: 2024,
@@ -49,7 +54,7 @@ const AddProductScreen = ({ route, navigation }) => {
             productImageAlt: "Image of product",
         }
     });
-    console.log(productData);
+    // console.log(productData);
 
     const [error, setError] = useState({
         productNameError: false
@@ -69,7 +74,7 @@ const AddProductScreen = ({ route, navigation }) => {
             productImage: productData.productImages,
         };
         formData.append('params', JSON.stringify(params));
-    
+
         selectedImages.forEach((imageUri, index) => {
             const fileType = imageUri.split('.').pop();
             const newFile = {
@@ -79,33 +84,28 @@ const AddProductScreen = ({ route, navigation }) => {
             };
             formData.append('file', newFile);
         });
-    
+
         try {
             const response = await fetch(`${BASE_URL}product`, {
                 method: 'POST',
                 body: formData,
             });
             if (response.status === 201) {
-                Notifier.showNotification({
-                    title: 'Success',
-                    description: 'Product added successfully.',
-                    Component: NotifierComponents.Alert,
-                    componentProps: {
-                        alertType: 'success',
-                    },
+                setAlertVisible(true);
+                setAlertType('success');
+                navigation.replace('ProductList', {
+                    alertVisible: true,
+                    alertType: 'success',
                 });
-                navigation.replace('ProductList');
+            }
+            else{
+                setAlertType('error');
+                setAlertVisible(true);
             }
         } catch (error) {
-            console.error('Error adding product:', error);
-            Notifier.showNotification({
-                title: 'Error',
-                description: 'Unable to add product due to a network error.',
-                Component: NotifierComponents.Alert,
-                componentProps: {
-                    alertType: 'error',
-                },
-            });
+            console.log('Error adding product:', error);
+            setAlertType('error');
+            setAlertVisible(true);
         } finally {
             setIsLoading(false);
         }
@@ -207,9 +207,9 @@ const AddProductScreen = ({ route, navigation }) => {
                             setProductSize(selectedSizeId);
                             const selectedSizeNames = selectedSizeName.join(', ');
                             setProductSizeName(selectedSizeNames);
-                           
+
                         }}
-                        
+
                     />
                 </View>
             </ScrollView>
@@ -223,6 +223,17 @@ const AddProductScreen = ({ route, navigation }) => {
                     <ActivityIndicator size="large" color="#3669c9" />
                 </View>
             )}
+            <AlertComponent
+                title={alertType === 'success' ? "Success" : "Error"}
+                description={
+                    alertType === 'success'
+                        ? "Product added successfully."
+                        : "Failed to add product. Please try again."
+                }
+                alertType={alertType}
+                visible={alertVisible}
+                onClose={() => setAlertVisible(false)}
+            />
         </View>
     );
 };

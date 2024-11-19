@@ -11,7 +11,6 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-
 import { ROLE_USER, ROLE_ADMIN } from './src/constants/Role';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -218,7 +217,7 @@ function NoLoginHome() {
           header: () => <Header />,
         }}
       >
-        {() => <WishListScreen/>}
+        {() => <WishListScreen />}
       </Tab.Screen>
       <Tab.Screen
         name="Order"
@@ -275,6 +274,14 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     },
     { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false },
     {
+      name: 'ChatScreen',
+      component: ChatScreen,
+      options: {
+        headerShown: false, // Ẩn header
+      },
+      showFooter: false, // Đây là một thuộc tính tùy chỉnh bạn có thể xử lý riêng trong logic của mình
+    },
+    {
       name: 'ReviewProductScreen',
       component: ReviewProductScreen,
       showFooter: true,
@@ -313,6 +320,8 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
           }
         </Stack.Screen>
       ))}
+     
+
     </Stack.Navigator>
   );
 }
@@ -349,7 +358,7 @@ function HaveLoginHome() {
           header: () => <Header />,
         }}
       >
-        {() => <WishListScreen/>}
+        {() => <WishListScreen />}
       </Tab.Screen>
       <Tab.Screen
         name="Order"
@@ -390,6 +399,7 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
           }
         </Stack.Screen>
       ))}
+    
     </Stack.Navigator>
   );
 }
@@ -521,7 +531,7 @@ function AdminDrawerNavigator() {
     <Drawer.Navigator>
       <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
-      {/* <Drawer.Screen name="Danh Sách Người Dùng" component={UserAdmin} /> */}
+      <Drawer.Screen name="Người Dùng" component={UserAdmin} />
       <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
       <Drawer.Screen name="Màu" component={SizeAdmin} />
       <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
@@ -796,21 +806,21 @@ export default function App() {
 
     loadUserInfo();
   }, [user.token]);
-console.log(user.token);
+  console.log(user.token);
 
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {/*  Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+      {/* {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
         <HaveLoginHome />
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
         <AdminDrawerNavigator />
-        <HaveLoginHome />
+        // <HaveLoginHome />
 
-      )*/}
-      <AdminDrawerNavigator /> 
-      {/* <HaveLoginHome /> */}
+      )}  */}
+      {/* <AdminDrawerNavigator />  */}
+      <HaveLoginHome />
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}

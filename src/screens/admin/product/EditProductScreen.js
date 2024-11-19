@@ -66,7 +66,7 @@ const EditProductScreen = ({ route, navigation }) => {
         if (selectedImages && selectedImages.length > 0) {
             selectedImages.forEach((image, index) => {
                 if (image) {
-                    const imageUri = image instanceof Object ? image.uri : image;
+                    const imageUri = image instanceof Object ? image.productImagePath : image;
                     const fileType = imageUri.split('.').pop();
                     const newFile = {
                         uri: imageUri,
