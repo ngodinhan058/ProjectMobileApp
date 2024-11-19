@@ -54,7 +54,7 @@ const AddProductScreen = ({ route, navigation }) => {
             productImageAlt: "Image of product",
         }
     });
-    console.log(productData);
+    // console.log(productData);
 
     const [error, setError] = useState({
         productNameError: false
@@ -98,8 +98,12 @@ const AddProductScreen = ({ route, navigation }) => {
                     alertType: 'success',
                 });
             }
+            else{
+                setAlertType('error');
+                setAlertVisible(true);
+            }
         } catch (error) {
-            console.error('Error adding product:', error);
+            console.log('Error adding product:', error);
             setAlertType('error');
             setAlertVisible(true);
         } finally {

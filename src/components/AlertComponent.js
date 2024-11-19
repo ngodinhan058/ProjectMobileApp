@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
+// import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const AlertComponent = ({ title, description, alertType, visible, onClose }) => {
     const [fadeAnim] = useState(new Animated.Value(0)); // Opacity animation
@@ -30,7 +32,7 @@ const AlertComponent = ({ title, description, alertType, visible, onClose }) => 
                         useNativeDriver: true,
                     }),
                     Animated.timing(translateYAnim, {
-                        toValue: -10, // Đi lên trên
+                        toValue: -20, // Đi lên trên
                         duration: 300,
                         useNativeDriver: true,
                     }),
@@ -49,7 +51,7 @@ const AlertComponent = ({ title, description, alertType, visible, onClose }) => 
                     useNativeDriver: true,
                 }),
                 Animated.timing(translateYAnim, {
-                    toValue: -10,
+                    toValue: -20,
                     duration: 300,
                     useNativeDriver: true,
                 }),
@@ -73,8 +75,11 @@ const AlertComponent = ({ title, description, alertType, visible, onClose }) => 
             {/* <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity> */}
-            <Text style={styles.alertTitle}>{title}</Text>
+            {/* <Text style={styles.alertTitle}>{title}</Text> */}
+            <View style={{ flexDirection:'row', alignItems: 'center' }}>
+            <Icon name="alert-circle-outline" size={30} color="#fff"></Icon>            
             <Text style={styles.alertDescription}>{description}</Text>
+            </View>
         </Animated.View>
     );
 };
@@ -82,12 +87,13 @@ const AlertComponent = ({ title, description, alertType, visible, onClose }) => 
 const styles = StyleSheet.create({
     alertContainer: {
         position: 'absolute',
-        top: 5,
+        top: 20,
         left: 20,
         right: 20,
         padding: 16,
         borderRadius: 8,
         marginHorizontal: 20,
+        color: '#fff',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
@@ -96,22 +102,28 @@ const styles = StyleSheet.create({
         zIndex: 999,
     },
     errorAlert: {
-        backgroundColor: '#ffcccc',
-        borderColor: '#ff4d4d',
+        backgroundColor: '#f44336',
+        borderColor: '#f44336',
         borderWidth: 1,
+        color: '#fff',
     },
     successAlert: {
         backgroundColor: '#ccffcc',
         borderColor: '#33cc33',
         borderWidth: 1,
+
     },
-    alertTitle: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        marginBottom: 8,
-    },
+    // alertTitle: {
+    //     fontWeight: 'bold',
+    //     fontSize: 16,
+    //     marginBottom: 8,
+    //     color: '#fff',
+    // },
     alertDescription: {
         fontSize: 14,
+        color: '#fff',
+        fontWeight: '500',
+        marginLeft: 2,
     },
     closeButton: {
         position: 'absolute',

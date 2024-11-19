@@ -217,7 +217,7 @@ function NoLoginHome() {
           header: () => <Header />,
         }}
       >
-        {() => <WishListScreen/>}
+        {() => <WishListScreen />}
       </Tab.Screen>
       <Tab.Screen
         name="Order"
@@ -274,6 +274,14 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     },
     { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false },
     {
+      name: 'ChatScreen',
+      component: ChatScreen,
+      options: {
+        headerShown: false, // Ẩn header
+      },
+      showFooter: false, // Đây là một thuộc tính tùy chỉnh bạn có thể xử lý riêng trong logic của mình
+    },
+    {
       name: 'ReviewProductScreen',
       component: ReviewProductScreen,
       showFooter: true,
@@ -312,6 +320,8 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
           }
         </Stack.Screen>
       ))}
+     
+
     </Stack.Navigator>
   );
 }
@@ -348,7 +358,7 @@ function HaveLoginHome() {
           header: () => <Header />,
         }}
       >
-        {() => <WishListScreen/>}
+        {() => <WishListScreen />}
       </Tab.Screen>
       <Tab.Screen
         name="Order"
@@ -389,6 +399,7 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
           }
         </Stack.Screen>
       ))}
+    
     </Stack.Navigator>
   );
 }
@@ -795,7 +806,7 @@ export default function App() {
 
     loadUserInfo();
   }, [user.token]);
-console.log(user.token);
+  console.log(user.token);
 
   return (
     <NavigationContainer onStateChange={handleStateChange}>
@@ -807,9 +818,9 @@ console.log(user.token);
         <AdminDrawerNavigator />
         // <HaveLoginHome />
 
-      )} */}
-      <AdminDrawerNavigator /> 
-      {/* <HaveLoginHome /> */}
+      )}  */}
+      {/* <AdminDrawerNavigator />  */}
+      <HaveLoginHome />
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
