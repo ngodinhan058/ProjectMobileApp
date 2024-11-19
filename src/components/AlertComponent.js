@@ -59,26 +59,28 @@ const AlertComponent = ({ title, description, alertType, visible, onClose }) => 
         }
     }, [visible]);
 
+    // Kiểm tra kiểu alert và áp dụng style cho tương ứng
     const alertStyles = alertType === 'error' ? styles.errorAlert : styles.successAlert;
 
     return (
         <Animated.View
             style={[
                 styles.alertContainer,
-                alertStyles,
+                alertStyles, // Style cho error hoặc success
                 {
                     opacity: fadeAnim,
                     transform: [{ translateY: translateYAnim }],
                 },
             ]}
         >
-            {/* <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>X</Text>
-            </TouchableOpacity> */}
-            {/* <Text style={styles.alertTitle}>{title}</Text> */}
-            <View style={{ flexDirection:'row', alignItems: 'center' }}>
-            <Icon name="alert-circle-outline" size={30} color="#fff"></Icon>            
-            <Text style={styles.alertDescription}>{description}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {/* Kiểm tra kiểu alert để chọn icon */}
+                {alertType === 'error' ? (
+                    <Icon name="alert-circle-outline" size={30} color="#fff" />
+                ) : (
+                    <Icon name="checkmark-circle-outline" size={30} color="#fff" />
+                )}
+                <Text style={styles.alertDescription}>{description}</Text>
             </View>
         </Animated.View>
     );
@@ -108,9 +110,10 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     successAlert: {
-        backgroundColor: '#ccffcc',
-        borderColor: '#33cc33',
+        backgroundColor: '#4caf50',
+        borderColor: '#4caf50',
         borderWidth: 1,
+        color: '#fff',
 
     },
     // alertTitle: {

@@ -374,7 +374,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       if (response.status === 200) {
         console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
         closeModalBuy();
-        navigation.navigate('AddToCartScreen')
+        navigation.navigate('AddToCartScreen', {
+          alertVisible: true,
+          alertType: 'success',
+      })
       } else {
         console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
@@ -466,7 +469,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               </View>
             </Modal>
           </View>
-         
+
 
 
 
@@ -718,7 +721,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   name={item['productName']}
                   price={item['productPriceSale']}
                   oldPrice={item['productPrice']}
-                  image={imageUrl}  // Truyền URL của ảnh đầu tiên vào prop images
+                  image={item.productImages?.[0]?.productImagePath}  // Truyền URL của ảnh đầu tiên vào prop images
                   rating={item['productRating']}
                   sale={item['productSale']}
                   isLoading={false}  // Set isLoading to false when not loading
@@ -738,30 +741,55 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         borderTopWidth: 1, borderColor: '#DDD'
       }}>
         {!userInfo?.userId ?
-          (<View style={{ flex: 1, position: 'relative', }}>
-            <TouchableOpacity
-              style={{
+          (<>
 
-                backgroundColor: '#3669C9',
-                borderColor: '#ccc',
-                borderWidth: 1,
-                padding: 20,
-                borderRadius: 10,
-
-              }}
-              onPress={openModalBuy}
-            >
-              <Text
+            <View style={{ flex: 1, position: 'relative', }}>
+              {/* Số lượng */}
+              <TouchableOpacity
                 style={{
-
-                  fontWeight: '600',
-                  color: '#fff',
+                  borderColor: '#3669C9',
+                  borderWidth: 1,
+                  paddingHorizontal: 20,
+                  paddingVertical: 20,
+                  borderRadius: 10,
                 }}
+                onPress={openModalBuy}
               >
-                Thêm vào giỏ hàng
-              </Text>
-            </TouchableOpacity>
-          </View>) :
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#3669C9',
+                  }}
+                >
+                  Thêm vào giỏ hàng
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1, position: 'relative', }}>
+              {/* Số lượng */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#3669C9',
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  padding: 20,
+                  borderRadius: 10,
+                }}
+                onPress={openModalBuy}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}
+                >
+                  Mua Ngay
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>) :
           (<>
             <View style={{ position: 'relative', }}>
               {/* Số lượng */}
