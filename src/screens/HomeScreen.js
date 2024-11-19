@@ -303,22 +303,47 @@ const HomeScreen = () => {
             <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
           {productsState.length > 0 ? (
-            <View style={styles.gridContainer}>
-              {productsState.map((item, index) => (
-                <View key={index} style={styles.itemWrapper}>
-                  <ProductItem
-                    id={item['productId']}
-                    name={item['productName']}
-                    price={item['productPriceSale']}
-                    oldPrice={item['productPrice']}
-                    image={item['productImages']?.[0].productImagePath}
-                    rating={item['productRating']}
-                    sale={item['productSale']}
-                    isLoading={loading}
-                  />
-                </View>
-              ))}
-            </View>
+            // <View style={styles.gridContainer}>
+            //   {productsState.map((item, index) => (
+            //     <View key={index} style={styles.itemWrapper}>
+            //       <ProductItem
+            //         id={item['productId']}
+            //         name={item['productName']}
+            //         price={item['productPriceSale']}
+            //         oldPrice={item['productPrice']}
+            //         image={item['productImages']?.[0].productImagePath}
+            //         rating={item['productRating']}
+            //         sale={item['productSale']}
+            //         isLoading={loading}
+            //       />
+            //     </View>
+            //   ))}
+            // </View>
+            <View style={styles.listContent}>
+            {productsState
+                .reduce((result, _, index, array) => {
+                    // Nhóm các sản phẩm thành từng nhóm 2 phần tử
+                    if (index % 2 === 0) result.push(array.slice(index, index + 2));
+                    return result;
+                }, [])
+                .map((group, groupIndex) => (
+                    <View key={groupIndex} style={styles.row}>
+                        {group.map((item) => (
+                            <ProductItem
+                                key={item.productId}
+                                id={item.productId}
+                                name={item.productName}
+                                price={item.productPriceSale}
+                                oldPrice={item.productPrice}
+                                image={item.productImages?.[0]?.productImagePath}
+                                rating={item.productRating}
+                                sale={item.productSale}
+                                isLoading={false}
+                            />
+                        ))}
+                    </View>
+                ))}
+        </View>
           ) : null}
 
 
@@ -375,6 +400,10 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     justifyContent: 'center',
   },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+},
   scrollContainer: {
     height: 220,
     alignItems: 'center',
@@ -530,12 +559,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  listContent: {
-    paddingVertical: 10,
-  },
-  columnWrapper: {
-    justifyContent: 'space-between',
-  },
+
 });
 
 export default HomeScreen;
