@@ -5,7 +5,7 @@ import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 
 const SizeScreen = ({ isVisible, onClose, onApply, onReset, selectedproductSizeId }) => {
-    const [sizes, setsizes] = useState([]);
+    const [sizes, setsizes] = useState([]);    
     const [selectedsizes, setSelectedsizes] = useState(selectedproductSizeId || []); // Initialize as an array
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -17,6 +17,7 @@ const SizeScreen = ({ isVisible, onClose, onApply, onReset, selectedproductSizeI
                 const response = await axios.get(apiUrl);
                 const data = response.data.data;
                 setsizes(data);
+                
             } catch (error) {
                 console.error('Error fetching data:', error.response ? error.response.data : error.message);
             }

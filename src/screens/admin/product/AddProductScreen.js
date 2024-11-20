@@ -74,6 +74,8 @@ const AddProductScreen = ({ route, navigation }) => {
             productImage: productData.productImages,
         };
         formData.append('params', JSON.stringify(params));
+        console.log("add", params);
+        
 
         selectedImages.forEach((imageUri, index) => {
             const fileType = imageUri.split('.').pop();
@@ -96,6 +98,7 @@ const AddProductScreen = ({ route, navigation }) => {
                 navigation.replace('ProductList', {
                     alertVisible: true,
                     alertType: 'success',
+                    title: 'Thêm Sản Phẩm Thành Công,'
                 });
             }
             else{

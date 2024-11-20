@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -12,13 +12,14 @@ import {
     Alert,
     Modal,
     ActivityIndicator,
-  useWindowDimensions,
+    useWindowDimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
 
 function DetailScreen({ route, navigation }) {
     const { id } = route.params;
@@ -30,7 +31,21 @@ function DetailScreen({ route, navigation }) {
     const [productsState, setProductsState] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
+    // useEffect(() => {
+    //     setIsLoading(true);
+    //     const apiUrl = `${BASE_URL}product/${id}`;
+    //     axios.get(apiUrl)
+    //         .then(response => {
+    //             const productData = response.data.data;
+    //             setProductsState(productData);
+    //             setIsLoading(false);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching data:', error);
+    //         })
+    // }, [id]);
+
+    const fetchProducts = async (id) => {
         setIsLoading(true);
         const apiUrl = `${BASE_URL}product/${id}`;
         axios.get(apiUrl)
@@ -42,8 +57,13 @@ function DetailScreen({ route, navigation }) {
             .catch(error => {
                 console.error('Error fetching data:', error);
             })
-    }, [id]);
+    };
 
+    useFocusEffect(
+        useCallback(() => {
+            fetchProducts(id);
+        }, [id])
+    );
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
 
@@ -80,7 +100,9 @@ function DetailScreen({ route, navigation }) {
     const deleteProduct = async () => {
         setIsLoading(true);
         try {
-            await axios.delete(`${BASE_URL}product/${id}`);
+            const rep = await axios.delete(`${BASE_URL}product/${id}`);
+            console.log("ádsadsad",rep);
+            
             Alert.alert("Success", "Xoá Thành Công");
             navigation.replace("ProductList");
         } catch (error) {
@@ -111,6 +133,7 @@ function DetailScreen({ route, navigation }) {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#fff" />
                     </Pressable>
+
                     <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
                 </LinearGradient>
 
@@ -132,7 +155,7 @@ function DetailScreen({ route, navigation }) {
                                     <Image
                                         source={{ uri: item.productImagePath }}
                                         style={{
-                                            width: windowWidth - 50, // Chiều rộng hình ảnh là 90% chiều rộng màn hình
+                                            width: windowWidth - 10, // Chiều rộng hình ảnh là 90% chiều rộng màn hình
                                             height: 350, // Chiều cao cố định
                                             resizeMode: 'contain', // Đảm bảo hình ảnh không bị kéo dãn, giữ tỷ lệ gốc
                                         }}

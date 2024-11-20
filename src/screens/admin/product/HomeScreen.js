@@ -21,7 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import AlertComponent from '../../../components/AlertComponent';
-
+import { useFocusEffect } from '@react-navigation/native';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -31,22 +31,22 @@ const HomeAdminScreen = ({ navigation, route }) => {
     const [refreshing, setRefreshing] = useState(false);
 
 
-    const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
+    const { alertVisible, alertType, title } = route.params || {}; // Nhận params từ navigation
     const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
 
-    useEffect(() => {
-        if (alertVisible) {
-            // Tự động ẩn thông báo sau 2 giây
-            const timer = setTimeout(() => {
-                setIsAlertVisible(false);
-            }, 2000);
+    // useEffect(() => {
+    //     if (alertVisible) {
+    //         // Tự động ẩn thông báo sau 2 giây
+    //         const timer = setTimeout(() => {
+    //             setIsAlertVisible(false);
+    //         }, 2000);
 
-            return () => clearTimeout(timer);
-        }
-    }, [alertVisible]);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [alertVisible]);
 
 
-    const fetchProducts = useCallback(async () => {
+    const fetchProducts = async () => {
         setIsLoading(true);
         try {
             const response = await axios.get(`${BASE_URL}products`);
@@ -58,11 +58,13 @@ const HomeAdminScreen = ({ navigation, route }) => {
             setIsLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    };
 
-    useEffect(() => {
-        fetchProducts();
-    }, [fetchProducts]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchProducts();
+        }, [])
+    );
 
     const ProductItem = ({ item }) => {
         const scale = useSharedValue(1);
@@ -73,22 +75,22 @@ const HomeAdminScreen = ({ navigation, route }) => {
             };
         });
 
-        const navigateToDetail = () => {
-            navigation.navigate('DetailScreen', { id: item.productId });
-        };
+        // const navigateToDetail = () => {
+        //     navigation.replace('DetailScreen', { id: item.productId });
+        // };
         
-        const handlePress = () => {
-            scale.value = withTiming(0.95, { duration: 100 });
-            navigateToDetail();
-            setTimeout(() => {
-                scale.value = withTiming(1, { duration: 100 });
-            }, 100);
-        };
+        // const handlePress = () => {
+        //     scale.value = withTiming(0.95, { duration: 100 });
+        //     navigateToDetail();
+        //     setTimeout(() => {
+        //         scale.value = withTiming(1, { duration: 100 });
+        //     }, 100);
+        // };
 
         return (
             <AnimatedTouchableOpacity
                 style={[styles.productItem, animatedStyles]}
-                onPress={handlePress}
+                onPress={() => navigation.navigate('DetailScreen', { id: item.productId })}
             >
                 <Card containerStyle={styles.cardContainer}>
                     <Card.Image
@@ -136,6 +138,11 @@ const HomeAdminScreen = ({ navigation, route }) => {
     const handleRefresh = () => {
         fetchProducts();
     };
+    // useEffect(() => {
+    //     if (isAlertVisible && alertType === 'success') {
+    //         fetchProducts();
+    //     }
+    // }, [isAlertVisible, alertType]);
 
     return (
         <View style={styles.container}>
@@ -184,7 +191,7 @@ const HomeAdminScreen = ({ navigation, route }) => {
                     title={alertType === 'success' ? 'Success' : 'Error'}
                     description={
                         alertType === 'success'
-                            ? 'Product added successfully.'
+                            ? title
                             : 'Failed to add product.'
                     }
                     alertType={alertType}

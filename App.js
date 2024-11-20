@@ -19,6 +19,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './src/screens/api/config';
+import * as encoding from 'text-encoding';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
@@ -701,40 +702,22 @@ export default function App() {
   const [user, setUser] = useState({});
   const [userData, setUserData] = useState({});
 
-  // useEffect(() => {
-  //   const loadUser = async () => {
-  //     try {
-  //       const savedCart = await AsyncStorage.getItem('userData');
+  const getItem = async () => {
+    try {
+      const savedCart = await AsyncStorage.getItem('userData');
 
-  //       if (savedCart) {
-  //         const { username, token } = JSON.parse(savedCart);
+      if (savedCart) {
+        const { username, token } = JSON.parse(savedCart);
+        const decoded = jwtDecode(token);
 
-  //         const decoded = jwtDecode(token);
-  //         console.log('Decoded JWT:', decoded);
-
-  //         setUser({ username, token });
-  //       } else {
-  //         setUser({});
-  //       }
-
-  //       console.log('Clear', savedCart);
-  //     } catch (error) {
-  //       console.error('Error loading cart from AsyncStorage:', error);
-  //     }
-  //   };
-
-  //   loadUser();
-
-  //   // // Set up an interval to call a function every second
-  //   // const intervalId = setInterval(() => {
-  //   //   console.log('User state every second:', user); // Log the user state every second
-  //   //   // You can call any function here instead of logging
-  //   // }, 1000); // 1000 milliseconds = 1 second
-
-  //   // // Clean up the interval on component unmount
-  //   // return () => clearInterval(intervalId);
-  // }, []);
-
+        setUser({ username, token, role: decoded.scope.split(' ')[0] });
+      } else {
+        setUser({});
+      }
+    } catch (error) {
+      console.error('Error loading cart from AsyncStorage:', error);
+    }
+  };
   const handleStateChange = async (state) => {
     const currentRoute = state.routes[state.index];
     console.log('Current Route:', currentRoute.name);
@@ -742,25 +725,19 @@ export default function App() {
     // If you want to fetch user data each time the navigation state changes
     if (
       currentRoute.name === 'Mega Mall' ||
-      currentRoute.name === 'Danh Sách Người Dùng'
+      currentRoute.name === 'Người Dùng'
     ) {
       try {
-        const savedCart = await AsyncStorage.getItem('userData');
-
-        if (savedCart) {
-          const { username, token } = JSON.parse(savedCart);
-          const decoded = jwtDecode(token);
-          console.log(decoded);
-
-          setUser({ username, token, role: decoded.scope.split(' ')[0] });
-        } else {
-          setUser({});
-        }
+        getItem();
       } catch (error) {
         console.error('Error loading cart from AsyncStorage:', error);
       }
     }
   };
+
+  useEffect(() => {
+    getItem();
+  }, []);
 
   useEffect(() => {
     // Gọi API lấy thông tin người dùng nếu token có giá trị
@@ -810,17 +787,15 @@ export default function App() {
 
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {/* {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
         <HaveLoginHome />
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
         <AdminDrawerNavigator />
-        // <HaveLoginHome />
-
-      )}  */}
+      )}
       {/* <AdminDrawerNavigator />  */}
-      <HaveLoginHome />
+      {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
       {/* <ShipperDrawerNavigator /> */}
