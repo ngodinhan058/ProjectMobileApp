@@ -188,7 +188,6 @@ function LoginStack() {
 function NoLoginHome() {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
 
-
   return (
     <Tab.Navigator
       tabBar={(props) => <Footer {...props} isVisible={isFooterVisible} />}
@@ -205,11 +204,7 @@ function NoLoginHome() {
           },
         })}
       >
-        {() => (
-          <HomeStack
-            setIsFooterVisible={setIsFooterVisible}
-          />
-        )}
+        {() => <HomeStack setIsFooterVisible={setIsFooterVisible} />}
       </Tab.Screen>
 
       <Tab.Screen
@@ -321,8 +316,6 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
           }
         </Stack.Screen>
       ))}
-     
-
     </Stack.Navigator>
   );
 }
@@ -346,11 +339,7 @@ function HaveLoginHome() {
           },
         })}
       >
-        {() => (
-          <HomeStack
-            setIsFooterVisible={setIsFooterVisible}
-          />
-        )}
+        {() => <HomeStack setIsFooterVisible={setIsFooterVisible} />}
       </Tab.Screen>
 
       <Tab.Screen
@@ -367,11 +356,7 @@ function HaveLoginHome() {
         options={{ headerShown: false }}
       />
       <Tab.Screen name="Login" options={{ headerShown: false }}>
-        {() => (
-          <HaveLoginStack
-            setIsFooterVisible={setIsFooterVisible}
-          />
-        )}
+        {() => <HaveLoginStack setIsFooterVisible={setIsFooterVisible} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -400,7 +385,6 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
           }
         </Stack.Screen>
       ))}
-    
     </Stack.Navigator>
   );
 }
@@ -463,8 +447,14 @@ function ShipmentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ShipmentList" component={HomeShipmentScreen} />
       <Stack.Screen name="AddProductShipment" component={AddProductShipment} />
-      <Stack.Screen name="DetailProductShipment" component={DetailProductShipment} />
-      <Stack.Screen name="EditProductShipment" component={EditProductShipment} />
+      <Stack.Screen
+        name="DetailProductShipment"
+        component={DetailProductShipment}
+      />
+      <Stack.Screen
+        name="EditProductShipment"
+        component={EditProductShipment}
+      />
     </Stack.Navigator>
   );
 }
@@ -506,10 +496,22 @@ function PermissionAdmin() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="PermissionList" component={HomePermissionScreen} />
-      <Stack.Screen name="AddPermissionShipment" component={AddPermissionScreen} />
-      <Stack.Screen name="DetailPermissionScreen" component={DetailPermissionScreen} />
-      <Stack.Screen name="AddPermissionScreen" component={AddPermissionScreen} />
-      <Stack.Screen name="EditPermissionScreen" component={EditPermissionScreen} />
+      <Stack.Screen
+        name="AddPermissionShipment"
+        component={AddPermissionScreen}
+      />
+      <Stack.Screen
+        name="DetailPermissionScreen"
+        component={DetailPermissionScreen}
+      />
+      <Stack.Screen
+        name="AddPermissionScreen"
+        component={AddPermissionScreen}
+      />
+      <Stack.Screen
+        name="EditPermissionScreen"
+        component={EditPermissionScreen}
+      />
     </Stack.Navigator>
   );
 }
@@ -538,7 +540,6 @@ function AdminDrawerNavigator() {
       <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
       <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
       <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
-
     </Drawer.Navigator>
   );
 }
