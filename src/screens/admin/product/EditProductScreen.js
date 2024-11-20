@@ -19,6 +19,8 @@ import Supplier from '../../../components/Supplier';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
+import Size from '../../../components/Size';
+
 
 const EditProductScreen = ({ route, navigation }) => {
     const { product, postDTO } = route.params || {}; // Lấy dữ liệu sản phẩm từ `route.params`
@@ -26,40 +28,49 @@ const EditProductScreen = ({ route, navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [productId, setProductId] = useState(product?.productId);
     const [categories, setCategories] = useState(product?.categories);
+    const [sizes, setSizes] = useState(product?.productSizes);
+
     const [selectedImages, setSelectedImages] = useState(product?.productImages || []);
+
     const [productSupplier, setProductSupplier] = useState(product?.productSupplier?.productSupplierSd);
     const [productSupplierName, setProductSupplierName] = useState(product?.productSupplier?.productSupplierName);
-    const [parentCategoryId, setParentCategoryId] = useState(categories.map(category => category.categoryId));
-    const [parentCategoryName, setParentCategoryName] = useState(product?.categories?.categoryName || null);
-    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-    const [isSupplierModal, setIsSupplierModal] = useState(false);
 
+    const [parentCategoryId, setParentCategoryId] = useState(categories.map(category => category.categoryId));
+    const [parentCategoryName, setParentCategoryName] = useState((categories.map(category => category.categoryName)).join(', ') || null);
+
+    const [parenSizesId, setProductSizesId] = useState(sizes.map(size => size.productSizeId));
+    const [productSizesName, setProductSizesName] = useState((sizes.map(size => size.productSizeName)).join(', ') || null);
+
+    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+    const [isSizeModal, setIsSizeModal] = useState(false);
+    const [isSupplierModal, setIsSupplierModal] = useState(false);
 
     const [productData, setProductData] = useState({
         productName: product?.productName || '',
         productYearOfManufacture: product?.productYearOfManufacture || 2024,
-        sizesProduct: product?.sizesProduct || [
-            { sizeId: "00000000-0000-0000-0000-000000000000", productQuantity: 10 }
-        ],
         productImages: { productImageAlt: "Image of product" },
         post: { postContent: postDTO?.postContent, postName: postDTO?.postName } || {},
     });
     const [error, setError] = useState({
         productNameError: false,
     });
-    console.log(categories);
+    // console.log(categories);
     const handleUpdateProduct = async () => {
         setIsLoading(true);
         const formData = new FormData();
         const params = {
             productName: productData.productName,
             productYearOfManufacture: productData.productYearOfManufacture,
+            // sizesProduct: [{ sizeId: "00000000-0000-0000-0000-000000000000" }],
+            // sizesProduct: parenSizesId.map(id => ({ sizeId: id })),
             sizesProduct: productData.sizesProduct,
             productSupplier: productSupplier,
             categories: parentCategoryId,
             post: postDTO,
             productImage: productData.productImages,
-        };
+        };        
+        console.log("EDITTTT", params);
+        
         formData.append('paramsJson', JSON.stringify(params));
 
 
@@ -77,25 +88,42 @@ const EditProductScreen = ({ route, navigation }) => {
                 }
             });
         }
-
-
         try {
-            const response = await fetch(`${BASE_URL}product/${productId}`, {
-                method: 'PUT',
-                body: formData,
+            const response = await axios.put(`${BASE_URL}product/${productId}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+
             });
             if (response.status === 200) {
-                Alert.alert('Success', 'Product updated successfully.');
-                navigation.replace('ProductList');
+                // setAlertVisible(true);
+                // setAlertType('success');
+                navigation.replace('ProductList', {
+                    alertVisible: true,
+                    alertType: 'success',
+                    title: 'Sửa Sản Phẩm Thành Công,'
+                });
             } else {
                 Alert.alert('Error', `Failed to update product. Status: ${response.status}`);
             }
         } catch (error) {
-            console.error('Error updating product:', error);
-            Alert.alert('Error', 'Unable to update product due to a network error.');
+            if (error.response) {
+                // Server responded with a status other than 200 range
+                console.error('Error response:', error.response);
+                Alert.alert('Error', `Failed to update product. Status: ${error.response.status}`);
+            } else if (error.request) {
+                // Request was made but no response received
+                console.error('Error request:', error.request);
+                Alert.alert('Error', 'No response from server. Please try again later.');
+            } else {
+                // Something else happened while setting up the request
+                console.error('Error message:', error.message);
+                Alert.alert('Error', 'Unable to update product due to a network error.');
+            }
         } finally {
             setIsLoading(false);
         }
+    
     };
 
 
@@ -103,15 +131,24 @@ const EditProductScreen = ({ route, navigation }) => {
         setError({
             productNameError: productData.productName === '',
         });
-    }, [productData.productName]);
+        setProductData((prevData) => ({
+            ...prevData,
+          
+            sizesProduct: parenSizesId ? parenSizesId.map(id => ({ sizeId: id })) : null,
+        }));
+       
+    }, [productData.productName, parenSizesId]);
 
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
+    const toggleSizeModal = () => setIsSizeModal(!isSizeModal);
 
     const handleResetFilters = () => {
         setParentCategoryId(null);
         setParentCategoryName(null);
     };
+    // console.log(parenSizesId);
+
     return (
         <View style={styles.container}>
             <ScrollView>
@@ -135,8 +172,8 @@ const EditProductScreen = ({ route, navigation }) => {
                         {postDTO ? <Text>Đã Thêm Post Sản Phẩm</Text> : <Text>Chưa Thêm Post Sản Phẩm</Text>}
                     </TouchableOpacity>
                     <Text style={styles.label}>Danh Mục Sản Phẩm:</Text>
-                    <TouchableOpacity style={[styles.input, !parentCategoryName && styles.inputError]} onPress={toggleFilterModal}>
-                        {categories ? <Text>Đã Chọn Danh Mục Sản Phẩm</Text> : <Text>Chưa Chọn Danh Mục Sản Phẩm</Text>}
+                    <TouchableOpacity style={[styles.input, !categories && styles.inputError]} onPress={toggleFilterModal}>
+                        {categories ? <Text>{parentCategoryName}</Text> : <Text>Chưa Chọn Danh Mục Sản Phẩm</Text>}
                     </TouchableOpacity>
                     <SelectorInCategory
                         isVisible={isFilterModalVisible}
@@ -161,6 +198,23 @@ const EditProductScreen = ({ route, navigation }) => {
                             setProductSupplier(selectedFilters.suppliers);
                             setProductSupplierName(selectedFilters.suppliersName);
                         }}
+                    />
+                    <Text style={styles.label}>Màu Sản Phẩm:</Text>
+                    <TouchableOpacity style={[styles.input, !sizes && styles.inputError]} onPress={toggleSizeModal}>
+                        {parenSizesId != null ? (<Text>{productSizesName}</Text>) : (<Text>Chưa Chọn Màu Sản Phẩm</Text>)}
+                    </TouchableOpacity>
+                    <Size
+                        isVisible={isSizeModal}
+                        onClose={toggleSizeModal}
+                        onReset={handleResetFilters}
+                        selectedproductSizeId={parenSizesId}
+                        onApply={(selectedSizeId, selectedSizeName) => {
+                            setProductSizesId(selectedSizeId);
+                            const selectedSizeNames = selectedSizeName.join(', ');
+                            setProductSizesName(selectedSizeNames);
+
+                        }}
+
                     />
                 </View>
             </ScrollView>

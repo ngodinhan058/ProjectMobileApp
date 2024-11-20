@@ -19,6 +19,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './src/screens/api/config';
+import * as encoding from 'text-encoding';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
