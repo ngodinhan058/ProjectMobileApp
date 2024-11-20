@@ -2,41 +2,110 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    Modal,
+    ScrollView,
     TouchableOpacity,
-    StyleSheet,
-    FlatList,
-    Image,
     TextInput,
-    Pressable,
     ActivityIndicator,
     Alert,
+    StyleSheet,
+    Pressable,
 } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
-import { LinearGradient } from 'expo-linear-gradient';
 
+const AddCouponScreen = ({ navigation }) => {
+    const COUPON_PER_HUNDRED_TYPE = 0;
+    const COUPON_PRICE_TYPE = 1;
+    const COUPON_SHIP_TYPE = 2;
 
-const AddPermissionScreen = ({ navigation }) => {
-    const [PermissionName, setPermissionName] = useState();
+    const [couponName, setCouponName] = useState('');
+    const [couponCode, setCouponCode] = useState('');
+    const [couponRelease, setCouponRelease] = useState('');
+    const [couponExpire, setCouponExpire] = useState('');
+    const [couponQuantity, setCouponQuantity] = useState('');
+    const [couponPerHundred, setCouponPerHundred] = useState('');
+    const [couponPrice, setCouponPrice] = useState('');
+    const [couponFeeShip, setCouponFeeShip] = useState('');
+    const [couponType, setCouponType] = useState(COUPON_PER_HUNDRED_TYPE); // Default to percentage
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleAddPermission = async () => {
+    const handleAddCoupon = async () => {
+        if (!couponName || !couponCode || !couponRelease || !couponQuantity) {
+            Alert.alert('Error', 'Vui lòng nhập đầy đủ thông tin');
+            return;
+        }
+
         try {
-            setIsLoading(true)
+            setIsLoading(true);
             const payload = {
-                permissionName: PermissionName,
+                couponName,
+                couponCode,
+                couponRelease,
+                couponExpire,
+                couponQuantity: parseInt(couponQuantity),
+                couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
+                couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
+                couponType,
             };
+            console.log("payload", payload);
 
-            const apiUrl = `${BASE_URL}auth/permission`;
-            const response = await axios.post(apiUrl, payload);
+            const apiUrl = `${BASE_URL}coupon`;
+            await axios.post(apiUrl, payload);
 
-            Alert.alert('Success', 'Permission updated successfully');
-            navigation.replace('PermissionList');
+            Alert.alert('Success', 'Thêm mã giảm giá thành công');
+            navigation.replace('CouponList'); // Chuyển hướng sau khi thêm thành công
         } catch (error) {
-            Alert.alert('Error', 'Failed to update Permission');
+            Alert.alert('Error', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const renderInputForCouponType = () => {
+        switch (couponType) {
+            case COUPON_PER_HUNDRED_TYPE:
+                return (
+                    <>
+                        <Text style={styles.label}>Giảm Giá (%):</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập phần trăm giảm giá"
+                            keyboardType="numeric"
+                            value={couponPerHundred}
+                            onChangeText={setCouponPerHundred}
+                        />
+                    </>
+                );
+            case COUPON_PRICE_TYPE:
+                return (
+                    <>
+                        <Text style={styles.label}>Giảm Giá (VNĐ):</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập số tiền giảm giá"
+                            keyboardType="numeric"
+                            value={couponPrice}
+                            onChangeText={setCouponPrice}
+                        />
+                    </>
+                );
+            case COUPON_SHIP_TYPE:
+                 return (
+                    <>
+                        <Text style={styles.label}>Giảm Phí Vận Chuyển (VNĐ):</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập số tiền giảm giá"
+                            keyboardType="numeric"
+                            value={couponFeeShip}
+                            onChangeText={setCouponFeeShip}
+                        />
+                    </>
+                );
+            default:
+                return null;
         }
     };
 
@@ -47,29 +116,100 @@ const AddPermissionScreen = ({ navigation }) => {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#fff" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Thêm Thông Tin Quyền Cho Phép</Text>
+                    <Text style={styles.textHeader}>Thêm Mã Giảm Giá</Text>
                 </LinearGradient>
+
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Thêm Mã Quyền Cho Phép:</Text>
+                    <Text style={styles.label}>Tên Mã Giảm Giá:</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Nhập Tên Quyền Cho Phép"
-                        value={PermissionName}
-                        onChangeText={setPermissionName}
+                        placeholder="Nhập tên mã giảm giá"
+                        value={couponName}
+                        onChangeText={setCouponName}
                     />
 
+                    <Text style={styles.label}>Mã Giảm Giá:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập mã giảm giá"
+                        value={couponCode}
+                        onChangeText={setCouponCode}
+                    />
+
+                    <Text style={styles.label}>Ngày Phát Hành:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="YYYY-MM-DD"
+                        value={couponRelease}
+                        onChangeText={setCouponRelease}
+                    />
+
+                    <Text style={styles.label}>Ngày Hết Hạn:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="YYYY-MM-DD"
+                        value={couponExpire}
+                        onChangeText={setCouponExpire}
+                    />
+
+                    <Text style={styles.label}>Số Lượng:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập số lượng"
+                        keyboardType="numeric"
+                        value={couponQuantity}
+                        onChangeText={setCouponQuantity}
+                    />
+
+                    <Text style={styles.label}>Loại Coupon:</Text>
+                    <View style={styles.radioContainer}>
+                        <TouchableOpacity
+                            style={styles.radioButton}
+                            onPress={() => setCouponType(COUPON_PER_HUNDRED_TYPE)}
+                        >
+                            <Icon
+                                name={couponType === COUPON_PER_HUNDRED_TYPE ? 'dot-circle-o' : 'circle-o'}
+                                size={25}
+                                color="#000"
+                            />
+                            <Text style={styles.radioText}>Giảm Giá (%)</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.radioButton}
+                            onPress={() => setCouponType(COUPON_PRICE_TYPE)}
+                        >
+                            <Icon
+                                name={couponType === COUPON_PRICE_TYPE ? 'dot-circle-o' : 'circle-o'}
+                                size={25}
+                                color="#000"
+                            />
+                            <Text style={styles.radioText}>Giảm Giá (VNĐ)</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.radioButton}
+                            onPress={() => setCouponType(COUPON_SHIP_TYPE)}
+                        >
+                            <Icon
+                                name={couponType === COUPON_SHIP_TYPE ? 'dot-circle-o' : 'circle-o'}
+                                size={25}
+                                color="#000"
+                            />
+                            <Text style={styles.radioText}>Giảm Giá Vận Chuyển</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {renderInputForCouponType()}
                 </View>
             </ScrollView>
-            <TouchableOpacity style={{
-                width: '100%',
-                backgroundColor: '#3669c9',
-                paddingVertical: 15,
-                borderRadius: 8,
-                alignItems: 'center',
-                marginBottom: 10,
-            }} onPress={handleAddPermission} disabled={isLoading}>
+
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleAddCoupon}
+                disabled={isLoading}
+            >
                 <Text style={styles.buttonText}>Thêm</Text>
             </TouchableOpacity>
+
             {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#3669c9" />
@@ -80,152 +220,81 @@ const AddPermissionScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    overlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1,
-    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
     },
     header: {
-
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         padding: 15,
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
-        marginBottom: 15,
-        borderRadius: 10,
+        backgroundColor: '#2196F3',
     },
     textHeader: {
         fontWeight: 'bold',
         fontSize: 18,
-        textAlign: 'center',
         color: '#fff',
         flex: 1,
+        textAlign: 'center',
     },
     backButton: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#fff',
         marginRight: 10,
     },
-    imageContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    imageIcon: {
-        width: 155,
-        height: 140,
-        marginVertical: 20,
-    },
     formContainer: {
-        flex: 1,
         paddingHorizontal: 20,
+        marginTop: 10,
+    },
+    label: {
+        fontSize: 16,
+        marginBottom: 5,
     },
     input: {
         height: 50,
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 8,
-        marginBottom: 10,
-        paddingHorizontal: 10,
-        justifyContent: 'center'
+        marginBottom: 15,
+        paddingHorizontal: 15,
     },
-    label: {
-        fontSize: 16,
-        marginBottom: 10,
+    radioContainer: {
+        justifyContent: 'space-between',
+        marginBottom: 15,
     },
-    dropdown: {
-        padding: 15,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        marginBottom: 20,
-    },
-    selectedValue: {
-        fontSize: 16,
-    },
-
-    modalView: {
-        position: 'absolute',
-        width: '90%',
-        marginHorizontal: 20,
-        padding: 30,
-        backgroundColor: 'white',
-        borderRadius: 20,
+    radioButton: {
+        flexDirection: 'row',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        height: 400
+        marginVertical: 8
     },
-    modalItem: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        width: '100%',
-    },
-    modalText: {
+    radioText: {
+        marginLeft: 5,
         fontSize: 16,
     },
-
-    buttonPost: {
-        width: '40%',
+    infoText: {
+        fontSize: 16,
+        fontStyle: 'italic',
+        marginBottom: 15,
+    },
+    addButton: {
         backgroundColor: '#3669c9',
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: 'center',
-        marginVertical: 10,
-        marginLeft: '60%'
+        marginBottom: 10,
+        marginHorizontal: 20,
     },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
-
     },
-    modalOverlay: {
-        flex: 1,
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Làm nền modal tối
+        alignItems: 'center',
     },
-    searchBar: {
-        position: 'relative',
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    searchInput: {
-        flex: 1,
-        height: 50,
-        backgroundColor: '#FAFAFA',
-        borderRadius: 10,
-        padding: 10,
-    },
-    icon: {
-        width: 20,
-        height: 20,
-        marginLeft: 10,
-    },
-    iconCenter: {
-        width: 20,
-        height: 20,
-        position: 'absolute',
-        alignContent: 'center',
-        top: 15,
-    },
-
 });
 
-export default AddPermissionScreen;
+export default AddCouponScreen;

@@ -2,112 +2,114 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    Image,
-    StyleSheet,
     ScrollView,
+    StyleSheet,
     TouchableOpacity,
+    Alert,
     Animated,
     Pressable,
-    Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
+function CouponDetailScreen({ route, navigation }) {
+    const { id, couponName, couponCode, couponRelease, couponExpire, couponQuantity, couponPerHundred, couponPrice, couponType } = route.params;
 
-function DetailScreen({ route, navigation }) {
-    const { id, name } = route.params;
-
-    // State quản lý việc nút mở rộng được mở hay không
+    // State cho nút mở rộng
     const [isOpen, setIsOpen] = useState(false);
-    const [animation] = useState(new Animated.Value(0)); // giá trị hoạt ảnh
-    const [rotation] = useState(new Animated.Value(0));
+    const [animation] = useState(new Animated.Value(0)); // Hoạt ảnh chính
+    const [rotation] = useState(new Animated.Value(0)); // Hoạt ảnh xoay
 
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
 
-        // Thực hiện animation
+        // Animation mở rộng
         Animated.timing(animation, {
             toValue,
             duration: 300,
             useNativeDriver: false,
         }).start();
 
-        setIsOpen(!isOpen);
-
-        // Thực hiện animation xoay icon
+        // Animation xoay
         Animated.timing(rotation, {
             toValue: isOpen ? 0 : 1,
             duration: 300,
-            useNativeDriver: true, // Để hiệu ứng xoay mượt hơn
+            useNativeDriver: true,
         }).start();
 
         setIsOpen(!isOpen);
     };
 
-    // Tạo hiệu ứng mở các nút theo chiều dọc
     const position1 = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [30, 160], // Chuyển từ vị trí của editButton lên trên
+        outputRange: [30, 160],
     });
     const position2 = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [30, 100], // Chuyển từ vị trí của editButton lên trên
+        outputRange: [30, 100],
     });
-    // Tạo hiệu ứng xoay dựa trên giá trị của rotation
     const rotateIcon = rotation.interpolate({
         inputRange: [0, 1],
-        outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
+        outputRange: ['0deg', '90deg'],
     });
-    const deletePermission = async () => {
+    const deleteCoupon = async () => {
         try {
-            const apiUrl = `${BASE_URL}product-sizes/${id}`;
-
-            // Using request config to add data in the body
-            const response = await axios.delete(apiUrl);
-
-            Alert.alert("Success", "Xoá Thành Công");
-            navigation.replace('SizeList');
+            const apiUrl = `${BASE_URL}coupon/${id}`;
+            await axios.delete(apiUrl);
+            Alert.alert('Thành công', 'Coupon đã được xoá');
+            navigation.replace('CouponList');
         } catch (error) {
-            console.error('Error deleting Size:', error.response ? error.response.data : error.message);
-            Alert.alert("Error", "Failed to delete Size.");
+            console.error('Error deleting coupon:', error.response ? error.response.data : error.message);
+            Alert.alert('Lỗi', 'Xoá coupon thất bại.');
         }
     };
-
 
     return (
         <View style={styles.container}>
             <ScrollView>
-                <View style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}>
-                    <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
-                        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-                            <Icon name="angle-left" size={35} color="#fff" />
-                        </Pressable>
-                        <Text style={styles.textHeader}>Chi Tiết Quyền Cho Phép</Text>
-                    </LinearGradient>
+                <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
+                    <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Icon name="angle-left" size={35} color="#fff" />
+                    </Pressable>
+                    <Text style={styles.textHeader}>Chi Tiết Coupon</Text>
+                </LinearGradient>
 
-                    {/* Product Image */}
-                    <View style={{
-                        width: 200,
-                        height: 200,
-                        // backgroundColor: `${name}`,
-                        borderRadius: 200
-                    }}>
-                    </View>
+                {/* Thông tin chi tiết Coupon */}
+                <View style={styles.detailContainer}>
+                    <Text style={styles.detailLabel}>Tên Coupon:</Text>
+                    <Text style={styles.detailValue}>{couponName}</Text>
+
+                    <Text style={styles.detailLabel}>Mã Coupon:</Text>
+                    <Text style={styles.detailValue}>{couponCode}</Text>
+
+                    <Text style={styles.detailLabel}>Ngày Phát Hành:</Text>
+                    <Text style={styles.detailValue}>{couponRelease}</Text>
+
+                    <Text style={styles.detailLabel}>Ngày Hết Hạn:</Text>
+                    <Text style={styles.detailValue}>{couponExpire || 'Không xác định'}</Text>
+
+                    <Text style={styles.detailLabel}>Số Lượng:</Text>
+                    <Text style={styles.detailValue}>{couponQuantity}</Text>
+
+                    <Text style={styles.detailLabel}>Phần Trăm Giảm Giá:</Text>
+                    <Text style={styles.detailValue}>{couponPerHundred || 'Không áp dụng'}%</Text>
+
+                    <Text style={styles.detailLabel}>Số Tiền Giảm Giá:</Text>
+                    <Text style={styles.detailValue}>{couponPrice || 'Không áp dụng'} VNĐ</Text>
+
+                    <Text style={styles.detailLabel}>Loại Coupon:</Text>
+                    <Text style={styles.detailValue}>
+                        {couponType === 0
+                            ? 'Phần Trăm'
+                            : couponType === 1
+                                ? 'Số Tiền'
+                                : 'Giảm Phí Ship'}
+                    </Text>
                 </View>
-                {/* Product info */}
-                <View style={styles.productInfo}>
-                    <Text style={styles.title}>Tên Quyền Cho Phép: </Text>
-                    <Text style={styles.productName}>{name}</Text>
-                </View>
-                
             </ScrollView>
 
-            {/* Add Button */}
             <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
                 <Animated.View style={{ transform: [{ rotate: rotateIcon }] }}>
                     <Icon name="cog" size={30} color="#fff" />
@@ -117,7 +119,19 @@ function DetailScreen({ route, navigation }) {
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
                 <TouchableOpacity
                     style={styles.iconButton}
-                    onPress={() => navigation.navigate('EditPermissionScreen', { id, name })}
+                    onPress={() => {
+                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
+                        navigation.navigate('EditProductScreen', {
+                            product: productsState,
+                            postDTO: {
+                                postName,
+                                postContent,
+                                postImagePath,
+                                postType,
+                                postStatusId: postStatus?.postStatusId
+                            }
+                        });
+                    }}
                 >
                     <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.iconButtonGradient}>
                         <Icon name="pencil" size={20} color="#fff" />
@@ -135,7 +149,7 @@ function DetailScreen({ route, navigation }) {
                                 text: "Huỷ",
                                 style: "cancel"
                             },
-                            { text: "Có", onPress: deletePermission }
+                            { text: "Có", onPress: deleteProduct }
                         ]
                     );
                 }}>
@@ -291,4 +305,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default DetailScreen;
+export default CouponDetailScreen;

@@ -96,12 +96,12 @@ function DetailScreen({ route, navigation }) {
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'],
     });
+    console.log("ádsadsad",id);
 
     const deleteProduct = async () => {
         setIsLoading(true);
         try {
             const rep = await axios.delete(`${BASE_URL}product/${id}`);
-            console.log("ádsadsad",rep);
             
             Alert.alert("Success", "Xoá Thành Công");
             navigation.replace("ProductList");

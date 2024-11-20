@@ -747,7 +747,7 @@ export default function App() {
   };
   const handleStateChange = async (state) => {
     const currentRoute = state.routes[state.index];
-    console.log('Current Route:', currentRoute.name);
+    // console.log('Current Route:', currentRoute.name);
 
     // If you want to fetch user data each time the navigation state changes
     if (
