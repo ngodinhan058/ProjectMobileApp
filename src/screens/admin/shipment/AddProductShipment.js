@@ -6,7 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { BASE_URL } from '../../api/config';
 import { ScrollView } from 'react-native-gesture-handler';
 
-const ShipmentForm = () => {
+const ShipmentForm = ({ navigation }) => {
     const [shipmentDate, setShipmentDate] = useState('2024-11-11');
     const [shipmentDiscount, setShipmentDiscount] = useState('');
     const [shipmentShipCost, setShipmentShipCost] = useState('');
@@ -69,7 +69,7 @@ const ShipmentForm = () => {
 
     const handleEditProduct = (productId) => {
         setSelectedProductForEdit(productId);
-        // setModalVisibility({ ...modalVisibility, productEdit: true });
+        setModalVisibility({ ...modalVisibility, productEdit: true });
     };
 
     // Hàm xử lý chọn kích thước cho từng sản phẩm
@@ -147,7 +147,8 @@ const ShipmentForm = () => {
                 },
             });
 
-            console.log('Form submitted:', response.data);
+            // console.log('Form submitted:', response.data);
+            navigation.replace('ShipmentList');
             Alert.alert('Success', 'Tạo Lô Hàng Thành Công');
         } catch (error) {
             // Xử lý lỗi nếu có phản hồi từ server hoặc lỗi kết nối

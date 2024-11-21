@@ -38,9 +38,25 @@ const ProfileScreen = ({ navigation }) => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('userData');
-      Alert.alert('Thành công', 'Đăng xuất thành công!');
-      navigation.navigate('Home'); // Điều hướng sau khi đăng nhập
+      Alert.alert(
+        'Xác nhận đăng xuất',
+        'Bạn muốn đăng xuất phải không?',
+        [
+          {
+            text: 'Huỷ',
+            style: 'cancel',
+          },
+          {
+            text: 'Đúng',
+            onPress: async () => {
+              await AsyncStorage.removeItem('userData');
+              Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+              navigation.navigate('Mega Mall');
+            },
+          },
+        ],
+        { cancelable: false }
+      );
     } catch (error) {
       Alert.alert('Thất bại', error);
     }

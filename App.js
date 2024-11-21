@@ -119,6 +119,13 @@ import AddRoleScreen from './src/screens/admin/role/AddRoleScreen';
 import EditRoleScreen from './src/screens/admin/role/EditRoleScreen';
 import DetailRoleScreen from './src/screens/admin/role/DetailRoleScreen';
 {
+  /* Admin Coupon*/
+}
+import HomeCouponScreen from './src/screens/admin/coupon/HomeScreen';
+import AddCouponScreen from './src/screens/admin/coupon/AddCouponScreen';
+import EditCouponScreen from './src/screens/admin/coupon/EditCouponScreen';
+import DetailCouponScreen from './src/screens/admin/coupon/DetailCouponScreen';
+{
   /* Shipper */
 }
 import ShipperHomeScreen from './src/screens/shipper/ShipperHomeScreen';
@@ -507,10 +514,6 @@ function PermissionAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="PermissionList" component={HomePermissionScreen} />
       <Stack.Screen
-        name="AddPermissionShipment"
-        component={AddPermissionScreen}
-      />
-      <Stack.Screen
         name="DetailPermissionScreen"
         component={DetailPermissionScreen}
       />
@@ -532,10 +535,31 @@ function RoleAdmin() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="RoleList" component={HomeRoleScreen} />
-      <Stack.Screen name="AddRoleShipment" component={AddRoleScreen} />
       <Stack.Screen name="DetailRoleScreen" component={DetailRoleScreen} />
       <Stack.Screen name="AddRoleScreen" component={AddRoleScreen} />
       <Stack.Screen name="EditRoleScreen" component={EditRoleScreen} />
+    </Stack.Navigator>
+  );
+}
+{
+  /* Admin Coupon */
+}
+function CouponAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="CouponList" component={HomeCouponScreen} />
+      <Stack.Screen
+        name="DetailCouponScreen"
+        component={DetailCouponScreen}
+      />
+      <Stack.Screen
+        name="AddCouponScreen"
+        component={AddCouponScreen}
+      />
+      <Stack.Screen
+        name="EditCouponScreen"
+        component={EditCouponScreen}
+      />
     </Stack.Navigator>
   );
 }
@@ -550,7 +574,9 @@ function AdminDrawerNavigator() {
       <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
       <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
       <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+      <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
       <Drawer.Screen name="Chat" component={ChatAdmin} />
+      <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
     </Drawer.Navigator>
   );
 }
@@ -743,7 +769,7 @@ export default function App() {
   };
   const handleStateChange = async (state) => {
     const currentRoute = state.routes[state.index];
-    console.log('Current Route:', currentRoute.name);
+    // console.log('Current Route:', currentRoute.name);
 
     // If you want to fetch user data each time the navigation state changes
     if (
