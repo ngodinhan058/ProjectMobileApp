@@ -73,6 +73,7 @@ const ProfileScreen = ({ navigation }) => {
             text: 'Đúng',
             onPress: async () => {
               await AsyncStorage.removeItem('userData');
+              await AsyncStorage.removeItem('userInfo');
               Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
               navigation.navigate('Mega Mall');
             },
