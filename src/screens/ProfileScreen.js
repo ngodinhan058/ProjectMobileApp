@@ -48,114 +48,141 @@ const ProfileScreen = ({ navigation }) => {
   // Logout function
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.iconHeader}>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="angle-left" size={35} color="#000" />
-        </Pressable>
-        <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
-        <Pressable style={styles.logoutButton} onPress={handleLogout}>
-          <IconI name="log-out-outline" size={25} color="#fff" />
-        </Pressable>
-      </View>
-      <View style={styles.whiteSection}>
-        {/* Header thông tin cá nhân */}
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Image
-              style={styles.avatar}
-              source={{
-                uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
-              }} // URL hình ảnh đại diện
-            />
-            <View>
-              <Text style={styles.name}>{user.username}</Text>
-              <Text style={styles.email}>{user.username}</Text>
-              <Text style={styles.balance}>0đ</Text>
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.iconHeader}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="angle-left" size={35} color="#000" />
+          </Pressable>
+          <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
+          <Pressable style={styles.logoutButton} onPress={handleLogout}>
+            <IconI name="log-out-outline" size={25} color="#fff" />
+          </Pressable>
+        </View>
+        <View style={styles.whiteSection}>
+          {/* Header thông tin cá nhân */}
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <Image
+                style={styles.avatar}
+                source={{
+                  uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
+                }} // URL hình ảnh đại diện
+              />
+              <View>
+                <Text style={styles.name}>{user.username}</Text>
+                <Text style={styles.email}>{user.username}</Text>
+                <Text style={styles.balance}>0đ</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.editIcon}
+                onPress={() => navigation.navigate('BioDataScreen')}
+              >
+                <Icon name="pencil" size={20} color="#fff" />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={styles.editIcon}
-              onPress={() => navigation.navigate('BioDataScreen')}
-            >
-              <Icon name="pencil" size={20} color="#fff" />
-            </TouchableOpacity>
+          </View>
+          {/* Đơn hàng của tôi */}
+          <View style={styles.orderSection}>
+            <Text style={styles.sectionTitle}>Đơn Hàng Của Tôi</Text>
+
+            <View style={styles.line}></View>
+            <View style={styles.orderOptionContainer}>
+              <TouchableOpacity
+                style={styles.orderOption}
+                onPress={() =>
+                  navigation.navigate('MyOrderScreen', { initialRoute: '' })
+                }
+              >
+                <Image
+                  source={require('../assets/pay.png')}
+                  style={styles.icon}
+                />
+                <Text style={styles.text}>Pay</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.orderOption}
+                onPress={() =>
+                  navigation.navigate('MyOrderScreen', {
+                    initialRoute: 'preparing',
+                  })
+                }
+              >
+                <Image
+                  source={require('../assets/ship.png')}
+                  style={styles.icon}
+                />
+                <Text style={styles.text}>Ship</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.orderOption}
+                onPress={() =>
+                  navigation.navigate('MyOrderScreen', {
+                    initialRoute: 'shipping',
+                  })
+                }
+              >
+                <Image
+                  source={require('../assets/box_pro.png')}
+                  style={styles.icon}
+                />
+                <Text style={styles.text}>Đang giao</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.orderOption}
+                onPress={() => navigation.navigate('')}
+              >
+                <Image
+                  source={require('../assets/review.png')}
+                  style={styles.icon}
+                />
+                <Text style={styles.text}>Đánh Giá</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.orderOption}
+                onPress={() => navigation.navigate('')}
+              >
+                <Image
+                  source={require('../assets/undo.png')}
+                  style={styles.icon}
+                />
+                <Text style={styles.text}>Trả Hàng</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-        {/* Đơn hàng của tôi */}
-        <View style={styles.orderSection}>
-          <Text style={styles.sectionTitle}>Đơn Hàng Của Tôi</Text>
-
-          <View style={styles.line}></View>
-          <View style={styles.orderOptionContainer}>
-            <TouchableOpacity
-              style={styles.orderOption}
-              onPress={() =>
-                navigation.navigate('MyOrderScreen', { initialRoute: '' })
-              }
-            >
-              <Image
-                source={require('../assets/pay.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.text}>Pay</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.orderOption}
-              onPress={() =>
-                navigation.navigate('MyOrderScreen', {
-                  initialRoute: 'preparing',
-                })
-              }
-            >
-              <Image
-                source={require('../assets/ship.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.text}>Ship</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.orderOption}
-              onPress={() =>
-                navigation.navigate('MyOrderScreen', {
-                  initialRoute: 'shipping',
-                })
-              }
-            >
-              <Image
-                source={require('../assets/box_pro.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.text}>Đang giao</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.orderOption}
-              onPress={() => navigation.navigate('')}
-            >
-              <Image
-                source={require('../assets/review.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.text}>Đánh Giá</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.orderOption}
-              onPress={() => navigation.navigate('')}
-            >
-              <Image
-                source={require('../assets/undo.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.text}>Trả Hàng</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      </ScrollView>
+      <View style={{ flex: 1, position: 'relative' }}>
+        {/* Container chính */}
+        <TouchableOpacity
+          style={{
+            position: 'absolute', // Để nút nằm ngoài luồng bình thường
+            bottom: '10%',// Vị trí so với cạnh trên
+            right: 20,
+            backgroundColor: '#3669c9',
+            width: 60, // Định rõ kích thước hình ảnh
+            height: 60,
+            borderRadius: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 4,
+          }}
+          onPress={() => navigation.navigate('ChatScreen', { id: user?.userId })}
+        >
+          <Ionicons name="chatbox-ellipses-outline" size={30} color="#fff" />
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+
+    </>
   );
 };
 
