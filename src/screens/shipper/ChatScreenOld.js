@@ -1,124 +1,68 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   FlatList,
   TextInput,
   TouchableOpacity,
-  Image,
   StyleSheet,
+  Image,
 } from 'react-native';
-import { Client as StompClient } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import axios from 'axios';
-import { BASE_URL } from '../api/config_onlyURL';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const ChatScreen = ({ navigation, route }) => {
-  const { id } = route.params;
-
-  const [messages, setMessages] = useState([]);
+const ChatScreen = ({ navigation }) => {
+  const [messages, setMessages] = useState([
+    {
+      id: '1',
+      text: 'Chào admin, bạn có thể kiểm tra đơn hàng #fff được không?',
+      isSender: true,
+    },
+    { id: '2', text: 'Bạn chờ trong giây lát nhé!', isSender: false },
+    {
+      id: '3',
+      text: 'Hiện tại, tình trạng đơn hàng đã nhận giao hàng. Bạn có vấn đề gì trong quá trình vận chuyển?',
+      isSender: false,
+    },
+    {
+      id: '4',
+      text: 'Shipper có giao hàng đến nơi nhưng gọi không bắt máy.',
+      isSender: true,
+    },
+  ]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
-  const stompClientRef = useRef(null);
 
-  // Lấy tin nhắn từ cơ sở dữ liệu
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(
-          `${BASE_URL}api/chat/messages?sender=User&receiver=Admin`
-        );
-        const data = await response.json();
-        const formattedMessages = data.map((msg) => ({
-          id: msg.id,
-          text: msg.content,
-          isSender: msg.sender === 'User',
-        }));
-        setMessages(formattedMessages);
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      }
-    };
-
-    fetchMessages();
-  }, []);
-
-  // Kết nối WebSocket
-  useEffect(() => {
-    const socketUrl =  `${BASE_URL}ws/chat`;
-    const stompClient = new StompClient({
-      brokerURL: socketUrl,
-      connectHeaders: {},
-      debug: (str) => console.log(str),
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      webSocketFactory: () => new SockJS(socketUrl),
-    });
-
-    stompClient.onConnect = () => {
-      console.log('Connected to WebSocket');
-      stompClient.subscribe('/topic/messages', (messageOutput) => {
-        const message = JSON.parse(messageOutput.body);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: Date.now().toString(),
-            text: message.content,
-            isSender: message.sender === 'User',
-          },
-        ]);
-      });
-    };
-
-    stompClient.onStompError = (error) => {
-      console.error('STOMP Error:', error);
-    };
-
-    stompClient.activate();
-    stompClientRef.current = stompClient;
-
-    return () => {
-      stompClient.deactivate();
-    };
-  }, []);
-
+  const renderMessage = ({ item }) => {
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          item.isSender ? styles.sender : styles.receiver,
+        ]}
+      >
+        <Text
+          style={item.isSender ? styles.messageTextSender : styles.messageText}
+        >
+          {item.text}
+        </Text>
+      </View>
+    );
+  };
+  // Gửi tin nhắn local
   const sendMessage = () => {
     if (inputText.trim()) {
-      const message = {
-        sender: 'User',
-        receiver: 'Admin',
-        content: inputText.trim(),
-        timestamp: new Date().toISOString(),
-      };
-
-      if (stompClientRef.current && stompClientRef.current.connected) {
-        stompClientRef.current.publish({
-          destination: '/app/chat',
-          body: JSON.stringify(message),
-        });
-        setInputText('');
-      } else {
-        console.error('STOMP client is not connected');
-      }
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: (prevMessages.length + 1).toString(),
+          text: inputText,
+          isSender: true,
+        },
+      ]);
+      setInputText('');
     }
   };
-
-  const renderMessage = ({ item }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.isSender ? styles.sender : styles.receiver,
-      ]}
-    >
-      <Text
-        style={item.isSender ? styles.messageTextSender : styles.messageText}
-      >
-        {item.text}
-      </Text>
-    </View>
-  );
-
+  // Tự động cuộn đến cuối khi có tin nhắn mới
   useEffect(() => {
     if (messages.length > 0) {
       flatListRef.current.scrollToEnd({ animated: true });
@@ -133,10 +77,10 @@ const ChatScreen = ({ navigation, route }) => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={{ fontSize: 20 }}>{"<"}</Text>
+          <Icon name="angle-left" size={30} color="#000" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Chat User</Text>
+          <Text style={styles.headerTitle}>Chat</Text>
           <View style={styles.onlineStatusContainer}>
             <View style={styles.onlineDot} />
             <Text style={styles.onlineText}>Online</Text>
@@ -144,16 +88,20 @@ const ChatScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      {/* Messages */}
+      {/* FlatList for messages */}
       <FlatList
-        ref={flatListRef}
+        ref={flatListRef} // Gắn tham chiếu cho FlatList
         data={messages}
         renderItem={renderMessage}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        onContentSizeChange={() =>
+          flatListRef.current.scrollToEnd({ animated: true })
+        } // Tự cuộn khi có thay đổi nội dung
       />
 
-      {/* Input */}
+      {/* Input section */}
+     
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -265,4 +213,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 export default ChatScreen;
