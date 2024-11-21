@@ -10,25 +10,29 @@ import {
 } from 'react-native';
 import { Client as StompClient } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const ChatScreen = ({ navigation }) => {
+const ChatScreen = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
   const stompClientRef = useRef(null);
 
+  const { email, userFirstName, userLastName } = route.params;
+  console.log("idádasd",email);
+  
   // Lấy tin nhắn từ cơ sở dữ liệu
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          'http://192.168.219.16:8080/api/chat/messages?sender=Admin&receiver=User'
+          `http://192.168.219.16:8080/api/chat/messages?sender=admin@gmail.com&receiver=${email}`
         );
         const data = await response.json();
         const formattedMessages = data.map((msg) => ({
           id: msg.id,
           text: msg.content,
-          isSender: msg.sender === 'Admin',
+          isSender: msg.sender === 'admin@gmail.com',
         }));
         setMessages(formattedMessages);
       } catch (error) {
@@ -61,7 +65,7 @@ const ChatScreen = ({ navigation }) => {
           {
             id: Date.now().toString(),
             text: message.content,
-            isSender: message.sender === 'Admin',
+            isSender: message.sender === 'admin@gmail.com',
           },
         ]);
       });
@@ -82,8 +86,8 @@ const ChatScreen = ({ navigation }) => {
   const sendMessage = () => {
     if (inputText.trim()) {
       const message = {
-        sender: 'Admin',
-        receiver: 'User',
+        sender: 'admin@gmail.com',
+        receiver: email,
         content: inputText.trim(),
         timestamp: new Date().toISOString(),
       };
@@ -129,10 +133,10 @@ const ChatScreen = ({ navigation }) => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={{ fontSize: 20 }}>{"<"}</Text>
+          <Icon name="angle-left" size={30} color="#000" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Chat Admin</Text>
+          <Text style={styles.headerTitle}>{email}</Text>
           <View style={styles.onlineStatusContainer}>
             <View style={styles.onlineDot} />
             <Text style={styles.onlineText}>Online</Text>

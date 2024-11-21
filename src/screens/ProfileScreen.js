@@ -15,26 +15,49 @@ import IconI from 'react-native-vector-icons/Ionicons';
 import ProductItem from '../components/ProductItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 
 const ProfileScreen = ({ navigation }) => {
-  const [user, setUser] = useState({});
+  // const [user, setUser] = useState({});
+
+  // useEffect(() => {
+  //   const loadUser = async () => {
+  //     try {
+  //       const savedCart = await AsyncStorage.getItem('userData');
+
+  //       if (savedCart) {
+  //         const { username, token } = JSON.parse(savedCart);
+  //         setUser({ username, token });
+  //       }
+  //     } catch (error) {
+  //       console.error('Error loading cart from AsyncStorage:', error);
+  //     }
+  //   };
+
+  //   loadUser();
+  // }, []);
+  const [user, setUserInfo] = useState(null);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const fetchUserInfo = async () => {
       try {
-        const savedCart = await AsyncStorage.getItem('userData');
+        // Lấy dữ liệu từ AsyncStorage
+        const userInfoString = await AsyncStorage.getItem('userInfo');
 
-        if (savedCart) {
-          const { username, token } = JSON.parse(savedCart);
-          setUser({ username, token });
+        // Nếu có dữ liệu thì parse nó thành JSON
+        if (userInfoString) {
+          const userInfoData = JSON.parse(userInfoString);
+          setUserInfo(userInfoData); // Lưu vào state
         }
       } catch (error) {
-        console.error('Error loading cart from AsyncStorage:', error);
+        console.error('Error fetching user info from AsyncStorage:', error);
       }
     };
 
-    loadUser();
+    fetchUserInfo();
   }, []);
+  console.log("user",user);
 
   const handleLogout = async () => {
     try {
@@ -89,8 +112,8 @@ const ProfileScreen = ({ navigation }) => {
                 }} // URL hình ảnh đại diện
               />
               <View>
-                <Text style={styles.name}>{user.username}</Text>
-                <Text style={styles.email}>{user.username}</Text>
+                <Text style={styles.name}>{user?.userFirstName} {user?.userLastName}</Text>
+                <Text style={styles.email}>{user?.userEmail}</Text>
                 <Text style={styles.balance}>0đ</Text>
               </View>
               <TouchableOpacity
@@ -192,13 +215,18 @@ const ProfileScreen = ({ navigation }) => {
             shadowRadius: 4,
             elevation: 4,
           }}
-          onPress={() => navigation.navigate('ChatScreen', { id: user?.userId })}
+          onPress={() => navigation.navigate('ChatScreen', {
+            email: user?.userEmail,
+            userFirstName: user?.userFirstName,
+            userLastName: user?.userLastName,
+          })}
         >
           <Ionicons name="chatbox-ellipses-outline" size={30} color="#fff" />
         </TouchableOpacity>
       </View>
 
     </>
+
   );
 };
 
