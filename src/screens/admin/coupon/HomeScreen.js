@@ -28,8 +28,8 @@ const HomeAdminScreen = ({ navigation }) => {
 
     const renderCoupon = ({ item }) => {
         const discountInfo = item.couponPerHundred
-            ? `${item.couponPerHundred}% Off`
-            : `$${item.couponPrice} Off`;
+            ? `${item.couponPerHundred}%`
+            : `$${item.couponPrice}`;
 
         return (
             <View style={{ paddingHorizontal: 20 }}>
@@ -38,20 +38,32 @@ const HomeAdminScreen = ({ navigation }) => {
                     onPress={() =>
                         navigation.navigate('DetailCouponScreen', {
                             id: item.couponId,
-                            name: item.couponName,
-                            discount: discountInfo,
+
                         })
                     }
                 >
+                    <View style={{
+                        width: 80, height: 80, borderWidth: 1, borderColor: '#eee', borderRadius: 70, shadowColor: '#000', backgroundColor: '#fff',
+                        shadowOffset: {
+                            width: 0,
+                            height: 1,
+                        },
+                        shadowOpacity: 0.27,
+                        shadowRadius: 4.65,
+                        elevation: 6,
+                        justifyContent: 'center',
+                    }}>
+                        <Text style={{ fontSize: 21, color: 'red', textAlign: 'center',  }}>
+                            {discountInfo}
+                        </Text>
+                    </View>
                     <View style={styles.couponDetails}>
                         <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 20 }}>
                             {item.couponName}
                         </Text>
-                        <Text style={{ fontSize: 14, color: '#757575', marginLeft: 20 }}>
-                            {discountInfo}
-                        </Text>
+
                     </View>
-                    <Pressable>
+                    <Pressable style={{ marginLeft: 10 }}>
                         <Icon name="arrow-forward-circle-outline" size={25} color="#000" />
                     </Pressable>
                 </TouchableOpacity>
@@ -151,8 +163,9 @@ const styles = StyleSheet.create({
     productList: {
         flex: 1,
     },
-    productItem: {
+    couponItem: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#fff',
         padding: 20,
@@ -168,19 +181,11 @@ const styles = StyleSheet.create({
         shadowRadius: 4.65,
         elevation: 6,
     },
-    productIcon: {
-        width: 55,
-        height: 55,
-        marginLeft: 5,
-        marginTop: 5,
-    },
-    productDetails: {
+    couponDetails: {
         flex: 1,
+        textAlign: 'center',
     },
 
-    childList: {
-        paddingLeft: 20, // Thêm khoảng cách cho danh sách con
-    },
     addButton: {
         position: 'absolute',
         bottom: 30,

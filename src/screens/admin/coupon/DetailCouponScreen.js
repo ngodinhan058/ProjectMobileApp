@@ -15,8 +15,9 @@ import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
 function CouponDetailScreen({ route, navigation }) {
-    const { id, couponName, couponCode, couponRelease, couponExpire, couponQuantity, couponPerHundred, couponPrice, couponType } = route.params;
-
+    const { id, couponName, couponCode, couponRelease, couponExpire, couponQuantity, couponPerHundred, couponPrice, couponFeeShip, couponType } = route.params;
+    console.log(id);
+    
     // State cho nút mở rộng
     const [isOpen, setIsOpen] = useState(false);
     const [animation] = useState(new Animated.Value(0)); // Hoạt ảnh chính
@@ -93,12 +94,25 @@ function CouponDetailScreen({ route, navigation }) {
                     <Text style={styles.detailLabel}>Số Lượng:</Text>
                     <Text style={styles.detailValue}>{couponQuantity}</Text>
 
-                    <Text style={styles.detailLabel}>Phần Trăm Giảm Giá:</Text>
-                    <Text style={styles.detailValue}>{couponPerHundred || 'Không áp dụng'}%</Text>
 
-                    <Text style={styles.detailLabel}>Số Tiền Giảm Giá:</Text>
-                    <Text style={styles.detailValue}>{couponPrice || 'Không áp dụng'} VNĐ</Text>
 
+
+
+                    <Text style={styles.detailLabel}>
+                        {couponType === 0
+                            ? 'Phần Trăm Giảm Giá:'
+                            : couponType === 1
+                                ? 'Số Tiền Giảm Giá:'
+                                : 'Miễn Phí Vận Chuyển:'}
+                    </Text>
+                    <Text style={styles.detailValue}>
+                        {couponType === 0
+                            ? `${couponPerHundred || 'Không áp dụng'} %`
+                            : couponType === 1
+                                ? `${couponPrice || 'Không áp dụng'} VNĐ`
+                                : couponPrice ? `${couponPrice} VNĐ` 
+                                : `Miễn phí ${couponFeeShip || 'Không áp dụng'}`}
+                    </Text>
                     <Text style={styles.detailLabel}>Loại Coupon:</Text>
                     <Text style={styles.detailValue}>
                         {couponType === 0
@@ -120,16 +134,17 @@ function CouponDetailScreen({ route, navigation }) {
                 <TouchableOpacity
                     style={styles.iconButton}
                     onPress={() => {
-                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
-                        navigation.navigate('EditProductScreen', {
-                            product: productsState,
-                            postDTO: {
-                                postName,
-                                postContent,
-                                postImagePath,
-                                postType,
-                                postStatusId: postStatus?.postStatusId
-                            }
+                        navigation.navigate('EditCouponScreen', {
+                            couponId: id,
+                            couponName: couponName,
+                            couponCode: couponCode,
+                            couponRelease: couponRelease,
+                            couponExpire: couponExpire,
+                            couponQuantity: couponQuantity,
+                            couponPerHundred: couponPerHundred,
+                            couponPrice: couponPrice,
+                            couponFeeShip: couponFeeShip,
+                            couponType: couponType,
                         });
                     }}
                 >
@@ -149,7 +164,7 @@ function CouponDetailScreen({ route, navigation }) {
                                 text: "Huỷ",
                                 style: "cancel"
                             },
-                            { text: "Có", onPress: deleteProduct }
+                            { text: "Có", onPress: deleteCoupon }
                         ]
                     );
                 }}>
@@ -166,7 +181,7 @@ const styles = StyleSheet.create({
     container: {
 
         height: '100%',
-        backgroundColor: '#eee',
+        backgroundColor: '#fff',
     },
     header: {
 
@@ -201,58 +216,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    productInfo: {
-        flexDirection: 'column',
-        marginTop: 10,
-        marginBottom: 10,
-        paddingHorizontal: 20,
-    },
-    title: {
-        textTransform: 'uppercase',
-        fontSize: 20,
-        fontWeight: '700',
-        marginVertical: 10
-    },
-    productName: {
-        textTransform: 'uppercase',
-        fontSize: 18,
-        fontWeight: '500',
-        marginHorizontal: 10
-    },
-    productPrice: {
-        color: '#FE3A30',
-        fontWeight: '500',
-        fontSize: 18,
-    },
-    productSale: {
-        fontSize: 15,
-    },
-    originalPrice: {
-        fontSize: 14,
-        color: '#888',
-        textDecorationLine: 'line-through',
-        marginTop: 10,
-    },
-    SoldProductInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    productStar: {
-        flexDirection: 'row',
-        gap: 5,
-    },
-    totalSellProduct: {
-        color: '#3A9B7A',
-    },
-    descriptionProductTitle: {
-        fontWeight: '800',
-        fontSize: 16,
-        paddingTop: 10,
-    },
-    descriptionProductText: {
-        lineHeight: 24,
-        paddingBottom: 10,
-    },
+    detailContainer: { padding: 20 },
+    detailLabel: { fontSize: 16, fontWeight: 'bold', marginTop: 10 },
+    detailValue: { fontSize: 16, marginBottom: 10 },
     editButton: {
         position: 'absolute',
         bottom: 30,

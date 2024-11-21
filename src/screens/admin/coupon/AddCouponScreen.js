@@ -38,7 +38,7 @@ const AddCouponScreen = ({ navigation }) => {
         }
 
         try {
-            setIsLoading(true);
+            setIsLoading(true);couponFeeShip
             const payload = {
                 couponName,
                 couponCode,
@@ -47,6 +47,7 @@ const AddCouponScreen = ({ navigation }) => {
                 couponQuantity: parseInt(couponQuantity),
                 couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
                 couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
+                couponFeeShip: couponType === COUPON_SHIP_TYPE ? parseFloat(couponFeeShip) : null,
                 couponType,
             };
             console.log("payload", payload);
