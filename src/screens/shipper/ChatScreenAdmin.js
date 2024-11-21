@@ -10,12 +10,8 @@ import {
 } from 'react-native';
 import { Client as StompClient } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import axios from 'axios';
-import { BASE_URL } from '../api/config_onlyURL';
 
-const ChatScreen = ({ navigation, route }) => {
-  const { id } = route.params;
-
+const ChatScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
@@ -26,13 +22,13 @@ const ChatScreen = ({ navigation, route }) => {
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          `${BASE_URL}api/chat/messages?sender=User&receiver=Admin`
+          'http://192.168.219.16:8080/api/chat/messages?sender=Admin&receiver=User'
         );
         const data = await response.json();
         const formattedMessages = data.map((msg) => ({
           id: msg.id,
           text: msg.content,
-          isSender: msg.sender === 'User',
+          isSender: msg.sender === 'Admin',
         }));
         setMessages(formattedMessages);
       } catch (error) {
@@ -45,7 +41,7 @@ const ChatScreen = ({ navigation, route }) => {
 
   // Kết nối WebSocket
   useEffect(() => {
-    const socketUrl =  `${BASE_URL}ws/chat`;
+    const socketUrl = 'http://192.168.219.16:8080/ws/chat';
     const stompClient = new StompClient({
       brokerURL: socketUrl,
       connectHeaders: {},
@@ -65,7 +61,7 @@ const ChatScreen = ({ navigation, route }) => {
           {
             id: Date.now().toString(),
             text: message.content,
-            isSender: message.sender === 'User',
+            isSender: message.sender === 'Admin',
           },
         ]);
       });
@@ -86,8 +82,8 @@ const ChatScreen = ({ navigation, route }) => {
   const sendMessage = () => {
     if (inputText.trim()) {
       const message = {
-        sender: 'User',
-        receiver: 'Admin',
+        sender: 'Admin',
+        receiver: 'User',
         content: inputText.trim(),
         timestamp: new Date().toISOString(),
       };
@@ -136,7 +132,7 @@ const ChatScreen = ({ navigation, route }) => {
           <Text style={{ fontSize: 20 }}>{"<"}</Text>
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Chat User</Text>
+          <Text style={styles.headerTitle}>Chat Admin</Text>
           <View style={styles.onlineStatusContainer}>
             <View style={styles.onlineDot} />
             <Text style={styles.onlineText}>Online</Text>
@@ -265,4 +261,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 export default ChatScreen;

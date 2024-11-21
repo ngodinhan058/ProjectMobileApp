@@ -157,7 +157,9 @@ import EditIdCardScreen from './src/screens/admin/user/idcard/EditIdCardScreen';
 import SuccessScreen from './src/screens/admin/SuccessScreen';
 
 import ModalConfirm from './src/screens/shipper/ModalConfirm';
+import HomeChatScreen from './src/screens/admin/chat/HomeScreen';
 import ChatScreen from './src/screens/shipper/ChatScreen';
+import ChatScreenAdmin from './src/screens/shipper/ChatScreenAdmin';
 
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
@@ -272,6 +274,14 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     {
       name: 'ChatScreen',
       component: ChatScreen,
+      options: {
+        headerShown: false, // Ẩn header
+      },
+      showFooter: false, // Đây là một thuộc tính tùy chỉnh bạn có thể xử lý riêng trong logic của mình
+    },
+    {
+      name: 'ChatScreenAdmin',
+      component: ChatScreenAdmin,
       options: {
         headerShown: false, // Ẩn header
       },
@@ -540,7 +550,19 @@ function AdminDrawerNavigator() {
       <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
       <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
       <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+      <Drawer.Screen name="Chat" component={ChatAdmin} />
     </Drawer.Navigator>
+  );
+}
+{
+  /* Admin Chat */
+}
+function ChatAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ChatList" component={HomeChatScreen} />
+      <Stack.Screen name="ChatScreenAdmin" component={ChatScreenAdmin} />
+    </Stack.Navigator>
   );
 }
 {
