@@ -54,23 +54,11 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
             key={index}
             onPress={() => handlePress(route.name)}
             style={styles.tabButton}
-          >
-            {userInfo ? (
-              <>
-                
-                <View style={{ borderWidth: 2, borderColor: '#3669c9', width: 30, height: 30, borderRadius: 30}}>
-                  <Image source={{ uri: userInfo?.userImagePath }} style={{ width: 24, height: 24, borderRadius: 24 }}/>
-                </View>
-                <Text style={{ color: isFocused ? '#3669c9' : '#999', fontSize: 12 }}>{userInfo?.userFirstName} {userInfo?.userLastName}</Text>
-              </>
-            ) : (
+          >   
               <>
                 <Icon name={iconName} size={24} color={isFocused ? '#3669c9' : '#999'} />
                 <Text style={{ color: isFocused ? '#3669c9' : '#999', fontSize: 12 }}>{route.name}</Text>
               </>
-            )}
-
-
           </TouchableOpacity>
         );
       })}
