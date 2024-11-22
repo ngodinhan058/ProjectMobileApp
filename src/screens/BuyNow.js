@@ -12,34 +12,27 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import CartItem from '../components/CartItem';
+import CartItem from '../components/CartItem_v2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './api/config';
 import axios from 'axios';
 import AlertComponent from '../components/AlertComponent';
 
 
-function AddToCartScreen({ route, navigation }) {
+function BuyNow({ route, navigation }) {
+  const { product, alertVisible, alertType, size, quantity, total } = route.params || {}; // Nhận params từ navigation
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Tiền mặt');
   const [selectedPaymentIcon, setSelectedPaymentIcon] = useState(require('../assets/wallet.png'));
   const [selectedPaymentUse, setSelectedPaymentUse] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
   const [invoiceOption, setInvoiceOption] = useState(false);
-  const [idCart, setIdCart] = useState([]);
 
-  const [cartData, setCartData] = useState([]);
-  const [cartDataUser, setCartDataUser] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [productsState, setProductsState] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
-
-  const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
-
-
-  const [total, setTotal] = useState();
-
+  const img = product?.productImages[0];
+  const convertTotal = total.toLocaleString() + " ₫"
 
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true },
@@ -81,157 +74,69 @@ function AddToCartScreen({ route, navigation }) {
 
     fetchUserInfo();
   }, []);
-  // console.log(userInfo?.userId);
-
-  const fetchData = async () => {
-    // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
-    setIsLoading(true);
-    const apiUrl = `${BASE_URL}carts/user/${userInfo?.userId}`;
-    try {
-      const response = await axios.get(apiUrl);
-      const userData = response.data.data.cartItem;
-      const cartTotal = response.data.data.productTotalPrice;
-      const idCart = response.data.data.cartId;
-      setIdCart(idCart)
-      setCartDataUser(userData); // Lưu giỏ hàng vào state
-      setTotal(cartTotal);
-    } catch (error) {
-      console.log('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, [userInfo?.userId]);
-  const [title, setTitle] = useState('');
-
-
-  const handleQuantityChangeUser = async (id, isDecrease, sizeId) => {
-    // Nếu giảm, kiểm tra số lượng không dưới 1 trước khi gửi yêu cầu
-
-    if (cartDataUser.productQuantity < 1) {
-      console.warn("Số lượng không thể nhỏ hơn 1.");
-      return;
-    }
-    // Chuẩn bị payload
-    const cartItemData = {
-      cartItem: {
-        productQuantity: 1, // -1 nếu giảm, +1 nếu tăng
-        productId: id,
-        sizeId: sizeId,
-      },
-    };
-
-    try {
-      // Gửi yêu cầu tương ứng dựa trên hành động
-      const response = isDecrease
-        ? await axios.delete(`${BASE_URL}cart/${idCart}`, { data: cartItemData }) // Xóa sản phẩm nếu giảm
-        : await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData); // Cập nhật nếu tăng
-
-      if (response.status === 200 || response.status === 201) {
-        console.log("Cập nhật giỏ hàng thành công:", response.data);
-        fetchData();
-      } else {
-        console.error("Không thể cập nhật giỏ hàng:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Lỗi khi cập nhật giỏ hàng:", error);
-    }
-  };
+  // Size ID
+  const selectedProductSize = product.productSizes.find(
+    (sizeId) => sizeId.productSizeName === size
+  );
+  // const fetchData = async () => {
+  //   // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
+  //   setIsLoading(true);
+  //   const apiUrl = `${BASE_URL}carts/user/${userInfo?.userId}`;
+  //   try {
+  //     const response = await axios.get(apiUrl);
+  //     const userData = response.data.data.cartItem;
+  //     const cartTotal = response.data.data.productTotalPrice;
+  //     const idCart = response.data.data.cartId;
+  //     setIdCart(idCart)
+  //     setCartDataUser(userData); // Lưu giỏ hàng vào state
+  //     setTotal(cartTotal);
+  //   } catch (error) {
+  //     console.log('Error fetching data:', error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  // useEffect(() => {
+  //   fetchData();
+  // }, [userInfo?.userId]);
 
 
-  // Delete item from cart
-  const handleDeleteUser = async (id, quantity, size) => {
-    const cartItemData = {
-      cartItem: {
-        productId: id,
-        sizeId: size,
-      },
-    };
-    try {
-      // Gửi yêu cầu xoá sản phẩm
-      const response = await axios.delete(`${BASE_URL}cart/${idCart}`, {
-        data: cartItemData,
-      });
 
-      if (response.status === 200) {
-        console.log("Sản phẩm đã được xoá:", response.data);
 
-        // Cập nhật giỏ hàng ngay trong state
-        const updatedCart = cartDataUser.filter(
-          (item) => !(item.productId === id && item.productSizeId === size)
-        );
-        setCartDataUser(updatedCart);
-
-        // Nếu cần, cập nhật tổng giá trị giỏ hàng
-        const newTotal = updatedCart.reduce(
-          (sum, item) => sum + item.productDiscountPrice * item.productQuantity,
-          0
-        );
-        setTotal(newTotal);
-
-        // Hiển thị thông báo thành công
-        setIsAlertVisible(true);
-        setTitle('Xoá Sản Phẩm Thành Công')
-      } else {
-        console.error("Không thể xoá sản phẩm khỏi giỏ hàng:", response.data.message);
-      }
-    } catch (error) {
-      // console.error("Lỗi khi xoá sản phẩm:", error.message);
-      setIsAlertVisible(true);
-      // setAlertType("error");
-    }
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView style={{ padding: 20 }}>
         <View>
-          <Text>Giao hàng đến</Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              gap: 20,
-              marginTop: 10,
-            }}
-          >
-            <Image source={require('../assets/location.png')} style={{ width: 18, height: 18 }} />
-            <Text style={{ flex: 2 }}>{userInfo?.userAddress}</Text>
-            {/* <Image source={require('../assets/edit.png')} style={{ width: 18, height: 18 }} /> */}
+          <View>
+            <Text>Giao hàng đến</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                gap: 20,
+                marginTop: 10,
+              }}
+            >
+              <Image source={require('../assets/location.png')} style={{ width: 18, height: 18 }} />
+              <Text style={{ flex: 2 }}>{userInfo?.userAddress}</Text>
+              {/* <Image source={require('../assets/edit.png')} style={{ width: 18, height: 18 }} /> */}
+            </View>
           </View>
-        </View>
-        <View>
+
           <View style={{ marginHorizontal: 2 }}>
-            {
-              userInfo?.userId ? (
-                cartDataUser.length > 0 ? (
-                  cartDataUser.map((item, index) => (
-                    <CartItem
-                      key={index}
-                      id={item.productId}
-                      name={item.productName}
-                      price={item.productDiscountPrice}
-                      oldPrice={item.productPrice}
-                      initialQuantity={item.productQuantity}
-                      sizeId={item.productSizeId}
-                      size={item.productSize}
-                      image={item.productImage}
-                      total={(item.productTotalPrice).toLocaleString() + " ₫"}
-                      onDelete={handleDeleteUser}
-                      onQuantityChange={handleQuantityChangeUser}
-                    // onInput={handleInputQuantityChange}
-                    />
-                  ))
-                ) : (
-                  <Text>Giỏ hàng của bạn trống</Text>
-                )
-              ) : (
-                null
-              )
-            }
+            <CartItem
+              key={product.productId}
+              id={product.productId}
+              name={product.productName}
+              price={product.productPrice}
+              initialQuantity={quantity}
+              size={size}
+              image={img.productImagePath}
+            // total={(product.productTotalPrice).toLocaleString() + " ₫"}
+            />
           </View>
+
           <View style={{ marginTop: 10, gap: 10 }}>
             <Text>Ghi Chú</Text>
             <TextInput
@@ -283,7 +188,7 @@ function AddToCartScreen({ route, navigation }) {
               }}
             >
               <Text>Tổng tạm tính</Text>
-              <Text style={{ color: '#3669C9' }}>{total}</Text>
+              <Text style={{ color: '#3669C9' }}>{convertTotal}</Text>
             </View>
             <View
               style={{
@@ -340,7 +245,7 @@ function AddToCartScreen({ route, navigation }) {
             <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
           <View style={{ justifyContent: 'center' }}>
-            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>{total}</Text>
+            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>{convertTotal}</Text>
           </View>
         </View>
 
@@ -391,7 +296,9 @@ function AddToCartScreen({ route, navigation }) {
       <AlertComponent
         title={alertType === 'success' ? 'Success' : 'Error'}
         description={
-          alertType === 'success' ? (title == '' ? 'Thêm Sản Phẩm Thành Công.': 'Xoá Sản Phẩm Thành Công.') : (null)
+          alertType === 'success'
+            ? 'Thêm Sản Phẩm Thành Công.'
+            : 'Thêm Sản Phẩm Thất Bại.'
         }
         alertType={alertType}
         visible={isAlertVisible}
@@ -506,4 +413,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddToCartScreen;
+export default BuyNow;

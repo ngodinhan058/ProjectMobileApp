@@ -23,6 +23,7 @@ import * as encoding from 'text-encoding';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
+import BuyNow from './src/screens/BuyNow';
 import BioDataScreen from './src/screens/BioDataScreen';
 import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -275,6 +276,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     {
       name: 'AddedProductToWishlist',
       component: AddedProductToWishlist,
+      showFooter: false,
+    },
+    {
+      name: 'BuyNow',
+      component: BuyNow,
       showFooter: false,
     },
     { name: 'AddToCartScreen', component: AddToCartScreen, showFooter: false },

@@ -6,27 +6,18 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-const CartItem = ({
+const CartItem_v2 = ({
     id,
     name,
     price,
-    oldPrice,
     initialQuantity,
     sizeId,
     size,
     image,
     total,
-    onDelete,
-    onQuantityChange,
-
 }) => {
     const [quantity, setQuantity] = useState(initialQuantity); // Quản lý state số lượng
-    const handleBlur = () => {
-        // Gửi số lượng khi mất focus
-        if (quantity) {
-            onInput(id, sizeId, quantity);
-        }
-    };
+
     return (
         <View style={styles.modalContainer}>
             <View style={styles.row}>
@@ -35,38 +26,23 @@ const CartItem = ({
                 </View>
                 <View style={styles.detailsContainer}>
                     <View style={styles.productRow}>
-                        <View>
-                            <Text
-                                style={styles.productName}
-                                numberOfLines={1}
-                                ellipsizeMode="tail"
-                            >
-                                {name}
-                            </Text>
-                        </View>
-                        <View>
-                            <TouchableOpacity style={{ position: 'absolute', right: 0}} onPress={() => onDelete(id, quantity, sizeId)}>
-                                <Icon name='trash' size={20} color={'#bbb'}/>
-                            </TouchableOpacity>
-                        </View>
+                        <Text
+                            style={styles.productName}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            {name}
+                        </Text>
+                        
                     </View>
                     <Text style={styles.productSize}>Màu: {size}</Text>
                     <View style={styles.infoContainer}>
                         <View>
                             <Text style={styles.productPrice}>{price}</Text>
-                            <Text style={styles.productOldPrice}>{oldPrice}</Text>
+                            <Text style={styles.productOldPrice}>{price}</Text>
                         </View>
                         <View style={styles.quantitySelector}>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    const newQuantity = Math.max(1, quantity - 1);
-                                    setQuantity(newQuantity);
-                                    onQuantityChange(id, true, sizeId); // Truyền hành động giảm số lượng
-                                }}
-                                style={styles.quantityButtonLeft}
-                            >
-                                <Text style={styles.quantityText}>-</Text>
-                            </TouchableOpacity>
+                           <Text>Số Lượng:</Text>
                             <TextInput
                                 style={styles.quantityInput}
                                 value={String(quantity)}
@@ -75,19 +51,9 @@ const CartItem = ({
                                     setQuantity(validText);
                                 }}
                                 editable={false}
-                                // onBlur={handleBlur}
                                 keyboardType="numeric"
                             />
-                            <TouchableOpacity
-                                onPress={() => {
-                                    const newQuantity = quantity + 1;
-                                    setQuantity(newQuantity);
-                                    onQuantityChange(id, false, sizeId); // Truyền hành động tăng số lượng
-                                }}
-                                style={styles.quantityButtonRight}
-                            >
-                                <Text style={styles.quantityText}>+</Text>
-                            </TouchableOpacity>
+                            
                         </View>
                     </View>
                 </View>
@@ -130,6 +96,7 @@ const styles = StyleSheet.create({
     },
     productRow: {
         flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 5,
     },
@@ -141,8 +108,8 @@ const styles = StyleSheet.create({
         marginRight: 10, // Khoảng cách với nút xóa
     },
     trashIcon: {
-        width: 30,
-        height: 35,
+        width: 20,
+        height: 20,
         tintColor: '#FE3A30',
     },
     productSize: {
@@ -196,8 +163,7 @@ const styles = StyleSheet.create({
     quantityInput: {
         width: 50,
         height: 30,
-        borderColor: '#ccc',
-        borderWidth: 1,
+       
         textAlign: 'center',
         fontSize: 16,
         fontWeight: 'bold',
@@ -212,4 +178,5 @@ const styles = StyleSheet.create({
 });
 
 
-export default CartItem;
+
+export default CartItem_v2;

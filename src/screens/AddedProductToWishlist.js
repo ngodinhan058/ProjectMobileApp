@@ -33,6 +33,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const [image, setImage] = useState(); // Dữ liệu sản phẩm
   const [selectedSize, setSelectedSize] = useState(); // Đặt size mặc định
+  const [productPriceSale, setProductPriceSale] = useState(); // Đặt size mặc định
   const { id } = route.params;
 
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
@@ -91,12 +92,14 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     try {
       const productsData = await fetchProductData(id);
       const categoryId = productsData?.categories?.[0]?.categoryId;
+      const productPriceSale = productsData?.productPriceSale;
       const image = productsData.productImages[0].productImagePath;
       const productRelateData = await fetchRelatedProducts(categoryId);
 
       setProductsState(productsData);
       setProductRelate(productRelateData);
       setImage(image);
+      setProductPriceSale(productPriceSale)
       setLoading(false);
 
     } catch (error) {
@@ -113,9 +116,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [isBuyModalVisible, setIsBuyModalVisible] = useState(false);
+  const [isBuyNowModalVisible, setIsBuyNowModalVisible] = useState(false);
+  const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Modal Img
   const openModal = (imagePath) => {
     setSelectedImage([{ url: imagePath }]);
     setModalVisible(true);
@@ -124,11 +130,21 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     setModalVisible(false);
     setSelectedImage(null);
   };
+  // Modal Add to cart
   const openModalBuy = () => {
     setIsBuyModalVisible(true);
   };
   const closeModalBuy = () => setIsBuyModalVisible(false);
-
+  // Modal Buy Now
+  const openModalBuyNow = () => {
+    setIsBuyNowModalVisible(true);
+  };
+  const closeModalBuyNow = () => setIsBuyNowModalVisible(false);
+  // Modal Login
+  const openModalLogin = () => {
+    setIsLoginModalVisible(true);
+  };
+  const closeModalLogin = () => setIsLoginModalVisible(false);
 
 
   const handleSelectSize = (sizeName) => {
@@ -173,8 +189,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [errorCheck, setErrorCheck] = useState(false);
   const [errorCheckQuantity, setErrorCheckQuantity] = useState(false);
 
-  // Hàm để tính thời gian hết hạn của cart
-  const getExpiryTime = () => Date.now() + 24 * 60 * 60 * 1000; // 24 giờ
 
 
   const fetchDataCart = async () => {
@@ -201,115 +215,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setErrorCheck(false)
     }
   }, [selectedSize]);
-
-  useEffect(() => {
-    const loadCart = async () => {
-      try {
-        const savedCart = await AsyncStorage.getItem('cart');
-        if (savedCart) {
-          const { items, expiry } = JSON.parse(savedCart);
-          if (Date.now() > expiry) {
-            await AsyncStorage.removeItem('cart');
-          } else {
-            setCart(items);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading cart from AsyncStorage:", error);
-      }
-    };
-
-    loadCart();
-  }, []);
-
-  useEffect(() => {
-    const saveCart = async () => {
-      if (cart.length > 0) {
-        const cartData = {
-          items: cart,
-          expiry: getExpiryTime(),
-        };
-        try {
-          await AsyncStorage.setItem('cart', JSON.stringify(cartData));
-        } catch (error) {
-          console.error("Error saving cart to AsyncStorage:", error);
-        }
-      }
-    };
-
-    saveCart();
-  }, [cart]);
-
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      setError('Vui lòng chọn kích thước sản phẩm');
-      setErrorCheck(false);
-      setTimeout(() => setErrorCheck(true), 0);
-      return;
-    }
-
-    if (quantity < 1) {
-      setError('Vui lòng chọn số lượng hợp lệ');
-      setErrorCheck(false);
-      setTimeout(() => setErrorCheck(true), 0);
-      return;
-    }
-
-    const selectedProductSize = productsState.productSizes.find(
-      (size) => size.productSizeName === selectedSize
-    );
-
-    if (!selectedProductSize) {
-      setError('Kích thước sản phẩm không tồn tại');
-      setErrorCheck(false);
-      setTimeout(() => setErrorCheck(true), 0);
-      return;
-    }
-
-
-    if (quantity > 20) {
-      setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
-      console.log("Số lượng yêu cầu là 20 (${availableQuantity} sản phẩm)`);");
-
-      setErrorCheckQuantity(true);
-      setTimeout(() => setErrorCheck(true), 0);
-      return;
-    }
-
-    setError('');
-    setErrorCheck(false);
-
-    const basePrice = parseInt(productsState.productPriceSale.replace(/\D/g, ''), 10);
-
-    const existingProductIndex = cart.findIndex(
-      (item) => item.id === id && item.size === selectedSize
-    );
-
-    if (existingProductIndex !== -1) {
-      const updatedCart = cart.map((item, index) =>
-        index === existingProductIndex
-          ? {
-            ...item,
-            quantity: item.quantity + quantity,
-            total: (basePrice * (item.quantity + quantity)).toLocaleString() + " ₫",
-          }
-          : item
-      );
-      setCart(updatedCart);
-    } else {
-      const newProduct = {
-        id,
-        name: productsState.productName,
-        size: selectedSize,
-        quantity,
-        price: productsState.productPriceSale,
-        total: (basePrice * quantity).toLocaleString() + " ₫",
-        image: image,
-      };
-      setCart([...cart, newProduct]);
-    }
-  };
-
 
 
   const handleAddToCartUser = async () => {
@@ -356,7 +261,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     setError('');
     setErrorCheck(false);
-
     // Chuẩn bị dữ liệu để gửi đến API
     const cartItemData = {
       cartItem: {
@@ -377,7 +281,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         navigation.navigate('AddToCartScreen', {
           alertVisible: true,
           alertType: 'success',
-      })
+        })
       } else {
         console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
@@ -386,7 +290,48 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     }
   };
 
+  const handleBuyNowUser = async () => {
+    if (!selectedSize) {
+      setError('Vui Lòng Chọn Màu Sản Phẩm');
+      setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
 
+    if (quantity < 1) {
+      setError('Vui Lòng Chọn Số Lượng Hợp Lệ');
+      setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+
+    if (quantity > 20) {
+      setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
+      setAlertType('error');
+      setAlertVisible(true);
+
+      setErrorCheckQuantity(false);
+      setTimeout(() => setErrorCheckQuantity(true), 5);
+      return;
+    }
+
+    setError('');
+    setErrorCheck(false);
+    // Chuẩn bị dữ liệu để gửi đến API
+    navigation.navigate('BuyNow', {
+      product: productsState, alertVisible: true, alertType: 'success',
+      size: selectedSize,
+      quantity: quantity,
+      total: total,
+    })
+
+
+  };
   const handleQuantityChange = (amount) => {
     setQuantity(Math.max(1, quantity + amount));
     setErrorCheckQuantity(false);
@@ -402,14 +347,35 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setErrorCheckQuantity(true); // Set error state if input is invalid
     }
   };
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    // Kiểm tra xem productPriceSale có tồn tại không
+    if (productPriceSale) {
+      // Loại bỏ ký tự không phải số (như ₫) và chuyển đổi thành số
+      const saleProNumber = parseInt(productPriceSale.replace(/[^\d]/g, ''), 10);  // Sử dụng replace trước khi parseInt
+
+      // Kiểm tra nếu giá trị là hợp lệ
+      if (!isNaN(saleProNumber)) {
+        setTotal(quantity * saleProNumber); // Tính tổng
+      } else {
+        setTotal(0); // Nếu giá trị không hợp lệ, gán tổng là 0
+      }
+    } else {
+      // Nếu productPriceSale không có giá trị, đặt total là 0
+      setTotal(0);
+    }
+
+  }, [quantity, productPriceSale]);
+
+
+
+
+  // console.log("ádsad", quantity, productsState.productPriceSale);
+
+
+
   //Kết thúc
-  // useEffect(() => {
-  //   console.log("Cart data:", cart);
-  //   AsyncStorage.clear();
-  // }, [cart]);
-
-
-
   return (
     <View>
       <ScrollView ref={scrollRef}>
@@ -753,7 +719,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   paddingVertical: 20,
                   borderRadius: 10,
                 }}
-                onPress={openModalBuy}
+                onPress={openModalLogin}
               >
                 <Text
                   style={{
@@ -776,7 +742,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   padding: 20,
                   borderRadius: 10,
                 }}
-                onPress={openModalBuy}
+                onPress={openModalLogin}
               >
                 <Text
                   style={{
@@ -846,7 +812,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   padding: 20,
                   borderRadius: 10,
                 }}
-                onPress={openModalBuy}
+                onPress={openModalBuyNow}
               >
                 <Text
                   style={{
@@ -862,6 +828,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           </>)}
       </View>
 
+      {/* Add To Cart */}
       <Modal
         visible={isBuyModalVisible}
         transparent={true}
@@ -890,8 +857,15 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               </View>
               <View>
                 <View style={styles.productDetails}>
-                  <Text style={{ fontSize: 20, fontWeight: '500' }}>{productsState.productName}</Text>
-                  <Text style={{ color: '#FE3A30', fontWeight: '500', fontSize: 19, marginVertical: 10 }}>{productsState.productPriceSale}</Text>
+                  <Text style={{ fontSize: 20, fontWeight: '500', }}>{productsState.productName}</Text>
+                  {productsState.productSale == 0 ? (
+                    <Text style={{ color: '#3669c9', fontWeight: '500', fontSize: 18, marginBottom: 10 }}>{productsState.productPrice}</Text>
+                  ) : (
+                    <View>
+                      <Text style={{ color: '#FE3A30', fontWeight: '500', fontSize: 18, marginTop: 10 }}>{productsState.productPriceSale}</Text>
+                      <Text style={{ color: '#ccc', textDecorationLine: 'line-through', fontSize: 14, marginBottom: 10 }}>{productsState.productPrice}</Text>
+                    </View>
+                  )}
                 </View>
                 {/* Quantity Selector */}
                 <View style={styles.quantitySelector}>
@@ -974,9 +948,15 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           </ScrollView>
 
           {/* Confirm Button */}
-          <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
-            <Text style={styles.confirmButtonText}>Mua ngay</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 50, marginTop: 5 }}>
+            <View style={{ justifyContent: 'center' }}>
+              <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
+              <Text style={{ color: '#000', fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
+            </View>
+            <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
+              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <AlertComponent
           title={alertType === 'success' ? "Success" : "Error"}
@@ -991,7 +971,180 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         />
       </Modal>
 
+      {/* Mua Ngay */}
+      <Modal
+        visible={isBuyNowModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeModalBuyNow}
+      >
+        <TouchableWithoutFeedback onPress={closeModalBuyNow}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
 
+        <View style={styles.modalContainer}>
+          <ScrollView>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Mua Ngay</Text>
+            </View>
+            <View style={styles.line}></View>
+            {/* Product Info */}
+            <View style={{ flexDirection: 'row', }}>
+              <View style={styles.productInfo}>
+                <Image
+                  source={{ uri: image }}
+                  style={styles.productImage}
+                />
+
+              </View>
+              <View>
+                <View style={styles.productDetails}>
+                  <Text style={{ flex: 1, fontSize: 19, fontWeight: '500' }}>{productsState.productName}</Text>
+                  {productsState.productSale == 0 ? (
+                    <Text style={{ color: '#3669c9', fontWeight: '500', fontSize: 18, marginBottom: 10 }}>{productsState.productPrice}</Text>
+                  ) : (
+                    <View>
+                      <Text style={{ color: '#FE3A30', fontWeight: '500', fontSize: 18, marginTop: 10 }}>{productsState.productPriceSale}</Text>
+                      <Text style={{ color: '#ccc', textDecorationLine: 'line-through', fontSize: 14, marginBottom: 10 }}>{productsState.productPrice}</Text>
+                    </View>
+                  )}
+
+                </View>
+                {/* Quantity Selector */}
+                <View style={styles.quantitySelector}>
+                  {/* Decrease Button */}
+
+                  <TouchableOpacity
+                    onPress={() => handleQuantityChange(-1)}
+                    style={styles.quantityButtonLeft}
+                  >
+                    <Text style={styles.quantityText}>-</Text>
+                  </TouchableOpacity>
+
+                  {/* Quantity Input */}
+                  <TextInput
+                    style={{
+                      width: 50,
+                      height: 30,
+                      borderColor: errorCheckQuantity ? 'red' : '#ccc',
+                      borderWidth: 1,
+                      textAlign: 'center',
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                      color: '#3669c9',
+                      backgroundColor: '#fff',
+                    }}
+                    value={String(quantity)}
+                    onChangeText={(text) => {
+                      const validText = text.replace(/[^0-9]/g, '').slice(0, 3);
+                      handleInputChange(validText);
+                    }}
+                    keyboardType="numeric"
+                  />
+
+                  {/* Increase Button */}
+                  <TouchableOpacity
+                    onPress={() => handleQuantityChange(1)}
+                    style={styles.quantityButtonRight}
+                  >
+                    <Text style={styles.quantityText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </View>
+            <View style={styles.line}></View>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Màu: </Text>
+            </View>
+            <View style={styles.productOptions}>
+              {loading ? (
+                <Text>Loading...</Text> // Nếu không có thư viện, hãy thử thay bằng <Text>Loading...</Text>
+              ) : (
+                <View style={styles.sizesContainer}>
+                  {productsState.productSizes.map((size) => (
+                    <TouchableOpacity
+                      key={size.productSizeId}
+                      style={[
+                        styles.sizeOption,
+                        selectedSize === size.productSizeName && styles.selected,
+                        size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
+                        errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
+                      ]}
+                      onPress={() => handleSelectSize(size.productSizeName)}
+                      disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
+                    >
+                      <Text
+                        style={
+                          selectedSize === size.productSizeName
+                            ? { color: '#fff' } // Màu trắng khi được chọn
+                            : { color: '#000' } // Màu đen khi không được chọn
+                        }
+                      >
+                        {size.productSizeName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          </ScrollView>
+
+          {/* Confirm Button */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 50, marginTop: 5 }}>
+            <View style={{ justifyContent: 'center' }}>
+              <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
+              <Text style={{ color: '#000', fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
+            </View>
+            <TouchableOpacity style={styles.confirmButton} onPress={handleBuyNowUser}>
+              <Text style={styles.confirmButtonText}>Mua ngay</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <AlertComponent
+          title={alertType === 'success' ? "Success" : "Error"}
+          description={
+            alertType === 'success'
+              ? "Thêm Sản Phẩm Thành Công"
+              : error
+          }
+          alertType={alertType}
+          visible={alertVisible}
+          onClose={() => setAlertVisible(false)}
+        />
+      </Modal>
+      {/* No Login */}
+      <Modal visible={isLoginModalVisible} animationType="slide"
+        transparent={true}
+        onRequestClose={closeModalLogin}>
+        <TouchableWithoutFeedback onPress={closeModalLogin}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalContainerLogin}>
+          {/* Close Button */}
+
+          {/* Modal Content */}
+          <View style={styles.content}>
+            <Text style={styles.title}>Đăng Nhập tài Khoản</Text>
+            <View style={styles.line}></View>
+
+            <Image source={require("../assets/hello.png")} style={{ width: 50, height: 50, marginVertical: 5 }} />
+            <Text style={styles.message}>
+              Chào Mừng Bạn Mới
+            </Text>
+            <Text style={styles.subMessage}>
+              Có vẻ nhưng bạn chưa đăng nhập? Hãy đăng nhập hoặc đăng ký để có thể nhận thông báo về cái ưa đãi khủng
+            </Text>
+
+            {/* Login Button */}
+            <TouchableOpacity style={styles.loginButton} onPress={closeModalLogin}>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+      </Modal>
 
     </View>
 
@@ -1001,6 +1154,44 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 }
 
 const styles = StyleSheet.create({
+
+  content: {
+    padding: 20,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  emoji: {
+    fontSize: 40,
+    marginBottom: 15,
+  },
+  message: {
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  subMessage: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#888",
+    marginBottom: 20,
+  },
+  loginButton: {
+    width: "100%",
+    backgroundColor: "#3669C9",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 
   modalOverlay: {
     flex: 1,
@@ -1013,6 +1204,16 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#FFF',
     height: '60%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
+  modalContainerLogin: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '45%',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     bottom: 0,
@@ -1054,11 +1255,12 @@ const styles = StyleSheet.create({
   },
   quantityText: { fontSize: 20, textAlign: 'center', marginBottom: 5 },
   confirmButton: {
+    flex: 1,
     backgroundColor: '#0056b3',
     paddingVertical: 15,
     borderRadius: 5,
   },
-  confirmButtonText: { color: '#fff', textAlign: 'center', fontSize: 16 },
+  confirmButtonText: { color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: 'bold' },
 
   productDetailContainer: {
     flex: 1,
@@ -1241,7 +1443,7 @@ const styles = StyleSheet.create({
   },
 
   productOptions: {
-    marginVertical: 20,
+    marginVertical: 10,
   },
   sizesContainer: {
     flexDirection: 'row',
