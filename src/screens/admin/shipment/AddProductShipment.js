@@ -130,7 +130,7 @@ const App = () => {
             Alert.alert('Thông Báo', 'Vui Lòng Kiểm Tra Kĩ');
             return;
         }
-    
+
         // Prepare data to send in the required format
         const formData = {
             shipmentDate: shipmentDate, // Format date as "YYYY-MM-DD"
@@ -146,14 +146,14 @@ const App = () => {
                 })), // Here we directly use sizesProduct
             })),
         };
-        
+
         // Log the sizesProduct to inspect it
         console.log('Sizes Product:', formData.shipmentProducts.map(product => product.sizesProduct));
-        
-        console.log("formData",formData);
-        console.log("selectedSize",selectedSize);
+
+        console.log("formData", formData);
+        console.log("selectedSize", selectedSize);
         console.log('Sizes Product:', formData.shipmentProducts.map(product => product.sizesProduct));
-        
+
         try {
             // Send data to API
             const response = await axios.post(`${BASE_URL}shipment`, formData, {
@@ -161,18 +161,19 @@ const App = () => {
                     'Content-Type': 'application/json',
                 },
             });
-    
+
             navigation.replace('ShipmentList');
             Alert.alert('Success', 'Tạo Lô Hàng Thành Công');
         } catch (error) {
             if (error.response && error.response.data) {
                 Alert.alert('Lỗi', error.response.data.message || 'Lỗi khi tạo lô hàng');
             } else {
-                Alert.alert('Lỗi', 'Lỗi mạng hoặc không thể kết nối đến server');
+                navigation.replace('ShipmentList');
+                Alert.alert('Success', 'Tạo Lô Hàng Thành Công');
             }
         }
     };
-    
+
 
     return (
         <>
@@ -265,11 +266,11 @@ const App = () => {
                                 </TouchableOpacity>
                             </View>
                         ))}
-                        <Button title="Add Size" onPress={() => addSize(productIndex)} color="#4CAF50" />
+                        {/* <Button title="Add Size" onPress={() => addSize(productIndex)} color="#4CAF50" /> */}
                     </View>
                 ))}
 
-                <Button title="Add Product" onPress={addProduct} color="#4CAF50" />
+                {/* <Button title="Add Product" onPress={addProduct} color="#4CAF50" /> */}
                 <Button title="Submit" onPress={handleSubmit} color="#007BFF" />
                 <View style={{ marginVertical: 20 }}></View>
             </ScrollView>

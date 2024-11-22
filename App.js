@@ -84,6 +84,12 @@ import DetailUserScreen from './src/screens/admin/user/DetailUserScreen';
 }
 import AddPostScreen from './src/screens/admin/product/post/AddPostScreen';
 import EditPostScreen from './src/screens/admin/product/post/EditPostScreen';
+
+{
+  /* Admin Coupon*/
+}
+import AddCoupon from './src/screens/admin/product/coupon/AddCouponScreen';
+import EditCoupon from './src/screens/admin/product/coupon/EditCouponScreen';
 {
   /* Admin Shipment */
 }
@@ -424,6 +430,8 @@ function ProductAdmin() {
       {/* Admin Post */}
       <Stack.Screen name="AddPostScreen" component={AddPostScreen} />
       <Stack.Screen name="EditPostScreen" component={EditPostScreen} />
+      <Stack.Screen name="AddCoupon" component={AddCoupon} />
+      {/* <Stack.Screen name="EditCoupon" component={EditCoupon} /> */}
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
     </Stack.Navigator>
   );
