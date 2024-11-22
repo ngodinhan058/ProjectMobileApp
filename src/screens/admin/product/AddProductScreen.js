@@ -73,8 +73,8 @@ const AddProductScreen = ({ route, navigation }) => {
             post: postDTO,
             productImage: productData.productImages,
         };
-        formData.append('params', JSON.stringify(params));
         console.log("add", params);
+        formData.append('params', JSON.stringify(params));
         
 
         selectedImages.forEach((imageUri, index) => {

@@ -21,7 +21,8 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 const EditProductScreen = ({ route, navigation }) => {
-    const { id, name } = route.params; // categoryId truyền từ màn hình trước
+    const { id, name, code } = route.params; // categoryId truyền từ màn hình trước
+    const [SizeCode, setSizeCode] = useState(code);
     const [SizeName, setSizeName] = useState(name);
 
     
@@ -29,13 +30,14 @@ const EditProductScreen = ({ route, navigation }) => {
     const handleEditSize = async () => {
        // Validate SizeName format (e.g., #FFFFFF)
        const colorCodePattern = /^#[0-9A-Fa-f]{6}$/;
-       if (!colorCodePattern.test(SizeName)) {
+       if (!colorCodePattern.test(SizeCode)) {
            Alert.alert('Thông Báo', 'Sai định dạng mã màu # + từ 0-9, a-f, (7 kí tự)');
            return;
        }
 
        try {
            const payload = {
+               productSizeCode: SizeCode,
                productSizeName: SizeName,
            };
 
@@ -60,20 +62,25 @@ const EditProductScreen = ({ route, navigation }) => {
                 <Text style={styles.textHeader}>Sửa Thông Tin Màu</Text>
             </View>
             <View style={styles.formContainer}>
-                <Text style={styles.label}>Sửa Mã Màu: (ví dụ màu đen: #000000)</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Nhập Mã Màu"
-                    value={SizeName}
-                    onChangeText={setSizeName}
-                    maxLength={7} // Limit input length
-                />
-
-            
-                <TouchableOpacity style={styles.button} onPress={handleEditSize}>
-                    <Text style={styles.buttonText}>Sửa</Text>
-                </TouchableOpacity>
-            </View>
+                    <Text style={styles.label}>Thêm Mã Màu: (ví dụ màu đen: #000000)</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập Mã Màu"
+                        value={SizeCode}
+                        onChangeText={setSizeCode}
+                        maxLength={7} // Limit input length
+                    />
+                    <Text style={styles.label}>Thêm Tên Màu:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập Tên Màu"
+                        value={SizeName}
+                        onChangeText={setSizeName}
+                    />
+                    <TouchableOpacity style={styles.button} onPress={handleEditSize}>
+                        <Text style={styles.buttonText}>Sửa</Text>
+                    </TouchableOpacity>
+                </View>
         </ScrollView>
     </View>
     );

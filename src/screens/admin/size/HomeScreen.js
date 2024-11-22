@@ -29,10 +29,12 @@ const HomeAdminScreen = ({ navigation }) => {
                 style={styles.productItem}
                 onPress={() => navigation.navigate('DetailSizeScreen', {
                     id: item.productSizeId,
-                    name: item.productSizeName,
+                    name: item.productSizeName,               
+                    code: item.productSizeCode,
+
                 })}
             >
-                <View style={{ width: 50, height: 50, backgroundColor: `${item.productSizeName}`, borderRadius: 50 }} ></View>
+                <View style={{ width: 50, height: 50, backgroundColor: `${item.productSizeCode}`, borderRadius: 50 }} ></View>
                 <View style={styles.productDetails}>
                     <Text style={{
                         fontSize: 16,

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
@@ -22,15 +23,28 @@ const AddCouponScreen = ({ navigation }) => {
 
     const [couponName, setCouponName] = useState('');
     const [couponCode, setCouponCode] = useState('');
-    const [couponRelease, setCouponRelease] = useState('');
-    const [couponExpire, setCouponExpire] = useState('');
+    const [couponRelease, setCouponRelease] = useState(new Date());
+    const [couponExpire, setCouponExpire] = useState(new Date());
+    // const [couponRelease, setCouponRelease] = useState('');
+    // const [couponExpire, setCouponExpire] = useState('');
     const [couponQuantity, setCouponQuantity] = useState('');
     const [couponPerHundred, setCouponPerHundred] = useState('');
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [couponPrice, setCouponPrice] = useState('');
     const [couponFeeShip, setCouponFeeShip] = useState('');
-    const [couponType, setCouponType] = useState(COUPON_PER_HUNDRED_TYPE); // Default to percentage
+    const [couponType, setCouponType] = useState(COUPON_PER_HUNDRED_TYPE)
     const [isLoading, setIsLoading] = useState(false);
+    const onDateChangeCouponRelease = (event, selectedDate) => {
+        const currentDate = selectedDate || couponRelease;
+        setShowDatePicker(false);
+        setCouponRelease(currentDate);
+    };
 
+    const onDateChangeCouponExpire = (event, selectedDate) => {
+        const currentDate = selectedDate || couponExpire;
+        setShowDatePicker(false);
+        setCouponExpire(currentDate);
+    };
     const handleAddCoupon = async () => {
         if (!couponName || !couponCode || !couponRelease || !couponQuantity) {
             Alert.alert('Error', 'Vui lòng nhập đầy đủ thông tin');
@@ -38,12 +52,14 @@ const AddCouponScreen = ({ navigation }) => {
         }
 
         try {
-            setIsLoading(true);couponFeeShip
+            setIsLoading(true);
+            const couponReleaseDate = couponRelease.toISOString().split('T')[0]; // Định dạng lại ngày
+            const couponExpireDate = couponExpire.toISOString().split('T')[0]; // Định dạng lại ngày
             const payload = {
                 couponName,
                 couponCode,
-                couponRelease,
-                couponExpire,
+                couponRelease: couponReleaseDate,
+                couponExpire: couponExpireDate,
                 couponQuantity: parseInt(couponQuantity),
                 couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
                 couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
@@ -138,20 +154,30 @@ const AddCouponScreen = ({ navigation }) => {
                     />
 
                     <Text style={styles.label}>Ngày Phát Hành:</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="YYYY-MM-DD"
-                        value={couponRelease}
-                        onChangeText={setCouponRelease}
-                    />
+                    <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                        <Text>{couponRelease ? couponRelease.toDateString() : 'Thêm Ngày Phát Hành'}</Text>
+                    </TouchableOpacity>
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={couponRelease}
+                            mode="date"
+                            display="default"
+                            onChange={onDateChangeCouponRelease}
+                        />
+                    )}
 
                     <Text style={styles.label}>Ngày Hết Hạn:</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="YYYY-MM-DD"
-                        value={couponExpire}
-                        onChangeText={setCouponExpire}
-                    />
+                    <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                        <Text>{couponExpire ? couponExpire.toDateString() : 'Thêm Ngày Hết Hạn'}</Text>
+                    </TouchableOpacity>
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={couponExpire}
+                            mode="date"
+                            display="default"
+                            onChange={onDateChangeCouponExpire}
+                        />
+                    )}
 
                     <Text style={styles.label}>Số Lượng:</Text>
                     <TextInput

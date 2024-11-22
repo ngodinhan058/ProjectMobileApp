@@ -19,19 +19,23 @@ import { BASE_URL } from '../../api/config';
 
 
 const AddSizeScreen = ({ navigation }) => {
-    const [SizeName, setSizeName] = useState('#');
+    const [SizeCode, setSizeCode] = useState('#');    
+    const [SizeName, setSizeName] = useState('');
+
 
     const handleAddSize = async () => {
         // Validate SizeName format (e.g., #FFFFFF)
         const colorCodePattern = /^#[0-9A-Fa-f]{6}$/;
-        if (!colorCodePattern.test(SizeName)) {
+        if (!colorCodePattern.test(SizeCode)) {
             Alert.alert('Thông Báo', 'Sai định dạng mã màu # + từ 0-9, a-f, (7 kí tự)');
             return;
         }
 
         try {
             const payload = {
-                productSizeName: SizeName,
+                productSizeName: SizeName,                
+                productSizeCode: SizeCode,
+
             };
 
             const apiUrl = `${BASE_URL}product-sizes`;
@@ -58,14 +62,22 @@ const AddSizeScreen = ({ navigation }) => {
                     <TextInput
                         style={styles.input}
                         placeholder="Nhập Mã Màu"
+                        value={SizeCode}
+                        onChangeText={setSizeCode}
+                        maxLength={7} // Limit input length
+                    />
+                    <Text style={styles.label}>Thêm Tên Màu:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nhập Tên Màu"
                         value={SizeName}
                         onChangeText={setSizeName}
-                        maxLength={7} // Limit input length
                     />
                     <TouchableOpacity style={styles.button} onPress={handleAddSize}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
+                
             </ScrollView>
         </View>
     );

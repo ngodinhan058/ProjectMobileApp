@@ -29,7 +29,7 @@ const HomeAdminScreen = ({ navigation }) => {
     const renderCoupon = ({ item }) => {
         const discountInfo = item.couponPerHundred
             ? `${item.couponPerHundred}%`
-            : `$${item.couponPrice}`;
+            : `${item.couponPrice} đ`;
 
         return (
             <View style={{ paddingHorizontal: 20 }}>
