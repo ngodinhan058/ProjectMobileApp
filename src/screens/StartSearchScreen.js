@@ -12,6 +12,7 @@ import ProductItem from '../components/ProductItem';
 import { loadData, saveData } from '../utils/SearchMemory';
 import { SEARCH_KEY } from '../constants/SearchKey';
 import { BASE_URL } from './api/config';
+import axios from 'axios';
 
 const SearchScreen = ({ navigation, route }) => {
   // Retrieve query from route params or set to an empty string
@@ -39,9 +40,8 @@ const SearchScreen = ({ navigation, route }) => {
   useEffect(() => {
     const fetchData = async () => {
       const temp = await loadData(SEARCH_KEY);
-
-      console.log(temp);
     };
+    fetchData();
   }, []);
 
   const fetchData = async (url) => {
@@ -50,7 +50,6 @@ const SearchScreen = ({ navigation, route }) => {
       const productsResponse = await axios.get(url);
 
       const productsData = productsResponse.data.data.content;
-      console.log(productsData.map((p) => p.productName));
 
       setSuggestion(productsData);
     } catch (error) {
@@ -71,8 +70,6 @@ const SearchScreen = ({ navigation, route }) => {
       setLoading(false);
       return; // Do not proceed if the search query is too short
     }
-    console.log();
-
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current); // Clear previous timeout
     }
@@ -141,7 +138,9 @@ const SearchScreen = ({ navigation, route }) => {
   // const filteredSuggestions = featuredProducts.filter((product) =>
   //   product.name.toLowerCase().includes(searchQuery.toLowerCase())
   // );
-  const handleSearch = async () => {
+  const handleSearch = async (term) => {
+    console.log('TẺRM', term);
+
     if (recentSearches.includes(searchQuery)) {
       return; // Early return if term already exists
     }
@@ -151,21 +150,21 @@ const SearchScreen = ({ navigation, route }) => {
     try {
       // Save the updated searches to AsyncStorage
       await saveData(SEARCH_KEY, JSON.stringify(updatedSearches));
-      console.log('Saved recent searches successfully:', updatedSearches);
 
       // Update the state after saving
       setRecentSearches(updatedSearches);
 
       // Update the search query
       setSearchQuery(term);
-
-      // Uncomment to navigate to SearchScreen if needed
-      navigation.replace('SearchScreen', { query: term });
     } catch (error) {
       console.log('Error saving recent searches:', error);
     }
     // Navigate to the search screen with the current query
-    // navigation.replace('SearchScreen', { query: searchQuery });
+  };
+
+  const handleSearchClick = (term) => {
+    handleSearch(term);
+    navigation.navigate('SearchScreen', { query: term });
   };
 
   const searchInputRef = useRef(null);
@@ -184,7 +183,6 @@ const SearchScreen = ({ navigation, route }) => {
     try {
       // Save the updated searches to AsyncStorage
       await saveData(SEARCH_KEY, JSON.stringify(updatedSearches));
-      console.log('Saved recent searches successfully:', updatedSearches);
 
       // Update the state after saving
       setRecentSearches(updatedSearches);
@@ -212,13 +210,13 @@ const SearchScreen = ({ navigation, route }) => {
         <View style={styles.searchBar}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search Product Name"
+            placeholder="Tìm kiếm sản phẩm..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
+            onSubmitEditing={() => handleSearchClick(searchQuery)}
             ref={searchInputRef}
           />
-          <TouchableOpacity onPress={handleSearch}>
+          <TouchableOpacity onPress={() => handleSearchClick(searchQuery)}>
             <Image
               source={require('../assets/iconSeach.png')}
               style={styles.icon}
@@ -251,7 +249,9 @@ const SearchScreen = ({ navigation, route }) => {
                       <View key={item.productId}>
                         <View style={styles.suggestionItem}>
                           <TouchableOpacity
-                            onPress={() => handleRecentSearchClick(item.productName)}
+                            onPress={() =>
+                              handleRecentSearchClick(item.productName)
+                            }
                             style={{
                               flexDirection: 'row',
                               alignItems: 'center',
@@ -271,11 +271,9 @@ const SearchScreen = ({ navigation, route }) => {
                     ))}
                   </ScrollView>
                 )}
-
               </>
             )}
           </View>
-
         ) : (
           <>
             <View style={styles.recentSearchesContainer}>
@@ -316,7 +314,6 @@ const SearchScreen = ({ navigation, route }) => {
                   {isFilterModalVisible ? 'Collapse' : 'Show More'}
                 </Text>
               </TouchableOpacity>
-
             </View>
             <View style={styles.greySection}>
               <View style={styles.sectionHeader}>
