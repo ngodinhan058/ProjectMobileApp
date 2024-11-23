@@ -40,6 +40,9 @@ const HomeAdminScreen = ({ navigation }) => {
 
     loadUser();
   }, []);
+
+  console.log('USER', user);
+
   const fetchData = async () => {
     if (!user.token) {
       // Đợi token sẵn sàng trước khi fetch
@@ -70,14 +73,16 @@ const HomeAdminScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchData();
+    if (user.token) {
+      // Only fetch data when token is available
+      fetchData();
+    }
   }, [user.token]);
   const handleRefresh = () => {
     fetchData();
   };
 
   // Dữ liệu sản phẩm (users) với các vai trò khác nhau
-
 
   // Lọc danh sách người dùng theo role
   const filterByRole = (role) => {
@@ -91,18 +96,18 @@ const HomeAdminScreen = ({ navigation }) => {
       onPress={() =>
         navigation.navigate('DetailUserScreen', {
           id: item['userId'],
-          // image: { uri: item['userImagePath'] },
-          // email: item['userEmail'],
-          // first_name: item['user_first_name'],
-          // last_name: item['user_last_name'],
+          image: { uri: item['userImagePath'] },
+          email: item['userEmail'],
+          first_name: item['userFirstName'],
+          last_name: item['userLastName'],
           // id_image_front: {
           //   uri: 'https://cdn.tgdd.vn/Files/2021/04/18/1344478/cach-lam-can-cuoc-cong-dan-cccd-online_800x450.jpg',
           // },
           // id_image_back: { uri: item.iCard.imageBackPath },
           // pass: item.pass,
-          // birthday: item['userBirthday'],
-          // address: item['userAddress'],
-          // phone: item['userPhone'],
+          birthday: item['userBirthday'],
+          address: item['userAddress'],
+          phone: item['userPhone'],
           // money: item['userMoney'],
           // role: item.role,
           // rank: item.rank,
@@ -169,6 +174,46 @@ const HomeAdminScreen = ({ navigation }) => {
     { key: 'SHIPPER', title: 'Shipper' },
   ]);
 
+  const [users, setUsers] = useState([]);
+  const handleDisplayUser = (index) => {
+    console.log(
+      'ROLES',
+      usersState.map((us) =>
+        us['roles'].filter((u) => u['roleName'] === 'ADMIN')
+      )
+    );
+    console.log('Called', index);
+
+    switch (index) {
+      case 1:
+        const resultAdmin = usersState.filter((us) =>
+          us['roles'].some((u) => u['roleName'] === 'ADMIN')
+        );
+        setUsers(resultAdmin);
+        break;
+      case 0:
+        const resultUser = usersState.filter((us) =>
+          us['roles'].some((u) => u['roleName'] === 'USER')
+        );
+        setUsers(resultUser);
+        break;
+      case 2:
+        const resultShipper = usersState.filter((us) =>
+          us['roles'].some((u) => u['roleName'] === 'SHIPPER')
+        );
+        console.log('SHIPPER', resultShipper);
+
+        setUsers(resultShipper);
+        break;
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    handleDisplayUser(index);
+  }, [index]);
+
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userData');
@@ -180,13 +225,18 @@ const HomeAdminScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container} refreshControl={
-      <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-    }>
+    <View
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+    >
       <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
         <View style={styles.headerContent}>
           <Image
-            source={{ uri: 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474119Xok/hinh-anh-cho-cute-chibi-dep-nhat_100649530.png' }}
+            source={{
+              uri: 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474119Xok/hinh-anh-cho-cute-chibi-dep-nhat_100649530.png',
+            }}
             style={styles.avatar}
           />
           <Text style={styles.welcomeText}>Hi Admin!</Text>
@@ -215,22 +265,25 @@ const HomeAdminScreen = ({ navigation }) => {
           />
         )}
       />
-      {/* <FlatList
-        data={usersState}
+      <FlatList
+        data={users}
         renderItem={renderProduct}
         keyExtractor={(item) => item.id}
         style={styles.productList}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-      /> */}
+      />
 
       {/* Add Button */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('AddUserScreen')}
       >
-        <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.addButtonGradient}>
+        <LinearGradient
+          colors={['#4CAF50', '#388E3C']}
+          style={styles.addButtonGradient}
+        >
           <Icon name="add-circle" size={40} color="#fff" />
         </LinearGradient>
       </TouchableOpacity>
@@ -277,7 +330,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     flex: 1,
-    marginTop: 20,
+    marginTop: -500,
   },
   productItem: {
     flexDirection: 'row',
@@ -328,7 +381,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.30,
+    shadowOpacity: 0.3,
     shadowRadius: 4.65,
   },
   addButtonGradient: {
