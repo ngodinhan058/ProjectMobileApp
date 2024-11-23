@@ -16,26 +16,84 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function DetailScreen({ route, navigation }) {
-    const { id } = route.params;
+    const { id } = route.params; // Shipment ID
     const [shipmentData, setShipmentData] = useState(null);
+    const [shipmentProducts, setShipmentProducts] = useState([]);
+    const [productsState, setProductsState] = useState([]); // Product data
     const [isOpen, setIsOpen] = useState(false);
-    const [animation] = useState(new Animated.Value(0));
-    const [rotation] = useState(new Animated.Value(0));
+    const animation = useState(new Animated.Value(0))[0];
+    const rotation = useState(new Animated.Value(0))[0];
     const [isLoading, setIsLoading] = useState(true);
 
+    // Fetch shipment details
     useEffect(() => {
-        const apiUrl = `${BASE_URL}shipment/${id}`;
-        axios.get(apiUrl)
-            .then(response => {
-                setShipmentData(response.data);
+        const fetchShipmentDetails = async () => {
+            setIsLoading(true);
+            try {
+                const apiUrl = `${BASE_URL}shipment/${id}`;
+                const response = await axios.get(apiUrl);
+                const data = response.data.data || [];
+
+                setShipmentData(data[0]);
+                setShipmentProducts(data[0]?.shipmentProducts || []); // Guard against undefined data
+            } catch (error) {
+                console.error("Error fetching shipment data:", error);
+            } finally {
                 setIsLoading(false);
-            })
-            .catch(error => {
-                console.log('Error fetching shipment data:', error);
-            });
+            }
+        };
+
+        fetchShipmentDetails();
     }, [id]);
+
+    // Fetch product details for the first product in shipmentProducts
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            try {
+                const productIds = shipmentProducts.map((product) => product.productId);
+                const promises = productIds.map((id) =>
+                    axios.get(`${BASE_URL}product/${id}`).then((res) => res.data.data)
+                );
+    
+                const products = await Promise.all(promises); // Kết quả là một mảng
+                setProductsState(products); // Gán toàn bộ mảng sản phẩm vào productsState
+            } catch (error) {
+                console.error("Error fetching product data:", error);
+                setProductsState([]); // Đặt mặc định là mảng rỗng nếu xảy ra lỗi
+            }
+        };
+    
+        if (shipmentProducts.length > 0) {
+            fetchProductDetails();
+        }
+    }, [shipmentProducts]);
+    
+
+    // Handle shipment deletion
+    const deleteShipment = async () => {
+        setIsLoading(true);
+        try {
+            await axios.delete(`${BASE_URL}shipment/${id}`);
+            navigation.replace('ShipmentList', {
+                alertVisible: true,
+                alertType: 'success',
+                title: 'Xóa Lô Hàng Thành Công,'
+            });
+        } catch (error) {
+            console.error("Error deleting shipment:", error);
+            Alert.alert("Error", "Failed to delete shipment.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Show loading indicator while fetching data
+    if (isLoading) {
+        return <ActivityIndicator size="large" color="#3669c9" />;
+    }
 
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
@@ -73,96 +131,83 @@ function DetailScreen({ route, navigation }) {
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
     });
-    const deleteShipment = async () => {
-        setIsLoading(true);
-        try {
-            await axios.delete(`${BASE_URL}shipment/${id}`);
-            Alert.alert("Success", "Shipment deleted successfully");
-            navigation.replace("ShipmentList");
-        } catch (error) {
-            console.log('Error deleting shipment:', error);
-            Alert.alert("Error", "Failed to delete shipment.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
-    if (isLoading) {
-        return <ActivityIndicator size="large" color="#3669c9" />;
-    }
+
 
     return (
         <View style={styles.container}>
-            <ScrollView>
-                <View>
-                    <View style={styles.iconHeader}>
-                        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-                            <Icon name="angle-left" size={35} color="#000" />
-                        </Pressable>
-                        <Text style={styles.textHeader}>Chi Tiết Lô Hàng</Text>
-                    </View>
 
-                    {/* Shipment Information */}
-                    <View style={styles.shipmentInfo}>
-                        <Text style={styles.shipmentDate}>Date: {shipmentData.shipmentDate}</Text>
-                        <Text style={styles.shipmentDiscount}>Discount: {shipmentData.shipmentDiscount}%</Text>
-                        <Text style={styles.shipmentShipCost}>Shipping Cost: {shipmentData.shipmentShipCost} VND</Text>
+            <View>
+                <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
+                    <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Icon name="angle-left" size={35} color="#fff" />
+                    </Pressable>
 
-                        <View style={styles.supplierInfo}>
-                            <Text style={styles.supplierTitle}>Supplier:</Text>
-                            <Text style={styles.supplierName}>{shipmentData.productSupplier?.productSupplierName}</Text>
-                            <Image source={{ uri: shipmentData.productSupplier?.productSupplierLogo }} style={styles.supplierLogo} />
-                        </View>
-                    </View>
+                    <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
+                </LinearGradient>
+                {/* Shipment Information */}
+                <View style={{ padding: 20 }}>
+                    <Text style={styles.shipmentDate}>Date: {shipmentData.shipmentDate}</Text>
+                    <Text style={styles.shipmentDiscount}>Discount: {shipmentData.shipmentDiscount}%</Text>
+                    <Text style={styles.shipmentShipCost}>Shipping Cost: {shipmentData.shipmentShipCost} VND</Text>
 
-                    {/* Shipment Products */}
-                    <View style={styles.productList}>
-                        <Text style={styles.sectionTitle}>Products</Text>
-                        {/* <FlatList
-                            data={shipmentData.shipmentProducts}
-                            keyExtractor={(item, index) => `${item.shipmentProductQuantity}-${index}`}
-                            renderItem={({ item }) => (
-                                <View style={styles.productItem}>
-                                    <Text style={styles.productQuantity}>Quantity: {item.shipmentProductQuantity}</Text>
-                                    <Text style={styles.productPrice}>Price: {item.shipmentProductPrice} VND</Text>
-                                </View>
-                            )}
-                        /> */}
+                    <View style={styles.supplierInfo}>
+                        <Text style={styles.supplierTitle}>Supplier:</Text>
+                        <Text style={styles.supplierName}>{shipmentData.productSupplier?.productSupplierName}</Text>
+                        {/* <Image source={{ uri: firstShipment.productSupplier?.productSupplierLogo }} style={styles.supplierLogo} /> */}
                     </View>
                 </View>
-            </ScrollView>
+
+                {/* Shipment Products */}
+                <View style={styles.productList}>
+                    <Text style={styles.sectionTitle}>Products</Text>
+                    <FlatList
+                        data={shipmentProducts}
+                        keyExtractor={(item) => `${item.productId}`}
+                        renderItem={({ item }) => {
+                            const productDetails = productsState.find((product) => product.productId === item.productId);
+
+                            return (
+                                <View style={styles.productItem}>
+                                    <Text style={styles.productName}>
+                                        Product Name: {productDetails?.productName || "Unknown"}
+                                    </Text>
+                                    <Text style={styles.productPrice}>
+                                        Price: {productDetails.productPrice}
+                                    </Text>
+                                </View>
+                            );
+                        }}
+                    />
+                </View>
+            </View>
+
 
             {/* Add Button */}
+
             <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
-                <Animated.Text style={[styles.editButtonText, { transform: [{ rotate: rotateIcon }] }]}>
-                    ▶
-                </Animated.Text>
+                <Animated.View style={{ transform: [{ rotate: rotateIcon }] }}>
+                    <Icon name="cog" size={30} color="#fff" />
+                </Animated.View>
             </TouchableOpacity>
 
-            {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
                 <TouchableOpacity
                     style={styles.iconButton}
                     onPress={() => {
-                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
-                        navigation.navigate('EditProductScreen', {
-                            product: productsState,
-                            postDTO: {
-                                postName,
-                                postContent,
-                                postImagePath,
-                                postType,
-                                postStatusId: postStatus?.postStatusId
-                            }
+                        navigation.navigate('EditProductShipment', {
+                            shipmentData: firstShipment,
+
                         });
                     }}
                 >
-                    <Icon name="pencil" size={20} color="#fff" />
+                    <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.iconButtonGradient}>
+                        <Icon name="pencil" size={20} color="#fff" />
+                    </LinearGradient>
                 </TouchableOpacity>
             </Animated.View>
 
             <Animated.View style={[styles.subButton, { bottom: position1 }]}>
-
                 <TouchableOpacity style={styles.iconButton} onPress={() => {
                     Alert.alert(
                         "Xác Nhận!!!",
@@ -172,41 +217,59 @@ function DetailScreen({ route, navigation }) {
                                 text: "Huỷ",
                                 style: "cancel"
                             },
-                            { text: "Có", onPress: deleteProduct }
+                            { text: "Có", onPress: deleteShipment }
                         ]
                     );
                 }}>
-                    <Icon name="trash" size={20} color="#fff" />
+                    <LinearGradient colors={['#FF5252', '#FF1744']} style={styles.iconButtonGradient}>
+                        <Icon name="trash" size={20} color="#fff" />
+                    </LinearGradient>
                 </TouchableOpacity>
             </Animated.View>
-
             {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#3669c9" />
                 </View>
             )}
+
+
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1, backgroundColor: '#fff', padding: 20,
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
     },
-    iconHeader: {
+    container: {
+        flex: 1,
+        backgroundColor: '#fff'
+    },
+    header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '100%',
-        paddingBottom: 10,
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        marginBottom: 15,
+        borderRadius: 10,
     },
     textHeader: {
         fontWeight: 'bold',
         fontSize: 18,
         textAlign: 'center',
+        color: '#fff',
         flex: 1,
     },
     backButton: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
         marginRight: 10,
     },
     shipmentDate: { fontSize: 16, marginBottom: 5 },
@@ -237,16 +300,13 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginLeft: 10,
         marginBottom: 10,
-
     },
-
     subButton: {
         position: 'absolute',
         right: 35,
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#ff5757',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -256,13 +316,19 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#3669c9',
         justifyContent: 'center',
         alignItems: 'center',
     },
     iconButton: {
         width: 50,
         height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconButtonGradient: {
+        width: '100%',
+        height: '100%',
         borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',

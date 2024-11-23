@@ -96,7 +96,6 @@ function DetailScreen({ route, navigation }) {
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'],
     });
-    console.log("ádsadsad",id);
 
     const deleteProduct = async () => {
         setIsLoading(true);

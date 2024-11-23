@@ -231,7 +231,7 @@ const AddProductScreen = ({ route, navigation }) => {
                 description={
                     alertType === 'success'
                         ? "Product added successfully."
-                        : "Failed to add product. Please try again."
+                        : "Thêm Thất Bại!! Vui Lòng Thử Lại"
                 }
                 alertType={alertType}
                 visible={alertVisible}
