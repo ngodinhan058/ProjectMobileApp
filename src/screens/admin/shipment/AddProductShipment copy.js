@@ -163,19 +163,6 @@ const App = () => {
         updatedProducts[productIndex].sizesProduct.splice(sizeIndex, 1); // Xóa size ở index
         setShipment({ ...shipment, shipmentProducts: updatedProducts });
     };
-    const getProductName = (productId) => {
-        const product = products.find(item => item.productId === productId);
-        return product ? product.productName : 'No Product Selected';
-    };
-    const getSupplierName = (supplierId) => {
-        const supplier = suppliers.find(item => item.productSupplierSd === supplierId);
-        return supplier ? supplier.productSupplierName : 'No Supplier Selected';
-    };
-    const getSizeName = (sizeId) => {
-        const size = sizes.find(item => item.productSizeId === sizeId);
-        return size ? size.productSizeName : 'No Size Selected';
-      };
-      
 
 
     const handleSubmit = async () => {
@@ -197,6 +184,10 @@ const App = () => {
                 })), // Here we directly use sizesProduct
             })),
         };
+
+        console.log("formData", formData);
+        // console.log("selectedSize", selectedSize);
+        console.log('Sizes Product:', formData.shipmentProducts.map(product => product.sizesProduct));
 
         try {
             // Send data to API
@@ -259,12 +250,12 @@ const App = () => {
                 <Text>Supplier:</Text>
                 <TouchableOpacity onPress={() => setModalVisibility({ ...modalVisibility, supplierSelection: true })}>
                     <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                        {selectedSupplier ? `${getSupplierName(selectedSupplier)}` : 'Choose Supplier'}
+                        {selectedSupplier ? `Selected Supplier: ${selectedSupplier}` : 'Choose Supplier'}
                     </Text>
                 </TouchableOpacity>
                 {shipment.shipmentProducts.map((product, productIndex) => (
                     <View key={productIndex} style={styles.section}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', margin: 10 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between',  margin: 10 }}>
                             <Text style={styles.subtitle}>Product {productIndex + 1}</Text>
                             <TouchableOpacity onPress={() => removeProduct(productIndex)}>
                                 <Icon name='trash' size={20} color={'#bbb'} />
@@ -294,7 +285,7 @@ const App = () => {
                             }
                         >
                             <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                                {product.productId ? `${getProductName(product.productId)}` : 'Choose Product'}
+                                {product.productId ? `Product ID: ${product.productId}` : 'Choose Product'}
                             </Text>
                         </TouchableOpacity>
 
@@ -332,7 +323,7 @@ const App = () => {
                                     }
                                 >
                                     <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                                        {size.sizeId ? `${getSizeName(size.sizeId)}` : 'Choose Size'}
+                                        {size.sizeId ? `Size ID: ${size.sizeId}` : 'Choose Size'}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
