@@ -1,26 +1,68 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+import { LinearGradient } from 'expo-linear-gradient';
+import AlertComponent from '../../../components/AlertComponent';
 
-const HomeAdminScreen = ({ navigation }) => {
+const HomeAdminScreen = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
-    useEffect(() => {
+    const [refreshing, setRefreshing] = useState(false);
+
+    const { alertVisible, alertType, title } = route.params || {}; // Nhận params từ navigation
+    const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
+    const fetchProducts = async () => {
         setIsLoading(true);
         const apiUrl = `${BASE_URL}shipments`;
         axios.get(apiUrl)
             .then(response => {
-                const productData = response.data.data.content;
+                const productData = response.data.data;
                 setProductsState(productData);
                 setIsLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching data:', error);
+                setIsLoading(false);
+                // console.error('Error fetching data:', error);
             });
+    };
+
+    useEffect(() => {
+        fetchProducts()
     }, []);
-    
+    const handleLogout = async () => {
+        try {
+            Alert.alert(
+                'Xác nhận đăng xuất',
+                'Bạn muốn đăng xuất phải không?',
+                [
+                    {
+                        text: 'Huỷ',
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'Đúng',
+                        onPress: async () => {
+                            await AsyncStorage.removeItem('userData');
+                            await AsyncStorage.removeItem('userInfo');
+
+                            Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+                            navigation.navigate('Người Dùng');
+                        },
+                    },
+                ],
+                { cancelable: false }
+            );
+        } catch (error) {
+            Alert.alert('Thất bại', error);
+        }
+    };
+    const handleRefresh = () => {
+        fetchProducts();
+    };
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
@@ -34,9 +76,11 @@ const HomeAdminScreen = ({ navigation }) => {
 
             <View style={styles.productDetails}>
                 <Text style={styles.productCode}>Ngày {item.shipmentDate}</Text>
-                <Text style={styles.productStatus}>Giảm Giá: {item.shipmentDiscount}</Text>
+                <Text style={styles.productStatus}>Hãng: {item.productSupplier?.productSupplierName}</Text>
+
                 <View style={styles.line}></View>
-                <Text style={styles.productCode}>Hãng: {item.productSupplier?.productSupplierName}</Text>
+                <Text style={styles.productDis}>Discount: {item.shipmentDiscount}%</Text>
+
             </View>
             <Pressable>
                 <Icon name="angle-right" size={25} color="#000" />
@@ -47,35 +91,47 @@ const HomeAdminScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
-                <View style={styles.welcomeContainer}>
+            <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
+                <View style={styles.headerContent}>
+                    <Image
+                        source={{
+                            uri: 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474119Xok/hinh-anh-cho-cute-chibi-dep-nhat_100649530.png',
+                        }}
+                        style={styles.avatar}
+                    />
                     <Text style={styles.welcomeText}>Hi Admin!</Text>
-                    <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
                 </View>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('LoginScreen')}
-                >
-                    <Image source={require('../../../assets/right_from_bracket.png')} style={{ width: 30, height: 30, marginLeft: 115 }} />
+                <TouchableOpacity onPress={handleLogout}>
+                    <Ionicons name="log-out-outline" size={30} color="#fff" />
                 </TouchableOpacity>
-            </View>
+            </LinearGradient>
             {/* Product List */}
             {productsState.length > 0 ? (
                 <FlatList
-                data={productsState}
-                renderItem={renderProduct}
-                keyExtractor={(item) => item.shipmentId}
-                style={styles.productList}
-            />) : null}
+                    data={productsState}
+                    renderItem={renderProduct}
+                    keyExtractor={(item) => item.shipmentId}
+                    style={styles.productList}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+                    }
+                />) : <Text style={{ textAlign: 'center', fontSize: 23, fontStyle: 'italic', color: '#aaa' }}>Không có lô hàng</Text>}
 
 
             {/* Add Button */}
             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductShipment')}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
-            {isLoading && (
-                <View style={styles.overlay}>
-                    <ActivityIndicator size="large" color="#3669c9" />
-                </View>
+            {isAlertVisible && (
+                <AlertComponent
+                    title={alertType === 'success' ? 'Success' : 'Error'}
+                    description={
+                        alertType === 'success' ? title : 'Failed to add product.'
+                    }
+                    alertType={alertType}
+                    visible={isAlertVisible}
+                    onClose={() => setIsAlertVisible(false)}
+                />
             )}
         </View>
     );
@@ -91,14 +147,35 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        padding: 20,
         backgroundColor: '#fff',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 30,
-
+        justifyContent: 'space-between',
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        marginBottom: 15,
+        borderRadius: 10,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    avatar: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 15,
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    welcomeText: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#fff',
+        letterSpacing: 0.5,
     },
     line: {
         width: '95%',
@@ -118,10 +195,6 @@ const styles = StyleSheet.create({
         marginTop: 0,
     },
 
-    welcomeText: {
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
     subtitleText: {
         fontSize: 16,
         color: '#666',
@@ -136,15 +209,22 @@ const styles = StyleSheet.create({
     },
     productList: {
         flex: 1,
+        padding: 20,
     },
     productItem: {
         flexDirection: 'row',
         alignItems: 'center',
         borderColor: '#ededed',
-        borderWidth: 2,
+        margin: 2,
         padding: 20,
         borderRadius: 10,
         marginBottom: 10,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+        elevation: 4,
     },
     productIcon: {
         width: 55,
@@ -157,6 +237,11 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     productCode: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    productDis: {
         fontSize: 16,
         fontWeight: 'bold',
     },

@@ -13,14 +13,17 @@ import {
 } from "react-native";
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AlertComponent from '../../../components/AlertComponent';
 
 import { BASE_URL } from '../../api/config';
-const App = () => {
+const AddProductShipment = ({ navigation }) => {
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertType, setAlertType] = useState('success');
     const [shipment, setShipment] = useState({
         shipmentDate: "2024-11-21",
         shipmentDiscount: 10.5,
         shipmentShipCost: 500001,
-        supplierId: "02000000-0000-0000-0000-000000000000",
+        supplierId: "",
         shipmentProducts: [
             {
                 productId: "",
@@ -174,8 +177,8 @@ const App = () => {
     const getSizeName = (sizeId) => {
         const size = sizes.find(item => item.productSizeId === sizeId);
         return size ? size.productSizeName : 'No Size Selected';
-      };
-      
+    };
+
 
 
     const handleSubmit = async () => {
@@ -184,7 +187,7 @@ const App = () => {
 
         // Prepare data to send in the required format
         const formData = {
-            shipmentDate: shipmentDate, // Format date as "YYYY-MM-DD"
+            shipmentDate, // Format date as "YYYY-MM-DD"
             shipmentDiscount: parseFloat(shipmentDiscount),
             shipmentShipCost: parseFloat(shipmentShipCost),
             supplierId: selectedSupplier, // Use the selected supplier ID
@@ -194,7 +197,7 @@ const App = () => {
                 sizesProduct: product.sizesProduct.map((size) => ({
                     productQuantity: parseInt(size.productQuantity), // Ensure quantity is an integer
                     sizeId: size.sizeId || selectedSize, // Handle sizeId if not selected
-                })), // Here we directly use sizesProduct
+                })),
             })),
         };
 
@@ -206,17 +209,26 @@ const App = () => {
                 },
             });
 
-            navigation.replace('ShipmentList');
-            Alert.alert('Success', 'Tạo Lô Hàng Thành Công');
-        } catch (error) {
-            if (error.response && error.response.data) {
-                Alert.alert('Lỗi', error.response.data.message || 'Lỗi khi tạo lô hàng');
+            // Handle successful response
+            if (response.status === 200 || response.status === 201) {
+                setAlertType('success');
+                navigation.replace('ShipmentList', {
+                    alertVisible: true,
+                    alertType: 'success',
+                    title: 'Thêm Sản Phẩm Thành Công,'
+                });
             } else {
-                navigation.replace('ShipmentList');
-                Alert.alert('Success', 'Tạo Lô Hàng Thành Công');
+                setAlertType('error');
+                setAlertVisible(true);
             }
+        } catch (error) {
+            console.log('Error creating shipment:', error);
+            // Alert.alert('Lỗi', error.response?.data?.message || 'Lỗi khi tạo lô hàng');
+            setAlertType('error');
+            setAlertVisible(true);
         }
     };
+
 
 
     return (
@@ -379,9 +391,6 @@ const App = () => {
                     </View>
                 </View>
             </Modal>
-
-
-
             {/* supplier */}
             <Modal
                 transparent={true}
@@ -445,7 +454,17 @@ const App = () => {
                     </View>
                 </View>
             </Modal>
-
+            <AlertComponent
+                title={alertType === 'success' ? "Success" : "Error"}
+                description={
+                    alertType === 'success'
+                        ? "Product added successfully."
+                        : "Thêm Thất Bại!! Vui Lòng Thử Lại"
+                }
+                alertType={alertType}
+                visible={alertVisible}
+                onClose={() => setAlertVisible(false)}
+            />
         </>
     );
 };
@@ -488,4 +507,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default App;
+export default AddProductShipment;
