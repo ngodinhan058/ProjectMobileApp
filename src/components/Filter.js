@@ -169,7 +169,7 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
                                             borderWidth: 2,
                                             borderColor: '#000',
                                             borderRadius: 10,
-                                            backgroundColor: `${category.productSizeName}`,
+                                            backgroundColor: `${category.productSizeCode}`,
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             padding: 5,

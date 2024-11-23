@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
+    Button,
     Modal,
     TouchableOpacity,
     StyleSheet,
@@ -10,74 +11,71 @@ import {
     TextInput,
     Pressable,
     TouchableWithoutFeedback,
-    Alert,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import axios from 'axios';
-import { BASE_URL } from '../../api/config';
+import UploadImage from '../../../../components/Up_Image_Multi';
 
 
-const AddSizeScreen = ({ navigation }) => {
-    const [SizeCode, setSizeCode] = useState('#');    
-    const [SizeName, setSizeName] = useState('');
+const EditPostScreen = ({ route, navigation }) => {
+    const { savedData } = route.params || {};
 
-
-    const handleAddSize = async () => {
-        // Validate SizeName format (e.g., #FFFFFF)
-        const colorCodePattern = /^#[0-9A-Fa-f]{6}$/;
-        if (!colorCodePattern.test(SizeCode)) {
-            Alert.alert('Thông Báo', 'Sai định dạng mã màu # + từ 0-9, a-f, (7 kí tự)');
-            return;
-        }
-
-        try {
-            const payload = {
-                productSizeName: SizeName,                
-                productSizeCode: SizeCode,
-
-            };
-
-            const apiUrl = `${BASE_URL}product-sizes`;
-            const response = await axios.post(apiUrl, payload);
-
-            Alert.alert('Success', 'Size updated successfully');
-            navigation.replace('SizeList');
-        } catch (error) {
-            Alert.alert('Error', 'Failed to update Size');
-        }
+    const [postData, setPostData] = useState({
+        postName: savedData?.postName || '',
+        postContent: savedData?.postContent || '',
+        postImagePath: 'img/product01.png',
+        postType: 1,
+        userId: '4e98028c-2157-4568-a9bc-c21033bad79a',
+        postStatusId: '03000000-0000-0000-0000-000000000000'
+    });
+    const handleNavigateToProduct = () => {
+        // Truyền postData sang ProductScreen
+        navigation.navigate('EditProductScreen', { postDTO: postData });
     };
-
     return (
         <View style={styles.container}>
             <ScrollView>
+                {/* Header */}
                 <View style={styles.header}>
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Thêm Thông Tin Màu</Text>
+                    <Text style={styles.textHeader}>Sửa Thông Tin Post</Text>
                 </View>
+
+                {/* Icon Image */}
+                {/* <UploadImage /> */}
+
+                {/* Post Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.label}>Thêm Mã Màu: (ví dụ màu đen: #000000)</Text>
+                    <Text style={styles.label}>Tên Post</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Nhập Mã Màu"
-                        value={SizeCode}
-                        onChangeText={setSizeCode}
-                        maxLength={7} // Limit input length
+                        placeholder="Thêm Tên Post"
+                        value={postData.postName}
+                        onChangeText={(text) => setPostData({ ...postData, postName: text })}
                     />
-                    <Text style={styles.label}>Thêm Tên Màu:</Text>
+                    {/* <Text style={styles.label}>Loại Post</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Nhập Tên Màu"
-                        value={SizeName}
-                        onChangeText={setSizeName}
+                        placeholder="YYYY-MM-DD"
+                        value={postData.postRelease}
+                        onChangeText={(text) => setPostData({ ...postData, postRelease: text })}
+                    /> */}
+
+                    <Text style={styles.label}>Content Post</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Thêm Content Post"
+                        value={postData.postContent}
+                        onChangeText={(text) => setPostData({ ...postData, postContent: text })}
                     />
-                    <TouchableOpacity style={styles.button} onPress={handleAddSize}>
+
+
+                    <TouchableOpacity style={styles.button} onPress={handleNavigateToProduct}>
                         <Text style={styles.buttonText}>Thêm</Text>
                     </TouchableOpacity>
                 </View>
-                
             </ScrollView>
         </View>
     );
@@ -90,6 +88,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     header: {
+        
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -128,7 +127,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
-        justifyContent: 'center'
     },
     label: {
         fontSize: 16,
@@ -144,7 +142,11 @@ const styles = StyleSheet.create({
     selectedValue: {
         fontSize: 16,
     },
-
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    },
     modalView: {
         position: 'absolute',
         width: '90%',
@@ -163,11 +165,29 @@ const styles = StyleSheet.create({
         elevation: 5,
         height: 400
     },
+    addModalView: {
+        position: 'absolute',
+        width: '90%',
+        marginHorizontal: 20,
+        padding: 30,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        height: 300,
+    },
     modalItem: {
         padding: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
         width: '100%',
+        
     },
     modalText: {
         fontSize: 16,
@@ -180,25 +200,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
-    buttonPost: {
-        width: '40%',
-        backgroundColor: '#3669c9',
-        paddingVertical: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginVertical: 10,
-        marginLeft: '60%'
-    },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
-
-    },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Làm nền modal tối
     },
     searchBar: {
         position: 'relative',
@@ -212,19 +217,20 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
     },
-    icon: {
-        width: 20,
-        height: 20,
-        marginLeft: 10,
+    filter: {
+        position: 'absolute',
+        width: 50,
+        height: 50,
+        backgroundColor: '#fafafa',
+        borderRadius: 10,
+        alignItems: 'center',
+        right: 0,
     },
     iconCenter: {
-        width: 20,
-        height: 20,
-        position: 'absolute',
-        alignContent: 'center',
-        top: 15,
+        fontSize: 35,
+        color: '#3669c9',
+        marginTop: '30%',
     },
-
 });
 
-export default AddSizeScreen;
+export default EditPostScreen;

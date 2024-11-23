@@ -13,10 +13,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import axios from 'axios';
-import { BASE_URL } from '../../api/config';
 
-const AddCouponScreen = ({ navigation }) => {
+const AddCouponScreen = ({ route, navigation }) => {
     const COUPON_PER_HUNDRED_TYPE = 0;
     const COUPON_PRICE_TYPE = 1;
     const COUPON_SHIP_TYPE = 2;
@@ -45,40 +43,29 @@ const AddCouponScreen = ({ navigation }) => {
         setShowDatePicker(false);
         setCouponExpire(currentDate);
     };
+
     const handleAddCoupon = async () => {
         if (!couponName || !couponCode || !couponRelease || !couponQuantity) {
             Alert.alert('Error', 'Vui lòng nhập đầy đủ thông tin');
             return;
         }
-
-        try {
-            setIsLoading(true);
-            const couponReleaseDate = couponRelease.toISOString().split('T')[0]; // Định dạng lại ngày
-            const couponExpireDate = couponExpire.toISOString().split('T')[0]; // Định dạng lại ngày
-            const payload = {
-                couponName,
-                couponCode,
-                couponRelease: couponReleaseDate,
-                couponExpire: couponExpireDate,
-                couponQuantity: parseInt(couponQuantity),
-                couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
-                couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
-                couponFeeShip: couponType === COUPON_SHIP_TYPE ? parseFloat(couponFeeShip) : null,
-                couponType,
-            };
-            console.log("payload", payload);
-
-            const apiUrl = `${BASE_URL}coupon`;
-            await axios.post(apiUrl, payload);
-
-            Alert.alert('Success', 'Thêm mã giảm giá thành công');
-            navigation.replace('CouponList'); // Chuyển hướng sau khi thêm thành công
-        } catch (error) {
-            Alert.alert('Error', error);
-        } finally {
-            setIsLoading(false);
-        }
+        setIsLoading(true);
+        const couponReleaseDate = couponRelease.toISOString().split('T')[0]; // Định dạng lại ngày
+        const couponExpireDate = couponExpire.toISOString().split('T')[0]; // Định dạng lại ngày
+        const payload = {
+            couponName,
+            couponCode,
+            couponRelease: couponReleaseDate,
+            couponExpire: couponExpireDate,
+            couponQuantity: parseInt(couponQuantity),
+            couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
+            couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
+            couponFeeShip: couponType === COUPON_SHIP_TYPE ? parseFloat(couponFeeShip) : null,
+            couponType,
+        };
+        navigation.navigate('AddProductScreen', { couponDTO: payload });
     };
+
 
     const renderInputForCouponType = () => {
         switch (couponType) {

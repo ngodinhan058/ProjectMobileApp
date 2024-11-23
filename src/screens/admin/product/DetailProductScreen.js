@@ -103,8 +103,12 @@ function DetailScreen({ route, navigation }) {
         try {
             const rep = await axios.delete(`${BASE_URL}product/${id}`);
             
-            Alert.alert("Success", "Xoá Thành Công");
-            navigation.replace("ProductList");
+            // Alert.alert("Success", "Xoá Thành Công");
+            navigation.replace('ProductList', {
+                alertVisible: true,
+                alertType: 'success',
+                title: 'Xóa Sản Phẩm Thành Công,'
+            });
         } catch (error) {
             console.error('Error deleting category:', error.response ? error.response.data : error.message);
             Alert.alert("Error", "Failed to delete category.");

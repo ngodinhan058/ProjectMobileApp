@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -15,9 +15,26 @@ import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
 function CouponDetailScreen({ route, navigation }) {
-    const { id, couponName, couponCode, couponRelease, couponExpire, couponQuantity, couponPerHundred, couponPrice, couponFeeShip, couponType } = route.params;
-    console.log(id);
-    
+    const [coupons, setCoupons] = useState([]);
+    const { id } = route.params;
+    const [isLoading, setIsLoading] = useState(false);
+
+    // console.log(id);
+    useEffect(() => {
+        setIsLoading(true);
+        const apiUrl = `${BASE_URL}coupon/${id}`;
+        axios
+            .get(apiUrl)
+            .then(response => {
+                const couponData = response.data.data;
+                setCoupons(couponData);
+                setIsLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                setIsLoading(false);
+            });
+    }, []);
     // State cho nút mở rộng
     const [isOpen, setIsOpen] = useState(false);
     const [animation] = useState(new Animated.Value(0)); // Hoạt ảnh chính
@@ -80,45 +97,45 @@ function CouponDetailScreen({ route, navigation }) {
                 {/* Thông tin chi tiết Coupon */}
                 <View style={styles.detailContainer}>
                     <Text style={styles.detailLabel}>Tên Coupon:</Text>
-                    <Text style={styles.detailValue}>{couponName}</Text>
+                    <Text style={styles.detailValue}>{coupons.couponName}</Text>
 
                     <Text style={styles.detailLabel}>Mã Coupon:</Text>
-                    <Text style={styles.detailValue}>{couponCode}</Text>
+                    <Text style={styles.detailValue}>{coupons.couponCode}</Text>
 
                     <Text style={styles.detailLabel}>Ngày Phát Hành:</Text>
-                    <Text style={styles.detailValue}>{couponRelease}</Text>
+                    <Text style={styles.detailValue}>{coupons.couponRelease}</Text>
 
                     <Text style={styles.detailLabel}>Ngày Hết Hạn:</Text>
-                    <Text style={styles.detailValue}>{couponExpire || 'Không xác định'}</Text>
+                    <Text style={styles.detailValue}>{coupons.couponExpire || 'Không xác định'}</Text>
 
                     <Text style={styles.detailLabel}>Số Lượng:</Text>
-                    <Text style={styles.detailValue}>{couponQuantity}</Text>
+                    <Text style={styles.detailValue}>{coupons.couponQuantity}</Text>
 
 
 
 
 
                     <Text style={styles.detailLabel}>
-                        {couponType === 0
+                        {coupons.couponType === 0
                             ? 'Phần Trăm Giảm Giá:'
-                            : couponType === 1
+                            : coupons.couponType === 1
                                 ? 'Số Tiền Giảm Giá:'
                                 : 'Miễn Phí Vận Chuyển:'}
                     </Text>
                     <Text style={styles.detailValue}>
-                        {couponType === 0
-                            ? `${couponPerHundred || 'Không áp dụng'} %`
-                            : couponType === 1
-                                ? `${couponPrice || 'Không áp dụng'} VNĐ`
-                                : couponPrice ? `${couponPrice} VNĐ` 
-                                : `Miễn phí ${couponFeeShip || 'Không áp dụng'}`}
+                        {coupons.couponType === 0
+                            ? `${coupons.couponPerHundred || 'Không áp dụng'} %`
+                            : coupons.couponType === 1
+                                ? `${coupons.couponPrice || 'Không áp dụng'} VNĐ`
+                                : coupons.couponPrice ? `${coupons.couponPrice} VNĐ`
+                                    : `Miễn phí ${coupons.couponFeeShip || 'Không áp dụng'}`}
                     </Text>
                     <Text style={styles.detailLabel}>Loại Coupon:</Text>
                     <Text style={styles.detailValue}>
-                        {couponType === 0
+                        {coupons.couponType === 0
                             ? 'Phần Trăm'
-                            : couponType === 1
-                                ? 'Số Tiền'
+                            : coupons.couponType === 1
+                                ? 'Tiền VNĐ'
                                 : 'Giảm Phí Ship'}
                     </Text>
                 </View>
@@ -136,15 +153,15 @@ function CouponDetailScreen({ route, navigation }) {
                     onPress={() => {
                         navigation.navigate('EditCouponScreen', {
                             couponId: id,
-                            couponName: couponName,
-                            couponCode: couponCode,
-                            couponRelease: couponRelease,
-                            couponExpire: couponExpire,
-                            couponQuantity: couponQuantity,
-                            couponPerHundred: couponPerHundred,
-                            couponPrice: couponPrice,
-                            couponFeeShip: couponFeeShip,
-                            couponType: couponType,
+                            couponName: coupons.couponName,
+                            couponCode: coupons.couponCode,
+                            couponRelease: coupons.couponRelease,
+                            couponExpire: coupons.couponExpire,
+                            couponQuantity: coupons.couponQuantity,
+                            couponPerHundred: coupons.couponPerHundred,
+                            couponPrice: coupons.couponPrice,
+                            couponFeeShip: coupons.couponFeeShip,
+                            couponType: coupons.couponType,
                         });
                     }}
                 >

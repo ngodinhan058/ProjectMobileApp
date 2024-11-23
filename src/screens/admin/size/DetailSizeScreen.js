@@ -15,7 +15,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
 function DetailScreen({ route, navigation }) {
-    const { id, name } = route.params;
+    const { id, name, code } = route.params;
 
     // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
@@ -92,7 +92,7 @@ function DetailScreen({ route, navigation }) {
                     <View style={{
                         width: 200,
                         height: 200,
-                        backgroundColor: `${name}`,
+                        backgroundColor: `${code}`,
                         borderRadius: 200
                     }}>
                     </View>
@@ -100,6 +100,10 @@ function DetailScreen({ route, navigation }) {
                  {/* Product info */}
                  <View style={styles.productInfo}>
                         <Text style={styles.title}>Mã Màu: </Text>
+                        <Text style={styles.productName}>{code}</Text>
+                    </View>
+                    <View style={styles.productInfo}>
+                        <Text style={styles.title}>Tên Màu: </Text>
                         <Text style={styles.productName}>{name}</Text>
                     </View>
             </ScrollView>
@@ -113,7 +117,7 @@ function DetailScreen({ route, navigation }) {
 
             {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditSizeScreen', { id, name })}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditSizeScreen', { id, name, code })}>
                     <Icon name="pencil" size={20} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>

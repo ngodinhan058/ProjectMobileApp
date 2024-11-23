@@ -1,6 +1,7 @@
 import Icon from 'react-native-vector-icons/Ionicons';
-import React, { useEffect, useRef, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet, Text, Easing } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, TouchableOpacity, StyleSheet, Text, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Sử dụng React.memo để tránh render lại nếu props không thay đổi
 const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
@@ -11,6 +12,27 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
     },
     [navigation]
   );
+
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        // Lấy dữ liệu từ AsyncStorage
+        const userInfoString = await AsyncStorage.getItem('userInfo');
+
+        // Nếu có dữ liệu thì parse nó thành JSON
+        if (userInfoString) {
+          const userInfoData = JSON.parse(userInfoString);
+          setUserInfo(userInfoData); // Lưu vào state
+        }
+      } catch (error) {
+        console.error('Error fetching user info from AsyncStorage:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   return (
     <View style={styles.tabBarContainer}>
@@ -32,9 +54,11 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
             key={index}
             onPress={() => handlePress(route.name)}
             style={styles.tabButton}
-          >
-            <Icon name={iconName} size={24} color={isFocused ? '#3669c9' : '#999'} />
-            <Text style={{color: isFocused ? '#3669c9' : '#999', fontSize: 12,}}>{route.name}</Text>
+          >   
+              <>
+                <Icon name={iconName} size={24} color={isFocused ? '#3669c9' : '#999'} />
+                <Text style={{ color: isFocused ? '#3669c9' : '#999', fontSize: 12 }}>{route.name}</Text>
+              </>
           </TouchableOpacity>
         );
       })}
@@ -52,7 +76,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 60,
   },
-  
+
   tabButton: {
     alignItems: 'center',
     justifyContent: 'center',

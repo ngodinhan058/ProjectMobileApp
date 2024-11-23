@@ -45,7 +45,7 @@ const AddCategoryScreen = ({ navigation }) => {
                 categoryName: categoryName,
                 statusId: categoryStatusId,
                 categoryRelease: formattedDate,
-                categoryParent: categoryParent[0],
+                categoryParent: categoryParent ? categoryParent[0] : null,
                 categoryImgPath: categoryImg,
             };
     
@@ -130,7 +130,7 @@ const AddCategoryScreen = ({ navigation }) => {
                         onClose={toggleFilterModal}
                         onReset={handleResetFilters}
                         onApply={(selectedParent, selectedParentName) => {
-                            setCategoryParent(selectedParent);
+                            setCategoryParent(selectedParent || null);
                             setParentCategoryName(selectedParentName);
                         }}
                     />
