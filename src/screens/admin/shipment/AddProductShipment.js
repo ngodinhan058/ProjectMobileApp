@@ -9,20 +9,27 @@ import {
     Modal,
     TouchableOpacity,
     FlatList,
-    Alert,
+    ActivityIndicator,
 } from "react-native";
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AlertComponent from '../../../components/AlertComponent';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { BASE_URL } from '../../api/config';
 const AddProductShipment = ({ navigation }) => {
+    const [shipmentDate, setShipmentDate] = useState(new Date());
+
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertType, setAlertType] = useState('success');
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [title, setTitle] = useState('');
+
     const [shipment, setShipment] = useState({
-        shipmentDate: "2024-11-21",
-        shipmentDiscount: 10.5,
-        shipmentShipCost: 500001,
+        shipmentDate: shipmentDate,
+        shipmentDiscount: '',
+        shipmentShipCost: '',
         supplierId: "",
         shipmentProducts: [
             {
@@ -51,6 +58,11 @@ const AddProductShipment = ({ navigation }) => {
         sizeIndex: null,    // Thêm thông tin này
     });
 
+    const onDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || shipmentDate;
+        setShowDatePicker(false);
+        setShipmentDate(currentDate);
+    };
     const [products, setProducts] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [sizes, setSizes] = useState([]);
@@ -90,7 +102,9 @@ const AddProductShipment = ({ navigation }) => {
         );
 
         if (isAlreadySelected) {
-            Alert.alert('Error', 'This product has already been selected in another product.');
+            setTitle('Sản phẩm này đã tồn tại');
+            setAlertType('error');
+            setAlertVisible(true);
             return;
         }
 
@@ -103,10 +117,6 @@ const AddProductShipment = ({ navigation }) => {
         setModalVisibility({ ...modalVisibility, productSelection: false });
     };
 
-
-
-
-
     const handleSelectSize = (productIndex, sizeIndex, sizeId) => {
         const updatedProducts = [...shipment.shipmentProducts];
         const selectedProductId = updatedProducts[productIndex].sizesProduct[sizeIndex].productId;
@@ -117,7 +127,9 @@ const AddProductShipment = ({ navigation }) => {
         );
 
         if (isDuplicateSize) {
-            Alert.alert('Error', 'This size has already been selected for this product.');
+            setTitle('Màu này đã tồn tại');
+            setAlertType('error');
+            setAlertVisible(true);
             return;
         }
 
@@ -182,12 +194,13 @@ const AddProductShipment = ({ navigation }) => {
 
 
     const handleSubmit = async () => {
+        setIsLoading(true);
         // Validate form data
         const { shipmentDate, shipmentDiscount, shipmentShipCost, shipmentProducts } = shipment;
-
+        const formattedDate = shipmentDate.toISOString().split('T')[0]; // Định dạng lại ngày
         // Prepare data to send in the required format
         const formData = {
-            shipmentDate, // Format date as "YYYY-MM-DD"
+            shipmentDate: formattedDate, // Format date as "YYYY-MM-DD"
             shipmentDiscount: parseFloat(shipmentDiscount),
             shipmentShipCost: parseFloat(shipmentShipCost),
             supplierId: selectedSupplier, // Use the selected supplier ID
@@ -202,6 +215,7 @@ const AddProductShipment = ({ navigation }) => {
         };
 
         try {
+            
             // Send data to API
             const response = await axios.post(`${BASE_URL}shipment`, formData, {
                 headers: {
@@ -224,32 +238,48 @@ const AddProductShipment = ({ navigation }) => {
         } catch (error) {
             console.log('Error creating shipment:', error);
             // Alert.alert('Lỗi', error.response?.data?.message || 'Lỗi khi tạo lô hàng');
+            setTitle('Vui Lòng Kiểm Tra Kĩ')
             setAlertType('error');
             setAlertVisible(true);
+        }finally {
+            setIsLoading(false);
         }
     };
 
+    // shipment.shipmentProducts
+    const [error, setError] = useState({
+        shipmentDiscount: false,
+        shipmentShipCost: false,
 
-
+    });
+    useEffect(() => {
+        setError({
+            shipmentDiscount: shipment.shipmentDiscount === '',
+            shipmentShipCost: shipment.shipmentShipCost === '',
+            
+        });
+    }, [shipment.shipmentDiscount, shipment.shipmentShipCost]);
     return (
         <>
             <ScrollView style={styles.container}>
-                <Text style={styles.title}>Shipment Form</Text>
+                <Text style={styles.title}>Đơn Nhập Lô Hàng</Text>
+                <Text style={styles.titleSmall}>Ngày Nhập Lô Hàng:</Text>
+                <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                    <Text>{shipmentDate ? shipmentDate.toDateString() : 'Thêm Ngày Tạo Danh Mục'}</Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={shipmentDate}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                    />
+                )}
 
-                <Text>Shipment Date:</Text>
+                <Text style={styles.titleSmall}>Giảm giá vận chuyển:</Text>
                 <TextInput
-                    style={styles.input}
-                    placeholder="Enter shipment date"
-                    value={shipment.shipmentDate}
-                    onChangeText={(text) =>
-                        setShipment({ ...shipment, shipmentDate: text })
-                    }
-                />
-
-                <Text>Shipment Discount:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Enter shipment discount"
+                    style={[styles.input, error.shipmentDiscount && styles.inputError]}
+                    placeholder="Nhập Giảm giá vận chuyển"
                     value={shipment.shipmentDiscount}
                     onChangeText={(text) =>
                         setShipment({ ...shipment, shipmentDiscount: text })
@@ -257,10 +287,10 @@ const AddProductShipment = ({ navigation }) => {
                     keyboardType="numeric"
                 />
 
-                <Text>Shipment Ship Cost:</Text>
+                <Text style={styles.titleSmall}>Chi phí vận chuyển:</Text>
                 <TextInput
-                    style={styles.input}
-                    placeholder="Enter shipment ship cost"
+                    style={[styles.input, error.shipmentShipCost && styles.inputError]}
+                    placeholder="Nhập Chi phí vận chuyển:"
                     value={shipment.shipmentShipCost}
                     onChangeText={(text) =>
                         setShipment({ ...shipment, shipmentShipCost: text })
@@ -268,10 +298,10 @@ const AddProductShipment = ({ navigation }) => {
                     keyboardType="numeric"
                 />
 
-                <Text>Supplier:</Text>
-                <TouchableOpacity onPress={() => setModalVisibility({ ...modalVisibility, supplierSelection: true })}>
-                    <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                        {selectedSupplier ? `${getSupplierName(selectedSupplier)}` : 'Choose Supplier'}
+                <Text style={styles.titleSmall}>Hãng:</Text>
+                <TouchableOpacity onPress={() => setModalVisibility({ ...modalVisibility, supplierSelection: true })} style={[styles.select, !selectedSupplier && styles.inputError]}>
+                    <Text>
+                        {selectedSupplier ? `${getSupplierName(selectedSupplier)}` : 'Chọn Hãng'}
                     </Text>
                 </TouchableOpacity>
                 {shipment.shipmentProducts.map((product, productIndex) => (
@@ -282,10 +312,10 @@ const AddProductShipment = ({ navigation }) => {
                                 <Icon name='trash' size={20} color={'#bbb'} />
                             </TouchableOpacity>
                         </View>
-                        <Text>Product Price:</Text>
+                        <Text style={styles.titleSmall}>Product Price:</Text>
                         <TextInput
-                            style={styles.input}
-                            placeholder="Enter product price"
+                            style={shipment?.shipmentProducts[productIndex].productPrice == '' ? styles.inputError : styles.input}
+                            placeholder="Nhập giá: "
                             value={product.productPrice}
                             onChangeText={(text) => {
                                 const updatedProducts = [...shipment.shipmentProducts];
@@ -304,9 +334,11 @@ const AddProductShipment = ({ navigation }) => {
                                     productIndex,
                                 })
                             }
+                            style={shipment?.shipmentProducts[productIndex].productId == '' ? styles.inputError : styles.select}
+
                         >
-                            <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                                {product.productId ? `${getProductName(product.productId)}` : 'Choose Product'}
+                            <Text >
+                                {product.productId ? `${getProductName(product.productId)}` : 'Chọn Sản Phẩm'}
                             </Text>
                         </TouchableOpacity>
 
@@ -314,15 +346,15 @@ const AddProductShipment = ({ navigation }) => {
                         {product.sizesProduct.map((size, sizeIndex) => (
                             <View key={sizeIndex} style={styles.section}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', margin: 10 }}>
-                                    <Text style={styles.subtitle}>Size {sizeIndex + 1}</Text>
+                                    <Text style={styles.subtitle}>Màu {sizeIndex + 1}</Text>
                                     <TouchableOpacity onPress={() => removeSize(productIndex, sizeIndex)}>
                                         <Icon name='trash' size={20} color={'#bbb'} />
 
                                     </TouchableOpacity>
                                 </View>
-                                <Text>Product Quantity:</Text>
+                                <Text style={styles.titleSmall}>Product Quantity:</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={shipment?.shipmentProducts[productIndex].sizesProduct[sizeIndex].productQuantity == '' ? styles.inputError : styles.input}
                                     placeholder="Enter product quantity"
                                     value={size.productQuantity.toString()}
                                     onChangeText={(text) => {
@@ -342,9 +374,10 @@ const AddProductShipment = ({ navigation }) => {
                                             sizeIndex,
                                         })
                                     }
+                                    style={shipment?.shipmentProducts[productIndex].sizesProduct[sizeIndex].sizeId == '' ? styles.inputError : styles.select}
                                 >
-                                    <Text style={{ borderWidth: 1, padding: 10, marginBottom: 10, textAlign: 'center' }}>
-                                        {size.sizeId ? `${getSizeName(size.sizeId)}` : 'Choose Size'}
+                                    <Text>
+                                        {size.sizeId ? `${getSizeName(size.sizeId)}` : 'Chọn Màu'}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -356,10 +389,17 @@ const AddProductShipment = ({ navigation }) => {
 
                 <Button title="Add Product" onPress={addProduct} color="#2196F3" />
 
-                <Button title="Submit" onPress={handleSubmit} color="#007BFF" />
+                {/* <Button title="Submit" onPress={handleSubmit} color="#007BFF" /> */}
                 <View style={{ marginVertical: 20 }}></View>
             </ScrollView>
-
+            <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isLoading}>
+                <Text style={styles.buttonText}>Thêm Lô Hàng</Text>
+            </TouchableOpacity>
+            {isLoading && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator size="large" color="#3669c9" />
+                </View>
+            )}
             {/* Modals */}
             {/* product */}
             <Modal
@@ -459,7 +499,7 @@ const AddProductShipment = ({ navigation }) => {
                 description={
                     alertType === 'success'
                         ? "Product added successfully."
-                        : "Thêm Thất Bại!! Vui Lòng Thử Lại"
+                        : title
                 }
                 alertType={alertType}
                 visible={alertVisible}
@@ -471,15 +511,28 @@ const AddProductShipment = ({ navigation }) => {
 
 
 const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
     container: {
         flex: 1,
         padding: 20,
         backgroundColor: "#fff",
     },
+    titleSmall: {
+        fontSize: 16,
+        fontWeight: "bold",
+        marginBottom: 10,
+    },
     title: {
         fontSize: 24,
         fontWeight: "bold",
         marginBottom: 20,
+        textAlign: 'center',
     },
     subtitle: {
         fontSize: 18,
@@ -492,6 +545,9 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
     },
+    select: {
+        borderWidth: 1, padding: 10, marginBottom: 10, alignItems: 'center',borderRadius: 5,
+    },
     section: {
         marginBottom: 20,
         padding: 10,
@@ -499,11 +555,32 @@ const styles = StyleSheet.create({
         borderColor: "#ddd",
         borderRadius: 5,
     },
+    inputError: {
+        marginBottom: 20,
+        padding: 10,
+        borderWidth: 1,
+        borderRadius: 5,
+        borderColor: 'red',
+        alignItems: 'center',
+    },
     removeText: {
         color: 'red',
         fontSize: 16,
         fontWeight: 'bold',
         marginLeft: 10,
+    },
+    button: {
+        width: '100%',
+        backgroundColor: '#2196F3',
+        paddingVertical: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 
