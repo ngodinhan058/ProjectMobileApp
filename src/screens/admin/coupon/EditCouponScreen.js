@@ -215,7 +215,7 @@ const EditCouponScreen = ({ navigation, route }) => {
                             <Icon
                                 name={couponType === COUPON_PER_HUNDRED_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá (%)</Text>
                         </TouchableOpacity>
@@ -226,7 +226,7 @@ const EditCouponScreen = ({ navigation, route }) => {
                             <Icon
                                 name={couponType === COUPON_PRICE_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá (VNĐ)</Text>
                         </TouchableOpacity>
@@ -237,7 +237,7 @@ const EditCouponScreen = ({ navigation, route }) => {
                             <Icon
                                 name={couponType === COUPON_SHIP_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá Vận Chuyển</Text>
                         </TouchableOpacity>
@@ -303,6 +303,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 15,
         paddingHorizontal: 15,
+        justifyContent: 'center',
     },
     radioContainer: {
         justifyContent: 'space-between',

@@ -196,7 +196,7 @@ const AddCouponScreen = ({ navigation }) => {
                             <Icon
                                 name={couponType === COUPON_PER_HUNDRED_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá (%)</Text>
                         </TouchableOpacity>
@@ -207,7 +207,7 @@ const AddCouponScreen = ({ navigation }) => {
                             <Icon
                                 name={couponType === COUPON_PRICE_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá (VNĐ)</Text>
                         </TouchableOpacity>
@@ -218,7 +218,7 @@ const AddCouponScreen = ({ navigation }) => {
                             <Icon
                                 name={couponType === COUPON_SHIP_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá Vận Chuyển</Text>
                         </TouchableOpacity>
