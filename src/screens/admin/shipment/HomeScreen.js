@@ -118,9 +118,16 @@ const HomeAdminScreen = ({ navigation, route }) => {
                 />) : <Text style={{ textAlign: 'center', fontSize: 23, fontStyle: 'italic', color: '#aaa' }}>Không có lô hàng</Text>}
 
 
-            {/* Add Button */}
-            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProductShipment')}>
-                <Text style={styles.addButtonText}>+</Text>
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate('AddProductShipment')}
+            >
+                <LinearGradient
+                    colors={['#4CAF50', '#388E3C']}
+                    style={styles.addButtonGradient}
+                >
+                    <Ionicons name="add-circle" size={40} color="#fff" />
+                </LinearGradient>
             </TouchableOpacity>
             {isAlertVisible && (
                 <AlertComponent
@@ -258,17 +265,27 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 30,
         right: 30,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#3669c9',
+        width: 65,
+        height: 65,
+        borderRadius: 32.5,
         justifyContent: 'center',
         alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
     },
-    addButtonText: {
-        fontSize: 40,
-        color: '#fff',
-    },
+ addButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default HomeAdminScreen;

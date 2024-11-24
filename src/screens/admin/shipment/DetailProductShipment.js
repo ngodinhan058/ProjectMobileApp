@@ -57,7 +57,7 @@ function DetailScreen({ route, navigation }) {
                 const promises = productIds.map((id) =>
                     axios.get(`${BASE_URL}product/${id}`).then((res) => res.data.data)
                 );
-    
+
                 const products = await Promise.all(promises); // Kết quả là một mảng
                 setProductsState(products); // Gán toàn bộ mảng sản phẩm vào productsState
             } catch (error) {
@@ -65,12 +65,12 @@ function DetailScreen({ route, navigation }) {
                 setProductsState([]); // Đặt mặc định là mảng rỗng nếu xảy ra lỗi
             }
         };
-    
+
         if (shipmentProducts.length > 0) {
             fetchProductDetails();
         }
     }, [shipmentProducts]);
-    
+
 
     // Handle shipment deletion
     const deleteShipment = async () => {
@@ -143,39 +143,61 @@ function DetailScreen({ route, navigation }) {
                         <Icon name="angle-left" size={35} color="#fff" />
                     </Pressable>
 
-                    <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
+                    <Text style={styles.textHeader}>Chi Tiết Lô Hàng</Text>
                 </LinearGradient>
                 {/* Shipment Information */}
-                <View style={{ padding: 20 }}>
-                    <Text style={styles.shipmentDate}>Date: {shipmentData.shipmentDate}</Text>
-                    <Text style={styles.shipmentDiscount}>Discount: {shipmentData.shipmentDiscount}%</Text>
-                    <Text style={styles.shipmentShipCost}>Shipping Cost: {shipmentData.shipmentShipCost} VND</Text>
+                <View style={{ paddingHorizontal: 20 }}>
+                    <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold', }}>Ngày Nhập: {shipmentData.shipmentDate}</Text>
+                    <View style={{ width: '100%', height: 1, backgroundColor: '#ccc', marginVertical: 20 }}></View>
+                    <Text style={styles.shipmentDiscount}>Giảm giá vận chuyển: {shipmentData.shipmentDiscount}%</Text>
+                    <Text style={styles.shipmentShipCost}>Chi phí vận chuyển: {shipmentData.shipmentShipCost} VND</Text>
 
                     <View style={styles.supplierInfo}>
-                        <Text style={styles.supplierTitle}>Supplier:</Text>
+                        <Text style={styles.supplierTitle}>Hãng:</Text>
                         <Text style={styles.supplierName}>{shipmentData.productSupplier?.productSupplierName}</Text>
                         {/* <Image source={{ uri: firstShipment.productSupplier?.productSupplierLogo }} style={styles.supplierLogo} /> */}
                     </View>
+                    <View style={{ width: '100%', height: 1, backgroundColor: '#ccc', marginVertical: 20 }}></View>
                 </View>
 
                 {/* Shipment Products */}
-                <View style={styles.productList}>
-                    <Text style={styles.sectionTitle}>Products</Text>
+                <View style={{ paddingHorizontal: 20, }}>
+                    <Text style={styles.sectionTitle}>Tất Cả Sản Phẩm: </Text>
                     <FlatList
                         data={shipmentProducts}
                         keyExtractor={(item) => `${item.productId}`}
                         renderItem={({ item }) => {
                             const productDetails = productsState.find((product) => product.productId === item.productId);
-
                             return (
-                                <View style={styles.productItem}>
-                                    <Text style={styles.productName}>
-                                        Product Name: {productDetails?.productName || "Unknown"}
-                                    </Text>
-                                    <Text style={styles.productPrice}>
-                                        Price: {productDetails.productPrice}
-                                    </Text>
-                                </View>
+                                <TouchableOpacity
+                                    style={styles.productItem}
+                                >
+                                    <View style={{ marginRight: 20 }}>
+                                        <Image source={{ uri: productDetails?.productImages[0]?.productImagePath }} style={styles.productIcon} />
+                                    </View>
+                                    <View style={{ flex: 1, }}>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <View style={styles.productDetails}>
+                                                <Text style={styles.productCode}>{productDetails?.productName}</Text>
+                                            </View>
+                                            <Pressable>
+                                                <Icon name="angle-right" size={25} color="#000" />
+                                            </Pressable>
+                                        </View>
+                                        <View style={styles.productDetails}>
+                                            <Text style={styles.productCode}></Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+
+                                            <View>
+                                                <Text style={styles.productCode}>Giá Bán: {item.shipmentProductPrice} ₫</Text>
+                                            </View>
+                                            <View style={styles.productDetails}>
+                                                <Text style={styles.productCode}></Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
                             );
                         }}
                     />
@@ -196,7 +218,7 @@ function DetailScreen({ route, navigation }) {
                     style={styles.iconButton}
                     onPress={() => {
                         navigation.navigate('EditProductShipment', {
-                            shipmentData: firstShipment,
+                            shipmentData: shipmentData,
 
                         });
                     }}
@@ -272,7 +294,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginRight: 10,
     },
-    shipmentDate: { fontSize: 16, marginBottom: 5 },
     shipmentDiscount: { fontSize: 16, marginBottom: 5 },
     shipmentShipCost: { fontSize: 16, marginBottom: 5 },
     supplierInfo: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
@@ -280,7 +301,32 @@ const styles = StyleSheet.create({
     supplierName: { fontSize: 16, marginLeft: 5 },
     supplierLogo: { width: 40, height: 40, borderRadius: 20, marginLeft: 10 },
     sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-    productItem: { padding: 10, backgroundColor: '#f0f0f0', marginBottom: 5, borderRadius: 5 },
+    productItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        margin: 2,
+        padding: 20,
+        borderRadius: 10,
+        marginBottom: 10,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    productIcon: {
+        width: 60,
+        height: 60,
+        resizeMode: 'contain',
+    },
+    productDetails: {
+        flex: 1,
+    },
+    productCode: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
     productQuantity: { fontSize: 16 },
     productPrice: { fontSize: 16 },
     editButton: {
