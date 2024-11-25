@@ -25,11 +25,10 @@ const AddCouponScreen = ({ navigation }) => {
     const [couponCode, setCouponCode] = useState('');
     const [couponRelease, setCouponRelease] = useState(new Date());
     const [couponExpire, setCouponExpire] = useState(new Date());
-    // const [couponRelease, setCouponRelease] = useState('');
-    // const [couponExpire, setCouponExpire] = useState('');
     const [couponQuantity, setCouponQuantity] = useState('');
     const [couponPerHundred, setCouponPerHundred] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showDatePickerExpire, setShowDatePickerExpire] = useState(false);
     const [couponPrice, setCouponPrice] = useState('');
     const [couponFeeShip, setCouponFeeShip] = useState('');
     const [couponType, setCouponType] = useState(COUPON_PER_HUNDRED_TYPE)
@@ -42,7 +41,7 @@ const AddCouponScreen = ({ navigation }) => {
 
     const onDateChangeCouponExpire = (event, selectedDate) => {
         const currentDate = selectedDate || couponExpire;
-        setShowDatePicker(false);
+        setShowDatePickerExpire(false);
         setCouponExpire(currentDate);
     };
     const handleAddCoupon = async () => {
@@ -109,7 +108,7 @@ const AddCouponScreen = ({ navigation }) => {
                     </>
                 );
             case COUPON_SHIP_TYPE:
-                 return (
+                return (
                     <>
                         <Text style={styles.label}>Giảm Phí Vận Chuyển (VNĐ):</Text>
                         <TextInput
@@ -167,10 +166,10 @@ const AddCouponScreen = ({ navigation }) => {
                     )}
 
                     <Text style={styles.label}>Ngày Hết Hạn:</Text>
-                    <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                    <TouchableOpacity style={styles.input} onPress={() => setShowDatePickerExpire(true)}>
                         <Text>{couponExpire ? couponExpire.toDateString() : 'Thêm Ngày Hết Hạn'}</Text>
                     </TouchableOpacity>
-                    {showDatePicker && (
+                    {showDatePickerExpire && (
                         <DateTimePicker
                             value={couponExpire}
                             mode="date"
@@ -197,7 +196,7 @@ const AddCouponScreen = ({ navigation }) => {
                             <Icon
                                 name={couponType === COUPON_PER_HUNDRED_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá (%)</Text>
                         </TouchableOpacity>
@@ -208,7 +207,7 @@ const AddCouponScreen = ({ navigation }) => {
                             <Icon
                                 name={couponType === COUPON_PRICE_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá (VNĐ)</Text>
                         </TouchableOpacity>
@@ -219,7 +218,7 @@ const AddCouponScreen = ({ navigation }) => {
                             <Icon
                                 name={couponType === COUPON_SHIP_TYPE ? 'dot-circle-o' : 'circle-o'}
                                 size={25}
-                                color="#000"
+                                color="#3669c9"
                             />
                             <Text style={styles.radioText}>Giảm Giá Vận Chuyển</Text>
                         </TouchableOpacity>
@@ -284,6 +283,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 15,
         paddingHorizontal: 15,
+        justifyContent: 'center',
     },
     radioContainer: {
         justifyContent: 'space-between',

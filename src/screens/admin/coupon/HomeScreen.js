@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
@@ -9,8 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 const HomeAdminScreen = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [coupons, setCoupons] = useState([]);
-
-    useEffect(() => {
+    const [refreshing, setRefreshing] = useState(false);
+    const fetchCoupon = async () => {
         setIsLoading(true);
         const apiUrl = `${BASE_URL}coupons`;
         axios
@@ -24,8 +24,13 @@ const HomeAdminScreen = ({ navigation }) => {
                 console.error('Error fetching data:', error);
                 setIsLoading(false);
             });
+    };
+    useEffect(() => {
+        fetchCoupon();
     }, []);
-
+    const handleRefresh = () => {
+        fetchCoupon();
+    };
     const renderCoupon = ({ item }) => {
         const discountInfo = item.couponPerHundred
             ? `${item.couponPerHundred}%`
@@ -53,7 +58,7 @@ const HomeAdminScreen = ({ navigation }) => {
                         elevation: 6,
                         justifyContent: 'center',
                     }}>
-                        <Text style={{ fontSize: 21, color: 'red', textAlign: 'center',  }}>
+                        <Text style={{ fontSize: 21, color: 'red', textAlign: 'center', }}>
                             {discountInfo}
                         </Text>
                     </View>
@@ -94,6 +99,9 @@ const HomeAdminScreen = ({ navigation }) => {
                 renderItem={renderCoupon}
                 keyExtractor={(item) => item.couponId.toString()}
                 style={styles.couponList}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+                }
             />
             {/* Add Button */}
             <TouchableOpacity
@@ -104,11 +112,11 @@ const HomeAdminScreen = ({ navigation }) => {
                     <Icon name="add-circle" size={40} color="#fff" />
                 </LinearGradient>
             </TouchableOpacity>
-            {isLoading && (
+            {/* {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#3669c9" />
                 </View>
-            )}
+            )} */}
         </View>
     );
 };
@@ -124,7 +132,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        padding: 20,
         backgroundColor: '#fff',
     },
 

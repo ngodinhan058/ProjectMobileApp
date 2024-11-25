@@ -29,21 +29,7 @@ const EditProductScreen = ({ route, navigation }) => {
     const COUPON_PER_HUNDRED_TYPE = 0;
     const COUPON_PRICE_TYPE = 1;
     const COUPON_SHIP_TYPE = 2;
-
-    const [productCoupon, setProductCoupon] = useState();
-    const [couponName, setCouponName] = useState('');
-    const [couponCode, setCouponCode] = useState('');
-    const [couponRelease, setCouponRelease] = useState(new Date());
-    const [couponExpire, setCouponExpire] = useState(new Date());
-    const [couponQuantity, setCouponQuantity] = useState('');
-    const [couponPerHundred, setCouponPerHundred] = useState('');
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [showDatePickerExpire, setShowDatePickerExpire] = useState(false);
-    const [couponPrice, setCouponPrice] = useState('');
-    const [couponFeeShip, setCouponFeeShip] = useState('');
-    const [couponType, setCouponType] = useState(COUPON_PER_HUNDRED_TYPE)
-
-
+    
     const [isLoading, setIsLoading] = useState(false);
     const [productId, setProductId] = useState(product?.productId);
     const [categories, setCategories] = useState(product?.categories);
@@ -75,8 +61,6 @@ const EditProductScreen = ({ route, navigation }) => {
     });
     // console.log(categories);
     const handleUpdateProduct = async () => {
-        const couponReleaseDate = couponRelease.toISOString().split('T')[0]; // Định dạng lại ngày
-        const couponExpireDate = couponExpire.toISOString().split('T')[0]; // Định dạng lại ngày
         setIsLoading(true);
         const formData = new FormData();
         const params = {
@@ -93,46 +77,7 @@ const EditProductScreen = ({ route, navigation }) => {
         console.log("EDITTTT", params);
         
         formData.append('paramsJson', JSON.stringify(params));
-        // if (productCoupon == HAVE_COUPON) {
-        //     const params = {
-        //         productName: productData.productName,
-        //         productYearOfManufacture: productData.productYearOfManufacture,
-        //         sizesProduct: productData.sizesProduct,
-        //         productSupplier: productSupplier,
-        //         categories: parentCategoryId,
-        //         post: postDTO,
-        //         productImage: productData.productImages,
-        //         coupon: {
-        //             couponName: couponName,
-        //             couponCode: couponCode,
-        //             couponRelease: couponReleaseDate,
-        //             couponExpire: couponExpireDate,
-        //             couponQuantity: parseInt(couponQuantity),
-        //             couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
-        //             couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
-        //             couponFeeShip: couponType === COUPON_SHIP_TYPE ? parseFloat(couponFeeShip) : null,
-        //             couponType: couponType,
-        //         }
-        //     };
-        //     formData.append('params', JSON.stringify(params));
-        //     console.log("HAVECOUPONadd", params);
 
-
-        // }
-        // else {
-        //     const params = {
-        //         productName: productData.productName,
-        //         productYearOfManufacture: productData.productYearOfManufacture,
-        //         sizesProduct: productData.sizesProduct,
-        //         productSupplier: productSupplier,
-        //         categories: parentCategoryId,
-        //         post: postDTO,
-        //         productImage: productData.productImages,
-        //     };
-        //     formData.append('params', JSON.stringify(params));
-        //     console.log("NOCOUPONadd", params);
-
-        // }
 
         if (selectedImages && selectedImages.length > 0) {
             selectedImages.forEach((image, index) => {
