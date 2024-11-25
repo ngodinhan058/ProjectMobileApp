@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -7,6 +7,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 import AlertComponent from '../../../components/AlertComponent';
+import { useFocusEffect } from '@react-navigation/native';
 
 const HomeAdminScreen = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -30,9 +31,16 @@ const HomeAdminScreen = ({ navigation, route }) => {
             });
     };
 
-    useEffect(() => {
-        fetchProducts()
-    }, []);
+    // useEffect(() => {
+    //     fetchProducts()
+    // }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+          fetchProducts();
+        }, [])
+      );
+    
     const handleLogout = async () => {
         try {
             Alert.alert(
@@ -115,7 +123,9 @@ const HomeAdminScreen = ({ navigation, route }) => {
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
                     }
-                />) : <Text style={{ textAlign: 'center', fontSize: 23, fontStyle: 'italic', color: '#aaa' }}>Không có lô hàng</Text>}
+                />) : <Text refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+                } style={{ textAlign: 'center', fontSize: 23, fontStyle: 'italic', color: '#aaa' }}>Không có lô hàng</Text>}
 
 
             <TouchableOpacity
@@ -216,7 +226,7 @@ const styles = StyleSheet.create({
     },
     productList: {
         flex: 1,
-        padding: 20,
+        paddingHorizontal: 20
     },
     productItem: {
         flexDirection: 'row',
@@ -225,7 +235,7 @@ const styles = StyleSheet.create({
         margin: 2,
         padding: 20,
         borderRadius: 10,
-        marginBottom: 10,
+        marginBottom: 20,
         backgroundColor: '#fff',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },

@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
     Image,
     StyleSheet,
-    ScrollView,
+    LayoutAnimation,
     TouchableOpacity,
     Animated,
     Pressable,
@@ -17,6 +17,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
+import { ScrollView } from 'react-native-gesture-handler';
 
 function DetailScreen({ route, navigation }) {
     const { id } = route.params; // Shipment ID
@@ -27,28 +29,32 @@ function DetailScreen({ route, navigation }) {
     const animation = useState(new Animated.Value(0))[0];
     const rotation = useState(new Animated.Value(0))[0];
     const [isLoading, setIsLoading] = useState(true);
+    const [expandedItem, setExpandedItem] = useState(null);
 
     // Fetch shipment details
-    useEffect(() => {
-        const fetchShipmentDetails = async () => {
-            setIsLoading(true);
-            try {
-                const apiUrl = `${BASE_URL}shipment/${id}`;
-                const response = await axios.get(apiUrl);
-                const data = response.data.data || [];
+    const fetchShipmentDetails = async (id) => {
+        setIsLoading(true);
+        try {
+            const apiUrl = `${BASE_URL}shipment/${id}`;
+            const response = await axios.get(apiUrl);
+            const data = response.data.data;
 
-                setShipmentData(data[0]);
-                setShipmentProducts(data[0]?.shipmentProducts || []); // Guard against undefined data
-            } catch (error) {
-                console.error("Error fetching shipment data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+            setShipmentData(data);
+            setShipmentProducts(data.shipmentProducts || []); // Guard against undefined data
+        } catch (error) {
+            console.error("Error fetching shipment data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-        fetchShipmentDetails();
-    }, [id]);
 
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchShipmentDetails(id);
+        }, [id])
+    );
     // Fetch product details for the first product in shipmentProducts
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -117,6 +123,14 @@ function DetailScreen({ route, navigation }) {
         setIsOpen(!isOpen);
     };
 
+    const toggleExpand = (productId) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        if (expandedItem === productId) {
+            setExpandedItem(null); // Ẩn nếu đang mở
+        } else {
+            setExpandedItem(productId); // Mở nếu đang ẩn
+        }
+    };
     // Tạo hiệu ứng mở các nút theo chiều dọc
     const position1 = animation.interpolate({
         inputRange: [0, 1],
@@ -161,46 +175,72 @@ function DetailScreen({ route, navigation }) {
                 </View>
 
                 {/* Shipment Products */}
-                <View style={{ paddingHorizontal: 20, }}>
+                <View style={{ paddingHorizontal: 20, height: '64%'}}>
                     <Text style={styles.sectionTitle}>Tất Cả Sản Phẩm: </Text>
-                    <FlatList
-                        data={shipmentProducts}
-                        keyExtractor={(item) => `${item.productId}`}
-                        renderItem={({ item }) => {
-                            const productDetails = productsState.find((product) => product.productId === item.productId);
-                            return (
-                                <TouchableOpacity
-                                    style={styles.productItem}
-                                >
-                                    <View style={{ marginRight: 20 }}>
-                                        <Image source={{ uri: productDetails?.productImages[0]?.productImagePath }} style={styles.productIcon} />
-                                    </View>
-                                    <View style={{ flex: 1, }}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                            <View style={styles.productDetails}>
-                                                <Text style={styles.productCode}>{productDetails?.productName}</Text>
-                                            </View>
-                                            <Pressable>
-                                                <Icon name="angle-right" size={25} color="#000" />
-                                            </Pressable>
-                                        </View>
-                                        <View style={styles.productDetails}>
-                                            <Text style={styles.productCode}></Text>
-                                        </View>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <FlatList
+                        style={{}}
+                            data={shipmentProducts}
+                            keyExtractor={(item) => `${item.productId}`}
+                            renderItem={({ item }) => {
+                                const productDetails = productsState.find((product) => product.productId === item.productId);
+                                const isExpanded = expandedItem === item.productId;
 
-                                            <View>
-                                                <Text style={styles.productCode}>Giá Bán: {item.shipmentProductPrice} ₫</Text>
+                                return (
+                                    <TouchableOpacity
+                                        style={styles.productItem}
+                                        onPress={() => toggleExpand(item.productId)}
+                                    >
+                                        <View style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                        }}>
+                                            <View style={{ marginRight: 20 }}>
+                                                <Image
+                                                    source={{ uri: productDetails?.productImages[0]?.productImagePath }}
+                                                    style={styles.productIcon}
+                                                />
                                             </View>
-                                            <View style={styles.productDetails}>
-                                                <Text style={styles.productCode}></Text>
+                                            <View style={{ flex: 1 }}>
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                    <View style={styles.productDetails}>
+                                                        <Text style={styles.productCode}>{productDetails?.productName}</Text>
+                                                    </View>
+                                                    <Pressable>
+                                                        <Icon name={isExpanded ? "angle-down" : "angle-right"} size={25} color="#000" />
+                                                    </Pressable>
+                                                </View>
+
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, }}>
+                                                    <View style={styles.productDetails}>
+                                                        <Text style={styles.productCode}>Tổng SL:</Text>
+                                                    </View>
+                                                    <View>
+                                                        <Text style={styles.productCode}>{item.shipmentProductPrice} ₫</Text>
+                                                    </View>
+                                                </View>
                                             </View>
                                         </View>
-                                    </View>
-                                </TouchableOpacity>
-                            );
-                        }}
-                    />
+                                        {isExpanded && (
+                                            <View style={{ flexDirection: 'row', marginTop: 5 }}>
+                                                <View>
+                                                    <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Màu:</Text>
+                                                    <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Số Lượng:</Text>
+                                                </View>
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                    {item?.sizesProduct.map((sizeItem) => (
+                                                        <View key={sizeItem.sizeId.toString()}>
+                                                            <Text style={{ marginLeft: 10,fontSize: 16 }}>{sizeItem.productQuantity}</Text>
+                                                            <Text style={{ marginLeft: 10, fontSize: 16 }}>{sizeItem.productQuantity}</Text>
+                                                        </View>
+                                                    ))}
+                                                    <Text style={styles.productCode}></Text>
+                                                </View>
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                );
+                            }}
+                        />
                 </View>
             </View>
 
@@ -302,8 +342,7 @@ const styles = StyleSheet.create({
     supplierLogo: { width: 40, height: 40, borderRadius: 20, marginLeft: 10 },
     sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
     productItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flex: 1,
         margin: 2,
         padding: 20,
         borderRadius: 10,
