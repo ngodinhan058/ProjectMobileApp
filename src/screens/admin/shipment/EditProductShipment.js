@@ -31,7 +31,7 @@ const EditShippment = ({ navigation, route }) => {
     const [productSupplier, setProductSupplier] = useState(shipmentData?.productSupplier?.productSupplierSd);
     const [selectedProducts, setSelectedProducts] = useState(shipmentData?.shipmentProducts.map(product => product.productId));
     const [shipment, setShipment] = useState({
-        shipmentDate: shipmentData.shipmentDate,
+        shipmentDate,
         shipmentDiscount: shipmentData.shipmentDiscount.toString(),
         shipmentShipCost: shipmentData.shipmentShipCost.toString(),
         supplierId: productSupplier,
@@ -47,7 +47,6 @@ const EditShippment = ({ navigation, route }) => {
 
 
 
-    // console.log("selectedProducts",selectedProducts);
 
     const [selectedSupplier, setSelectedSupplier] = useState(productSupplier);
     const [selectedSize, setSelectedSize] = useState('');
@@ -60,7 +59,7 @@ const EditShippment = ({ navigation, route }) => {
         sizeIndex: null,    // Thêm thông tin này
     });
     const onDateChange = (event, selectedDate) => {
-        const currentDate = selectedDate || shipmentDate;
+        const currentDate = selectedDate;
         setShowDatePicker(false);
         setShipmentDate(currentDate);
     };
@@ -199,11 +198,11 @@ const EditShippment = ({ navigation, route }) => {
         setIsLoading(true);
 
         // Validate form data
-        const { shipmentDate, shipmentDiscount, shipmentShipCost, shipmentProducts } = shipment;
-
+        const { shipmentDiscount, shipmentShipCost, shipmentProducts } = shipment;
+        const formattedDate = shipmentDate.toISOString().split('T')[0]; // Định dạng lại ngày
         // Prepare data to send in the required format
         const formData = {
-            shipmentDate, // Format date as "YYYY-MM-DD"
+            shipmentDate: formattedDate,
             shipmentDiscount: parseFloat(shipmentDiscount),
             shipmentShipCost: parseFloat(shipmentShipCost),
             supplierId: selectedSupplier, // Use the selected supplier ID
@@ -216,6 +215,8 @@ const EditShippment = ({ navigation, route }) => {
                 })),
             })),
         };
+        console.log("formData",formData);
+        
 
         try {
             // Send data to API
@@ -240,7 +241,7 @@ const EditShippment = ({ navigation, route }) => {
                 setIsLoading(false);
             }
         } catch (error) {
-            console.log('Error creating shipment:', error);
+            console.error('Error creating shipment:', error);
             setTitle('Vui Lòng Kiểm Tra Kĩ')
             setAlertType('error');
             setAlertVisible(true);
