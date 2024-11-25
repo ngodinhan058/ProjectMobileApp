@@ -8,10 +8,12 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
+  TouchableWithoutFeedback,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import CartItem from '../components/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './api/config';
@@ -33,9 +35,10 @@ function AddToCartScreen({ route, navigation }) {
   const [productsState, setProductsState] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
-
+  const [couponAll, setCouponAll] = useState([]);
   const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
+  const [isCouponModal, setIsCouponModal] = useState(false);
 
 
   const [total, setTotal] = useState();
@@ -183,6 +186,58 @@ function AddToCartScreen({ route, navigation }) {
       // setAlertType("error");
     }
   };
+  useEffect(() => {
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}coupons`;
+    axios.get(apiUrl)
+      .then(response => {
+        const couponData = response.data.data.content;
+        setCouponAll(couponData);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
+  const toggleCouponModal = () => {
+    setIsCouponModal(!isCouponModal);
+  };
+  const renderCoupon = ({ item }) => {
+    // const discountInfo = item.couponPerHundred
+    //     ? `${item.couponPerHundred}%`
+    //     : `${item.couponPrice} đ`;
+
+    return (
+      <View>
+        <TouchableOpacity style={styles.couponItem}>
+          <View style={{
+            width: 80, height: 80, borderWidth: 1, borderColor: '#eee', borderRadius: 70, shadowColor: '#000', backgroundColor: '#fff',
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
+            shadowOpacity: 0.27,
+            shadowRadius: 4.65,
+            elevation: 6,
+            justifyContent: 'center',
+          }}>
+            <Text style={{ fontSize: 21, color: 'red', textAlign: 'center', }}>
+              {/* {discountInfo} */}
+            </Text>
+          </View>
+          <View style={styles.couponDetails}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 20 }}>
+              {item.couponName}
+            </Text>
+
+          </View>
+          <View style={{ marginLeft: 10 }}>
+            <Ionicons name="arrow-forward-circle-outline" size={25} color="#000" />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -246,18 +301,24 @@ function AddToCartScreen({ route, navigation }) {
             ></TextInput>
           </View>
 
-          <View>
-            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Ưa Đãi Của Tôi</Text>
+          <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Ưa Đãi Của Tôi</Text>
+          <TouchableOpacity style={{
+            backgroundColor: '#fff',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 4,
+            padding: 20,
+            margin: 2,
+            marginVertical: 10,
+            borderRadius: 10,
+          }} onPress={toggleCouponModal}>
             <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 gap: 20,
-                padding: 20,
-                marginVertical: 10,
-                borderWidth: 1,
-                borderColor: '#ccc',
-                borderRadius: 10
               }}
             >
               <Image source={require('../assets/voucher.png')} style={{ width: 25, height: 23 }} />
@@ -271,7 +332,7 @@ function AddToCartScreen({ route, navigation }) {
               </Text>
               <Icon name="angle-right" size={22} color="#000" />
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={{ marginBottom: '20%' }}>
             <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Tổng Cộng</Text>
@@ -388,10 +449,36 @@ function AddToCartScreen({ route, navigation }) {
         </View>
       </View>
 
+      <Modal visible={isCouponModal} animationType="slide" transparent>
+        <TouchableWithoutFeedback onPress={toggleCouponModal}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalCouponBackground}>
+          <Text style={styles.modalTitle}>Chọn Mã Khuyến Mãi</Text>
+          <ScrollView> 
+              {couponAll.map((item) => (
+                // <TouchableOpacity
+                //   key={coupon.couponId}
+                //   style={styles.option}
+                //   onPress={() => handleSelectPayment(coupon.label, coupon.icon, coupon.use)}
+                // >
+                //   {/* <Image source={coupon.icon} style={styles.optionIcon} /> */}
+                //   <Text style={styles.optionLabel}>{coupon.couponName}</Text>
+                // </TouchableOpacity>
+                <View key={item.couponId.toString()}>
+                  {renderCoupon({ item })}
+                </View>
+              ))}
+          </ScrollView>
+          <TouchableOpacity style={styles.closeButton} onPress={toggleCouponModal}>
+            <Text style={styles.closeButtonText}>Đóng</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
       <AlertComponent
         title={alertType === 'success' ? 'Success' : 'Error'}
         description={
-          alertType === 'success' ? (title == '' ? 'Thêm Sản Phẩm Thành Công.': 'Xoá Sản Phẩm Thành Công.') : (null)
+          alertType === 'success' ? (title == '' ? 'Thêm Sản Phẩm Thành Công.' : 'Xoá Sản Phẩm Thành Công.') : (null)
         }
         alertType={alertType}
         visible={isAlertVisible}
@@ -457,6 +544,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  modalCouponBackground: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '60%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'relative',
+  },
   modalContainer: {
     width: '90%',
     backgroundColor: '#fff',
@@ -492,6 +594,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+
+  couponItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 15,
+    margin: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 6,
+  },
+  couponDetails: {
+    flex: 1,
+    textAlign: 'center',
+  },
+
   closeButton: {
     marginTop: 20,
     backgroundColor: '#3669C9',
