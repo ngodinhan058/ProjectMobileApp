@@ -20,6 +20,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 import Size from '../../../components/Size';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 const EditProductScreen = ({ route, navigation }) => {
@@ -29,7 +30,21 @@ const EditProductScreen = ({ route, navigation }) => {
     const COUPON_PER_HUNDRED_TYPE = 0;
     const COUPON_PRICE_TYPE = 1;
     const COUPON_SHIP_TYPE = 2;
-    
+
+    const [productCoupon, setProductCoupon] = useState();
+    const [couponName, setCouponName] = useState(product?.coupon?.couponName);
+    const [couponCode, setCouponCode] = useState(product?.coupon?.couponCode);
+    const [couponRelease, setCouponRelease] = useState(new Date(product?.coupon?.couponRelease));
+    const [couponExpire, setCouponExpire] = useState(new Date(product?.coupon?.couponExpire));
+    const [couponQuantity, setCouponQuantity] = useState(product?.coupon?.couponQuantity.toString() || '');
+    const [couponPerHundred, setCouponPerHundred] = useState(product?.coupon?.couponPerHundred.toString() || '');
+    const [couponPrice, setCouponPrice] = useState(product?.coupon?.couponPrice.toString() || '');
+    const [couponFeeShip, setCouponFeeShip] = useState(product?.coupon?.couponFeeShip.toString() || '');
+    const [couponType, setCouponType] = useState(product?.coupon?.couponType)
+
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showDatePickerExpire, setShowDatePickerExpire] = useState(false);
+
     const [isLoading, setIsLoading] = useState(false);
     const [productId, setProductId] = useState(product?.productId);
     const [categories, setCategories] = useState(product?.categories);
@@ -60,24 +75,74 @@ const EditProductScreen = ({ route, navigation }) => {
         productNameError: false,
     });
     // console.log(categories);
+    useEffect(() => {
+        if (product?.coupon?.couponId != null) {
+            setProductCoupon(HAVE_COUPON)
+        } else {
+            setProductCoupon(NO_COUPON)
+            setCouponRelease(new Date())
+            setCouponExpire(new Date())
+        }
+
+
+    }, [product?.coupon?.couponId]);
+    console.log("couponRelease", couponRelease);
+
     const handleUpdateProduct = async () => {
+        const couponReleaseDate = couponRelease.toISOString().split('T')[0]; // Định dạng lại ngày
+        console.log("couponReleaseDate", couponReleaseDate);
+
+        const couponExpireDate = couponExpire.toISOString().split('T')[0]; // Định dạng lại ngày
         setIsLoading(true);
         const formData = new FormData();
-        const params = {
-            productName: productData.productName,
-            productYearOfManufacture: productData.productYearOfManufacture,
-            // sizesProduct: [{ sizeId: "00000000-0000-0000-0000-000000000000" }],
-            // sizesProduct: parenSizesId.map(id => ({ sizeId: id })),
-            sizesProduct: productData.sizesProduct,
-            productSupplier: productSupplier,
-            categories: parentCategoryId,
-            post: postDTO,
-            productImage: productData.productImages,
-        };        
-        console.log("EDITTTT", params);
-        
-        formData.append('paramsJson', JSON.stringify(params));
+        if (productCoupon == HAVE_COUPON) {
+            const params = {
+                productName: productData.productName,
+                productYearOfManufacture: productData.productYearOfManufacture,
+                sizesProduct: productData.sizesProduct,
+                productSupplier: productSupplier,
+                categories: parentCategoryId,
+                post: postDTO,
+                productImage: productData.productImages,
+                coupon: {
+                    couponName: couponName,
+                    couponCode: couponCode,
+                    couponRelease: couponReleaseDate,
+                    couponExpire: couponExpireDate,
+                    couponQuantity: parseInt(couponQuantity),
+                    couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
+                    couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
+                    couponFeeShip: couponType === COUPON_SHIP_TYPE ? parseFloat(couponFeeShip) : null,
+                    couponType: couponType,
+                }
+            };
+            formData.append('paramsJson', JSON.stringify(params));
+            console.log("HAVECOUPONadd", params);
 
+
+        }
+        else {
+            const params = {
+                productName: productData.productName,
+                productYearOfManufacture: productData.productYearOfManufacture,
+                sizesProduct: productData.sizesProduct,
+                productSupplier: productSupplier,
+                categories: parentCategoryId,
+                post: postDTO,
+                productImage: productData.productImages,
+            };
+            formData.append('paramsJson', JSON.stringify(params));
+            console.log("NOCOUPONadd", params);
+            try {
+                const apiUrl = `${BASE_URL}coupon/${couponId}`;
+                await axios.delete(apiUrl);
+                Alert.alert('Thành công', 'Coupon đã được xoá');
+                navigation.replace('CouponList');
+            } catch (error) {
+                console.error('Error deleting coupon:', error.response ? error.response.data : error.message);
+                Alert.alert('Lỗi', 'Xoá coupon thất bại.');
+            }
+        }
 
         if (selectedImages && selectedImages.length > 0) {
             selectedImages.forEach((image, index) => {
@@ -128,7 +193,7 @@ const EditProductScreen = ({ route, navigation }) => {
         } finally {
             setIsLoading(false);
         }
-    
+
     };
 
 
@@ -138,12 +203,171 @@ const EditProductScreen = ({ route, navigation }) => {
         });
         setProductData((prevData) => ({
             ...prevData,
-          
+
             sizesProduct: parenSizesId ? parenSizesId.map(id => ({ sizeId: id })) : null,
         }));
-       
-    }, [productData.productName, parenSizesId]);
 
+    }, [productData.productName, parenSizesId]);
+    const renderInputForCouponType = () => {
+        switch (couponType) {
+            case COUPON_PER_HUNDRED_TYPE:
+                return (
+                    <>
+                        <Text style={styles.label}>Giảm Giá (%):</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập phần trăm giảm giá"
+                            keyboardType="numeric"
+                            value={couponPerHundred}
+                            onChangeText={setCouponPerHundred}
+                        />
+                    </>
+                );
+            case COUPON_PRICE_TYPE:
+                return (
+                    <>
+                        <Text style={styles.label}>Giảm Giá (VNĐ):</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập số tiền giảm giá"
+                            keyboardType="numeric"
+                            value={couponPrice}
+                            onChangeText={setCouponPrice}
+                        />
+                    </>
+                );
+            case COUPON_SHIP_TYPE:
+                return (
+                    <>
+                        <Text style={styles.label}>Giảm Phí Vận Chuyển (VNĐ):</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập số tiền giảm giá"
+                            keyboardType="numeric"
+                            value={couponFeeShip}
+                            onChangeText={setCouponFeeShip}
+                        />
+                    </>
+                );
+            default:
+                return null;
+        }
+    };
+
+    const renderInputForCoupon = () => {
+        switch (productCoupon) {
+            case NO_COUPON:
+                return null;
+            case HAVE_COUPON:
+                return (
+                    <>
+                        <Text style={styles.label}>Tên Mã Giảm Giá:</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập tên mã giảm giá"
+                            value={couponName}
+                            onChangeText={setCouponName}
+                        />
+
+                        <Text style={styles.label}>Mã Giảm Giá:</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập mã giảm giá"
+                            value={couponCode}
+                            onChangeText={setCouponCode}
+                        />
+
+                        <Text style={styles.label}>Ngày Phát Hành:</Text>
+                        <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                            <Text>{couponRelease ? couponRelease.toDateString() : 'Thêm Ngày Phát Hành'}</Text>
+                        </TouchableOpacity>
+                        {showDatePicker && (
+                            <DateTimePicker
+                                value={couponRelease}
+                                mode="date"
+                                display="default"
+                                onChange={onDateChangeCouponRelease}
+                            />
+                        )}
+
+                        <Text style={styles.label}>Ngày Hết Hạn:</Text>
+                        <TouchableOpacity style={styles.input} onPress={() => setShowDatePickerExpire(true)}>
+                            <Text>{couponExpire ? couponExpire.toDateString() : 'Thêm Ngày Hết Hạn'}</Text>
+                        </TouchableOpacity>
+                        {showDatePickerExpire && (
+                            <DateTimePicker
+                                value={couponExpire}
+                                mode="date"
+                                display="default"
+                                onChange={onDateChangeCouponExpire}
+                            />
+                        )}
+
+                        <Text style={styles.label}>Số Lượng:</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nhập số lượng"
+                            keyboardType="numeric"
+                            value={couponQuantity}
+                            onChangeText={setCouponQuantity}
+                        />
+
+                        <Text style={styles.label}>Loại Coupon:</Text>
+                        <View style={styles.radioContainer}>
+                            <TouchableOpacity
+                                style={styles.radioButton}
+                                onPress={() => setCouponType(COUPON_PER_HUNDRED_TYPE)}
+                            >
+                                <Icon
+                                    name={couponType === COUPON_PER_HUNDRED_TYPE ? 'dot-circle-o' : 'circle-o'}
+                                    size={25}
+                                    color="#3669c9"
+                                />
+                                <Text style={styles.radioText}>Giảm Giá (%)</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.radioButton}
+                                onPress={() => setCouponType(COUPON_PRICE_TYPE)}
+                            >
+                                <Icon
+                                    name={couponType === COUPON_PRICE_TYPE ? 'dot-circle-o' : 'circle-o'}
+                                    size={25}
+                                    color="#3669c9"
+                                />
+                                <Text style={styles.radioText}>Giảm Giá (VNĐ)</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.radioButton}
+                                onPress={() => setCouponType(COUPON_SHIP_TYPE)}
+                            >
+                                <Icon
+                                    name={couponType === COUPON_SHIP_TYPE ? 'dot-circle-o' : 'circle-o'}
+                                    size={25}
+                                    color="#3669c9"
+                                />
+                                <Text style={styles.radioText}>Giảm Giá Vận Chuyển</Text>
+                            </TouchableOpacity>
+                        </View>
+                        {renderInputForCouponType()}
+                    </>
+                );
+            default:
+                return null;
+        }
+    };
+
+
+    const onDateChangeCouponRelease = (event, selectedDate) => {
+        const currentDate = selectedDate || couponRelease;
+        setShowDatePicker(false);
+        setCouponRelease(currentDate);
+    };
+
+    const onDateChangeCouponExpire = (event, selectedDate) => {
+        const currentDate = selectedDate || couponExpire;
+        setShowDatePickerExpire(false);
+        setCouponExpire(currentDate);
+    };
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
     const toggleSupplierModal = () => setIsSupplierModal(!isSupplierModal);
     const toggleSizeModal = () => setIsSizeModal(!isSizeModal);
@@ -221,6 +445,32 @@ const EditProductScreen = ({ route, navigation }) => {
                         }}
 
                     />
+                    <Text style={styles.label}>Coupon: </Text>
+                    <View style={styles.radioContainer}>
+                        <TouchableOpacity
+                            style={styles.radioButton}
+                            onPress={() => setProductCoupon(NO_COUPON)}
+                        >
+                            <Icon
+                                name={productCoupon === NO_COUPON ? 'dot-circle-o' : 'circle-o'}
+                                size={25}
+                                color="#3669c9"
+                            />
+                            <Text style={styles.radioText}>Không Coupon</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.radioButton}
+                            onPress={() => setProductCoupon(HAVE_COUPON)}
+                        >
+                            <Icon
+                                name={productCoupon === HAVE_COUPON ? 'dot-circle-o' : 'circle-o'}
+                                size={25}
+                                color="#3669c9"
+                            />
+                            <Text style={styles.radioText}>Có Coupon</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {renderInputForCoupon()}
                 </View>
             </ScrollView>
             <TouchableOpacity style={styles.button} onPress={handleUpdateProduct} disabled={isLoading}>
@@ -304,6 +554,19 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    radioContainer: {
+        justifyContent: 'space-between',
+        marginBottom: 15,
+    },
+    radioButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 8
+    },
+    radioText: {
+        marginLeft: 5,
+        fontSize: 16,
     },
 });
 
