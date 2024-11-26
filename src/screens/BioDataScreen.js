@@ -7,7 +7,7 @@ import {
   Modal,
   FlatList,
   StyleSheet,
-  Button,
+  Alert,
   Pressable,
   Image,
   TouchableWithoutFeedback,
@@ -15,52 +15,81 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from './api/config';
+import IconI from 'react-native-vector-icons/Ionicons';
+import { ScrollView } from 'react-native-gesture-handler';
 
-const BiodataScreen = ({ navigation }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [gender, setGender] = useState('');
-  const [isGenderModalVisible, setIsGenderModalVisible] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+const BiodataScreen = ({ navigation, route }) => {
+  const { userData } = route.params
+  console.log("userData", userData);
+
+  const [userPhone, setUserPhone] = useState(userData.userPhone);
+  const [userBirthday, setUserBirthday] = useState(new Date(userData.userBirthday));
+  const [userLastName, setUserLastName] = useState(userData.userLastName);
+  const [userFirstName, setUserFirstName] = useState(userData.userFirstName);
+  const [userImagePath, setUserImagePath] = useState('https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg');
   const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const genderOptions = ['Male', 'Female', 'Other'];
-
-  const handleGenderSelect = (selectedGender) => {
-    setGender(selectedGender);
-    setIsGenderModalVisible(false);
-  };
-
-  const onDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || dateOfBirth;
-    setShowDatePicker(false);
-    setDateOfBirth(currentDate);
-  };
-
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState({}); // Để lưu thông tin user (bao gồm token)
 
   useEffect(() => {
     const loadUser = async () => {
       try {
         const savedCart = await AsyncStorage.getItem('userData');
-
-        console.log(savedCart);
-
         if (savedCart) {
           const { username, token } = JSON.parse(savedCart);
           setUser({ username, token });
         }
       } catch (error) {
-        console.error('Error loading cart from AsyncStorage:', error);
+        console.error('Error loading user data from AsyncStorage:', error);
       }
     };
 
     loadUser();
   }, []);
 
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || userBirthday;
+    setShowDatePicker(false);
+    setUserBirthday(currentDate);
+  };
+
+  const handleUpdateProfile = async () => {
+    const formattedDate = userBirthday.toISOString().split('T')[0] + ' 00:00:00';
+
+    const updatedData = {
+      userPhone,
+      userBirthday: formattedDate,
+      userLastName,
+      userFirstName,
+      userImagePath: userImagePath || 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg', // Sử dụng default nếu không cập nhật
+    };
+
+    if (!user.token) {
+      Alert.alert('Error', 'User token is missing. Please log in again.');
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        `${BASE_URL}auth/customer/myInfo`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`, // Token được lấy từ AsyncStorage
+          },
+        }
+      );
+      Alert.alert('Success', 'Profile updated successfully.');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    }
+  };
+
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.iconHeader}>
         <Pressable
           style={styles.backButton}
@@ -70,101 +99,83 @@ const BiodataScreen = ({ navigation }) => {
         </Pressable>
         <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
       </View>
+
       {/* Avatar */}
       <View style={styles.avatarContainer}>
         <Image
           style={styles.avatar}
           source={{
-            uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
-          }} // URL hình ảnh đại diện
-        />
-        <Text style={styles.nameText}>{user.username}</Text>
-        <Text style={styles.emailText}>{user.username}</Text>
+            uri: userImagePath
+          }} />
+        <Text style={styles.nameText}>{user.username || 'Tên người dùng'}</Text>
       </View>
-
-      {/* First Name */}
-      <TextInput
-        style={styles.input}
-        placeholder="What's your first name?"
-        value={firstName}
-        onChangeText={setFirstName}
-      />
-
-      {/* Last Name */}
-      <TextInput
-        style={styles.input}
-        placeholder="And your last name?"
-        value={lastName}
-        onChangeText={setLastName}
-      />
-
-      {/* Phone Number */}
-      <TextInput
-        style={styles.input}
-        placeholder="Phone number"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-      />
-
-      {/* Gender */}
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setIsGenderModalVisible(true)}
-      >
-        <Text>{gender ? gender : 'Select your gender'}</Text>
-      </TouchableOpacity>
-
-      {/* Gender Selection Modal */}
-      <Modal
-        visible={isGenderModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
-        <TouchableWithoutFeedback
-          onPress={() => setIsGenderModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <FlatList
-              data={genderOptions}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.optionButton}
-                  onPress={() => handleGenderSelect(item)}
-                >
-                  <Text style={styles.optionText}>{item}</Text>
-                </TouchableOpacity>
-              )}
+      <ScrollView style={{ flex: 1, marginTop: 30, marginHorizontal: 2}}>
+        {/* First Name */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 20, }}>
+          <View style={{flex: 1}}>
+            <Text style={styles.textTitle}>Họ và Tên Đệm: </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập Họ và Tên Đệm"
+              value={userFirstName}
+              onChangeText={setUserFirstName}
             />
           </View>
-        </TouchableWithoutFeedback>
-      </Modal>
 
-      {/* Date of Birth */}
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShowDatePicker(true)}
-      >
-        <Text>
-          {dateOfBirth
-            ? dateOfBirth.toDateString()
-            : 'What is your date of birth?'}
-        </Text>
-      </TouchableOpacity>
+          <View style={{flex: 1}}>
+            {/* Last Name */}
+            <Text style={styles.textTitle}>Tên Của Bạn: </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập Tên Của Bạn"
+              value={userLastName}
+              onChangeText={setUserLastName}
+            />
+          </View>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={dateOfBirth}
-          mode="date"
-          display="default"
-          onChange={onDateChange}
+        </View>
+
+        {/* Phone Number */}
+        <Text style={styles.textTitle}>Số Điện Thoại: </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nhập Số Điện Thoại Của Bạn"
+          value={userPhone}
+          onChangeText={setUserPhone}
+          keyboardType="phone-pad"
         />
-      )}
+
+        {/* Date of Birth */}
+        <Text style={styles.textTitle}>Ngày Sinh: </Text>
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text>
+              {userBirthday
+                ? userBirthday.toISOString().split('T')[0]
+                : 'Nhập Ngày Sinh Của Bạn'}
+            </Text>
+            <IconI name="calendar-outline" size={22} color="#000" />
+          </View>
+
+        </TouchableOpacity>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={userBirthday}
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+          />
+        )}
+      </ScrollView>
+
 
       {/* Update Button */}
-      <TouchableOpacity style={styles.updateButton}>
-        <Text style={styles.updateButtonText}>Update Profile</Text>
+      <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile}>
+        <Text style={styles.updateButtonText}>Sửa Thông Tin Của Bạn</Text>
       </TouchableOpacity>
     </View>
   );
@@ -174,7 +185,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   iconHeader: {
     flexDirection: 'row',
@@ -189,6 +200,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     flex: 1,
+  },
+  textTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginVertical: 10,
+    marginHorizontal: 5,
   },
   backButton: {
     marginRight: 10,
@@ -227,6 +244,12 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginVertical: 10,
+    marginHorizontal: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
   },
   modalContainer: {
     flex: 1,
@@ -246,15 +269,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   updateButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
+    backgroundColor: '#3669c9',
+    padding: 20,
     borderRadius: 10,
     marginTop: 20,
     alignItems: 'center',
   },
   updateButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

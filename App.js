@@ -25,6 +25,7 @@ import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
 import BuyNow from './src/screens/BuyNow';
 import BioDataScreen from './src/screens/BioDataScreen';
+import CreateAddressScreen from './src/screens/CreateAddressScreen';
 import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
@@ -397,6 +398,8 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     // { name: "OrderConfirmationScreen" ,component : OrderConfirmationScreen},
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
+    { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
+    { name: 'CreateAddressScreen', component: CreateAddressScreen, showFooter: false },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
