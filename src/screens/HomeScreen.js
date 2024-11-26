@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   containerPro: {
     width: '100%',
     paddingHorizontal: 20,
-    backgroundColor: '#fafafa'
+    backgroundColor: '#fff'
   },
   line: {
     width: '100%',
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   greySection: {
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fff',
     paddingTop: 20,
   },
 

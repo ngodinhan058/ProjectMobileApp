@@ -57,7 +57,7 @@ const ProfileScreen = ({ navigation }) => {
 
     fetchUserInfo();
   }, []);
-  console.log("user",user);
+  console.log("user", user);
 
   const handleLogout = async () => {
     try {
@@ -98,111 +98,93 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="angle-left" size={35} color="#000" />
           </Pressable>
           <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
-          <Pressable style={styles.logoutButton} onPress={handleLogout}>
-            <IconI name="log-out-outline" size={25} color="#fff" />
-          </Pressable>
+
         </View>
-        <View style={styles.whiteSection}>
-          {/* Header thông tin cá nhân */}
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <Image
-                style={styles.avatar}
-                source={{
-                  uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
-                }} // URL hình ảnh đại diện
-              />
-              <View>
-                <Text style={styles.name}>{user?.userFirstName} {user?.userLastName}</Text>
-                <Text style={styles.email}>{user?.userEmail}</Text>
-                <Text style={styles.balance}>0đ</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.editIcon}
-                onPress={() => navigation.navigate('BioDataScreen')}
-              >
-                <Icon name="pencil" size={20} color="#fff" />
-              </TouchableOpacity>
+
+        {/* Header thông tin cá nhân */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Image
+              style={styles.avatar}
+              source={{
+                uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
+              }} // URL hình ảnh đại diện
+            />
+            <View>
+              <Text style={styles.name}>{user?.userFirstName} {user?.userLastName}</Text>
+              <Text style={styles.email}>{user?.userEmail}</Text>
+              <Text style={styles.balance}>0đ</Text>
             </View>
+            <TouchableOpacity
+              style={styles.editIcon}
+              onPress={() => navigation.navigate('BioDataScreen', {userData: user})}
+            >
+              <Icon name="pencil" size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
-          {/* Đơn hàng của tôi */}
-          <View style={styles.orderSection}>
-            <Text style={styles.sectionTitle}>Đơn Hàng Của Tôi</Text>
 
-            <View style={styles.line}></View>
-            <View style={styles.orderOptionContainer}>
-              <TouchableOpacity
-                style={styles.orderOption}
-                onPress={() =>
-                  navigation.navigate('MyOrderScreen', { initialRoute: '' })
-                }
-              >
-                <Image
-                  source={require('../assets/pay.png')}
-                  style={styles.icon}
-                />
-                <Text style={styles.text}>Pay</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.orderOption}
-                onPress={() =>
-                  navigation.navigate('MyOrderScreen', {
-                    initialRoute: 'preparing',
-                  })
-                }
-              >
-                <Image
-                  source={require('../assets/ship.png')}
-                  style={styles.icon}
-                />
-                <Text style={styles.text}>Ship</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.orderOption}
-                onPress={() =>
-                  navigation.navigate('MyOrderScreen', {
-                    initialRoute: 'shipping',
-                  })
-                }
-              >
-                <Image
-                  source={require('../assets/box_pro.png')}
-                  style={styles.icon}
-                />
-                <Text style={styles.text}>Đang giao</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.orderOption}
-                onPress={() => navigation.navigate('')}
-              >
-                <Image
-                  source={require('../assets/review.png')}
-                  style={styles.icon}
-                />
-                <Text style={styles.text}>Đánh Giá</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.orderOption}
-                onPress={() => navigation.navigate('')}
-              >
-                <Image
-                  source={require('../assets/undo.png')}
-                  style={styles.icon}
-                />
-                <Text style={styles.text}>Trả Hàng</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
+        {/* <View style={styles.line}></View> */}
+        <View style={styles.containerRow}>
+          <TouchableOpacity style={styles.row}>
+            <View style={styles.row}>
+              <IconI name="settings-outline" size={22} color="#000" />
+              <Text style={styles.textPro}>Settings</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('MyOrderScreen')}>
+            <View style={styles.row}>
+              <IconI name="clipboard-outline" size={22} color="#000" />
+              <Text style={styles.textPro}>Đơn Hàng Của Tôi</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('CreateAddressScreen')}>
+            <View style={styles.row}>
+              <IconI name="location-outline" size={22} color="#000" />
+              <Text style={styles.textPro}>Địa Chỉ</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.row}>
+            <View style={styles.row}>
+              <IconI name="lock-closed-outline" size={22} color="#000" />
+              <Text style={styles.textPro}>Thay Đổi Mật Khẩu</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.containerRow}>
+          <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('ChatScreen', {
+            email: user?.userEmail,
+            userFirstName: user?.userFirstName,
+            userLastName: user?.userLastName,
+          })}>
+            <View style={styles.row}>
+              <IconI name="chatbox-ellipses-outline" size={22} color="#000" />
+              <Text style={styles.textPro}>Hỗ Trợ</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.row} onPress={handleLogout}>
+            <View style={styles.row}>
+              <IconI name="log-out-outline" size={22} color="#000" />
+              <Text style={styles.textPro}>Đăng Xuất</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+
+        </View>
+
+
       </ScrollView>
-      <View style={{ flex: 1, position: 'relative' }}>
-        {/* Container chính */}
+
+      {/* <View style={{ position: 'relative' }}>
         <TouchableOpacity
           style={{
             position: 'absolute', // Để nút nằm ngoài luồng bình thường
-            bottom: '10%',// Vị trí so với cạnh trên
+            bottom: 15,// Vị trí so với cạnh trên
             right: 20,
             backgroundColor: '#3669c9',
             width: 60, // Định rõ kích thước hình ảnh
@@ -224,7 +206,7 @@ const ProfileScreen = ({ navigation }) => {
         >
           <Ionicons name="chatbox-ellipses-outline" size={30} color="#fff" />
         </TouchableOpacity>
-      </View>
+      </View> */}
 
     </>
 
@@ -232,22 +214,34 @@ const ProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  productGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 5,
-  },
-
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     paddingHorizontal: 10,
   },
-  whiteSection: {
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+  },
+  textPro: {
+    fontWeight: '500',
+    marginLeft: 25,
+    fontSize: 17,
+  },
+
+  containerRow: {
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    marginTop: 15,
+    marginHorizontal: 2,
     backgroundColor: '#fff',
-    borderRadius: 10,
-    borderTopRightRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
+    marginBottom: 8,
   },
   iconHeader: {
     flexDirection: 'row',
@@ -256,6 +250,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingTop: 50,
     paddingBottom: 20,
+    marginLeft: 10,
   },
   textHeader: {
     fontWeight: 'bold',
@@ -269,13 +264,13 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#3669c9',
     padding: 20,
+    margin: 2,
     borderRadius: 10,
-    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
-    elevation: 30,
+    elevation: 4,
   },
   headerContent: {
     flexDirection: 'row',
@@ -319,9 +314,9 @@ const styles = StyleSheet.create({
   },
   line: {
     width: '100%',
-    height: 1,
+    height: 2,
     backgroundColor: '#EDEDED',
-    marginHorizontal: 10,
+    marginVertical: 20
   },
   suggestionsSection: {
     paddingVertical: 20,
@@ -334,10 +329,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
   },
-  orderOption: {
-    alignItems: 'center',
-    flex: 1,
-  },
+
   icon: {
     width: 30,
     height: 30,
@@ -352,39 +344,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  productCard: {
-    width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  productImage: {
-    width: '100%',
-    height: 100,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  productPrice: {
-    fontSize: 14,
-    color: '#E91E63',
-    marginBottom: 5,
-  },
-  productReviews: {
-    fontSize: 12,
-    color: '#999',
-  },
+
   logoutButton: {
     padding: 5,
     borderRadius: 50,
