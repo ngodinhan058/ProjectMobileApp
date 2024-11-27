@@ -1,92 +1,195 @@
-import Icon from 'react-native-vector-icons/Ionicons';
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet, Text, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+  import Icon from 'react-native-vector-icons/Ionicons';
+  import React, { useEffect, useState, useCallback } from 'react';
+  import { View, TouchableOpacity, StyleSheet, Text, Image } from 'react-native';
+  import AsyncStorage from '@react-native-async-storage/async-storage';
+  import { BASE_URL } from '../screens/api/config';
 
-// Sử dụng React.memo để tránh render lại nếu props không thay đổi
-const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
-  if (!isVisible) return null
-  const handlePress = useCallback(
-    (routeName) => {
-      navigation.navigate(routeName);
-    },
-    [navigation]
-  );
+  const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
+    if (!isVisible) return null;
+    const [user, setUser] = useState({});
+    const [userInfo, setUserData] = useState({});
 
-  const [userInfo, setUserInfo] = useState(null);
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
+    const getItem = async () => {
       try {
-        // Lấy dữ liệu từ AsyncStorage
-        const userInfoString = await AsyncStorage.getItem('userInfo');
+        const savedCart = await AsyncStorage.getItem('userData');
 
-        // Nếu có dữ liệu thì parse nó thành JSON
-        if (userInfoString) {
-          const userInfoData = JSON.parse(userInfoString);
-          setUserInfo(userInfoData); // Lưu vào state
+        if (savedCart) {
+          const { username, token } = JSON.parse(savedCart);
+          setUser({ username, token });
+        } else {
+          setUser({});
         }
       } catch (error) {
-        console.error('Error fetching user info from AsyncStorage:', error);
+        console.error('Error loading cart from AsyncStorage:', error);
       }
     };
+    useEffect(() => {
+      getItem();
+    }, []);
 
-    fetchUserInfo();
-  }, []);
+    useEffect(() => {
+      // Gọi API lấy thông tin người dùng nếu token có giá trị
+      const loadUserInfo = async () => {
+        if (user) {
+          try {
+            const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${user.token}`,
+              },
+            });
 
-  return (
-    <View style={styles.tabBarContainer}>
-      {state.routes.map((route, index) => {
-        const isFocused = state.index === index;
+            // Kiểm tra mã trạng thái phản hồi
+            if (response.ok) {
+              const result = await response.json();
+              console.log('API response data:', result.data);
 
-        // Đặt tên icon cho từng route
-        const iconName =
-          route.name === 'Mega Mall'
-            ? isFocused ? 'home' : 'home-outline'
-            : route.name === 'Wishlist'
-              ? isFocused ? 'heart' : 'heart-outline'
-              : route.name === 'Order'
-                ? isFocused ? 'bag' : 'bag-outline'
-                : isFocused ? 'person' : 'person-outline';
+              if (result) {
+                setUserData(result.data); // Lưu thông tin người dùng vào state
 
-        return (
-          <TouchableOpacity
-            key={index}
-            onPress={() => handlePress(route.name)}
-            style={styles.tabButton}
-          >   
-              <>
-                <Icon name={iconName} size={24} color={isFocused ? '#3669c9' : '#999'} />
-                <Text style={{ color: isFocused ? '#3669c9' : '#999', fontSize: 12 }}>{route.name}</Text>
-              </>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-});
+                // Lưu thông tin người dùng vào AsyncStorage
+                await AsyncStorage.setItem(
+                  'userInfo',
+                  JSON.stringify(result.data)
+                );
+                console.log('User info saved to AsyncStorage');
+              } else {
+                console.log('No data in API response');
+              }
+            } else {
+              console.log('Failed to fetch user info. Status:', response.status);
+            }
+          } catch (error) {
+            console.error('Error fetching user info:', error);
+          }
+        } else {
+          await AsyncStorage.removeItem('userInfo');
+          await AsyncStorage.removeItem('userData');
+        }
+      };
 
-export default Footer;
+      loadUserInfo();
+    }, [user.token]);
 
-const styles = StyleSheet.create({
-  tabBarContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 60,
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 4,
-  },
+    const handlePress = useCallback(
+      (routeName) => {
+        navigation.navigate(routeName);
+      },
+      [navigation]
+    );
+    // const [userName, setUserName] = useState(userInfo?.userFirstName+" "+userInfo?.userLastName);
+    // console.log(userInfo);
+    
+    return (
+      <View style={styles.tabBarContainer}>
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
 
-  tabButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+          let iconName;
+          let customComponent = null;
+
+          // Điều kiện gán icon hoặc component tuỳ theo route và trạng thái userInfo
+          if (route.name === 'Mega Mall') {
+            iconName = isFocused ? 'home' : 'home-outline';
+          } else if (route.name === 'Yêu Thích') {
+            iconName = isFocused ? 'heart' : 'heart-outline';
+          } else if (route.name === 'Đơn Hàng') {
+            iconName = isFocused ? 'bag' : 'bag-outline';
+          } else if (userInfo) {
+            if (route.name === 'Đăng Nhập') {
+              iconName = isFocused ? 'person' : 'person-outline';
+            }
+          } else if (route.name === 'Tài Khoản' && userInfo?.userImagePath) {
+            // Custom hình ảnh đại diện nếu user đã đăng nhập
+            customComponent = isFocused ? (
+              <View style={[styles.profileContainer, styles.profileContainerFocused]}>
+                <Image
+                  source={{ uri: userInfo.userImagePath }}
+                  style={styles.profileImage}
+                />
+              </View>
+            ) : (
+              <Image
+                source={{ uri: userInfo.userImagePath }}
+                style={[styles.profileImage, styles.profileImageUnfocused]}
+              />
+            );
+          }
+
+          return (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handlePress(route.name)}
+              style={styles.tabButton}
+            >
+              {customComponent || (
+                <>
+                  <Icon name={iconName} size={25} color={isFocused ? '#3669c9' : '#999'} />
+                </>
+              )}
+
+              <Text style={[styles.tabLabel, isFocused && styles.tabLabelFocused]}>
+                {route.name}
+              </Text>
+
+
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  });
+
+  export default Footer;
+
+  const styles = StyleSheet.create({
+    tabBarContainer: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      height: 60,
+      borderTopRightRadius: 20,
+      borderTopLeftRadius: 20,
+      backgroundColor: '#fff',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.5,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+    tabButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabLabel: {
+      color: '#999',
+      fontSize: 12,
+    },
+    tabLabelFocused: {
+      color: '#3669c9',
+    },
+    profileContainer: {
+      width: 27,
+      height: 27,
+      borderWidth: 2,
+      borderColor: '#999',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 20,
+    },
+    profileContainerFocused: {
+      borderColor: '#3669c9',
+    },
+    profileImage: {
+      width: 20,
+      height: 20,
+      borderRadius: 20,
+    },
+    profileImageUnfocused: {
+      width: 27,
+      height: 27,
+      borderRadius: 25,
+    },
+  });

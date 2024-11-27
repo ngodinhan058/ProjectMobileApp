@@ -225,7 +225,7 @@ function NoLoginHome() {
       </Tab.Screen>
 
       <Tab.Screen
-        name="Wishlist"
+        name="Yêu Thích"
         options={{
           header: () => <Header />,
         }}
@@ -233,7 +233,7 @@ function NoLoginHome() {
         {() => <WishListScreen />}
       </Tab.Screen>
       <Tab.Screen
-        name="Order"
+        name="Đơn Hàng"
         component={MyOrderScreen}
         options={{ headerShown: false }}
         listeners={{
@@ -242,7 +242,7 @@ function NoLoginHome() {
         }}
       />
       <Tab.Screen
-        name="Login"
+        name="Đăng Nhập"
         component={LoginStack}
         options={{ headerShown: false }}
         listeners={{
@@ -350,8 +350,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
   );
 }
 
-function HaveLoginHome() {
+function HaveLoginHome({ userData }) {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
+  console.log('User Info:', userData);
+
+ 
 
   return (
     <Tab.Navigator
@@ -373,7 +376,7 @@ function HaveLoginHome() {
       </Tab.Screen>
 
       <Tab.Screen
-        name="Wishlist"
+        name="Yêu Thích"
         options={{
           header: () => <Header />,
         }}
@@ -381,11 +384,11 @@ function HaveLoginHome() {
         {() => <WishListScreen />}
       </Tab.Screen>
       <Tab.Screen
-        name="Order"
+        name="Đơn Hàng"
         component={MyOrderScreen}
         options={{ headerShown: false }}
       />
-      <Tab.Screen name="Login" options={{ headerShown: false }}>
+      <Tab.Screen name="Tài Khoản" options={{ headerShown: false }}>
         {() => <HaveLoginStack setIsFooterVisible={setIsFooterVisible} />}
       </Tab.Screen>
     </Tab.Navigator>
@@ -821,7 +824,7 @@ export default function App() {
           // Kiểm tra mã trạng thái phản hồi
           if (response.ok) {
             const result = await response.json();
-            console.log('API response data:', result.data);
+            // console.log('API response data:', result.data);
 
             if (result) {
               setUserData(result.data); // Lưu thông tin người dùng vào state
@@ -849,12 +852,12 @@ export default function App() {
 
     loadUserInfo();
   }, [user.token]);
-  console.log(user.token);
+  // console.log(user.token);
 
   return (
     <NavigationContainer onStateChange={handleStateChange}>
       {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
-        <HaveLoginHome />
+        <HaveLoginHome userData={userData} />
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
