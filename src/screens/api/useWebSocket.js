@@ -11,7 +11,7 @@ const useWebSocket = (url, onProductUpdate) => {
     logRawCommunication: true,
     forceBinaryWSFrames: true,
     debug: (str) => {
-      console.log('WS:' + str);
+      // console.log('WS:' + str);
     },
     onConnect: () => {
 
