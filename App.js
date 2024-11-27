@@ -350,11 +350,8 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
   );
 }
 
-function HaveLoginHome({ userData }) {
+function HaveLoginHome() {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
-  console.log('User Info:', userData);
-
- 
 
   return (
     <Tab.Navigator
@@ -857,7 +854,7 @@ export default function App() {
   return (
     <NavigationContainer onStateChange={handleStateChange}>
       {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
-        <HaveLoginHome userData={userData} />
+        <HaveLoginHome />
       )}
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
