@@ -108,7 +108,9 @@ function BuyNow({ route, navigation }) {
   const renderCoupon = ({ item }) => {
     const discountInfo = item.couponPerHundred
       ? `${item.couponPerHundred}%`
-      : `${item.couponPrice} đ`;
+      : item.couponFeeShip
+        ? `${item.couponFeeShip}%`
+        : `${item.couponPrice} đ`;
 
     return (
       <View>

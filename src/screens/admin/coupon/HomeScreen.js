@@ -34,7 +34,10 @@ const HomeAdminScreen = ({ navigation }) => {
     const renderCoupon = ({ item }) => {
         const discountInfo = item.couponPerHundred
             ? `${item.couponPerHundred}%`
-            : `${item.couponPrice} đ`;
+            : item.couponFeeShip
+                ? `${item.couponFeeShip}%`
+                : `${item.couponPrice} đ`;
+
 
         return (
             <View style={{ paddingHorizontal: 20 }}>

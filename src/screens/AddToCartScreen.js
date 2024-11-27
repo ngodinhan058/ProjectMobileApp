@@ -209,7 +209,9 @@ function AddToCartScreen({ route, navigation }) {
   const renderCoupon = ({ item }) => {
     const discountInfo = item.couponPerHundred
       ? `${item.couponPerHundred}%`
-      : `${item.couponPrice} đ`;
+      : item.couponFeeShip
+        ? `${item.couponFeeShip}%`
+        : `${item.couponPrice} đ`;
 
     return (
       <View>
@@ -259,11 +261,11 @@ function AddToCartScreen({ route, navigation }) {
       else if (selectedCoupon.couponPrice) {
         discountValue = selectedCoupon.couponPrice;
       }
-  
+
       setDiscount(discountValue);
     }
   }, [total, selectedCoupon, shippingFee]);
-  
+
 
   // Tính tổng cuối cùng
   const finalTotal = total ? total - discount + shippingFee : 0;
@@ -309,15 +311,17 @@ function AddToCartScreen({ route, navigation }) {
                     />
                   ))
                 ) : (
-                  <View style={{ alignItems:'center',
-                    justifyContent: 'center',overflow: 'hidden', marginVertical: 10}}>
+                  <View style={{
+                    alignItems: 'center',
+                    justifyContent: 'center', overflow: 'hidden', marginVertical: 10
+                  }}>
                     <Image source={require('../assets/NoItemCart.png')}
                       style={{
                         width: '100%',
                         height: 200,
-                       
+
                       }} />
-                    <Text style={{ fontSize: 20,fontWeight: '500' }}>Giỏ Hàng Của Bạn Trống</Text>
+                    <Text style={{ fontSize: 20, fontWeight: '500' }}>Giỏ Hàng Của Bạn Trống</Text>
                   </View>
 
                 )

@@ -39,8 +39,6 @@ const EditCouponScreen = ({ navigation, route }) => {
 
     const [couponName, setCouponName] = useState(initialCouponName || '');
     const [couponCode, setCouponCode] = useState(initialCouponCode || '');
-    // const [couponRelease, setCouponRelease] = useState(initialCouponRelease || '');
-    // const [couponExpire, setCouponExpire] = useState(initialCouponExpire || '');
     const [couponRelease, setCouponRelease] = useState(new Date(initialCouponRelease));
     const [couponExpire, setCouponExpire] = useState(new Date(initialCouponExpire));
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -64,8 +62,10 @@ const EditCouponScreen = ({ navigation, route }) => {
         }
         try {
             setIsLoading(true);
-            const couponReleaseDate = couponRelease.toISOString().split('T')[0]; // Định dạng lại ngày
-            const couponExpireDate = couponExpire.toISOString().split('T')[0]; // Định dạng lại ngày
+            const couponReleaseDate = couponRelease.toLocaleDateString('en-CA'); // Định dạng yyyy-mm-dd
+            const couponExpireDate = couponExpire.toLocaleDateString('en-CA'); // Định dạng yyyy-mm-dd
+            
+            
             const payload = {
                 couponName,
                 couponCode,
@@ -77,7 +77,7 @@ const EditCouponScreen = ({ navigation, route }) => {
                 couponFeeShip: couponType === COUPON_SHIP_TYPE ? parseFloat(couponFeeShip) : null,
                 couponType,
             };
-
+            console.log(payload);
             const apiUrl = `${BASE_URL}coupon/${couponId}`;
             await axios.put(apiUrl, payload);
 
