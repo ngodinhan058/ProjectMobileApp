@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator,Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const HomeAdminScreen = ({ navigation }) => {
@@ -53,6 +54,33 @@ const HomeAdminScreen = ({ navigation }) => {
         </View>
     );
 
+    const handleLogout = async () => {
+        try {
+          Alert.alert(
+            'Xác nhận đăng xuất',
+            'Bạn muốn đăng xuất phải không?',
+            [
+              {
+                text: 'Huỷ',
+                style: 'cancel',
+              },
+              {
+                text: 'Đúng',
+                onPress: async () => {
+                  await AsyncStorage.removeItem('userData');              
+                  await AsyncStorage.removeItem('userInfo');
+    
+                  Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+                  navigation.navigate('Người Dùng');
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } catch (error) {
+          Alert.alert('Thất bại', error);
+        }
+      };
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -64,7 +92,8 @@ const HomeAdminScreen = ({ navigation }) => {
                     />
                     <Text style={styles.welcomeText}>Hi Admin!</Text>
                 </View>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={handleLogout}>
+
                     <Icon name="log-out-outline" size={30} color="#fff" />
                 </TouchableOpacity>
             </LinearGradient>
