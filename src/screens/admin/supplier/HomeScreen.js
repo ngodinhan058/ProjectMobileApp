@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator,Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeAdminScreen = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,33 @@ const HomeAdminScreen = ({ navigation }) => {
                 console.error('Error fetching data:', error);
             });
     }, []);
+    const handleLogout = async () => {
+        try {
+            Alert.alert(
+                'Xác nhận đăng xuất',
+                'Bạn muốn đăng xuất phải không?',
+                [
+                    {
+                        text: 'Huỷ',
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'Đúng',
+                        onPress: async () => {
+                            await AsyncStorage.removeItem('userData');
+                            await AsyncStorage.removeItem('userInfo');
 
+                            Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+                            navigation.navigate('Người Dùng');
+                        },
+                    },
+                ],
+                { cancelable: false }
+            );
+        } catch (error) {
+            Alert.alert('Thất bại', error);
+        }
+    };
     const renderProduct = ({ item }) => (
         <View>
             <TouchableOpacity
@@ -59,7 +86,7 @@ const HomeAdminScreen = ({ navigation }) => {
                     <Text style={styles.welcomeText}>Hi Admin!</Text>
                     <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
                 </View>
-                <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+                <TouchableOpacity onPress={handleLogout}>
                     <Image source={require('../../../assets/right_from_bracket.png')} style={{ width: 30, height: 30, marginLeft: 115 }} />
                 </TouchableOpacity>
             </View>

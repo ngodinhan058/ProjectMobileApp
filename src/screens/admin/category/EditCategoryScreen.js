@@ -15,7 +15,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import SelectorInCategory from '../../../components/SelectorInCategory';
+import SelecteOneParent from '../../../components/SelecteOneParent';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
@@ -26,39 +26,45 @@ const EditProductScreen = ({ route, navigation }) => {
     const [categoryStatusId, setCategoryStatusId] = useState('02000000-0000-0000-0000-000000000000');
     const [dateOfBirth, setDateOfBirth] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [parentCategoryId, setParentCategoryId] = useState(parent); // ID của danh mục cha
+    const [parentCategoryId, setParentCategoryId] = useState(parent || null); // ID của danh mục cha
     const [parentCategoryName, setParentCategoryName] = useState();
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
-    
+    // console.log(parent);
+
     // Hàm để cập nhật danh mục
     const updateCategory = async () => {
         try {
             const formattedDate = dateOfBirth.toISOString().split('T')[0]; // Định dạng lại ngày
+
+            // Xác định giá trị cho parentCategoryId
+            const parentId = Array.isArray(parentCategoryId) ? parentCategoryId[0] : parentCategoryId;
+
             const payload = {
                 categoryName,
                 statusId: categoryStatusId,
                 categoryRelease: formattedDate,
-                categoryParent: parentCategoryId[0],
+                categoryParent: parentId,
                 categoryImgPath: categoryImg,
             };
-    
+
+            console.log("Payload:", payload);
             const apiUrl = `${BASE_URL}category/${id}`;
             console.log("API URL:", apiUrl);
-            console.log("Payload:", payload);
-    
+
             // Thực hiện yêu cầu cập nhật
             const response = await axios.put(apiUrl, payload);
-            
+
             alert('Category Updated Successfully');
-            navigation.goBack();
+            navigation.replace('CategoryList');
         } catch (error) {
             // Log lỗi chi tiết
             console.error('Error updating category:', error);
             alert('Failed to update category');
         }
     };
-    
+
+
 
     const toggleFilterModal = () => setIsFilterModalVisible(!isFilterModalVisible);
 
@@ -95,14 +101,6 @@ const EditProductScreen = ({ route, navigation }) => {
                     onChangeText={setcategoryName}
                 />
 
-                {/* Trạng thái danh mục */}
-                {/* <TextInput
-                    style={styles.input}
-                    placeholder="Nhập Status Danh Mục"
-                    value={categoryStatusId}
-                    onChangeText={setCategoryStatusId}
-                /> */}
-
                 {/* Ngày tạo danh mục */}
                 <Text style={styles.label}>Ngày tạo danh mục: </Text>
                 <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
@@ -120,18 +118,18 @@ const EditProductScreen = ({ route, navigation }) => {
                 {/* Chọn danh mục cha */}
                 <Text style={styles.label}>Thêm Danh Mục Cha:</Text>
                 <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
-                    {id ? (<Text>Đã Chọn Danh Mục Cha</Text>) : (<Text>Chưa Chọn Danh Mục Cha</Text>)}
+                    {parentCategoryId ? (<Text>Đã Chọn Danh Mục Cha</Text>) : (<Text>Chưa Chọn Danh Mục Cha</Text>)}
                 </TouchableOpacity>
 
                 {/* Modal để chọn danh mục cha */}
-                <SelectorInCategory
+                <SelecteOneParent
                     isVisible={isFilterModalVisible}
                     onClose={toggleFilterModal}
+                    selectedcategoryId={parent}
                     onReset={handleResetFilters}
-                    categoriesProduct={id}
-                    onApply={(selectedParent, selectedParentName) => {
-                        setParentCategoryId(selectedParent);
-                        setParentCategoryName(selectedParentName);
+                    onApply={(selectedFilters) => {
+                        setParentCategoryId(selectedFilters.category);
+                        setParentCategoryName(selectedFilters.categoryName);
                     }}
                 />
 
@@ -143,95 +141,6 @@ const EditProductScreen = ({ route, navigation }) => {
         </View>
     );
 };
-
-// const EditProductScreen = ({ route, navigation }) => {
-
-//     const [categoryName, setcategoryName] = useState('');
-//     const [categorySlug, setcategorySlug] = useState('');
-
-//     const [dateOfBirth, setDateOfBirth] = useState(new Date());
-//     const [showDatePicker, setShowDatePicker] = useState(false);
-//     const onDateChange = (event, selectedDate) => {
-//         const currentDate = selectedDate || dateOfBirth;
-//         setShowDatePicker(false);
-//         setDateOfBirth(currentDate);
-//     };
-
-//     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-
-//     const toggleFilterModal = () => {
-//         setIsFilterModalVisible(!isFilterModalVisible);
-//     };
-
-   
-//     const handleResetFilters = () => {
-//         setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
-//     };
-//     return (
-//         <View style={styles.container}>
-//             <ScrollView>
-//                 {/* Header */}
-//                 <View style={styles.header}>
-//                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-//                         <Icon name="angle-left" size={35} color="#000" />
-//                     </Pressable>
-//                     <Text style={styles.textHeader}>Sửa Thông Tin Danh Mục</Text>
-//                 </View>
-
-//                 {/* Icon Image */}
-//                 <UploadImage />
-//                 {/* Category Form */}
-//                 <View style={styles.formContainer}>
-//                     <Text style={styles.label}>Tên Danh Mục:</Text>
-//                     {/* Category Name */}
-//                     <TextInput
-//                         style={styles.input}
-//                         placeholder="Sửa Tên Danh Mục"
-//                         value={categoryName}
-//                         onChangeText={setcategoryName}
-//                     />
-//                     {/* Category Slug */}
-//                     <Text style={styles.label}>Slug Danh Mục:</Text>
-//                     <TextInput
-//                         style={styles.input}
-//                         placeholder="Sửa Slug Danh Mục"
-//                         value={categorySlug}
-//                         onChangeText={setcategorySlug}
-//                     />
-//                      {/* Category Releaase */}
-//                      <Text style={styles.label}>Ngày Tạo Danh Mục:</Text>
-//                     <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-//                         <Text>{dateOfBirth ? dateOfBirth.toDateString() : 'Sửa Ngày Tạo Danh Mục'}</Text>
-//                     </TouchableOpacity>
-//                     {showDatePicker && (
-//                         <DateTimePicker
-//                             value={dateOfBirth}
-//                             mode="date"
-//                             display="default"
-//                             onChange={onDateChange}
-//                         />
-//                     )}
-//                     {/* Category Parent */}
-//                     <Text style={styles.label}>Parent Danh Mục:</Text>
-//                     <TouchableOpacity style={styles.input} onPress={toggleFilterModal}>
-//                         <Text>Sửa Parent Danh Mục</Text>
-//                     </TouchableOpacity>
-//                     {/* Filter Modal Component */}
-//                     <SelectorInCategory
-//                         isVisible={isFilterModalVisible}
-//                         onClose={toggleFilterModal}
-//                         onReset={handleResetFilters}
-//                     />
-//                     {/* Add/Edit Button */}
-//                     <TouchableOpacity style={styles.button} onPress={() => alert('Category Added')}>
-//                         <Text style={styles.buttonText}>Sửa</Text>
-//                     </TouchableOpacity>
-//                 </View>
-//             </ScrollView>
-//         </View>
-//     );
-// };
-
 const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 20,

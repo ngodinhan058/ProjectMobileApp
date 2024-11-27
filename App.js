@@ -781,7 +781,8 @@ export default function App() {
         setUser({});
       }
     } catch (error) {
-      console.error('Error loading cart from AsyncStorage:', error);
+      // console.log('Error loading cart from AsyncStorage:', error);
+      console.log('chưa đăng nhâp');
     }
   };
   const handleStateChange = async (state) => {
@@ -821,10 +822,8 @@ export default function App() {
           // Kiểm tra mã trạng thái phản hồi
           if (response.ok) {
             const result = await response.json();
-            // console.log('API response data:', result.data);
-
             if (result) {
-              setUserData(result.data); // Lưu thông tin người dùng vào state
+              setUserData(result.data);
 
               // Lưu thông tin người dùng vào AsyncStorage
               await AsyncStorage.setItem(

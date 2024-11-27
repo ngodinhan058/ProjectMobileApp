@@ -95,7 +95,7 @@ const HomeScreen = () => {
         queryParams.append('supplierIds', selectedSupplier.join(','));
       }
       const finalProductsApiUrl = productsApiUrl + queryParams.toString();
-      console.log('Products API URL:', finalProductsApiUrl);
+      // console.log('Products API URL:', finalProductsApiUrl);
 
       // Fetch products and categories in parallel
       const [productsResponse, categoriesResponse] = await Promise.all([

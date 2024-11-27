@@ -16,7 +16,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import SelectorInCategory from '../../../components/SelectorInCategory';
+import SelecteOneParent from '../../../components/SelecteOneParent';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 
@@ -37,22 +37,23 @@ const AddCategoryScreen = ({ navigation }) => {
         setShowDatePicker(false);
         setCategoryRelease(currentDate);
     };
-    
+
     const handleAddCategory = async () => {
         try {
             const formattedDate = categoryRelease.toISOString().split('T')[0]; // Định dạng lại ngày
+            const parentId = Array.isArray(categoryParent) ? categoryParent[0] : categoryParent;
             const payload = {
                 categoryName: categoryName,
                 statusId: categoryStatusId,
                 categoryRelease: formattedDate,
-                categoryParent: categoryParent ? categoryParent[0] : null,
+                categoryParent: parentId,
                 categoryImgPath: categoryImg,
             };
-    
+
             const apiUrl = `${BASE_URL}category`;
             // Thực hiện yêu cầu cập nhật
             const response = await axios.post(apiUrl, payload);
-            
+
             alert('Category Updated Successfully');
             navigation.replace('CategoryList');
         } catch (error) {
@@ -125,13 +126,13 @@ const AddCategoryScreen = ({ navigation }) => {
                     </TouchableOpacity>
 
                     {/* Modal để chọn danh mục cha */}
-                    <SelectorInCategory
+                    <SelecteOneParent
                         isVisible={isFilterModalVisible}
                         onClose={toggleFilterModal}
                         onReset={handleResetFilters}
-                        onApply={(selectedParent, selectedParentName) => {
-                            setCategoryParent(selectedParent || null);
-                            setParentCategoryName(selectedParentName);
+                        onApply={(selectedFilters) => {
+                            setCategoryParent(selectedFilters.category);
+                            setParentCategoryName(selectedFilters.categoryName);
                         }}
                     />
                     {/* Add Button */}

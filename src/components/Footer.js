@@ -44,7 +44,7 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
           // Kiểm tra mã trạng thái phản hồi
           if (response.ok) {
             const result = await response.json();
-            console.log('result', result.data);
+            // console.log('result', result.data);
 
             if (result) {
               setUserData(result.data); // Lưu thông tin người dùng vào state
@@ -56,10 +56,10 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
               );
               // console.log('User info saved to AsyncStorage');
             } else {
-              console.log('No data in API response');
+              // console.log('No data in API response');
             }
           } else {
-            console.log('Failed to fetch user info. Status:', response.status);
+            // console.log('Failed to fetch user info. Status:', response.status);
           }
         } catch (error) {
           console.error('Error fetching user info:', error);
@@ -72,7 +72,7 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
 
     loadUserInfo();
   }, [user.token]);
-  console.log(userImg);
+  // console.log(userImg);
 
   const handlePress = useCallback(
     (routeName) => {
@@ -81,7 +81,7 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
     [navigation]
   );
   // const [userName, setUserName] = useState(userInfo?.userFirstName+" "+userInfo?.userLastName);
-  console.log("userInfo", userInfo);
+  // console.log("userInfo", userInfo);
 
   return (
     <View style={styles.tabBarContainer}>
