@@ -7,10 +7,12 @@ import NewItem from '../components/NewItem';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
+import { WS_URL } from './api/configWS';
 import ScrollHandler from '../components/ScrollHandler';
 import Filter from '../components/FilterFull';
 import { MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import useWebSocket from './api/useWebSocket';
 
 
 
@@ -49,6 +51,29 @@ const HomeScreen = () => {
   const [appliedFilters, setAppliedFilters] = useState(null);
 
   const [refreshing, setRefreshing] = React.useState(false);
+  const wsUrl = `${WS_URL}/ws`;
+
+  const handleProductUpdate = (updatedProduct) => {
+    setProductsState(prevProducts => {
+
+      if (updatedProduct.productId) {
+        const productIndex = prevProducts.findIndex(p => p.productId === updatedProduct.productId);
+        if (productIndex !== -1) {
+
+          const newProducts = [...prevProducts];
+          newProducts[productIndex] = updatedProduct;
+          return newProducts;
+        } else {
+
+          return [...prevProducts, updatedProduct];
+        }
+      } else {
+        return prevProducts.filter(p => p.productId !== updatedProduct);
+      }
+    });
+  };
+
+  const { client } = useWebSocket(wsUrl, handleProductUpdate);
 
   const fetchData = async () => {
     try {
@@ -153,7 +178,7 @@ const HomeScreen = () => {
   const renderSearchBar = () => (
     <TouchableOpacity
       style={styles.searchBar}
-      onPress={() => navigation.navigate('StartSearchScreen')}
+      onPress={() => navigation.navigate('SearchScreen')}
       activeOpacity={0.7}
     >
       <LinearGradient
@@ -177,8 +202,8 @@ const HomeScreen = () => {
           {/* Line */}
           <View style={styles.line}></View>
           {/* Thanh tìm kiếm */}
-          
-            {/* <View style={styles.searchBar}>
+
+          {/* <View style={styles.searchBar}>
               <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
                 <Text style={styles.searchInput}>Search Product Name</Text>
                 <Image
@@ -190,8 +215,8 @@ const HomeScreen = () => {
                 <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
               </TouchableOpacity>
             </View> */}
-            {renderSearchBar()}
-       
+          {renderSearchBar()}
+
           <Filter
             isVisible={isFilterModalVisible}
             // id={id}
@@ -320,30 +345,30 @@ const HomeScreen = () => {
             //   ))}
             // </View>
             <View style={styles.listContent}>
-            {productsState
+              {productsState
                 .reduce((result, _, index, array) => {
-                    // Nhóm các sản phẩm thành từng nhóm 2 phần tử
-                    if (index % 2 === 0) result.push(array.slice(index, index + 2));
-                    return result;
+                  // Nhóm các sản phẩm thành từng nhóm 2 phần tử
+                  if (index % 2 === 0) result.push(array.slice(index, index + 2));
+                  return result;
                 }, [])
                 .map((group, groupIndex) => (
-                    <View key={groupIndex} style={styles.row}>
-                        {group.map((item) => (
-                            <ProductItem
-                                key={item.productId}
-                                id={item.productId}
-                                name={item.productName}
-                                price={item.productPriceSale}
-                                oldPrice={item.productPrice}
-                                image={item.productImages?.[0]?.productImagePath}
-                                rating={item.productRating}
-                                sale={item.productSale}
-                                isLoading={false}
-                            />
-                        ))}
-                    </View>
+                  <View key={groupIndex} style={styles.row}>
+                    {group.map((item) => (
+                      <ProductItem
+                        key={item.productId}
+                        id={item.productId}
+                        name={item.productName}
+                        price={item.productPriceSale}
+                        oldPrice={item.productPrice}
+                        image={item.productImages?.[0]?.productImagePath}
+                        rating={item.productRating}
+                        sale={item.productSale}
+                        isLoading={false}
+                      />
+                    ))}
+                  </View>
                 ))}
-        </View>
+            </View>
           ) : null}
 
 
@@ -403,7 +428,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-},
+  },
   scrollContainer: {
     height: 220,
     alignItems: 'center',
@@ -436,7 +461,7 @@ const styles = StyleSheet.create({
   containerPro: {
     width: '100%',
     paddingHorizontal: 20,
-    backgroundColor: '#fff'
+    backgroundColor: '#fafafa'
   },
   line: {
     width: '100%',
@@ -494,7 +519,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   greySection: {
-    backgroundColor: '#fff',
+    backgroundColor: '#fafafa',
     paddingTop: 20,
   },
 

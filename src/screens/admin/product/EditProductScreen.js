@@ -123,11 +123,13 @@ const EditProductScreen = ({ route, navigation }) => {
 
         }
         else {
-            const apiUrl = `${BASE_URL}coupon/${couponId}`;
-            await axios.delete(apiUrl);
-            // Alert.alert('Thành công', 'Coupon đã được xoá');
-            console.log('Xoá coupon.');
-            console.log(couponId);
+            if (couponId) {
+                const apiUrl = `${BASE_URL}coupon/${couponId}`;
+                await axios.delete(apiUrl);
+                // Alert.alert('Thành công', 'Coupon đã được xoá');
+                console.log('Xoá coupon.');
+                console.log(couponId);
+            }
             const params = {
                 productName: productData.productName,
                 productYearOfManufacture: productData.productYearOfManufacture,
@@ -139,8 +141,6 @@ const EditProductScreen = ({ route, navigation }) => {
             };
             formData.append('paramsJson', JSON.stringify(params));
             console.log("NOCOUPONadd", params);
-
-
         }
 
         if (selectedImages && selectedImages.length > 0) {
@@ -445,7 +445,7 @@ const EditProductScreen = ({ route, navigation }) => {
 
                     />
                     <Text style={styles.label}>Coupon: </Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 15,}}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 15, }}>
                         <TouchableOpacity
                             style={styles.radioButton}
                             onPress={() => setProductCoupon(NO_COUPON)}
