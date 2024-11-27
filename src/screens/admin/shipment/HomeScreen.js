@@ -72,6 +72,13 @@ const HomeAdminScreen = ({ navigation, route }) => {
     const handleRefresh = () => {
         fetchProducts();
     };
+    const formatShipmentDate = (dateArray) => {
+        const [year, month, day] = dateArray;
+        // Lưu ý: month - 1 vì tháng trong Date bắt đầu từ 0 (0 = January)
+        const date = new Date(year, month - 1, day);
+        // Định dạng ngày theo "dd-MM-yyyy"
+        return `${day.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}`;
+    };
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
@@ -84,7 +91,7 @@ const HomeAdminScreen = ({ navigation, route }) => {
             </View>
 
             <View style={styles.productDetails}>
-                <Text style={styles.productCode}>Ngày {item.shipmentDate}</Text>
+                <Text style={styles.productCode}>Ngày {formatShipmentDate(item.shipmentDate)}</Text>
                 <Text style={styles.productStatus}>Hãng: {item.productSupplier?.productSupplierName}</Text>
 
                 <View style={styles.line}></View>

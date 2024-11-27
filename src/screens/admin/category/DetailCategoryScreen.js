@@ -60,13 +60,10 @@ function DetailScreen({ route, navigation }) {
     });
     const deleteCategory = async () => { 
         try {
-            const payload = {
-                id: id
-            };
-            const apiUrl = `${BASE_URL}category`;
+            const apiUrl = `${BASE_URL}category/${id}`;
             
             // Using request config to add data in the body
-            const response = await axios.delete(apiUrl, { data: payload });
+            const response = await axios.delete(apiUrl);
             
             Alert.alert("Success", "Xoá Thành Công");
             navigation.replace('CategoryList');
@@ -77,29 +74,6 @@ function DetailScreen({ route, navigation }) {
     };
     
 
-    //     try {
-    //         const formattedDate = categoryRelease.toISOString().split('T')[0]; // Định dạng lại ngày
-    //         const payload = {
-    //             categoryName: categoryName,
-    //             statusId: categoryStatusId,
-    //             categoryRelease: formattedDate,
-    //             categoryParent: categoryParent[0],
-    //             categoryImgPath: categoryImg,
-    //         };
-    
-    //         const apiUrl = `${BASE_URL}category`;
-    //         // Thực hiện yêu cầu cập nhật
-    //         const response = await axios.post(apiUrl, payload);
-            
-    //         alert('Category Updated Successfully');
-    //         navigation.replace('CategoryList');
-    //     } catch (error) {
-    //         // Log lỗi chi tiết
-    //         console.error('Error updating category:', error);
-    //         alert('Failed to update category');
-    //     }
-
-    // };
     
     // Hàm tìm danh mục dựa trên categoryId trong cây phân cấp
     const findCategoryById = (categoryId, categories) => {
