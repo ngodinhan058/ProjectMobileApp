@@ -10,14 +10,19 @@ const CartItem_v2 = ({
     id,
     name,
     price,
+    oldPrice,
     initialQuantity,
     sizeId,
     size,
     image,
     total,
+    onDelete,
+    onQuantityChange,
 }) => {
     const [quantity, setQuantity] = useState(initialQuantity); // Quản lý state số lượng
-
+    const truncateName = (text) => {
+        return text.length > 17 ? text.substring(0, 17) + '...' : text;
+    };
     return (
         <View style={styles.modalContainer}>
             <View style={styles.row}>
@@ -31,18 +36,18 @@ const CartItem_v2 = ({
                             numberOfLines={1}
                             ellipsizeMode="tail"
                         >
-                            {name}
+                            {truncateName(name)}
                         </Text>
-                        
+
                     </View>
                     <Text style={styles.productSize}>Màu: {size}</Text>
                     <View style={styles.infoContainer}>
                         <View>
                             <Text style={styles.productPrice}>{price}</Text>
-                            <Text style={styles.productOldPrice}>{price}</Text>
+                            <Text style={styles.productOldPrice}>{oldPrice}</Text>
                         </View>
                         <View style={styles.quantitySelector}>
-                           <Text>Số Lượng:</Text>
+                            <Text>Số Lượng:</Text>
                             <TextInput
                                 style={styles.quantityInput}
                                 value={String(quantity)}
@@ -53,7 +58,7 @@ const CartItem_v2 = ({
                                 editable={false}
                                 keyboardType="numeric"
                             />
-                            
+
                         </View>
                     </View>
                 </View>
@@ -163,7 +168,7 @@ const styles = StyleSheet.create({
     quantityInput: {
         width: 50,
         height: 30,
-       
+
         textAlign: 'center',
         fontSize: 16,
         fontWeight: 'bold',

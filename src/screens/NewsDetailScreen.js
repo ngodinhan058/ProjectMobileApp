@@ -29,9 +29,9 @@ function NewsDetailScreen({ route, navigation }) {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
+                    {/* <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
                         <Icon name="share" size={25} color="#000" />
-                    </Pressable>
+                    </Pressable> */}
                 </View>
 
                 {/* New Image */}

@@ -8,10 +8,12 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
+  TouchableWithoutFeedback,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import CartItem from '../components/CartItem_v2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './api/config';
@@ -29,6 +31,14 @@ function BuyNow({ route, navigation }) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [couponAll, setCouponAll] = useState([]);
+  const [couponName, setCouponName] = useState();
+
+  const [selectedCoupon, setSelectedCoupon] = useState(null); // Coupon được chọn
+  const [discount, setDiscount] = useState(0); // Giá trị khuyến mãi
+  const [shippingFee, setShippingFee] = useState(20000); // Giá trị khuyến mãi
+  const [isCouponModal, setIsCouponModal] = useState(false);
 
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
   const img = product?.productImages[0];
@@ -78,28 +88,83 @@ function BuyNow({ route, navigation }) {
   const selectedProductSize = product.productSizes.find(
     (sizeId) => sizeId.productSizeName === size
   );
-  // const fetchData = async () => {
-  //   // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
-  //   setIsLoading(true);
-  //   const apiUrl = `${BASE_URL}carts/user/${userInfo?.userId}`;
-  //   try {
-  //     const response = await axios.get(apiUrl);
-  //     const userData = response.data.data.cartItem;
-  //     const cartTotal = response.data.data.productTotalPrice;
-  //     const idCart = response.data.data.cartId;
-  //     setIdCart(idCart)
-  //     setCartDataUser(userData); // Lưu giỏ hàng vào state
-  //     setTotal(cartTotal);
-  //   } catch (error) {
-  //     console.log('Error fetching data:', error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  // useEffect(() => {
-  //   fetchData();
-  // }, [userInfo?.userId]);
 
+  useEffect(() => {
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}coupons`;
+    axios.get(apiUrl)
+      .then(response => {
+        const couponData = response.data.data.content;
+        setCouponAll(couponData);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
+  const toggleCouponModal = () => {
+    setIsCouponModal(!isCouponModal);
+  };
+  const renderCoupon = ({ item }) => {
+    const discountInfo = item.couponPerHundred
+      ? `${item.couponPerHundred}%`
+      : `${item.couponPrice} đ`;
+
+    return (
+      <View>
+        <TouchableOpacity style={styles.couponItem} onPress={() => handleSelectCoupon(item)} >
+          <View style={{
+            width: 80, height: 80, borderWidth: 1, borderColor: '#eee', borderRadius: 70, shadowColor: '#000', backgroundColor: '#fff',
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
+            shadowOpacity: 0.27,
+            shadowRadius: 4.65,
+            elevation: 6,
+            justifyContent: 'center',
+          }}>
+            <Text style={{ fontSize: 21, color: 'red', textAlign: 'center', }}>
+              {discountInfo}
+            </Text>
+          </View>
+          <View style={styles.couponDetails}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 20 }}>
+              {item.couponName}
+            </Text>
+
+          </View>
+          <View style={{ marginLeft: 10 }}>
+            <Ionicons name="arrow-forward-circle-outline" size={25} color="#000" />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+  const handleSelectCoupon = (coupon) => {
+    setSelectedCoupon(coupon);
+    setCouponName(coupon.couponName)
+    toggleCouponModal();
+  };
+  useEffect(() => {
+    if (selectedCoupon && total) {
+      let discountValue = 0;
+      if (selectedCoupon.couponPerHundred) {
+        discountValue = (total * selectedCoupon.couponPerHundred) / 100;
+      }
+      else if (selectedCoupon.couponFeeShip) {
+        discountValue = (shippingFee * selectedCoupon.couponFeeShip) / 100;
+      }
+      else if (selectedCoupon.couponPrice) {
+        discountValue = selectedCoupon.couponPrice;
+      }
+
+      setDiscount(discountValue);
+    }
+  }, [total, selectedCoupon, shippingFee]);
+
+  // Tính tổng cuối cùng
+  const finalTotal = total ? total - discount + shippingFee : 0;
 
 
 
@@ -120,7 +185,6 @@ function BuyNow({ route, navigation }) {
             >
               <Image source={require('../assets/location.png')} style={{ width: 18, height: 18 }} />
               <Text style={{ flex: 2 }}>{userInfo?.userAddress}</Text>
-              {/* <Image source={require('../assets/edit.png')} style={{ width: 18, height: 18 }} /> */}
             </View>
           </View>
 
@@ -129,7 +193,8 @@ function BuyNow({ route, navigation }) {
               key={product.productId}
               id={product.productId}
               name={product.productName}
-              price={product.productPrice}
+              price={product.productPriceSale}
+              oldPrice={product.productPrice}
               initialQuantity={quantity}
               size={size}
               image={img.productImagePath}
@@ -151,18 +216,24 @@ function BuyNow({ route, navigation }) {
             ></TextInput>
           </View>
 
-          <View>
-            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Ưa Đãi Của Tôi</Text>
+          <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Ưa Đãi Của Tôi</Text>
+          <TouchableOpacity style={{
+            backgroundColor: '#fff',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 4,
+            padding: 20,
+            margin: 2,
+            marginVertical: 10,
+            borderRadius: 10,
+          }} onPress={toggleCouponModal}>
             <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 gap: 20,
-                padding: 20,
-                marginVertical: 10,
-                borderWidth: 1,
-                borderColor: '#ccc',
-                borderRadius: 10
               }}
             >
               <Image source={require('../assets/voucher.png')} style={{ width: 25, height: 23 }} />
@@ -176,10 +247,10 @@ function BuyNow({ route, navigation }) {
               </Text>
               <Icon name="angle-right" size={22} color="#000" />
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={{ marginBottom: '20%' }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Tổng Cộng</Text>
+            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Tổng Cộng:</Text>
             <View
               style={{
                 flexDirection: 'row',
@@ -187,8 +258,12 @@ function BuyNow({ route, navigation }) {
                 marginTop: 5,
               }}
             >
-              <Text>Tổng tạm tính</Text>
-              <Text style={{ color: '#3669C9' }}>{convertTotal}</Text>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Tổng tạm tính:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>{total.toLocaleString() + " ₫"}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Khuyến mãi vouchers:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>- {discount.toLocaleString()} ₫</Text>
             </View>
             <View
               style={{
@@ -197,28 +272,8 @@ function BuyNow({ route, navigation }) {
                 marginTop: 5,
               }}
             >
-              <Text>Khuyến mãi</Text>
-              <Text style={{ color: '#3669C9' }}>0 ₫</Text>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 5,
-              }}
-            >
-              <Text>Khuyến mãi vouchers</Text>
-              <Text style={{ color: '#3669C9' }}>0 ₫</Text>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 5,
-              }}
-            >
-              <Text>Phí giao hàng</Text>
-              <Text style={{ color: '#3669C9' }}>0 ₫</Text>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Phí giao hàng:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>{shippingFee.toLocaleString()} ₫</Text>
             </View>
           </View>
         </View>
@@ -245,7 +300,7 @@ function BuyNow({ route, navigation }) {
             <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
           <View style={{ justifyContent: 'center' }}>
-            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>{convertTotal}</Text>
+            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>{finalTotal.toLocaleString() + " ₫"}</Text>
           </View>
         </View>
 
@@ -292,7 +347,24 @@ function BuyNow({ route, navigation }) {
           </Modal>
         </View>
       </View>
-
+      <Modal visible={isCouponModal} animationType="slide" transparent>
+        <TouchableWithoutFeedback onPress={toggleCouponModal}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalCouponBackground}>
+          <Text style={styles.modalTitle}>Chọn Mã Khuyến Mãi</Text>
+          <ScrollView>
+            {couponAll.map((item) => (
+              <View key={item.couponId.toString()}>
+                {renderCoupon({ item })}
+              </View>
+            ))}
+          </ScrollView>
+          <TouchableOpacity style={styles.closeButton} onPress={toggleCouponModal}>
+            <Text style={styles.closeButtonText}>Đóng</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
       <AlertComponent
         title={alertType === 'success' ? 'Success' : 'Error'}
         description={
@@ -364,6 +436,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  modalCouponBackground: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '60%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'relative',
+  },
   modalContainer: {
     width: '90%',
     backgroundColor: '#fff',
@@ -399,6 +486,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+  couponItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 15,
+    margin: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 6,
+  },
+  couponDetails: {
+    flex: 1,
+    textAlign: 'center',
+  },
+
   closeButton: {
     marginTop: 20,
     backgroundColor: '#3669C9',
