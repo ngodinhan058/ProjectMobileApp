@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 function CouponDetailScreen({ route, navigation }) {
     const [coupons, setCoupons] = useState([]);
@@ -103,10 +104,10 @@ function CouponDetailScreen({ route, navigation }) {
                     <Text style={styles.detailValue}>{coupons.couponCode}</Text>
 
                     <Text style={styles.detailLabel}>Ngày Phát Hành:</Text>
-                    <Text style={styles.detailValue}>{coupons.couponRelease}</Text>
+                    <Text style={styles.detailValue}>{new Date(coupons.couponRelease).toLocaleDateString()}</Text>
 
                     <Text style={styles.detailLabel}>Ngày Hết Hạn:</Text>
-                    <Text style={styles.detailValue}>{coupons.couponExpire || 'Không xác định'}</Text>
+                    <Text style={styles.detailValue}>{new Date(coupons.couponExpire).toLocaleDateString()}</Text>
 
                     <Text style={styles.detailLabel}>Số Lượng:</Text>
                     <Text style={styles.detailValue}>{coupons.couponQuantity}</Text>

@@ -21,12 +21,9 @@ const CartItem = ({
 
 }) => {
     const [quantity, setQuantity] = useState(initialQuantity); // Quản lý state số lượng
-    const handleBlur = () => {
-        // Gửi số lượng khi mất focus
-        if (quantity) {
-            onInput(id, sizeId, quantity);
-        }
-    };
+    const truncateName = (text) => {
+        return text.length > 17 ? text.substring(0, 17) + '...' : text;
+      };
     return (
         <View style={styles.modalContainer}>
             <View style={styles.row}>
@@ -41,7 +38,7 @@ const CartItem = ({
                                 numberOfLines={1}
                                 ellipsizeMode="tail"
                             >
-                                {name}
+                                {truncateName(name)}
                             </Text>
                         </View>
                         <View>
@@ -75,7 +72,6 @@ const CartItem = ({
                                     setQuantity(validText);
                                 }}
                                 editable={false}
-                                // onBlur={handleBlur}
                                 keyboardType="numeric"
                             />
                             <TouchableOpacity

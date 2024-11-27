@@ -36,13 +36,17 @@ function AddToCartScreen({ route, navigation }) {
   const [refreshing, setRefreshing] = useState(false);
 
   const [couponAll, setCouponAll] = useState([]);
+  const [couponName, setCouponName] = useState();
+  const [selectedCoupon, setSelectedCoupon] = useState(null); // Coupon được chọn
+  const [discount, setDiscount] = useState(0); // Giá trị khuyến mãi
+  const [shippingFee, setShippingFee] = useState(20000); // Giá trị khuyến mãi
+
   const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
   const [isCouponModal, setIsCouponModal] = useState(false);
 
 
   const [total, setTotal] = useState();
-
 
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true },
@@ -97,7 +101,7 @@ function AddToCartScreen({ route, navigation }) {
       const idCart = response.data.data.cartId;
       setIdCart(idCart)
       setCartDataUser(userData); // Lưu giỏ hàng vào state
-      setTotal(cartTotal);
+      setTotal(parseInt(cartTotal.replace(/\./g, '').replace('₫', '').trim(), 10));
     } catch (error) {
       console.log('Error fetching data:', error);
     } finally {
@@ -203,13 +207,13 @@ function AddToCartScreen({ route, navigation }) {
     setIsCouponModal(!isCouponModal);
   };
   const renderCoupon = ({ item }) => {
-    // const discountInfo = item.couponPerHundred
-    //     ? `${item.couponPerHundred}%`
-    //     : `${item.couponPrice} đ`;
+    const discountInfo = item.couponPerHundred
+      ? `${item.couponPerHundred}%`
+      : `${item.couponPrice} đ`;
 
     return (
       <View>
-        <TouchableOpacity style={styles.couponItem}>
+        <TouchableOpacity style={styles.couponItem} onPress={() => handleSelectCoupon(item)} >
           <View style={{
             width: 80, height: 80, borderWidth: 1, borderColor: '#eee', borderRadius: 70, shadowColor: '#000', backgroundColor: '#fff',
             shadowOffset: {
@@ -222,7 +226,7 @@ function AddToCartScreen({ route, navigation }) {
             justifyContent: 'center',
           }}>
             <Text style={{ fontSize: 21, color: 'red', textAlign: 'center', }}>
-              {/* {discountInfo} */}
+              {discountInfo}
             </Text>
           </View>
           <View style={styles.couponDetails}>
@@ -238,6 +242,31 @@ function AddToCartScreen({ route, navigation }) {
       </View>
     );
   };
+  const handleSelectCoupon = (coupon) => {
+    setSelectedCoupon(coupon);
+    setCouponName(coupon.couponName)
+    toggleCouponModal();
+  };
+  useEffect(() => {
+    if (selectedCoupon && total) {
+      let discountValue = 0;
+      if (selectedCoupon.couponPerHundred) {
+        discountValue = (total * selectedCoupon.couponPerHundred) / 100;
+      }
+      else if (selectedCoupon.couponFeeShip) {
+        discountValue = (shippingFee * selectedCoupon.couponFeeShip) / 100;
+      }
+      else if (selectedCoupon.couponPrice) {
+        discountValue = selectedCoupon.couponPrice;
+      }
+  
+      setDiscount(discountValue);
+    }
+  }, [total, selectedCoupon, shippingFee]);
+  
+
+  // Tính tổng cuối cùng
+  const finalTotal = total ? total - discount + shippingFee : 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -280,7 +309,17 @@ function AddToCartScreen({ route, navigation }) {
                     />
                   ))
                 ) : (
-                  <Text>Giỏ hàng của bạn trống</Text>
+                  <View style={{ alignItems:'center',
+                    justifyContent: 'center',overflow: 'hidden', marginVertical: 10}}>
+                    <Image source={require('../assets/NoItemCart.png')}
+                      style={{
+                        width: '100%',
+                        height: 200,
+                       
+                      }} />
+                    <Text style={{ fontSize: 20,fontWeight: '500' }}>Giỏ Hàng Của Bạn Trống</Text>
+                  </View>
+
                 )
               ) : (
                 null
@@ -328,14 +367,14 @@ function AddToCartScreen({ route, navigation }) {
                   color: '#3669C9',
                 }}
               >
-                Chọn Mã Giảm Giá
+                {couponName ? "Đã Chọn " + couponName : ('Chọn Mã Giảm Giá')}
               </Text>
               <Icon name="angle-right" size={22} color="#000" />
             </View>
           </TouchableOpacity>
 
           <View style={{ marginBottom: '20%' }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Tổng Cộng</Text>
+            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Tổng Cộng:</Text>
             <View
               style={{
                 flexDirection: 'row',
@@ -343,8 +382,12 @@ function AddToCartScreen({ route, navigation }) {
                 marginTop: 5,
               }}
             >
-              <Text>Tổng tạm tính</Text>
-              <Text style={{ color: '#3669C9' }}>{total}</Text>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Tổng tạm tính:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>{total ? total?.toLocaleString() + " ₫" : 0 + " ₫"}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Khuyến mãi vouchers:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>- {discount.toLocaleString()} ₫</Text>
             </View>
             <View
               style={{
@@ -353,28 +396,8 @@ function AddToCartScreen({ route, navigation }) {
                 marginTop: 5,
               }}
             >
-              <Text>Khuyến mãi</Text>
-              <Text style={{ color: '#3669C9' }}>0 ₫</Text>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 5,
-              }}
-            >
-              <Text>Khuyến mãi vouchers</Text>
-              <Text style={{ color: '#3669C9' }}>0 ₫</Text>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 5,
-              }}
-            >
-              <Text>Phí giao hàng</Text>
-              <Text style={{ color: '#3669C9' }}>0 ₫</Text>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Phí giao hàng:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>{shippingFee.toLocaleString()} ₫</Text>
             </View>
           </View>
         </View>
@@ -401,7 +424,7 @@ function AddToCartScreen({ route, navigation }) {
             <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
           <View style={{ justifyContent: 'center' }}>
-            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>{total}</Text>
+            <Text style={{ color: '#3669C9', fontSize: 16, fontWeight: 'bold' }}>{finalTotal.toLocaleString() + " ₫"}</Text>
           </View>
         </View>
 
@@ -455,20 +478,12 @@ function AddToCartScreen({ route, navigation }) {
         </TouchableWithoutFeedback>
         <View style={styles.modalCouponBackground}>
           <Text style={styles.modalTitle}>Chọn Mã Khuyến Mãi</Text>
-          <ScrollView> 
-              {couponAll.map((item) => (
-                // <TouchableOpacity
-                //   key={coupon.couponId}
-                //   style={styles.option}
-                //   onPress={() => handleSelectPayment(coupon.label, coupon.icon, coupon.use)}
-                // >
-                //   {/* <Image source={coupon.icon} style={styles.optionIcon} /> */}
-                //   <Text style={styles.optionLabel}>{coupon.couponName}</Text>
-                // </TouchableOpacity>
-                <View key={item.couponId.toString()}>
-                  {renderCoupon({ item })}
-                </View>
-              ))}
+          <ScrollView>
+            {couponAll.map((item) => (
+              <View key={item.couponId.toString()}>
+                {renderCoupon({ item })}
+              </View>
+            ))}
           </ScrollView>
           <TouchableOpacity style={styles.closeButton} onPress={toggleCouponModal}>
             <Text style={styles.closeButtonText}>Đóng</Text>

@@ -58,7 +58,10 @@ const EditCouponScreen = ({ navigation, route }) => {
             Alert.alert('Error', 'Vui lòng nhập đầy đủ thông tin');
             return;
         }
-
+        if (couponFeeShip > 100 || couponPerHundred > 100) {
+            Alert.alert('Error', 'Giảm giá tối đa là 100%');
+            return;
+        }
         try {
             setIsLoading(true);
             const couponReleaseDate = couponRelease.toISOString().split('T')[0]; // Định dạng lại ngày

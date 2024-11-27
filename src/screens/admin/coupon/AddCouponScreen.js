@@ -49,6 +49,10 @@ const AddCouponScreen = ({ navigation }) => {
             Alert.alert('Error', 'Vui lòng nhập đầy đủ thông tin');
             return;
         }
+        if (couponFeeShip > 100 || couponPerHundred > 100) {
+            Alert.alert('Error', 'Giảm giá tối đa là 100%');
+            return;
+        }
 
         try {
             setIsLoading(true);
@@ -60,9 +64,9 @@ const AddCouponScreen = ({ navigation }) => {
                 couponRelease: couponReleaseDate,
                 couponExpire: couponExpireDate,
                 couponQuantity: parseInt(couponQuantity),
-                couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? parseFloat(couponPerHundred) : null,
-                couponPrice: couponType === COUPON_PRICE_TYPE ? parseFloat(couponPrice) : null,
-                couponFeeShip: couponType === COUPON_SHIP_TYPE ? parseFloat(couponFeeShip) : null,
+                couponPerHundred: couponType === COUPON_PER_HUNDRED_TYPE ? couponPerHundred : null,
+                couponPrice: couponType === COUPON_PRICE_TYPE ? couponPrice : null,
+                couponFeeShip: couponType === COUPON_SHIP_TYPE ? couponFeeShip : null,
                 couponType,
             };
             console.log("payload", payload);
@@ -110,7 +114,7 @@ const AddCouponScreen = ({ navigation }) => {
             case COUPON_SHIP_TYPE:
                 return (
                     <>
-                        <Text style={styles.label}>Giảm Phí Vận Chuyển (VNĐ):</Text>
+                        <Text style={styles.label}>Giảm Phí Vận Chuyển (%):</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Nhập số tiền giảm giá"

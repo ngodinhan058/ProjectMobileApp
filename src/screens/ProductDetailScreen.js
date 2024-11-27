@@ -49,9 +49,9 @@ function ProductDetailScreen({ route, navigation }) {
             <Icon name="angle-left" size={35} color="#000" />
           </TouchableOpacity>
           <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
-          <TouchableOpacity style={styles.shareButton} onPress={() => navigation.goBack()}>
+          {/* <TouchableOpacity style={styles.shareButton} onPress={() => navigation.goBack()}>
             <Icon name="share" size={25} color="#000" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Product Image */}
