@@ -1,3 +1,4 @@
+import { url } from "./url";
 export const BASE_URL =
-'http://192.168.1.6:8080/api/v1/';
+`http://${url}:8080/api/v1/`;
 

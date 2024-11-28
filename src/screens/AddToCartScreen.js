@@ -10,9 +10,12 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   Alert,
+  FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { useWindowDimensions } from 'react-native';
 
 import CartItem from '../components/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +25,8 @@ import AlertComponent from '../components/AlertComponent';
 
 
 function AddToCartScreen({ route, navigation }) {
+  const layout = useWindowDimensions(); // Lấy thông tin kích thước màn hình
+
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Tiền mặt');
   const [selectedPaymentIcon, setSelectedPaymentIcon] = useState(require('../assets/wallet.png'));
   const [selectedPaymentUse, setSelectedPaymentUse] = useState(true);
@@ -36,10 +41,14 @@ function AddToCartScreen({ route, navigation }) {
   const [refreshing, setRefreshing] = useState(false);
 
   const [couponAll, setCouponAll] = useState([]);
+  const [shipperCoupons, setShipperCoupons] = useState([]);
+
   const [couponName, setCouponName] = useState();
   const [selectedCoupon, setSelectedCoupon] = useState(null); // Coupon được chọn
   const [discount, setDiscount] = useState(0); // Giá trị khuyến mãi
+  const [discountShip, setDiscountShip] = useState(0); // Giá trị khuyến mãi
   const [shippingFee, setShippingFee] = useState(20000); // Giá trị khuyến mãi
+  const [orderNote, setOrderNote] = useState('');
 
   const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
@@ -89,6 +98,38 @@ function AddToCartScreen({ route, navigation }) {
     fetchUserInfo();
   }, []);
   // console.log(userInfo?.userId);
+
+  useEffect(() => {
+    const fetchCartDetails = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}order/cart/${idCart}`);
+        if (response.status === 200) {
+          Alert.alert(
+            'Xác nhận lại đơn hàng',
+            'Bạn muốn xác nhận lại đơn hàng??',
+            [
+              {
+                text: 'Xem Chi Tiết',
+                onPress: async () => {
+                  navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          console.log('Không có dữ liệu đơn hàng hoặc lỗi');
+        }
+      } catch (error) {
+        // console.error('Error fetching order details:', error);
+      }
+    };
+  
+    fetchCartDetails(); // Gọi hàm async
+  }, [idCart]);
+  
+
+
 
   const fetchData = async () => {
     // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
@@ -146,6 +187,63 @@ function AddToCartScreen({ route, navigation }) {
       console.error("Lỗi khi cập nhật giỏ hàng:", error);
     }
   };
+  const handleInputQuantityChangeUser = async (id, sizeId, oldQuantity, newQuantity) => {
+    // Kiểm tra hợp lệ
+    if (newQuantity < 1) {
+      console.warn("Số lượng không thể nhỏ hơn 1.");
+      return;
+    }
+
+    try {
+      if (oldQuantity > newQuantity) {
+        // Trường hợp giảm số lượng
+        const difference = oldQuantity - newQuantity; // Số lượng cần giảm
+        const cartItemData = {
+          cartItem: {
+            productQuantity: difference, // Giảm đúng số lượng chênh lệch
+            productId: id,
+            sizeId: sizeId,
+          },
+        };
+
+        const response = await axios.delete(`${BASE_URL}cart/${idCart}`, {
+          data: cartItemData,
+        });
+
+        if (response.status === 200 || response.status === 201) {
+          // console.log("Đã giảm số lượng sản phẩm:", response.data);
+          fetchData(); // Làm mới dữ liệu giỏ hàng
+        } else {
+          console.error("Không thể giảm số lượng sản phẩm:", response.data.message);
+        }
+      } else if (oldQuantity < newQuantity) {
+        // Trường hợp tăng số lượng
+        const difference = newQuantity - oldQuantity; // Số lượng cần tăng
+        const cartItemData = {
+          cartItem: {
+            productQuantity: difference, // Tăng đúng số lượng chênh lệch
+            productId: id,
+            sizeId: sizeId,
+          },
+        };
+
+        const response = await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData);
+
+        if (response.status === 200 || response.status === 201) {
+          // console.log("Đã tăng số lượng sản phẩm:", response.data);
+          fetchData(); // Làm mới dữ liệu giỏ hàng
+        } else {
+          console.error("Không thể tăng số lượng sản phẩm:", response.data.message);
+        }
+      } else {
+        // Nếu không thay đổi số lượng, không làm gì
+        console.log("Số lượng không thay đổi.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xử lý cập nhật số lượng:", error);
+    }
+  };
+
 
 
   // Delete item from cart
@@ -190,19 +288,49 @@ function AddToCartScreen({ route, navigation }) {
       // setAlertType("error");
     }
   };
-  useEffect(() => {
+
+
+  const fetchCouponsByType = async (type, setCouponsState) => {
     setIsLoading(true);
-    const apiUrl = `${BASE_URL}coupons`;
-    axios.get(apiUrl)
-      .then(response => {
-        const couponData = response.data.data.content;
-        setCouponAll(couponData);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+    const apiUrl = `${BASE_URL}coupons/type/${type}`;
+    try {
+      const response = await axios.get(apiUrl);
+      setCouponsState((prevState) => [...prevState, ...(response.data.data || [])]);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(`Error fetching coupons of type ${type}:`, error);
+      setIsLoading(false);
+    }
+  };
+  // Usage
+  useEffect(() => {
+    [0, 1].forEach((type) => fetchCouponsByType(type, setCouponAll));
   }, []);
+  useEffect(() => {
+    if (userInfo) fetchCouponsByType(2, setShipperCoupons);
+  }, [userInfo]);
+
+  const CouponSale = () => (
+    <FlatList
+      data={couponAll}
+      renderItem={renderCoupon}
+      keyExtractor={(item) => item.couponId}
+    />
+  );
+
+  const CouponFeeShip = () => (
+    <FlatList
+      data={shipperCoupons}
+      renderItem={renderCoupon}
+      keyExtractor={(item) => item.couponId}
+    />
+  );
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    { key: 'CouponSale', title: 'Voucher' },
+    { key: 'CouponFeeShip', title: 'FreeShip' },
+  ]);
+
   const toggleCouponModal = () => {
     setIsCouponModal(!isCouponModal);
   };
@@ -237,55 +365,108 @@ function AddToCartScreen({ route, navigation }) {
             </Text>
 
           </View>
-          <View style={{ marginLeft: 10 }}>
-            <Ionicons name="arrow-forward-circle-outline" size={25} color="#000" />
-          </View>
+          <Icon
+            name={selectedCoupon && selectedCoupon.couponId === item.couponId ? 'dot-circle-o' : 'circle-o'}
+            size={25}
+            color="#3669c9"
+          />
         </TouchableOpacity>
       </View>
     );
   };
   const handleSelectCoupon = (coupon) => {
-    setSelectedCoupon(coupon);
-    setCouponName(coupon.couponName)
-    toggleCouponModal();
+    if (selectedCoupon?.couponId === coupon.couponId) {
+      // Nếu coupon đã được chọn, xóa trạng thái
+      setSelectedCoupon(null);
+      setCouponName('');
+    } else {
+      // Nếu coupon chưa được chọn, chọn coupon mới
+      setSelectedCoupon(coupon);
+      setCouponName(coupon.couponName);
+    }
+    toggleCouponModal(); // Đóng modal sau khi chọn
   };
+
   useEffect(() => {
-    if (selectedCoupon && total) {
+    if (selectedCoupon != null && total) {
       let discountValue = 0;
       if (selectedCoupon.couponPerHundred) {
         discountValue = (total * selectedCoupon.couponPerHundred) / 100;
+        setDiscount(discountValue);
+        setDiscountShip(0)
+
       }
       else if (selectedCoupon.couponFeeShip) {
         discountValue = (shippingFee * selectedCoupon.couponFeeShip) / 100;
+        setDiscountShip(discountValue)
+        setDiscount(0);
+
       }
       else if (selectedCoupon.couponPrice) {
         discountValue = selectedCoupon.couponPrice;
+        setDiscount(discountValue);
+        setDiscountShip(0)
       }
 
-      setDiscount(discountValue);
+    }
+    else {
+      setDiscount(0);
+      setDiscountShip(0);
     }
   }, [total, selectedCoupon, shippingFee]);
 
 
   // Tính tổng cuối cùng
-  const finalTotal = total ? total - discount + shippingFee : 0;
+  const finalTotal = total
+    ? (discount ? total - discount + shippingFee : total - discountShip + shippingFee)
+    : 0;
+  const handleOrder = async () => {
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}order/user`;
 
+
+    const orderData = {
+      user: userInfo?.userId,
+      orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
+      orderNote: orderNote,
+      orderPayment: selectedPaymentMethod === 'Tiền mặt' ? 1 : 0,
+      totalPrice: finalTotal,
+    };
+    // console.log(orderData);
+
+    try {
+      // Make the API call to place the order
+      const response = await axios.post(apiUrl, orderData);
+
+      // Handle the response
+      if (response.status === 200 || response.status === 201) {
+        Alert.alert('Success', 'Order placed successfully!');
+        navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+      } else {
+        Alert.alert('Error', 'Failed to place the order. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      Alert.alert('Error', 'Failed to place the order. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView style={{ padding: 20 }}>
         <View>
-          <Text>Giao hàng đến</Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              gap: 20,
-              marginTop: 10,
-            }}
-          >
-            <Image source={require('../assets/location.png')} style={{ width: 18, height: 18 }} />
-            <Text style={{ flex: 2 }}>{userInfo?.userAddress}</Text>
-            {/* <Image source={require('../assets/edit.png')} style={{ width: 18, height: 18 }} /> */}
+          <Text style={styles.deliveryHeaderText}>Giao hàng đến</Text>
+
+          <View style={styles.deliveryAddressContainer}>
+            <Icon name="map-marker" size={18} color="#3669C9" />
+            <Text style={styles.deliveryAddressText}>
+              {userInfo?.address.addressName}{'\n'}
+              {userInfo?.address.ward}, {userInfo?.address.district}, {userInfo?.address.city}
+            </Text>
+            <TouchableOpacity>
+              <Icon name="edit" size={18} color="#3669C9" />
+            </TouchableOpacity>
           </View>
         </View>
         <View>
@@ -307,7 +488,7 @@ function AddToCartScreen({ route, navigation }) {
                       total={(item.productTotalPrice).toLocaleString() + " ₫"}
                       onDelete={handleDeleteUser}
                       onQuantityChange={handleQuantityChangeUser}
-                    // onInput={handleInputQuantityChange}
+                      onInput={handleInputQuantityChangeUser}
                     />
                   ))
                 ) : (
@@ -333,15 +514,11 @@ function AddToCartScreen({ route, navigation }) {
           <View style={{ marginTop: 10, gap: 10 }}>
             <Text>Ghi Chú</Text>
             <TextInput
-              style={{
-                backgroundColor: '#ddd',
-                padding: 10,
-                borderRadius: 10,
-                opacity: 0.25,
-                marginBottom: 10
-              }}
+              style={styles.noteInput}
               placeholder="Nhập Ghi Chú"
-            ></TextInput>
+              value={orderNote}
+              onChangeText={setOrderNote}
+            />
           </View>
 
           <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Ưa Đãi Của Tôi</Text>
@@ -387,11 +564,7 @@ function AddToCartScreen({ route, navigation }) {
               }}
             >
               <Text style={{ marginVertical: 5, fontSize: 15, }}>Tổng tạm tính:</Text>
-              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>{total ? total?.toLocaleString() + " ₫" : 0 + " ₫"}</Text>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
-              <Text style={{ marginVertical: 5, fontSize: 15, }}>Khuyến mãi vouchers:</Text>
-              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>- {discount.toLocaleString()} ₫</Text>
+              <Text style={{ color: '#000', marginVertical: 5, fontSize: 15, }}>{total ? total?.toLocaleString() + " ₫" : 0 + " ₫"}</Text>
             </View>
             <View
               style={{
@@ -401,7 +574,15 @@ function AddToCartScreen({ route, navigation }) {
               }}
             >
               <Text style={{ marginVertical: 5, fontSize: 15, }}>Phí giao hàng:</Text>
-              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>{shippingFee.toLocaleString()} ₫</Text>
+              <Text style={{ color: '#000', marginVertical: 5, fontSize: 15, }}>{shippingFee.toLocaleString()} ₫</Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Khuyến mãi vouchers:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>- {discount.toLocaleString()} ₫</Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+              <Text style={{ marginVertical: 5, fontSize: 15, }}>Giảm Giá Phí giao hàng:</Text>
+              <Text style={{ color: '#3669C9', marginVertical: 5, fontSize: 15, }}>- {discountShip.toLocaleString()} ₫</Text>
             </View>
           </View>
         </View>
@@ -436,13 +617,15 @@ function AddToCartScreen({ route, navigation }) {
           <TouchableOpacity
             style={{
               width: '100%',
-              backgroundColor: '#3669C9',
+              backgroundColor: cartDataUser.length === 0 ? '#ccc' : '#3669C9', // Thay đổi màu nếu disabled
               borderColor: '#ccc',
               borderWidth: 1,
               padding: 20,
               borderRadius: 10,
+              opacity: cartDataUser.length === 0 ? 0.7 : 1, // Làm mờ nếu disabled
             }}
-            onPress={() => navigation.navigate('OrderConfirmationScreen')}
+            disabled={cartDataUser.length === 0} // Disabled khi giỏ hàng rỗng
+            onPress={handleOrder}
           >
             <Text
               style={{ textAlign: 'center', fontWeight: '600', color: '#fff' }}
@@ -450,6 +633,7 @@ function AddToCartScreen({ route, navigation }) {
               Thanh toán
             </Text>
           </TouchableOpacity>
+
           {/* Modal chọn phương thức thanh toán */}
           <Modal visible={isModalVisible} animationType="slide" transparent>
             <View style={styles.modalBackground}>
@@ -482,13 +666,30 @@ function AddToCartScreen({ route, navigation }) {
         </TouchableWithoutFeedback>
         <View style={styles.modalCouponBackground}>
           <Text style={styles.modalTitle}>Chọn Mã Khuyến Mãi</Text>
-          <ScrollView>
+          {/* <ScrollView>
             {couponAll.map((item) => (
               <View key={item.couponId.toString()}>
                 {renderCoupon({ item })}
               </View>
             ))}
-          </ScrollView>
+          </ScrollView> */}
+          <TabView
+            navigationState={{ index, routes }}
+            renderScene={SceneMap({
+              CouponSale: CouponSale,
+              CouponFeeShip: CouponFeeShip,
+            })}
+            onIndexChange={setIndex}
+            initialLayout={{ width: layout.width }}
+            renderTabBar={(props) => (
+              <TabBar
+                {...props}
+                indicatorStyle={{ backgroundColor: '#3669c9' }}
+                style={{ backgroundColor: 'white' }}
+                labelStyle={{ color: '#000' }}
+              />
+            )}
+          />
           <TouchableOpacity style={styles.closeButton} onPress={toggleCouponModal}>
             <Text style={styles.closeButtonText}>Đóng</Text>
           </TouchableOpacity>
@@ -520,6 +721,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
+  },
+  deliveryHeaderText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  deliveryAddressContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  deliveryAddressText: {
+    flex: 1,
+    marginLeft: 10,
+    marginRight: 10,
+    fontSize: 14,
+    color: '#555',
   },
   paymentMethod: {
     flexDirection: 'row',
@@ -603,6 +823,13 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     color: '#000',
+  },
+  noteInput: {
+    backgroundColor: '#eee',
+    padding: 10,
+    borderRadius: 10,
+    opacity: 0.85,
+    marginBottom: 10,
   },
   invoiceOption: {
     flexDirection: 'row',

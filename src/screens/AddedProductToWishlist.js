@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   useWindowDimensions,
   useAnimatedValue,
-  ImageBackground,
+  Alert,
   Animated,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
@@ -176,7 +176,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     fetchUserInfo();
   }, []);
-  // console.log(userInfo);
+  console.log(userInfo);
 
 
 
@@ -269,25 +269,58 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         sizeId: selectedProductSize.productSizeId
       }
     };
-
     try {
-      // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
-      const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
-      // console.log(response);
-
+      const response = await axios.get(`${BASE_URL}order/cart/${idCart}`);
       if (response.status === 200) {
-        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-        closeModalBuy();
-        navigation.navigate('AddToCartScreen', {
-          alertVisible: true,
-          alertType: 'success',
-        })
+        Alert.alert(
+          'Xác nhận lại đơn hàng',
+          'Vui lòng xác nhận trước khi thêm sản phẩm mới vào giỏ hàng',
+          [
+            {
+              text: 'Xem Chi Tiết',
+              onPress: async () => {
+                navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       } else {
-        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+        const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
+        // console.log(response);
+  
+        if (response.status === 200) {
+          console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+          closeModalBuy();
+          navigation.navigate('AddToCartScreen', {
+            alertVisible: true,
+            alertType: 'success',
+          })
+        } else {
+          console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+        }
       }
     } catch (error) {
-      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+      // console.error('Error fetching order details:', error);
     }
+    // try {
+    //   // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+    //   const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
+    //   // console.log(response);
+
+    //   if (response.status === 200) {
+    //     console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+    //     closeModalBuy();
+    //     navigation.navigate('AddToCartScreen', {
+    //       alertVisible: true,
+    //       alertType: 'success',
+    //     })
+    //   } else {
+    //     console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+    //   }
+    // } catch (error) {
+    //   console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+    // }
   };
 
   const handleBuyNowUser = async () => {
@@ -343,7 +376,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setQuantity(value);
       setErrorCheckQuantity(false); // Reset error if the input is valid
     } else {
-      setQuantity(1); // Set to 1 if input is invalid
+      setQuantity(0); // Set to 1 if input is invalid
       setErrorCheckQuantity(true); // Set error state if input is invalid
     }
   };
@@ -951,7 +984,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 50, marginTop: 5 }}>
             <View style={{ justifyContent: 'center' }}>
               <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
-              <Text style={{ color: '#000', fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
+              <Text style={{ fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
             </View>
             <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
               <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
@@ -1037,9 +1070,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     }}
                     value={String(quantity)}
                     onChangeText={(text) => {
-                      const validText = text.replace(/[^0-9]/g, '').slice(0, 3);
-                      handleInputChange(validText);
+                      const validText = text.replace(/[^0-9]/g, ''); // Lọc số
+                      const newQuantity = validText ? parseInt(validText, 10) : 0; // Nếu không có số, đặt thành 1
+                      handleInputChange(newQuantity);
                     }}
+                    
                     keyboardType="numeric"
                   />
 
@@ -1095,7 +1130,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 50, marginTop: 5 }}>
             <View style={{ justifyContent: 'center' }}>
               <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
-              <Text style={{ color: '#000', fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
+              <Text style={{ fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
             </View>
             <TouchableOpacity style={styles.confirmButton} onPress={handleBuyNowUser}>
               <Text style={styles.confirmButtonText}>Mua ngay</Text>
