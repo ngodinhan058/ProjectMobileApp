@@ -270,7 +270,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       }
     };
     try {
-      const response = await axios.get(`${BASE_URL}order/cart/${idCart}`);
+      const response = await axios.get(`${BASE_URL}order/cart/${userInfo.cartId}`);
       if (response.status === 200) {
         Alert.alert(
           'Xác nhận lại đơn hàng',
@@ -285,23 +285,21 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           ],
           { cancelable: false }
         );
-      } else {
-        const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
-        // console.log(response);
-  
-        if (response.status === 200) {
-          console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-          closeModalBuy();
-          navigation.navigate('AddToCartScreen', {
-            alertVisible: true,
-            alertType: 'success',
-          })
-        } else {
-          console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
-        }
-      }
+      } 
     } catch (error) {
-      // console.error('Error fetching order details:', error);
+      const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
+      // console.log(response);
+
+      if (response.status === 200) {
+        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+        closeModalBuy();
+        navigation.navigate('AddToCartScreen', {
+          alertVisible: true,
+          alertType: 'success',
+        })
+      } else {
+        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+      }
     }
     // try {
     //   // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
@@ -1074,7 +1072,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                       const newQuantity = validText ? parseInt(validText, 10) : 0; // Nếu không có số, đặt thành 1
                       handleInputChange(newQuantity);
                     }}
-                    
+
                     keyboardType="numeric"
                   />
 
