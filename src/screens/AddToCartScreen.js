@@ -99,6 +99,38 @@ function AddToCartScreen({ route, navigation }) {
   }, []);
   // console.log(userInfo?.userId);
 
+  useEffect(() => {
+    const fetchCartDetails = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}order/cart/${idCart}`);
+        if (response.status === 200) {
+          Alert.alert(
+            'Xác nhận lại đơn hàng',
+            'Bạn muốn xác nhận lại đơn hàng??',
+            [
+              {
+                text: 'Xem Chi Tiết',
+                onPress: async () => {
+                  navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          console.log('Không có dữ liệu đơn hàng hoặc lỗi');
+        }
+      } catch (error) {
+        // console.error('Error fetching order details:', error);
+      }
+    };
+  
+    fetchCartDetails(); // Gọi hàm async
+  }, [idCart]);
+  
+
+
+
   const fetchData = async () => {
     // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
     setIsLoading(true);
@@ -400,7 +432,7 @@ function AddToCartScreen({ route, navigation }) {
       orderPayment: selectedPaymentMethod === 'Tiền mặt' ? 1 : 0,
       totalPrice: finalTotal,
     };
-    console.log(orderData);
+    // console.log(orderData);
 
     try {
       // Make the API call to place the order
