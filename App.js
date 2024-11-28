@@ -781,8 +781,7 @@ export default function App() {
         setUser({});
       }
     } catch (error) {
-      // console.log('Error loading cart from AsyncStorage:', error);
-      console.log('chưa đăng nhâp');
+      console.error('Error loading cart from AsyncStorage:', error);
     }
   };
   const handleStateChange = async (state) => {
@@ -806,48 +805,75 @@ export default function App() {
     getItem();
   }, []);
 
-  useEffect(() => {
-    // Gọi API lấy thông tin người dùng nếu token có giá trị
     const loadUserInfo = async () => {
-      if (user) {
-        try {
-          const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user.token}`,
-            },
-          });
+        if (user) {
+            try {
+                const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${user.token}`,
+                    },
+                });
 
-          // Kiểm tra mã trạng thái phản hồi
-          if (response.ok) {
-            const result = await response.json();
-            if (result) {
-              setUserData(result.data);
+                // Kiểm tra mã trạng thái phản hồi
+                if (response.ok) {
+                    const result = await response.json();
 
-              // Lưu thông tin người dùng vào AsyncStorage
-              await AsyncStorage.setItem(
-                'userInfo',
-                JSON.stringify(result.data)
-              );
-              console.log('User info saved to AsyncStorage');
-            } else {
-              console.log('No data in API response');
+                    if (result) {
+                        let userInfo = result.data;
+
+                        // Check if cartId is null and create a new cart if necessary
+                        if (userInfo.cartId == null) {
+                            try {
+                                const createCartResponse = await fetch(`${BASE_URL}cart/user/`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        Authorization: `Bearer ${user.token}`,
+                                    },
+                                    body: JSON.stringify({
+                                        userId: userInfo.userId,
+                                    }),
+                                });
+
+                                if (createCartResponse.ok) {
+                                    const cartResult = await createCartResponse.json();
+                                    userInfo.cartId = cartResult.data.cartId;
+
+                                    console.log('New cart created:', cartResult.data.cartId);
+                                } else {
+                                    console.log('Failed to create cart. Status:', createCartResponse.status);
+                                }
+                            } catch (error) {
+                                console.error('Error creating cart:', error);
+                            }
+                        }
+
+                        setUserData(userInfo); // Lưu thông tin người dùng vào state
+
+                        // Lưu thông tin người dùng vào AsyncStorage
+                        await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+                        console.log('User info saved to AsyncStorage');
+                    } else {
+                        console.log('No data in API response');
+                    }
+                } else {
+                    console.log('Failed to fetch user info. Status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
             }
-          } else {
-            console.log('Failed to fetch user info. Status:', response.status);
-          }
-        } catch (error) {
-          console.error('Error fetching user info:', error);
+        } else {
+            await AsyncStorage.removeItem('userInfo');
+            await AsyncStorage.removeItem('userData');
         }
-      } else {
-        await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('userData');
-      }
     };
 
-    loadUserInfo();
-  }, [user.token]);
+    useEffect(() => {
+        loadUserInfo();
+    }, [user.token]);
+
   // console.log(user.token);
 
   return (
