@@ -343,7 +343,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setQuantity(value);
       setErrorCheckQuantity(false); // Reset error if the input is valid
     } else {
-      setQuantity(1); // Set to 1 if input is invalid
+      setQuantity(0); // Set to 1 if input is invalid
       setErrorCheckQuantity(true); // Set error state if input is invalid
     }
   };
@@ -951,7 +951,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 50, marginTop: 5 }}>
             <View style={{ justifyContent: 'center' }}>
               <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
-              <Text style={{ color: '#000', fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
+              <Text style={{ fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
             </View>
             <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
               <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
@@ -1037,9 +1037,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     }}
                     value={String(quantity)}
                     onChangeText={(text) => {
-                      const validText = text.replace(/[^0-9]/g, '').slice(0, 3);
-                      handleInputChange(validText);
+                      const validText = text.replace(/[^0-9]/g, ''); // Lọc số
+                      const newQuantity = validText ? parseInt(validText, 10) : 0; // Nếu không có số, đặt thành 1
+                      handleInputChange(newQuantity);
                     }}
+                    
                     keyboardType="numeric"
                   />
 
@@ -1095,7 +1097,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 50, marginTop: 5 }}>
             <View style={{ justifyContent: 'center' }}>
               <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
-              <Text style={{ color: '#000', fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
+              <Text style={{ fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
             </View>
             <TouchableOpacity style={styles.confirmButton} onPress={handleBuyNowUser}>
               <Text style={styles.confirmButtonText}>Mua ngay</Text>

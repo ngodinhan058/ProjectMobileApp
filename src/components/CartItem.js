@@ -18,12 +18,19 @@ const CartItem = ({
     total,
     onDelete,
     onQuantityChange,
+    onInput,
 
 }) => {
     const [quantity, setQuantity] = useState(initialQuantity); // Quản lý state số lượng
     const truncateName = (text) => {
         return text.length > 17 ? text.substring(0, 17) + '...' : text;
-      };
+    };
+    const handleBlur = () => {
+        // Gửi số lượng khi mất focus
+        if (quantity) {
+            onInput(id, sizeId, quantity);
+        }
+    };
     return (
         <View style={styles.modalContainer}>
             <View style={styles.row}>
@@ -42,8 +49,8 @@ const CartItem = ({
                             </Text>
                         </View>
                         <View>
-                            <TouchableOpacity style={{ position: 'absolute', right: 0}} onPress={() => onDelete(id, quantity, sizeId)}>
-                                <Icon name='trash' size={20} color={'#bbb'}/>
+                            <TouchableOpacity style={{ position: 'absolute', right: 0 }} onPress={() => onDelete(id, quantity, sizeId)}>
+                                <Icon name='trash' size={20} color={'#bbb'} />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -56,10 +63,13 @@ const CartItem = ({
                         <View style={styles.quantitySelector}>
                             <TouchableOpacity
                                 onPress={() => {
-                                    const newQuantity = Math.max(1, quantity - 1);
-                                    setQuantity(newQuantity);
-                                    onQuantityChange(id, true, sizeId); // Truyền hành động giảm số lượng
+                                    if (quantity > 1) { // Chỉ thực hiện nếu quantity lớn hơn 1
+                                        const newQuantity = quantity - 1; // Trừ số lượng
+                                        setQuantity(newQuantity);
+                                        onQuantityChange(id, true, sizeId); // Truyền hành động giảm số lượng
+                                    }
                                 }}
+
                                 style={styles.quantityButtonLeft}
                             >
                                 <Text style={styles.quantityText}>-</Text>
@@ -68,12 +78,23 @@ const CartItem = ({
                                 style={styles.quantityInput}
                                 value={String(quantity)}
                                 onChangeText={(text) => {
-                                    const validText = text.replace(/[^0-9]/g, '');
-                                    setQuantity(validText);
+                                    const validText = text.replace(/[^0-9]/g, ''); // Lọc số
+                                    const newQuantity = validText ? parseInt(validText, 10) : 0; // Nếu không có số, đặt thành 1
+                                    setQuantity(newQuantity); // Cập nhật số lượng
                                 }}
-                                editable={false}
+                                onBlur={() => {
+                                    if (quantity < 1) {
+                                        setQuantity(1); // Đảm bảo số lượng không nhỏ hơn 1 khi mất focus
+                                        onInput(id, sizeId, initialQuantity, 1);
+                                    } else if (quantity !== initialQuantity) {
+                                        // Gọi hàm khi mất focus nếu số lượng thay đổi
+                                        onInput(id, sizeId, initialQuantity, quantity);
+                                    }
+                                }}
                                 keyboardType="numeric"
                             />
+
+
                             <TouchableOpacity
                                 onPress={() => {
                                     const newQuantity = quantity + 1;
