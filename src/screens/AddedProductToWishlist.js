@@ -1072,7 +1072,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                       const newQuantity = validText ? parseInt(validText, 10) : 0; // Nếu không có số, đặt thành 1
                       handleInputChange(newQuantity);
                     }}
-
                     keyboardType="numeric"
                   />
 
