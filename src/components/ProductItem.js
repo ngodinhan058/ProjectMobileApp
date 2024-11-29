@@ -8,7 +8,9 @@ import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 import AlertComponent from '../components/AlertComponent';
 
-const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, sizeName, isLoading }) => {
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, sizeName, isLoading, setAlertType,
+  setAlertVisible,
+  setTitleAlert, }) => {
   const [liked, setLiked] = useState();
   const [isBuyModalVisible, setIsBuyModalVisible] = useState(false);
   const [isUnLikeModalVisible, setIsUnLikeModalVisible] = useState(false);
@@ -63,14 +65,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
     fetchUserInfo();
   }, []);
-  // const handleSelectSize = (sizeName) => {
-  //   // Nếu kích thước đã được chọn, nhấn lần nữa sẽ hủy chọn
-  //   if (selectedSize === sizeName) {
-  //     setSelectedSize(null);
-  //   } else {
-  //     setSelectedSize(sizeName);
-  //   }
-  // };
 
   const handleSelectSize = (sizeName) => {
     setSelectedSizes((prevSelectedSizes) => {
@@ -83,8 +77,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       }
     });
   };
-
-  // Modal Add to cart
   const openModalBuy = () => {
     setIsBuyModalVisible(true);
   };
@@ -94,48 +86,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
   };
   const closeModalUnLike = () => setIsUnLikeModalVisible(false);
 
-  // const handleWishListUser = async () => {
-  //   const selectedProductSize = size.find(
-  //     (size) => size.productSizeName === selectedSize
-  //   );
-
-  //   // setError('');
-  //   setErrorCheck(false);
-  //   // Chuẩn bị dữ liệu để gửi đến API
-  //   const cartItemData = {
-  //     cartItem: {
-  //       productQuantity: 1,
-  //       productId: id,
-  //       sizeId: selectedProductSize.productSizeId
-  //     }
-  //   };
-  //   // console.log(cartItemData);
-
-  //   try {
-  //     const response = await axios.put(`${BASE_URL}cart/${userInfo.wishListId}`, cartItemData);
-
-  //     if (response.status === 200) {
-  //       console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-  //       closeModalBuy();
-  //       console.warn("Đã thêm vào yêu thích", response.data.message);
-  //       fetchData();
-
-  //     } else {
-  //       console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message || "Lỗi không xác định");
-  //     }
-
-  //   } catch (error) {
-  //     // Kiểm tra error.response có tồn tại không
-  //     if (error.response) {
-  //       console.error(
-  //         "Không thể thêm sản phẩm vào giỏ hàng:",
-  //         error.response.data.message || "Lỗi không xác định"
-  //       );
-  //     } else {
-  //       console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
-  //     }
-  //   }
-  // };
   const handleWishListUser = async () => {
     const selectedProductSizes = size.filter((size) =>
       selectedSizes.includes(size.productSizeName)
@@ -143,7 +93,9 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
     // Kiểm tra nếu không có kích thước được chọn
     if (selectedProductSizes.length === 0) {
-      console.warn("Vui lòng chọn ít nhất một kích thước.");
+      setAlertType('error')
+      setAlertVisible(true)
+      setTitleAlert('Vui lòng chọn ít nhất một kích thước.')
       return;
     }
 
@@ -156,6 +108,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
           sizeId: selectedProductSize.productSizeId,
         },
       };
+      // console.log(cartItemData);
 
       try {
         const response = await axios.put(
@@ -165,14 +118,13 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
         if (response.status === 200) {
           console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-          console.warn(
-            `Đã thêm kích thước ${selectedProductSize.productSizeName} vào yêu thích.`
-          );
+          setAlertType('success')
+          setAlertVisible(true)
+          setTitleAlert('Sản phẩm đã được thêm vào danh sách yêu thích')
         } else {
-          console.error(
-            "Không thể thêm sản phẩm vào giỏ hàng:",
-            response.data.message || "Lỗi không xác định"
-          );
+          setAlertType('error')
+          setAlertVisible(true)
+          setTitleAlert('Không thể thêm sản phẩm vào giỏ hàng')
         }
       } catch (error) {
         if (error.response) {
@@ -213,14 +165,21 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
         );
 
         if (response.status === 200) {
-          console.log("Xoá Yêu Thích Thành Công:", response.data.message);
+          console.log("Xoá Yêu Thích Thành Công", response.data.message);
+
           closeModalUnLike();
           fetchData();
         } else {
-          console.error("Không thể xoá:", response.data.message || "Lỗi không xác định");
+          // console.error("Không thể xoá:", response.data.message || "Lỗi không xác định");
+          setAlertType('error')
+          setAlertVisible(true)
+          setTitleAlert('Không thể thêm sản phẩm vào giỏ hàng')
         }
       } catch (error) {
-        console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
+        // console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
+        setAlertType('error')
+        setAlertVisible(true)
+        setTitleAlert('Không thể thêm sản phẩm vào giỏ hàng')
       }
     });
 
@@ -229,7 +188,9 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
     // Xóa các size đã chọn khỏi trạng thái
     setSelectedSizes([]);
-    console.warn("Tất cả các size đã chọn đã được xoá khỏi yêu thích.");
+    setAlertType('success');
+    setAlertVisible(true);
+    setTitleAlert('Tất cả các màu đã chọn đã được xoá khỏi yêu thích.');
   };
   const DeleteOneWishListUser = async () => {
     const cartItemData = {
@@ -243,15 +204,21 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
       if (response.status === 200) {
         console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-        console.warn("Xoá Yêu Thích Thành Công", response.data.message);
+        setAlertType('success')
+        setAlertVisible(true)
+        setTitleAlert('Xoá Yêu Thích Thành Công')
       } else {
-        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message || "Lỗi không xác định");
+        // console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message || "Lỗi không xác định");
+        setAlertType('error')
+        setAlertVisible(true)
+        setTitleAlert('Không thể thêm sản phẩm vào giỏ hàng')
       }
 
     } catch (error) {
-
-      console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
-
+      setAlertType('error')
+      setAlertVisible(true)
+      setTitleAlert('Lỗi mạng hoặc lỗi không xác định')
+      // console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
     }
   };
   const fetchData = async () => {

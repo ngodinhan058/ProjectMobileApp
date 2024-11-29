@@ -129,7 +129,7 @@ const LoginScreen = ({ navigation }) => {
             style={styles.cancelButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text style={styles.signInText}>Cancel</Text>
           </TouchableOpacity>
         </View>
 
@@ -218,9 +218,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 50,
     marginVertical: 20,
   },
   signInButton: {
+    flex: 1,
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 10,
@@ -228,8 +230,10 @@ const styles = StyleSheet.create({
   signInText: {
     fontSize: 14,
     color: '#FFF',
+    textAlign: 'center'
   },
   cancelButton: {
+    flex: 1,
     backgroundColor: '#3669c9',
     paddingVertical: 15,
     paddingHorizontal: 40,

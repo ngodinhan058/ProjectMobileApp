@@ -101,13 +101,13 @@ function OrderConfirmationScreen({ navigation }) {
   const handleCancelOrder = async () => {
     try {
       const requestBody = {
-        status: 4,
+        status: 6,
         orderId: orderDetails.orderId,
       };
       const response = await axios.put(`${BASE_URL}order/change`, requestBody);
       if (response.status === 200) {
-        Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
-        navigation.goBack();
+        // Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
+        navigation.navigate('RejectOrderConfirmationScreen', { orderDetails });
       } else {
         Alert.alert('Error', 'Failed to cancel order');
       }
@@ -126,7 +126,7 @@ function OrderConfirmationScreen({ navigation }) {
       const response = await axios.put(`${BASE_URL}order/change`, requestBody);
       if (response.status === 200) {
         clearTimeout(timerRef.current); // Clear the timer
-        Alert.alert('Order Confirmed', 'Your order has been confirmed successfully');
+        // Alert.alert('Order Confirmed', 'Your order has been confirmed successfully');
         navigation.navigate('CompletedOrderConfirmationScreen', { orderDetails });
       } else {
         Alert.alert('Error', 'Failed to confirm order');
@@ -190,23 +190,22 @@ function OrderConfirmationScreen({ navigation }) {
                 <Icon name="clock-o" size={40} color="#1d3557" />
               </View>
               <View>
-                <Text style={styles.headerText}>Please Confirm ({formatTime(timeLeft)})</Text>
+                <Text style={styles.headerText}>Vui Lòng Xác Nhận ({formatTime(timeLeft)})</Text>
                 <Text
                     style={[
                       styles.subHeaderText,
                       { backgroundColor: '#a8dadc', color: '#1d3557', padding: 5, borderRadius: 5 },
                     ]}
                 >
-                  Your order is #{orderDetails.orderId.substring(0, 8)}
+                   Đơn Của Bạn Là #{orderDetails.orderId.substring(0, 8)}
                 </Text>
               </View>
             </View>
             <Text style={styles.infoText}>
-              We will send your order to {orderDetails.userEmail} for confirmation, or you can confirm through the
-              button below.
+              Chúng tôi xin cảm ơn bạn {orderDetails.userEmail} vì đã tin tưởng chúng tôi mà đặt hàng. Chúc bạn 1 ngày tốt lằnh
             </Text>
-            <Text style={styles.boldText}>Order Time: {orderDetails.orderDate}</Text>
-            <Text style={styles.sectionHeader}>Shipping Information</Text>
+            <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
+            <Text style={styles.sectionHeader}>Thông tin vận chuyển</Text>
             <View style={styles.infoContainer}>
               <Text style={styles.boldText}>{orderDetails.userName}</Text>
               <Text style={styles.label}>{orderDetails.userEmail}</Text>
@@ -219,9 +218,9 @@ function OrderConfirmationScreen({ navigation }) {
             ) : (
                 <Text style={styles.label}>No items in the cart.</Text>
             )}
-            <Text style={styles.sectionHeader}>Order Summary</Text>
+            <Text style={styles.sectionHeader}>Tóm tắt đơn hàng</Text>
             <View style={[styles.summaryRow, styles.summaryTopBorder]}>
-              <Text style={styles.label}>Total:</Text>
+              <Text style={styles.label}>Tổng Cộng:</Text>
               <Text style={styles.label}>{orderDetails.orderTotal} ₫</Text>
             </View>
           </Animated.View>
@@ -232,7 +231,7 @@ function OrderConfirmationScreen({ navigation }) {
               onPress={handleCancelOrder}
           >
             <LinearGradient colors={['#e63946', '#ff6b6b']} style={styles.gradient}>
-              <Text style={styles.buttonText}>Cancel Order</Text>
+              <Text style={styles.buttonText}>Hủy Đơn</Text>
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity
@@ -240,7 +239,7 @@ function OrderConfirmationScreen({ navigation }) {
               onPress={handleConfirmOrder}
           >
             <LinearGradient colors={['#457b9d', '#1d3557']} style={styles.gradient}>
-              <Text style={styles.buttonText}>Confirm</Text>
+              <Text style={styles.buttonText}>Xác Nhận</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>

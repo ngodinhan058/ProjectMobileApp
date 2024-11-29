@@ -11,10 +11,10 @@ const CompletedOrderConfirmationScreen = ({ route, navigation }) => {
         <Image style={styles.itemImage} source={{ uri: item.productImage }} />
         <View style={styles.itemDetails}>
           <Text style={styles.boldText}>{item.productName}</Text>
-          <Text style={styles.detailText}>Size: {item.productSize}</Text>
-          <Text style={styles.detailText}>Quantity: {item.productQuantity}</Text>
-          <Text style={styles.detailText}>Discount Price: {item.productDiscountPrice}</Text>
-          <Text style={styles.detailText}>Total: {item.productTotalPrice} ₫</Text>
+          <Text style={styles.detailText}>Màu: {item.productSize}</Text>
+          <Text style={styles.detailText}>Số Lượng: {item.productQuantity}</Text>
+          <Text style={styles.detailText}>Giảm Giá Voucher: {item.productDiscountPrice || 0}</Text>
+          <Text style={styles.detailText}>Tổng Cộng: {item.productTotalPrice} ₫</Text>
         </View>
       </View>
   );
@@ -28,38 +28,38 @@ const CompletedOrderConfirmationScreen = ({ route, navigation }) => {
                 <Icon name="check" size={40} color="#3CAF47" />
               </View>
               <View>
-                <Text style={styles.headerText}>Thank you</Text>
+              <Text style={styles.headerText}>Xin Cảm Ơn</Text>
+
                 <Text
                     style={[
                       styles.subHeaderText,
                       { backgroundColor: '#a8dadc', color: '#1d3557', padding: 5, borderRadius: 5 },
                     ]}
                 >
-                  Your order is #{orderDetails.orderId.substring(0, 8)}
+                  Đơn Của Bạn Là #{orderDetails.orderId.substring(0, 8)}
                 </Text>
               </View>
             </View>
             <Text style={styles.infoText}>
-              Chúng tôi sẽ gửi đơn cho bạn thông qua {orderDetails.userEmail} để xác nhận hoặc bạn có thể xác nhận thông
-              qua bên dưới
+              Chúng tôi xin cảm ơn bạn {orderDetails.userEmail} vì đã tin tưởng chúng tôi mà đặt hàng. Chúc bạn 1 ngày tốt lành
             </Text>
-            <Text style={styles.boldText}>Time placed: {orderDetails.orderDate}</Text>
-            <Text style={styles.sectionHeader}>Billing</Text>
+            <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
+            <Text style={styles.sectionHeader}>Biên Lai</Text>
             <View style={styles.infoContainer}>
               <Text style={styles.boldText}>{orderDetails.userName}</Text>
               <Text style={styles.label}>{orderDetails.userEmail}</Text>
               <Text style={styles.label}>{orderDetails.userPhone}</Text>
               <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
             </View>
-            <Text style={styles.sectionHeader}>Order Items</Text>
+            <Text style={styles.sectionHeader}>Sản Phẩm Đã Đặt</Text>
             {orderDetails.items.length > 0 ? (
                 orderDetails.items[0].cartItem.map((item, index) => renderOrderItem(item, index))
             ) : (
                 <Text style={styles.label}>No items in the cart.</Text>
             )}
-            <Text style={styles.sectionHeader}>Order Summary</Text>
+            <Text style={styles.sectionHeader}>Tóm tắt đơn hàng</Text>
             <View style={[styles.summaryRow, styles.summaryTopBorder]}>
-              <Text style={styles.label}>Total:</Text>
+              <Text style={styles.label}>Tổng Cộng:</Text>
               <Text style={styles.label}>{orderDetails.orderTotal} ₫</Text>
             </View>
           </View>
