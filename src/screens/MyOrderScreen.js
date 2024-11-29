@@ -1,245 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ScrollView, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useWindowDimensions } from 'react-native';
 import OrderItem from '../components/OrderItem';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from './api/config';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const MyOrderScreen = ({ route, navigation }) => {
   const layout = useWindowDimensions();  // Lấy thông tin kích thước màn hình
-  const orders = [
-    {
-      id: 'order1',
-      date: '01/10/2024',
-      status: 'Chờ Xác Nhận',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
-    {
-      id: 'order7',
-      date: '01/10/2024',
-      status: 'Chờ Xác Nhận',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
-    {
-      id: 'order2',
-      date: '01/10/2024',
-      status: 'Chuẩn Bị Hàng',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
-    {
-      id: 'order3',
-      date: '01/10/2024',
-      status: 'Đang Giao Hàng',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
-    {
-      id: 'order4',
-      date: '01/10/2024',
-      status: 'Đã Giao Hàng, Hãy Xác Nhận',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
-    {
-      id: 'order7',
-      date: '01/10/2024',
-      status: 'Đã Giao Hàng',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
-    {
-      id: 'order5',
-      date: '01/10/2024',
-      status: 'Đã Huỷ',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
-    {
-      id: 'order6',
-      date: '01/10/2024',
-      status: 'Trả Hàng',
-      products: [
-        {
-          id: '1',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 1',
-          color: 'Đen',
-          quantity: 1,
-          price: '1.500.000',
-        },
-        {
-          id: '2',
-          image: {
-            uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-          },
-          name: 'Tai Nghe Sieu Ngau 2',
-          color: 'Trắng',
-          quantity: 1,
-          price: '1.500.000',
-        },
-      ],
-      total: '3.000.000',
-    },
+ 
+  const [orders, setOrders] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userInfoString = await AsyncStorage.getItem('userInfo');
+        if (userInfoString) {
+          let userInfoData = JSON.parse(userInfoString);
 
-    // Thêm các đơn hàng với status khác
-  ];
+          if (!userInfoData.cartId) {
+            userInfoData = await createCartForUser(userInfoData);
+          }
+
+          setUserInfo(userInfoData);
+          await fetchOrderDetails(userInfoData.cartId);
+        }
+      } catch (error) {
+        console.error('Error fetching user info from AsyncStorage:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserInfo();
+  }, []);
   const flatListRef = useRef(null);
-  // Lọc danh sách người dùng theo status
-  const filterByStatus = (statuses) => {
-    return orders.filter((order) => statuses.includes(order.status));
-  };
+
 
   const getItemLayout = (data, index) => ({
     length: 30, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
@@ -248,34 +47,114 @@ const MyOrderScreen = ({ route, navigation }) => {
   });
 
 
+  const createCartForUser = async (userInfoData) => {
+    try {
+      const response = await axios.post(`${BASE_URL}cart/user/`, {
+        userId: userInfoData.userId,
+      });
+      if (response.status === 201) {
+        const { cartId } = response.data.data;
+        userInfoData.cartId = cartId;
+        await AsyncStorage.setItem('userInfo', JSON.stringify(userInfoData));
+        return userInfoData;
+      } else {
+        Alert.alert('Error', 'Failed to create cart');
+      }
+    } catch (error) {
+      console.error('Error creating cart:', error);
+      Alert.alert('Error', 'Failed to create cart');
+    }
+    return userInfoData;
+  };
+
+  const fetchOrderDetails = async (cartId) => {
+    try {
+      const response = await axios.get(`${BASE_URL}order/cart/${cartId}`);
+      if (response.status === 200) {
+        const data = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
+      setOrders(data); // Đảm bảo lưu mảng
+      } else {
+        Alert.alert('Error', 'Failed to fetch order details');
+      }
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    try {
+      const requestBody = {
+        status: 4,
+        orderId: orders.orderId,
+      };
+      const response = await axios.put(`${BASE_URL}order/change`, requestBody);
+      if (response.status === 200) {
+        Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      Alert.alert('Error', 'Failed to cancel order');
+    }
+  };
+
+  const handleConfirmOrder = async () => {
+    try {
+      const requestBody = {
+        status: 1,
+        orderId: orderDetails.orderId,
+      };
+      const response = await axios.put(`${BASE_URL}order/change`, requestBody);
+      if (response.status === 200) {
+        clearTimeout(timerRef.current); // Clear the timer
+        Alert.alert('Order Confirmed', 'Your order has been confirmed successfully');
+        navigation.navigate('CompletedOrderConfirmationScreen', { orderDetails });
+      } else {
+        Alert.alert('Error', 'Failed to confirm order');
+      }
+    } catch (error) {
+      console.error('Error confirming order:', error);
+      Alert.alert('Error', 'Failed to confirm order');
+    }
+  };
+
+  const filterByStatus = (statuses) => {
+    if (!orders) return [];
+    if (Array.isArray(orders)) {
+        return orders.filter((order) => statuses.includes(order?.orderStatus));
+    }
+    return statuses.includes(orders.orderStatus) ? [orders] : [];
+};
 
 
+  console.log(orders);
+  
   const PendingConfirmationRoute = () => (
     <FlatList
-      data={filterByStatus('Chờ Xác Nhận')}
+      data={filterByStatus([0])}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
     />
   );
 
   const PreparingRoute = () => (
     <FlatList
-      data={filterByStatus('Chuẩn Bị Hàng')}
+      data={filterByStatus([1])}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.orderId}
       style={{ marginTop: 40 }}
     />
   );
 
   const ShippingRoute = () => {
-    const shippingData = filterByStatus(['Đang Giao Hàng', 'Đã Giao Hàng, Hãy Xác Nhận']);
-
     return (
       <FlatList
-        data={shippingData}
+        data={filterByStatus([2])}
         renderItem={({ item }) => <OrderItem order={item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.orderId}
         style={{ marginTop: 40 }}
       />
     );
@@ -283,25 +162,25 @@ const MyOrderScreen = ({ route, navigation }) => {
 
   const SuccessRoute = () => (
     <FlatList
-      data={filterByStatus('Đã Giao Hàng')}
+      data={''}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.orderId}
       style={{ marginTop: 40 }}
     />
   );
   const cancelRoute = () => (
     <FlatList
-      data={filterByStatus('Đã Huỷ')}
+      data={'Đã Huỷ'}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.orderId}
       style={{ marginTop: 40 }}
     />
   );
   const returnRoute = () => (
     <FlatList
-      data={filterByStatus('Trả Hàng')}
+      data={'Trả Hàng'}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.orderId}
       style={{ marginTop: 40 }}
     />
   );
@@ -380,8 +259,8 @@ const MyOrderScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             )}
             keyExtractor={(item) => item.key}
-            getItemLayout={getItemLayout} // Cung cấp getItemLayout
-            
+            getItemLayout={getItemLayout}
+
           />
         )}
       />

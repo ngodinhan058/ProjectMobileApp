@@ -1,58 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  Modal,
+  TouchableOpacity,
+  TextInput,
+  TouchableWithoutFeedback,
+  Alert,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ProductItem from '../components/ProductItem';
 import Filter from '../components/Filter';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from './api/config';
+import axios from 'axios';
+import AlertComponent from '../components/AlertComponent';
+import ScrollHandler from '../components/ScrollHandler';
 
-
-const featuredProducts = [
-  {
-    id: '1',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-  {
-    id: '2',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'Macbook',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-  {
-    id: '3',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-    name: 'Wireless',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-  {
-    id: '4',
-    image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' },
-    name: 'TMA-2 HD Wireless',
-    price: '1.500.000',
-    rating: '4.6',
-    review: '86'
-  },
-
-];
 
 const WishListScreen = ({ route, navigation }) => {
   // Kiểm tra nếu route.params tồn tại và lấy giá trị query, nếu không có thì để là chuỗi rỗng
-  const { query = '' } = route?.params || {}; 
-
+  const { query = '' } = route?.params || {};
+  const [refreshing, setRefreshing] = React.useState(false);
   const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+
+  const [idCart, setIdCart] = useState([]);
+
+  const [cartDataUser, setCartDataUser] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSearch = () => {
     navigation.replace('SearchScreen', { query: searchQuery });
   };
-  const filteredProducts = featuredProducts.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  // const filteredProducts = (cartDataUser || []).filter(product =>
+  //   product?.productName.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
+
   const toggleFilterModal = () => {
     setIsFilterModalVisible(!isFilterModalVisible);
   };
@@ -65,8 +54,54 @@ const WishListScreen = ({ route, navigation }) => {
     setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
   };
 
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        // Lấy dữ liệu từ AsyncStorage
+        const userInfoString = await AsyncStorage.getItem('userInfo');
+
+        // Nếu có dữ liệu thì parse nó thành JSON
+        if (userInfoString) {
+          const userInfoData = JSON.parse(userInfoString);
+          setUserInfo(userInfoData); // Lưu vào state
+        }
+      } catch (error) {
+        console.error('Error fetching user info from AsyncStorage:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+  const fetchData = async () => {
+    // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}carts/wishlist/user/${userInfo?.userId}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const userData = response.data.data.cartItem;
+      const idCart = response.data.data.cartId;
+      setIdCart(idCart)
+      setCartDataUser(userData); // Lưu giỏ hàng vào state
+    } catch (error) {
+      // console.log('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, [userInfo?.userId]);
+  // console.log(cartDataUser);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchData();
+  }, []);
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} refreshControl={
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']} />
+    }>
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
@@ -96,15 +131,38 @@ const WishListScreen = ({ route, navigation }) => {
       />
 
       {/* Danh sách sản phẩm dạng lưới */}
-      <FlatList
-        data={filteredProducts}  // Sử dụng dữ liệu sản phẩm giả định
-        renderItem={({ item }) => <ProductItem {...item} />}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
+      {cartDataUser.length > 0 ? (
+        <View style={styles.listContent}>
+          {cartDataUser
+            .reduce((result, _, index, array) => {
+              // Nhóm các sản phẩm thành từng nhóm 2 phần tử
+              if (index % 2 === 0) result.push(array.slice(index, index + 2));
+              return result;
+            }, [])
+            .map((group, groupIndex) => (
+              <View key={groupIndex} style={styles.row}>
+                {group.map((item, index) => (
+                  <ProductItem
+                    key={index}
+                    id={item.productId}
+                    name={item.productName}
+                    price={item.productDiscountPrice}
+                    oldPrice={item.productPrice}
+                    image={item.productImage}
+                    rating={item.productRating}
+                    sale={item.productDiscount}
+                    size={item.productSizeId}
+                    sizeName={item.productSize}
+
+                    isLoading={false}
+                  />
+                ))}
+              </View>
+            ))}
+        </View>
+      ) : null}
+
+    </ScrollView>
   );
 };
 
@@ -115,6 +173,10 @@ const styles = StyleSheet.create({
     height: '100%',
     paddingHorizontal: 20,
     backgroundColor: '#fff',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   searchBar: {
     position: 'relative',

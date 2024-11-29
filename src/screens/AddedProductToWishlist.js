@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   useWindowDimensions,
   useAnimatedValue,
-  ImageBackground,
+  Alert,
   Animated,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
@@ -269,9 +269,24 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         sizeId: selectedProductSize.productSizeId
       }
     };
-
     try {
-      // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+      const response = await axios.get(`${BASE_URL}order/cart/${userInfo.cartId}`);
+      if (response.status === 200) {
+        Alert.alert(
+          'Xác nhận lại đơn hàng',
+          'Vui lòng xác nhận trước khi thêm sản phẩm mới vào giỏ hàng',
+          [
+            {
+              text: 'Xem Chi Tiết',
+              onPress: async () => {
+                navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      } 
+    } catch (error) {
       const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
       // console.log(response);
 
@@ -285,9 +300,25 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       } else {
         console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
-    } catch (error) {
-      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
     }
+    // try {
+    //   // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
+    //   const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
+    //   // console.log(response);
+
+    //   if (response.status === 200) {
+    //     console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+    //     closeModalBuy();
+    //     navigation.navigate('AddToCartScreen', {
+    //       alertVisible: true,
+    //       alertType: 'success',
+    //     })
+    //   } else {
+    //     console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+    //   }
+    // } catch (error) {
+    //   console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+    // }
   };
 
   const handleBuyNowUser = async () => {
@@ -1041,7 +1072,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                       const newQuantity = validText ? parseInt(validText, 10) : 0; // Nếu không có số, đặt thành 1
                       handleInputChange(newQuantity);
                     }}
-                    
                     keyboardType="numeric"
                   />
 
