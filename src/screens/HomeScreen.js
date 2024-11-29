@@ -13,6 +13,7 @@ import Filter from '../components/FilterFull';
 import { MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import useWebSocket from './api/useWebSocket';
+import AlertComponent from '../components/AlertComponent';
 
 
 
@@ -47,6 +48,10 @@ const HomeScreen = () => {
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState();
   const [selectedCategories, setSelectedCategories] = useState();
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState('success');
+  const [titleAlert, setTitleAlert] = useState('');
 
   const [appliedFilters, setAppliedFilters] = useState(null);
 
@@ -195,15 +200,16 @@ const HomeScreen = () => {
     </TouchableOpacity>
   );
   return (
-    <ScrollHandler refreshing={refreshing} onRefresh={onRefresh}>
-      {/* Bắt đầu phần với background #fff */}
-      <View style={styles.container}>
-        <View style={styles.whiteSection}>
-          {/* Line */}
-          <View style={styles.line}></View>
-          {/* Thanh tìm kiếm */}
+    <>
+      <ScrollHandler refreshing={refreshing} onRefresh={onRefresh}>
+        {/* Bắt đầu phần với background #fff */}
+        <View style={styles.container}>
+          <View style={styles.whiteSection}>
+            {/* Line */}
+            <View style={styles.line}></View>
+            {/* Thanh tìm kiếm */}
 
-          {/* <View style={styles.searchBar}>
+            {/* <View style={styles.searchBar}>
               <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
                 <Text style={styles.searchInput}>Search Product Name</Text>
                 <Image
@@ -215,208 +221,181 @@ const HomeScreen = () => {
                 <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
               </TouchableOpacity>
             </View> */}
-          {renderSearchBar()}
+            {renderSearchBar()}
 
-          <Filter
-            isVisible={isFilterModalVisible}
-            // id={id}
-            onClose={toggleFilterModal}
-            onApply={handleApplyFilters}
-            onReset={handleResetFilters}
-          />
+            <Filter
+              isVisible={isFilterModalVisible}
+              // id={id}
+              onClose={toggleFilterModal}
+              onApply={handleApplyFilters}
+              onReset={handleResetFilters}
+            />
 
-          {/* Banner chính */}
-          {loading ? (
-            <View>
-              <Animated.View style={[styles.skeletonText, {
-                backgroundColor: shimmerAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
-                })
-              }]} />
+            {/* Banner chính */}
+            {loading ? (
+              <View>
+                <Animated.View style={[styles.skeletonText, {
+                  backgroundColor: shimmerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['#e0e0e0', '#f0f0f0'], // Dark to light gray
+                  })
+                }]} />
 
-            </View>
-
-          ) : (
-            <>
-              <View style={styles.scrollContainer}>
-                <ScrollView
-                  ref={scrollViewRef}
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onScroll={Animated.event(
-                    [
-                      {
-                        nativeEvent: {
-                          contentOffset: {
-                            x: scrollX,
-                          },
-                        },
-                      },
-                    ],
-                    { useNativeDriver: false },
-                  )}
-                  scrollEventThrottle={1}>
-                  {banners.map((banner, imageIndex) => (
-                    <View
-                      style={{ width: windowWidth, height: 200 }}
-                      key={banner.id}>
-                      <ImageBackground
-                        source={banner.image}
-                        style={styles.card}>
-                      </ImageBackground>
-                    </View>
-                  ))}
-                </ScrollView>
-
-                {/* Indicator */}
-                <View style={styles.indicatorContainer}>
-                  {banners.map((banner, imageIndex) => {
-                    const width = scrollX.interpolate({
-                      inputRange: [
-                        windowWidth * (imageIndex - 1),
-                        windowWidth * imageIndex,
-                        windowWidth * (imageIndex + 1),
-                      ],
-                      outputRange: [8, 16, 8], // Dot lớn ở trang hiện tại
-                      extrapolate: 'clamp',
-                    });
-                    return (
-                      <Animated.View
-                        key={banner.id}
-                        style={[styles.normalDot, { width }]}
-                      />
-                    );
-                  })}
-                </View>
               </View>
 
-            </>
-          )}
-          {/* Danh mục sản phẩm */}
-          <View style={{ paddingHorizontal: 20, }}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.textBold}>Danh Mục Sản Phẩm</Text>
-              <Text style={styles.seeAll}></Text>
-            </View>
-          </View>
-          {/* Xuất Danh mục sản phẩm */}
-          <FlatList
-            data={categories}
-            horizontal
-            keyExtractor={(item) => item.categoryId.toString()}
-            renderItem={({ item }) => (
-              <CategoriesItem
-                id={item['categoryId']}
-                name={item['categoryName']}
-                image={item['categoryImgPath']}
-                isLoading={loading}
-              />
-            )}
-            showsHorizontalScrollIndicator={false}
-          />
-        </View>
-      </View>
-
-
-      {/* Sản phẩm nổi bật */}
-      <View style={styles.containerPro}>
-        <View style={styles.greySection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Tất cả sản phẩm</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
-          </View>
-          {productsState.length > 0 ? (
-            // <View style={styles.gridContainer}>
-            //   {productsState.map((item, index) => (
-            //     <View key={index} style={styles.itemWrapper}>
-            //       <ProductItem
-            //         id={item['productId']}
-            //         name={item['productName']}
-            //         price={item['productPriceSale']}
-            //         oldPrice={item['productPrice']}
-            //         image={item['productImages']?.[0].productImagePath}
-            //         rating={item['productRating']}
-            //         sale={item['productSale']}
-            //         isLoading={loading}
-            //       />
-            //     </View>
-            //   ))}
-            // </View>
-            <View style={styles.listContent}>
-              {productsState
-                .reduce((result, _, index, array) => {
-                  // Nhóm các sản phẩm thành từng nhóm 2 phần tử
-                  if (index % 2 === 0) result.push(array.slice(index, index + 2));
-                  return result;
-                }, [])
-                .map((group, groupIndex) => (
-                  <View key={groupIndex} style={styles.row}>
-                    {group.map((item) => (
-                      <ProductItem
-                        key={item.productId}
-                        id={item.productId}
-                        name={item.productName}
-                        price={item.productPriceSale}
-                        oldPrice={item.productPrice}
-                        image={item.productImages?.[0]?.productImagePath}
-                        rating={item.productRating}
-                        sale={item.productSale}
-                        size={item.productSizes}
-                        isLoading={false}
-                      />
+            ) : (
+              <>
+                <View style={styles.scrollContainer}>
+                  <ScrollView
+                    ref={scrollViewRef}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onScroll={Animated.event(
+                      [
+                        {
+                          nativeEvent: {
+                            contentOffset: {
+                              x: scrollX,
+                            },
+                          },
+                        },
+                      ],
+                      { useNativeDriver: false },
+                    )}
+                    scrollEventThrottle={1}>
+                    {banners.map((banner, imageIndex) => (
+                      <View
+                        style={{ width: windowWidth, height: 200 }}
+                        key={banner.id}>
+                        <ImageBackground
+                          source={banner.image}
+                          style={styles.card}>
+                        </ImageBackground>
+                      </View>
                     ))}
+                  </ScrollView>
+
+                  {/* Indicator */}
+                  <View style={styles.indicatorContainer}>
+                    {banners.map((banner, imageIndex) => {
+                      const width = scrollX.interpolate({
+                        inputRange: [
+                          windowWidth * (imageIndex - 1),
+                          windowWidth * imageIndex,
+                          windowWidth * (imageIndex + 1),
+                        ],
+                        outputRange: [8, 16, 8], // Dot lớn ở trang hiện tại
+                        extrapolate: 'clamp',
+                      });
+                      return (
+                        <Animated.View
+                          key={banner.id}
+                          style={[styles.normalDot, { width }]}
+                        />
+                      );
+                    })}
                   </View>
-                ))}
+                </View>
+
+              </>
+            )}
+            {/* Danh mục sản phẩm */}
+            <View style={{ paddingHorizontal: 20, }}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.textBold}>Danh Mục Sản Phẩm</Text>
+                <Text style={styles.seeAll}></Text>
+              </View>
             </View>
-          ) : null}
-
-
-
-          {/* Special Offers */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Giảm Giá Đặc Biệt</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
-          </View>
-          <FlatList
-            horizontal
-            data={saleProducts}
-            renderItem={({ item }) => <SaleItem {...item} />}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            style={styles.productList}
-          />
-          {/* News */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.textBold}>Bản Tin Mới</Text>
-          </View>
-          {news.map((news) => (
-            <NewItem
-              key={news.id}
-              title={news.title}
-              description={news.description}
-              date={news.date}
-              image={news.image}
-
+            {/* Xuất Danh mục sản phẩm */}
+            <FlatList
+              data={categories}
+              horizontal
+              keyExtractor={(item) => item.categoryId.toString()}
+              renderItem={({ item }) => (
+                <CategoriesItem
+                  id={item['categoryId']}
+                  name={item['categoryName']}
+                  image={item['categoryImgPath']}
+                  isLoading={loading}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
             />
-          ))}
-          {/* <TouchableOpacity
-            style={{
-              padding: 15,
-              marginVertical: 25,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: '#000',
-              borderStyle: 'solid',
-              alignItems: 'center',
-            }} onPress={() => navigation.navigate('NewsScreen')}
-          >
-            <Text>Xem Tất Cả Bản Tin</Text>
-          </TouchableOpacity> */}
+          </View>
         </View>
-      </View>
-    </ScrollHandler>
+
+
+        {/* Sản phẩm nổi bật */}
+        <View style={styles.containerPro}>
+          <View style={styles.greySection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.textBold}>Tất cả sản phẩm</Text>
+              <Text style={styles.seeAll}>Xem Tất Cả</Text>
+            </View>
+            {productsState.length > 0 ? (
+              // <View style={styles.gridContainer}>
+              //   {productsState.map((item, index) => (
+              //     <View key={index} style={styles.itemWrapper}>
+              //       <ProductItem
+              //         id={item['productId']}
+              //         name={item['productName']}
+              //         price={item['productPriceSale']}
+              //         oldPrice={item['productPrice']}
+              //         image={item['productImages']?.[0].productImagePath}
+              //         rating={item['productRating']}
+              //         sale={item['productSale']}
+              //         isLoading={loading}
+              //       />
+              //     </View>
+              //   ))}
+              // </View>
+              <View style={styles.listContent}>
+                {productsState
+                  .reduce((result, _, index, array) => {
+                    // Nhóm các sản phẩm thành từng nhóm 2 phần tử
+                    if (index % 2 === 0) result.push(array.slice(index, index + 2));
+                    return result;
+                  }, [])
+                  .map((group, groupIndex) => (
+                    <View key={groupIndex} style={styles.row}>
+                      {group.map((item) => (
+                        <ProductItem
+                          key={item.productId}
+                          id={item.productId}
+                          name={item.productName}
+                          price={item.productPriceSale}
+                          oldPrice={item.productPrice}
+                          image={item.productImages?.[0]?.productImagePath}
+                          rating={item.productRating}
+                          sale={item.productSale}
+                          size={item.productSizes}
+                          isLoading={false}
+                          setAlertType={setAlertType}
+                          setAlertVisible={setAlertVisible}
+                          setTitleAlert={setTitleAlert}
+                        />
+                      ))}
+                    </View>
+                  ))}
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+      </ScrollHandler>
+      <AlertComponent
+        title={alertType === 'success' ? "Success" : "Error"}
+        description={
+          alertType === 'success'
+            ? titleAlert
+            : titleAlert
+        }
+        alertType={alertType}
+        visible={alertVisible}
+        onClose={() => setAlertVisible(false)}
+      />
+    </>
   );
 };
 

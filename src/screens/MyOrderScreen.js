@@ -10,8 +10,7 @@ import { BASE_URL } from './api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const MyOrderScreen = ({ route, navigation }) => {
-  const layout = useWindowDimensions();  // Lấy thông tin kích thước màn hình
- 
+  const layout = useWindowDimensions();
   const [orders, setOrders] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +26,7 @@ const MyOrderScreen = ({ route, navigation }) => {
           }
 
           setUserInfo(userInfoData);
-          await fetchOrderDetails(userInfoData.cartId);
+          await fetchOrderDetails(userInfoData.userId);
         }
       } catch (error) {
         console.error('Error fetching user info from AsyncStorage:', error);
@@ -45,7 +44,6 @@ const MyOrderScreen = ({ route, navigation }) => {
     offset: 150 * index, // Offset dựa trên index của item
     index,
   });
-
 
   const createCartForUser = async (userInfoData) => {
     try {
@@ -66,13 +64,12 @@ const MyOrderScreen = ({ route, navigation }) => {
     }
     return userInfoData;
   };
-
   const fetchOrderDetails = async (cartId) => {
     try {
-      const response = await axios.get(`${BASE_URL}order/cart/${cartId}`);
+      const response = await axios.get(`${BASE_URL}order/user/${cartId}`);
       if (response.status === 200) {
         const data = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
-      setOrders(data); // Đảm bảo lưu mảng
+        setOrders(data);
       } else {
         Alert.alert('Error', 'Failed to fetch order details');
       }
@@ -123,14 +120,14 @@ const MyOrderScreen = ({ route, navigation }) => {
   const filterByStatus = (statuses) => {
     if (!orders) return [];
     if (Array.isArray(orders)) {
-        return orders.filter((order) => statuses.includes(order?.orderStatus));
+      return orders.filter((order) => statuses.includes(order?.orderStatus));
     }
     return statuses.includes(orders.orderStatus) ? [orders] : [];
-};
+  };
 
 
   console.log(orders);
-  
+
   const PendingConfirmationRoute = () => (
     <FlatList
       data={filterByStatus([0])}
@@ -144,7 +141,7 @@ const MyOrderScreen = ({ route, navigation }) => {
     <FlatList
       data={filterByStatus([1])}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.orderId}
+      keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
     />
   );
@@ -154,7 +151,7 @@ const MyOrderScreen = ({ route, navigation }) => {
       <FlatList
         data={filterByStatus([2])}
         renderItem={({ item }) => <OrderItem order={item} />}
-        keyExtractor={(item) => item.orderId}
+        keyExtractor={(item) => item.orderId.toString()}
         style={{ marginTop: 40 }}
       />
     );

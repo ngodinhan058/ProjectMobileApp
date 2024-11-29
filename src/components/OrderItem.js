@@ -13,7 +13,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
   const handleCancelOrder = async () => {
     try {
       const requestBody = {
-        status: 4,
+        status: 6,
         orderId: order?.orderId,
       };
       const response = await axios.put(`${BASE_URL}order/change`, requestBody);
@@ -38,7 +38,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
       const response = await axios.put(`${BASE_URL}order/change`, requestBody);
       if (response.status === 200) {
         Alert.alert('Order Confirmed', 'Your order has been confirmed successfully');
-        navigation.navigate('CompletedOrderConfirmationScreen', { order });
+
       } else {
         Alert.alert('Error', 'Failed to confirm order');
       }

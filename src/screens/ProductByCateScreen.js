@@ -36,6 +36,7 @@ const ProductByCateScreen = ({ route, navigation, onScroll }) => {
         image={item['productImages']?.[0].productImagePath}
         rating={item.productRating}
         sale={item.productSale}
+        size={item.productSizes}
         isLoading={false}
       />
     );
