@@ -176,7 +176,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     fetchUserInfo();
   }, []);
-  console.log(userInfo);
+  // console.log(userInfo);
 
 
 

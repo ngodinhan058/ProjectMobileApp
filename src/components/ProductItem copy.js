@@ -8,7 +8,7 @@ import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 import AlertComponent from '../components/AlertComponent';
 
-const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, sizeName, isLoading }) => {
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, isLoading }) => {
   const [liked, setLiked] = useState();
   const [isBuyModalVisible, setIsBuyModalVisible] = useState(false);
   const [isUnLikeModalVisible, setIsUnLikeModalVisible] = useState(false);
@@ -63,27 +63,21 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
     fetchUserInfo();
   }, []);
-  // const handleSelectSize = (sizeName) => {
-  //   // Nếu kích thước đã được chọn, nhấn lần nữa sẽ hủy chọn
-  //   if (selectedSize === sizeName) {
-  //     setSelectedSize(null);
-  //   } else {
-  //     setSelectedSize(sizeName);
-  //   }
-  // };
-
   const handleSelectSize = (sizeName) => {
-    setSelectedSizes((prevSelectedSizes) => {
-      if (prevSelectedSizes.includes(sizeName)) {
-        // Bỏ kích thước nếu đã chọn
-        return prevSelectedSizes.filter((size) => size !== sizeName);
-      } else {
-        // Thêm kích thước vào danh sách
-        return [...prevSelectedSizes, sizeName];
-      }
-    });
+    // Nếu kích thước đã được chọn, nhấn lần nữa sẽ hủy chọn
+    if (selectedSize === sizeName) {
+      setSelectedSize(null);
+    } else {
+      setSelectedSize(sizeName);
+    }
   };
-
+  const toggleSelectSize = (sizeName) => {
+    setSelectedSizes((prevSelected) =>
+      prevSelected.includes(sizeName)
+        ? prevSelected.filter((name) => name !== sizeName) // Bỏ chọn
+        : [...prevSelected, sizeName] // Chọn thêm
+    );
+  };
   // Modal Add to cart
   const openModalBuy = () => {
     setIsBuyModalVisible(true);
@@ -94,102 +88,80 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
   };
   const closeModalUnLike = () => setIsUnLikeModalVisible(false);
 
-  // const handleWishListUser = async () => {
-  //   const selectedProductSize = size.find(
-  //     (size) => size.productSizeName === selectedSize
-  //   );
+  const handleWishListUser = async () => {
+    const selectedProductSize = size.find(
+      (size) => size.productSizeName === selectedSize
+    );
 
+    // setError('');
+    setErrorCheck(false);
+    // Chuẩn bị dữ liệu để gửi đến API
+    const cartItemData = {
+      cartItem: {
+        productQuantity: 1,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId
+      }
+    };
+    // console.log(cartItemData);
+
+    try {
+      const response = await axios.put(`${BASE_URL}cart/${userInfo.wishListId}`, cartItemData);
+
+      if (response.status === 200) {
+        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+        closeModalBuy();
+        console.warn("Đã thêm vào yêu thích", response.data.message);
+        fetchData();
+
+      } else {
+        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message || "Lỗi không xác định");
+      }
+
+    } catch (error) {
+      // Kiểm tra error.response có tồn tại không
+      if (error.response) {
+        console.error(
+          "Không thể thêm sản phẩm vào giỏ hàng:",
+          error.response.data.message || "Lỗi không xác định"
+        );
+      } else {
+        console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
+      }
+    }
+  };
+  // const DeleteWishListUser = async () => {
   //   // setError('');
   //   setErrorCheck(false);
   //   // Chuẩn bị dữ liệu để gửi đến API
+  //   const selectedProductSize = size.find(
+  //     (size) => size.productSizeName === selectedSize
+  //   );
   //   const cartItemData = {
   //     cartItem: {
-  //       productQuantity: 1,
   //       productId: id,
-  //       sizeId: selectedProductSize.productSizeId
+  //       sizeId: selectedProductSize.productSizeId,
   //     }
   //   };
-  //   // console.log(cartItemData);
+  //   console.log(cartItemData);
+
 
   //   try {
-  //     const response = await axios.put(`${BASE_URL}cart/${userInfo.wishListId}`, cartItemData);
+  //     const response = await axios.delete(`${BASE_URL}cart/${userInfo.wishListId}`, { data: cartItemData });
 
   //     if (response.status === 200) {
   //       console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-  //       closeModalBuy();
-  //       console.warn("Đã thêm vào yêu thích", response.data.message);
-  //       fetchData();
-
+  //       console.warn("Xoá Yêu Thích Thành Công", response.data.message);
   //     } else {
   //       console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message || "Lỗi không xác định");
   //     }
 
   //   } catch (error) {
-  //     // Kiểm tra error.response có tồn tại không
-  //     if (error.response) {
-  //       console.error(
-  //         "Không thể thêm sản phẩm vào giỏ hàng:",
-  //         error.response.data.message || "Lỗi không xác định"
-  //       );
-  //     } else {
-  //       console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
-  //     }
+
+  //     console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
+
   //   }
   // };
-  const handleWishListUser = async () => {
-    const selectedProductSizes = size.filter((size) =>
-      selectedSizes.includes(size.productSizeName)
-    );
-
-    // Kiểm tra nếu không có kích thước được chọn
-    if (selectedProductSizes.length === 0) {
-      console.warn("Vui lòng chọn ít nhất một kích thước.");
-      return;
-    }
-
-    // Lặp qua từng kích thước để gọi API
-    for (const selectedProductSize of selectedProductSizes) {
-      const cartItemData = {
-        cartItem: {
-          productQuantity: 1,
-          productId: id,
-          sizeId: selectedProductSize.productSizeId,
-        },
-      };
-
-      try {
-        const response = await axios.put(
-          `${BASE_URL}cart/${userInfo.wishListId}`,
-          cartItemData
-        );
-
-        if (response.status === 200) {
-          console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-          console.warn(
-            `Đã thêm kích thước ${selectedProductSize.productSizeName} vào yêu thích.`
-          );
-        } else {
-          console.error(
-            "Không thể thêm sản phẩm vào giỏ hàng:",
-            response.data.message || "Lỗi không xác định"
-          );
-        }
-      } catch (error) {
-        if (error.response) {
-          console.error(
-            "Không thể thêm sản phẩm vào giỏ hàng:",
-            error.response.data.message || "Lỗi không xác định"
-          );
-        } else {
-          console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
-        }
-      }
-    }
-
-    // Sau khi thêm tất cả, tải lại dữ liệu và đóng modal
-    fetchData();
-    closeModalBuy();
-  };
 
   const DeleteWishListUser = async () => {
     setErrorCheck(false);
@@ -231,29 +203,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
     setSelectedSizes([]);
     console.warn("Tất cả các size đã chọn đã được xoá khỏi yêu thích.");
   };
-  const DeleteOneWishListUser = async () => {
-    const cartItemData = {
-      cartItem: {
-        productId: id,
-        sizeId: size,
-      }
-    };
-    try {
-      const response = await axios.delete(`${BASE_URL}cart/${userInfo.wishListId}`, { data: cartItemData });
 
-      if (response.status === 200) {
-        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-        console.warn("Xoá Yêu Thích Thành Công", response.data.message);
-      } else {
-        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message || "Lỗi không xác định");
-      }
-
-    } catch (error) {
-
-      console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
-
-    }
-  };
   const fetchData = async () => {
     // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
     const apiUrl = `${BASE_URL}carts/wishlist/user/${userInfo?.userId}`;
@@ -315,8 +265,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                 style={styles.image}
               />
               <Text style={styles.name}>{truncateName(name)}</Text>
-              {Array.isArray(size) ? null :
-                (<Text>Màu: {sizeName}</Text>)}
               <Text style={styles.price}>{oldPrice}</Text>
               <Text style={styles.originalPrice}></Text>
               <View style={styles.rate}>
@@ -325,18 +273,11 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                 </Text>
                 <Text style={styles.review}>{review} Review</Text>
                 {liked ?
-                  Array.isArray(size) ? (
-                    (<TouchableOpacity onPress={openModalUnLike}>
-                      <Text style={styles.heart}>
-                        <Icon name="heart" size={18} color="#3669c9" />
-                      </Text>
-                    </TouchableOpacity>)
-                  ) :
-                    (<TouchableOpacity onPress={DeleteOneWishListUser}>
-                      <Text style={styles.heart}>
-                        <Icon name="heart" size={18} color="#3669c9" />
-                      </Text>
-                    </TouchableOpacity>)
+                  (<TouchableOpacity onPress={openModalUnLike}>
+                    <Text style={styles.heart}>
+                      <Icon name="heart" size={18} color="#3669c9" />
+                    </Text>
+                  </TouchableOpacity>)
                   : (<TouchableOpacity onPress={openModalBuy}>
                     <Text style={styles.heart}>
                       <Icon name="heart-outline" size={18} color="#3669c9" />
@@ -359,8 +300,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                 style={styles.image}
               />
               <Text style={styles.name}>{truncateName(name)}</Text>
-              {Array.isArray(size) ? null :
-                (<Text style={{ marginBottom: 10, fontWeight: '500' }}>Màu: {sizeName}</Text>)}
               <Text style={styles.price}>{price}</Text>
               <Text style={styles.originalPrice}>{oldPrice}</Text>
 
@@ -370,18 +309,11 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                 </Text>
                 <Text style={styles.review}>{review} Review</Text>
                 {liked ?
-                  Array.isArray(size) ? (
-                    (<TouchableOpacity onPress={openModalUnLike}>
-                      <Text style={styles.heart}>
-                        <Icon name="heart" size={18} color="#3669c9" />
-                      </Text>
-                    </TouchableOpacity>)
-                  ) :
-                    (<TouchableOpacity onPress={DeleteOneWishListUser}>
-                      <Text style={styles.heart}>
-                        <Icon name="heart" size={18} color="#3669c9" />
-                      </Text>
-                    </TouchableOpacity>)
+                  (<TouchableOpacity onPress={openModalUnLike}>
+                    <Text style={styles.heart}>
+                      <Icon name="heart" size={18} color="#3669c9" />
+                    </Text>
+                  </TouchableOpacity>)
                   : (<TouchableOpacity onPress={openModalBuy}>
                     <Text style={styles.heart}>
                       <Icon name="heart-outline" size={18} color="#3669c9" />
@@ -441,34 +373,32 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                 <Text>Loading...</Text>
               ) : (
                 <View style={styles.sizesContainer}>
-                  {Array.isArray(size) ? (
-                    size.map((size) => (
-                      <TouchableOpacity
-                        key={size.productSizeId}
-                        style={[
-                          styles.sizeOption,
-                          selectedSizes.includes(size.productSizeName) && styles.selected,
-                          size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
-                        ]}
-                        onPress={() => handleSelectSize(size.productSizeName)}
-                        disabled={size.productSizeQuantity.productSizeQuantity === 0}
+                  {Array.isArray(size) ? size.map((size) => (
+                    <TouchableOpacity
+                      key={size.productSizeId}
+                      style={[
+                        styles.sizeOption,
+                        selectedSize === size.productSizeName && styles.selected,
+                        size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
+                        errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
+                      ]}
+                      onPress={() => handleSelectSize(size.productSizeName)}
+                      disabled={size.productSizeQuantity.productSizeQuantity === 0}
+                    >
+                      <Text
+                        style={
+                          selectedSize === size.productSizeName
+                            ? { color: '#fff' }
+                            : { color: '#000' }
+                        }
                       >
-                        <Text
-                          style={
-                            selectedSizes.includes(size.productSizeName)
-                              ? { color: "#fff" }
-                              : { color: "#000" }
-                          }
-                        >
-                          {size.productSizeName}
-                        </Text>
-                      </TouchableOpacity>
-                    ))
-                  ) : null}
+                        {size.productSizeName}
+                      </Text>
+                    </TouchableOpacity>
+                  )) : null}
                 </View>
               )}
             </View>
-
           </ScrollView>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 50, marginTop: 5 }}>
             <TouchableOpacity style={styles.confirmButton} onPress={handleWishListUser}>
