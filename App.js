@@ -11,7 +11,8 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { ROLE_USER, ROLE_ADMIN } from './src/constants/Role';
+import { ROLE_USER, ROLE_ADMIN ,ROLE_SHIPPER} from './src/constants/Role';
+import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -47,6 +48,7 @@ import UpdatePassScreen from './src/screens/UpdatePassScreen';
 import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
 import VerificationScreen from './src/screens/VerificationScreen';
 import WishListScreen from './src/screens/WishListScreen';
+
 
 {
   /* Admin */
@@ -152,6 +154,7 @@ import ShippingDetailScreen from './src/screens/shipper/ShippingDetailScreen';
 import WaitingShippingScreen from './src/screens/shipper/WaitingShippingScreen';
 import CompletedCancelOrderScreen from './src/screens/shipper/CompletedCancelOrderScreen';
 import ChangePasswordScreen from './src/screens/shipper/ChangePasswordScreen';
+import ShipperAddressScreen from "./src/screens/shipper/ShipperAddressScreen";
 
 {
   /* Accouting */
@@ -645,13 +648,65 @@ function InventoryReturnOrder() {
 }
 function ShipperDrawerNavigator() {
   return (
-    <Drawer.Navigator>
-      <Drawer.Screen name="Trang Chủ" component={ShipperHome} />
-      <Drawer.Screen name="Lịch Sử Giao Hàng" component={HistoryShipping} />
-      <Drawer.Screen name="Thông Tin Cá Nhân" component={ShipperInformation} />
+    <Drawer.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: "#3669C9",
+        },
+        headerTintColor: "#fff",
+        drawerStyle: {
+          backgroundColor: "#f5f5f5",
+          width: 250,
+        },
+        drawerActiveTintColor: "#3669C9",
+        drawerInactiveTintColor: "#333",
+        drawerActiveBackgroundColor: "#e1efff",
+      }}
+    >
+      <Drawer.Screen
+        name="Trang Chủ"
+        component={ShipperHome}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Icon name="home" size={size} color={color} />
+          ),
+          headerTitle: "Trang Chủ",
+        }}
+      />
+      <Drawer.Screen
+        name="Lịch Sử Giao Hàng"
+        component={HistoryShipping}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Icon name="history" size={size} color={color} />
+          ),
+          headerTitle: "Lịch Sử Giao Hàng",
+        }}
+      />
+      <Drawer.Screen
+        name="Đang Chờ Giao"
+        component={WaitingShippingScreen}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Icon name="truck" size={size} color={color} />
+          ),
+          headerTitle: "Đang Chờ Giao",
+        }}
+      />
+      <Drawer.Screen
+        name="Thông Tin Cá Nhân"
+        component={ShipperInformation}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Icon name="user" size={size} color={color} />
+          ),
+          headerTitle: "Thông Tin Cá Nhân",
+        }}
+      />
     </Drawer.Navigator>
   );
 }
+
 
 function ShipperHome() {
   return (
@@ -734,6 +789,10 @@ function ShipperInformation() {
       <Stack.Screen
         name="ProfileSettingScreen"
         component={ProfileSettingScreen}
+      />
+      <Stack.Screen
+        name="ShipperAddressScreen"
+        component={ShipperAddressScreen}
       />
 
       <Stack.Screen
@@ -885,12 +944,16 @@ export default function App() {
       {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
         <AdminDrawerNavigator />
       )}
+      {Object.keys(user).length !== 0 && user?.role === ROLE_SHIPPER && (
+        <ShipperDrawerNavigator/>
+        // <AdminDrawerNavigator />
+      )}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
-      {/* <ShipperDrawerNavigator /> */}
+        
       {/* <Accouting /> */}
     </NavigationContainer>
   );

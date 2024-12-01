@@ -1,413 +1,361 @@
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   Image,
   StyleSheet,
   ScrollView,
-  Button,
-  TouchableOpacity,
-  FlatList,
-  Pressable,
   TextInput,
-} from 'react-native';
-import ProductItem from '../../components/ProductItem';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { StatusBar } from 'expo-status-bar';
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { BASE_URL } from "../api/config";
 
-const featuredProducts = [
-  {
-    id: '1',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.0',
-    review: '860',
-  },
-  {
-    id: '2',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless2',
-    price: '100.000',
-    rating: '2.6',
-    review: '6',
-  },
-  {
-    id: '3',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless',
-    price: '1.000.000',
-    rating: '0.6',
-    review: '106',
-  },
-];
+function ShipperHomeScreen({ navigation }) {
+  const [user, setUser] = useState({
+    name: "Loading...",
+    address: "Loading...",
+    avatar: "",
+  });
 
-function ShipperHomeScreen({ route, navigation }) {
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("userData");
+        if (!userData) throw new Error("No user token found");
+        
+        const { token } = JSON.parse(userData);
+        const response = await axios.get(`${BASE_URL}auth/users/myInfo`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const userInfo = response.data.data;
+
+        setUser({
+          name: `${userInfo.userLastName} ${userInfo.userFirstName}`,
+          address: `${userInfo.address.addressName}, ${userInfo.address.ward}, ${userInfo.address.district}, ${userInfo.address.city}`,
+          avatar: userInfo.userImagePath,
+        });
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+        Alert.alert("Error", "Failed to fetch user information");
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
   return (
-    <View style={{ flex: 1, flexDirection: 'column' }}>
+    <View style={styles.container}>
       <StatusBar hidden={true} />
-      <View
-        style={{
-          flex: 2,
-          backgroundColor: '#3669C9',
-          justifyContent: 'space-around',
-          padding: 20,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
+      {/* Header Section */}
+      <View style={styles.header}>
+        <View style={styles.userInfo}>
           <Image
-            style={{ width: 50, height: 50, borderRadius: 50 }}
-            source={require('../../assets/new2.png')}
+            style={styles.avatar}
+            source={
+              user.avatar
+                ? { uri: user.avatar }
+                : require("../../assets/ship.png")
+            }
           />
-
-          <View>
-            <Text style={{ textAlign: 'center' }}>Name ⌄</Text>
-            <Text>Golf city, Plot 8, Sector 75</Text>
+          <View style={styles.userDetails}>
+            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userAddress}>{user.address}</Text>
           </View>
-
-          <View
-            style={{
-              position: 'relative',
-              borderRadius: 50,
-              borderWidth: 2,
-              padding: 5,
-              backgroundColor: '#fff',
-            }}
-          >
+          <View style={styles.notification}>
             <Image
-              style={{
-                width: 24,
-                height: 24,
-              }}
-              source={require('../../assets/bell.png')}
+              style={styles.notificationIcon}
+              source={require("../../assets/bell.png")}
             />
-            <Text
-              style={{
-                position: 'absolute',
-                right: -10,
-                top: -5,
-                backgroundColor: '#FF5E5E',
-                borderRadius: 50,
-                padding: 4,
-                color: '#fff',
-                width: 24,
-                height: 24,
-                textAlign: 'center',
-              }}
-            >
-              1
+            <Text style={styles.notificationBadge}>1</Text>
+          </View>
+        </View>
+        <View style={styles.searchBox}>
+          <Icon name="search" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Enter your tracking number"
+          />
+        </View>
+      </View>
+
+      {/* Quick Navigation Section */}
+      <View style={styles.quickNavContainer}>
+        <View style={styles.quickNav}>
+          <TouchableOpacity style={styles.quickNavItem}>
+            <Image
+              style={styles.quickNavIcon}
+              source={require("../../assets/checkrate.png")}
+            />
+            <Text style={styles.quickNavText}>Check Rate</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickNavItem}>
+            <Image
+              style={styles.quickNavIcon}
+              source={require("../../assets/pickup.png")}
+            />
+            <Text style={styles.quickNavText}>Pick Up</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickNavItem}>
+            <Image
+              style={styles.quickNavIcon}
+              source={require("../../assets/dropoff.png")}
+            />
+            <Text style={styles.quickNavText}>Drop Off</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickNavItem}>
+            <Image
+              style={styles.quickNavIcon}
+              source={require("../../assets/history.png")}
+            />
+            <Text style={styles.quickNavText}>History</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      {/* Shipment Section */}
+      <ScrollView style={styles.shipments}>
+        <View>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Current Shipment</Text>
+            <Text style={styles.viewAll}>View All</Text>
+          </View>
+          <View style={styles.shipmentCard}>
+            <Text style={styles.shipmentId}>#HWDSF776567DS</Text>
+            <Text style={styles.shipmentStatus}>On the way - 00:01:00</Text>
+            <Text style={styles.shipmentRoute}>
+              From: Vũng Tàu - To: Hồ Chí Minh
             </Text>
           </View>
         </View>
 
-        <View
-          style={{
-            borderWidth: 1,
-            padding: 10,
-            borderRadius: 10,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-            backgroundColor: '#fff',
-            marginBottom: 10,
-          }}
-        >
-          <Icon style={{ color: '#2490A9', fontSize: 18 }} name="search"></Icon>
-          <TextInput style={{ fontSize: 14 }} placeholder="Search"></TextInput>
-        </View>
-      </View>
-
-      <View style={{ flex: 4, backgroundColor: '#fff' }}>
         <View>
-          <View
-            style={{
-              flexDirection: 'row',
-              position: 'relative',
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                margin: 'auto',
-                position: 'relative',
-                top: -50,
-                alignItems: 'center',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.5,
-                shadowRadius: 4,
-                elevation: 4,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  padding: 16,
-                  borderRadius: 50,
-                  alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Image
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                  source={require('../../assets/checkrate.png')}
-                />
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#000',
-                  }}
-                >
-                  Hoan tien
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={{
-                  padding: 16,
-                  borderRadius: 50,
-                  alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Image
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                  source={require('../../assets/pickup.png')}
-                />
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#000',
-                  }}
-                >
-                  Bao cao
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={{
-                  padding: 16,
-                  borderRadius: 50,
-                  alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Image
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                  source={require('../../assets/dropoff.png')}
-                />
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#000',
-                  }}
-                >
-                  Doanh thu
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={{
-                  padding: 16,
-                  borderRadius: 50,
-                  alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('ReviewProductScreen')}
-              >
-                <Image
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                  source={require('../../assets/history.png')}
-                />
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#000',
-                  }}
-                >
-                  Doanh thu
-                </Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Shipment</Text>
+            <Text style={styles.viewAll}>View All</Text>
           </View>
+          <View style={styles.shipmentCard}>
+          <Text style={styles.shipmentId}>#MKZ8WT8762KCS47</Text>
+          <Text style={styles.shipmentStatus}>Delivered - 10:00:00</Text>
+          <TouchableOpacity style={styles.acceptButton}>
+            <Text style={styles.acceptButtonText}>Nhận đơn</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.shipmentCard}>
+          <Text style={styles.shipmentId}>#HWDSF776567DS</Text>
+          <Text style={styles.shipmentStatus}>Delivered - 10:00:00</Text>
+          <TouchableOpacity style={styles.acceptButton}>
+            <Text style={styles.acceptButtonText}>Nhận đơn</Text>
+          </TouchableOpacity>
         </View>
 
-        <ScrollView style={{ padding: 20 }}>
-          <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={{ fontWeight: 700 }}>Dang van chuyen</Text>
-            </View>
-
-            <View>
-              <View
-                style={{
-                  padding: 10,
-                  backgroundColor: '#fff',
-                  borderRadius: 10,
-                  marginHorizontal: 2,
-                  marginBottom: 10,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 4,
-                  elevation: 4,
-                  marginTop: 5,
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                  onPress={() => navigation.navigate('ShippingDetailScreen')}
-                >
-                  <Image
-                    style={{ width: 50, height: 50, borderRadius: 50 }}
-                    source={require('../../assets/new2.png')}
-                  />
-
-                  <View>
-                    <Text>#HWDSF776567DS</Text>
-                    <Text>On the way &#183; 00/00/0000</Text>
-                  </View>
-
-                  <View
-                    style={{
-                      backgroundColor: '#22D1EE',
-                      padding: 4,
-                      borderRadius: 8,
-                      maxWidth: 80,
-                    }}
-                  >
-                    <Text style={{ color: '#fff', textAlign: 'center' }}>
-                      Dang giao hang
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={{ fontWeight: 700 }}>Don hang cho giao</Text>
-              <Text style={{ fontWeight: 700, color: '#2490A9' }}>
-                View all
-              </Text>
-            </View>
-
-            <View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: 10,
-                  backgroundColor: '#fff',
-                  borderRadius: 10,
-                  marginHorizontal: 2,
-                  marginBottom: 10,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 4,
-                  elevation: 4,
-                  marginTop: 5,
-                }}
-              >
-                <Image
-                  style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../../assets/new2.png')}
-                />
-
-                <View>
-                  <Text>Kiem tra don hang thanh cong</Text>
-                  <Text>On the way &#183; 00/00/0000</Text>
-                </View>
-
-                <View>
-                  <Text>▶</Text>
-                </View>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: 10,
-                  backgroundColor: '#fff',
-                  borderRadius: 10,
-                  marginHorizontal: 2,
-                  marginBottom: 10,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 4,
-                  elevation: 4,
-                  marginTop: 5,
-                }}
-              >
-                <Image
-                  style={{ width: 50, height: 50, borderRadius: 50 }}
-                  source={require('../../assets/new2.png')}
-                />
-
-                <View>
-                  <Text>Kiem tra don hang thanh cong</Text>
-                  <Text>On the way &#183; 00/00/0000</Text>
-                </View>
-
-                <View>
-                  <Text>▶</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  header: {
+    backgroundColor: "#3669C9",
+    padding: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    position: "relative",
+    height: 250,
+  },
+  userInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  userDetails: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
+  userName: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+    fontSize: 16,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  userAddress: {
+    color: "#fff",
+    fontSize: 14,
+  },
+  notification: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  
+  notificationIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#3669C9",
+  },
+  
+  notificationBadge: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "#FF5E5E", // Màu đỏ của thông báo
+    color: "#fff",
+    width: 18, // Điều chỉnh kích thước
+    height: 18,
+    borderRadius: 9, // Bo tròn
+    textAlign: "center",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  searchBox: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginTop: 50,
+    alignItems: "center",
+    elevation: 2, // Tạo bóng để nổi bật
+  },
+  searchIcon: {
+    color: "#2490A9",
+    fontSize: 20,
+  },
+  searchInput: {
+    marginLeft: 10,
+    fontSize: 15,
+    flex: 1,
+    height: 15,
+  },
+  
+  quickNavContainer: {
+    marginTop: -40,
+    paddingHorizontal: 20,
+  },
+  quickNav: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  quickNavItem: {
+    alignItems: "center",
+  },
+  quickNavIcon: {
+    width: 24,
+    height: 24,
+  },
+  quickNavText: {
+    marginTop: 5,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#000",
+  },
+  shipments: {
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  viewAll: {
+    color: "#2490A9",
+    fontSize: 14,
+  },
+  shipmentCard: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  
+  shipmentId: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  
+  shipmentStatus: {
+    color: "#666",
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  
+  acceptButton: {
+    marginTop: 10,
+    backgroundColor: "#3669C9",
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  
+  acceptButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  
+  shipmentRoute: {
+    marginTop: 5,
+    fontSize: 12,
+    color: "#333",
+  },
+  progressBar: {
+    height: 5,
+    backgroundColor: "#ddd",
+    borderRadius: 3,
+    marginTop: 10,
+  },
+  progress: {
+    width: "50%",
+    height: "100%",
+    backgroundColor: "#3669C9",
+    borderRadius: 3,
+  },
+});
 
 export default ShipperHomeScreen;

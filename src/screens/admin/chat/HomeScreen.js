@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
-import { BASE_URL } from '../../api/config_onlyURL';
+import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
 
@@ -15,7 +15,7 @@ const HomeAdminScreen = ({ navigation }) => {
     const fetchProducts = async () => {
         try {
             setIsLoading(true);
-            const apiUrl = `${BASE_URL}api/chat/messages/received?receiver=admin@gmail.com`;
+            const apiUrl = `${BASE_URL}auth/messages/received?receiver=admin@gmail.com`;
             const response = await axios.get(apiUrl); // Dùng async/await thay cho .then
             const fetchedUsers = response.data; // Đổi tên biến cho rõ ràng
             setUsers(fetchedUsers); // Cập nhật danh sách người dùng
