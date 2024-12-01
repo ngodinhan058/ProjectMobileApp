@@ -59,7 +59,7 @@ function AddToCartScreen({ route, navigation }) {
 
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true },
-    { label: 'Ví Mega (Đang cập nhập)', icon: require('../assets/star.png'), use: false },
+    { label: 'VnPay', icon: require('../assets/star.png'), use: true },
     { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false },
   ];
 
@@ -420,38 +420,52 @@ function AddToCartScreen({ route, navigation }) {
   const finalTotal = total
     ? (discount ? total - discount + shippingFee : total - discountShip + shippingFee)
     : 0;
-  const handleOrder = async () => {
-    setIsLoading(true);
-    const apiUrl = `${BASE_URL}order/user`;
 
-
-    const orderData = {
-      user: userInfo?.userId,
-      orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
-      orderNote: orderNote,
-      orderPayment: selectedPaymentMethod === 'Tiền mặt' ? 1 : 0,
-      totalPrice: finalTotal,
-    };
-    // console.log(orderData);
-
-    try {
-      // Make the API call to place the order
-      const response = await axios.post(apiUrl, orderData);
-
-      // Handle the response
-      if (response.status === 200 || response.status === 201) {
-        Alert.alert('Success', 'Order placed successfully!');
-        navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
-      } else {
-        Alert.alert('Error', 'Failed to place the order. Please try again.');
+    const handleOrder = async () => {
+      setIsLoading(true);
+      const apiUrl = `${BASE_URL}order/user`;
+      const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
+    
+      const orderData = {
+        user: userInfo?.userId,
+        orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
+        orderNote: orderNote,
+        orderPayment: selectedPaymentMethod === 'Tiền mặt' ? 1 : 0,
+        totalPrice: finalTotal,
+      };
+    
+      try {
+        // Nếu chọn phương thức thanh toán không phải tiền mặt
+        if (selectedPaymentMethod !== 'Tiền mặt') {
+          // Gọi API thanh toán VNPay
+          const paymentResponse = await axios.get(apiPaymentUrl);
+    
+          // Kiểm tra kết quả thanh toán
+          if (paymentResponse.status !== 200 || !paymentResponse.data.success) {
+            Alert.alert('Error', 'Thanh toán không thành công. Vui lòng thử lại.');
+            setIsLoading(false);
+            return;
+          }
+        }
+    
+        // Gọi API đặt hàng
+        const response = await axios.post(apiUrl, orderData);
+    
+        // Xử lý kết quả đặt hàng
+        if (response.status === 200 || response.status === 201) {
+          Alert.alert('Success', 'Order placed successfully!');
+          navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+        } else {
+          Alert.alert('Error', 'Failed to place the order. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error during payment or order:', error);
+        Alert.alert('Error', 'An error occurred. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error placing order:', error);
-      Alert.alert('Error', 'Failed to place the order. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView style={{ padding: 20 }}>
