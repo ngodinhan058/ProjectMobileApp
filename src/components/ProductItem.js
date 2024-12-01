@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Modal, TouchableOpacity, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,10 +7,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 import AlertComponent from '../components/AlertComponent';
+import { useFocusEffect } from '@react-navigation/native';
 
-const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, sizeName, isLoading, setAlertType,
-  setAlertVisible,
-  setTitleAlert, }) => {
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, sizeName, isLoading, setAlertType, setAlertVisible, setTitleAlert, onActionComplete}) => {
   const [liked, setLiked] = useState();
   const [isBuyModalVisible, setIsBuyModalVisible] = useState(false);
   const [isUnLikeModalVisible, setIsUnLikeModalVisible] = useState(false);
@@ -168,7 +167,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
           console.log("Xoá Yêu Thích Thành Công", response.data.message);
 
           closeModalUnLike();
-          fetchData();
         } else {
           // console.error("Không thể xoá:", response.data.message || "Lỗi không xác định");
           setAlertType('error')
@@ -187,10 +185,11 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
     await Promise.all(deleteRequests);
 
     // Xóa các size đã chọn khỏi trạng thái
+    fetchData();
     setSelectedSizes([]);
     setAlertType('success');
     setAlertVisible(true);
-    setTitleAlert('Tất cả các màu đã chọn đã được xoá khỏi yêu thích.');
+    setTitleAlert('Xoá Yêu Thích Thành Công');
   };
   const DeleteOneWishListUser = async () => {
     const cartItemData = {
@@ -200,10 +199,10 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       }
     };
     try {
-      const response = await axios.delete(`${BASE_URL}cart/${userInfo.wishListId}`, { data: cartItemData });
+      const response = await axios.delete(`${BASE_URL}cart/${userInfo?.wishListId}`, { data: cartItemData });
 
       if (response.status === 200) {
-        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+        // console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
         setAlertType('success')
         setAlertVisible(true)
         setTitleAlert('Xoá Yêu Thích Thành Công')
@@ -220,6 +219,8 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       setTitleAlert('Lỗi mạng hoặc lỗi không xác định')
       // console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
     }
+    onActionComplete?.();
+    fetchData();
   };
   const fetchData = async () => {
     // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
@@ -229,11 +230,13 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       const userData = response.data.data.cartItem;
 
       setCartDataUser(userData);
-      const isLiked = userData.some((item) => item.productId === id);
+      const isLiked = userData.some((item) => item.productId === id );
+      console.log(isLiked);
+      
       setLiked(isLiked); // Cập nhật trạng thái liked
       // Tìm các size đã chọn từ danh sách cartDataUser
       const matchingSizes = userData
-        .filter((item) => item.productId === id) // Chỉ giữ lại sản phẩm có id khớp
+        .filter((item) => item.productId === id) // Chỉ giữ lại sản phẩm có id khớp size
         .map((item) => item.productSize); // Lấy tên size
 
       setSelectedSizes(matchingSizes); // Cập nhật trạng thái các size được chọn
@@ -241,9 +244,15 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       // console.log('Error fetching data:', error);
     }
   };
-  useEffect(() => {
-    fetchData();
-  }, [userInfo?.userId]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [userInfo?.userId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [userInfo?.userId])
+  );
+
 
   return (
     <View style={styles.container}>
@@ -516,7 +525,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
           </View>
         </View>
       </Modal>
-
     </View>
   );
 };

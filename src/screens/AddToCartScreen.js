@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -27,7 +28,8 @@ import AlertComponent from '../components/AlertComponent';
 function AddToCartScreen({ route, navigation }) {
   const layout = useWindowDimensions(); // Lấy thông tin kích thước màn hình
 
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Tiền mặt');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(1);
+  const [selectedPaymentName, setSelectedPaymentName] = useState('Tiền mặt');
   const [selectedPaymentIcon, setSelectedPaymentIcon] = useState(require('../assets/wallet.png'));
   const [selectedPaymentUse, setSelectedPaymentUse] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -58,26 +60,27 @@ function AddToCartScreen({ route, navigation }) {
   const [total, setTotal] = useState();
 
   const paymentOptions = [
-    { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true },
-    { label: 'VnPay', icon: require('../assets/star.png'), use: true },
-    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false },
+    { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
+    { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
+    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 2 },
   ];
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
-  const handleSelectPayment = (method, methodIcon, use) => {
-
-    if (use == false) {
-      Alert.alert("Thông Báo", "Phương Thức Đang Cập Nhập")
+  const handleSelectPayment = (method, methodIcon, use, value) => {
+    if (!use) {
+      Alert.alert("Thông Báo", "Phương Thức Đang Cập Nhập");
     } else {
-      setSelectedPaymentMethod(method)
-      setSelectedPaymentIcon(methodIcon)
+      // Xác định giá trị của selectedPaymentMethod
+      setSelectedPaymentName(method)
+      setSelectedPaymentMethod(value);
+      setSelectedPaymentIcon(methodIcon);
       toggleModal();
-
     }
   };
+
   const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -124,10 +127,10 @@ function AddToCartScreen({ route, navigation }) {
         // console.error('Error fetching order details:', error);
       }
     };
-  
+
     fetchCartDetails(); // Gọi hàm async
   }, [idCart]);
-  
+
 
 
 
@@ -291,15 +294,12 @@ function AddToCartScreen({ route, navigation }) {
 
 
   const fetchCouponsByType = async (type, setCouponsState) => {
-    setIsLoading(true);
     const apiUrl = `${BASE_URL}coupons/type/${type}`;
     try {
       const response = await axios.get(apiUrl);
       setCouponsState((prevState) => [...prevState, ...(response.data.data || [])]);
-      setIsLoading(false);
     } catch (error) {
       console.error(`Error fetching coupons of type ${type}:`, error);
-      setIsLoading(false);
     }
   };
   // Usage
@@ -421,37 +421,45 @@ function AddToCartScreen({ route, navigation }) {
     ? (discount ? total - discount + shippingFee : total - discountShip + shippingFee)
     : 0;
 
-    const handleOrder = async () => {
-      setIsLoading(true);
-      const apiUrl = `${BASE_URL}order/user`;
-      const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
-    
-      const orderData = {
-        user: userInfo?.userId,
-        orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
-        orderNote: orderNote,
-        orderPayment: selectedPaymentMethod === 'Tiền mặt' ? 1 : 0,
-        totalPrice: finalTotal,
-      };
-    
+  const handleOrder = async () => {
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}order/user`;
+    const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
+
+    const orderData = {
+      user: userInfo?.userId,
+      orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
+      orderNote: orderNote,
+      orderPayment: selectedPaymentMethod, // 1 = Tiền mặt, 0 = VNPay
+      totalPrice: finalTotal,
+    };
+
+
+    if (selectedPaymentMethod === 0) {
       try {
-        // Nếu chọn phương thức thanh toán không phải tiền mặt
-        if (selectedPaymentMethod !== 'Tiền mặt') {
-          // Gọi API thanh toán VNPay
-          const paymentResponse = await axios.get(apiPaymentUrl);
-    
-          // Kiểm tra kết quả thanh toán
-          if (paymentResponse.status !== 200 || !paymentResponse.data.success) {
-            Alert.alert('Error', 'Thanh toán không thành công. Vui lòng thử lại.');
-            setIsLoading(false);
-            return;
-          }
+        const paymentResponse = await axios.get(apiPaymentUrl);
+
+        if (paymentResponse.status !== 200 || paymentResponse.data.code !== 200) {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
+          setIsLoading(false);
+          return;
         }
-    
+        const paymentUrl = paymentResponse.data.data.paymentUrl;
+
+        // Điều hướng đến màn hình thanh toán
+        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData });
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    else {
+      try {
         // Gọi API đặt hàng
         const response = await axios.post(apiUrl, orderData);
-    
-        // Xử lý kết quả đặt hàng
+
         if (response.status === 200 || response.status === 201) {
           Alert.alert('Success', 'Order placed successfully!');
           navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
@@ -464,8 +472,10 @@ function AddToCartScreen({ route, navigation }) {
       } finally {
         setIsLoading(false);
       }
-    };
-    
+    }
+
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView style={{ padding: 20 }}>
@@ -618,8 +628,8 @@ function AddToCartScreen({ route, navigation }) {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 10 }}>
           {/* Phương thức thanh toán đã chọn */}
           <TouchableOpacity style={styles.paymentMethod} onPress={toggleModal}>
-            <Image source={selectedPaymentIcon} style={styles.icon} />
-            <Text style={styles.selectedPaymentText}>{selectedPaymentMethod}</Text>
+            <Image source={selectedPaymentIcon} style={{ width: 24, height: 24, marginRight: 10,}} />
+            <Text style={styles.selectedPaymentText}>{selectedPaymentName}</Text>
             <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
           <View style={{ justifyContent: 'center' }}>
@@ -657,7 +667,7 @@ function AddToCartScreen({ route, navigation }) {
                   <TouchableOpacity
                     key={index}
                     style={styles.option}
-                    onPress={() => handleSelectPayment(option.label, option.icon, option.use)}
+                    onPress={() => handleSelectPayment(option.label, option.icon, option.use, option.value)}
                   >
                     <Image source={option.icon} style={styles.optionIcon} />
                     <Text style={styles.optionLabel}>{option.label}</Text>
@@ -719,11 +729,11 @@ function AddToCartScreen({ route, navigation }) {
         onClose={() => setIsAlertVisible(false)}
       />
 
-      {/* {isLoading && (
+      {isLoading && (
         <View style={styles.overlay}>
           <ActivityIndicator size="large" color="#3669c9" />
         </View>
-      )} */}
+      )}
     </View>
   );
 }

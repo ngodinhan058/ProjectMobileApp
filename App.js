@@ -49,6 +49,10 @@ import VerificationForgotScreen from './src/screens/VerificationForgotScreen';
 import VerificationScreen from './src/screens/VerificationScreen';
 import WishListScreen from './src/screens/WishListScreen';
 
+{
+  /* Payment */
+}
+import PaymentWebViewScreen from './src/screens/payment/PaymentWebViewScreen';
 
 {
   /* Admin */
@@ -329,6 +333,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     {
       name: 'RejectOrderConfirmationScreen',
       component: RejectOrderConfirmationScreen,
+      showFooter: false,
+    },
+    {
+      name: 'PaymentWebViewScreen',
+      component: PaymentWebViewScreen,
       showFooter: false,
     },
   ];

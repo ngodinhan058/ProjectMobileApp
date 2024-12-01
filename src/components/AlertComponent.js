@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     //     color: '#fff',
     // },
     alertDescription: {
+        flexWrap: 'wrap',
         fontSize: 14,
         color: '#fff',
         fontWeight: '500',

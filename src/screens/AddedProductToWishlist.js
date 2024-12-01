@@ -14,7 +14,7 @@ import {
   useWindowDimensions,
   useAnimatedValue,
   Alert,
-  Animated,
+  ActivityIndicator,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -32,6 +32,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [productRelate, setProductRelate] = useState([]); // Dữ liệu sản phẩm
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const [image, setImage] = useState(); // Dữ liệu sản phẩm
+  const [size, setSize] = useState(); // Đặt size mặc định
+  
   const [selectedSize, setSelectedSize] = useState(); // Đặt size mặc định
   const [productPriceSale, setProductPriceSale] = useState(); // Đặt size mặc định
   const { id } = route.params;
@@ -60,6 +62,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   // Hàm lấy dữ liệu sản phẩm
   const fetchProductData = async (id) => {
+    setLoading(true);
     const productsApiUrl = `${BASE_URL}product/${id}`; // API lấy thông tin sản phẩm theo ID
     try {
       const response = await axios.get(productsApiUrl, {
@@ -98,11 +101,13 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       const categoryId = productsData?.categories?.[0]?.categoryId;
       const productPriceSale = productsData?.productPriceSale;
       const image = productsData.productImages[0].productImagePath;
+      const size = productsData.productSizes;
       const productRelateData = await fetchRelatedProducts(categoryId);
 
       setProductsState(productsData);
       setProductRelate(productRelateData);
       setImage(image);
+      setSize(size);
       setProductPriceSale(productPriceSale)
       setLoading(false);
 
@@ -305,24 +310,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
     }
-    // try {
-    //   // Gửi yêu cầu POST đến API để thêm sản phẩm vào giỏ hàng
-    //   const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
-    //   // console.log(response);
-
-    //   if (response.status === 200) {
-    //     console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
-    //     closeModalBuy();
-    //     navigation.navigate('AddToCartScreen', {
-    //       alertVisible: true,
-    //       alertType: 'success',
-    //     })
-    //   } else {
-    //     console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
-    //   }
-    // } catch (error) {
-    //   console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
-    // }
   };
 
   const handleBuyNowUser = async () => {
@@ -457,6 +444,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const closeModalUnLike = () => setIsUnLikeModalVisible(false);
 
   const handleWishListUser = async () => {
+    console.log(size);
+    
     const selectedProductSizes = size.filter((size) =>
       selectedSizes.includes(size.productSizeName)
     );
@@ -478,7 +467,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           sizeId: selectedProductSize.productSizeId,
         },
       };
-      console.log(cartItemData);
+      console.log("cartItemData",cartItemData);
 
       try {
         const response = await axios.put(
@@ -509,8 +498,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     }
 
     // Sau khi thêm tất cả, tải lại dữ liệu và đóng modal
-    fetchData();
-    closeModalBuy();
+    closeModalLike();
+    fetchWishList();
   };
 
   const DeleteWishListUser = async () => {
@@ -538,7 +527,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           console.log("Xoá Yêu Thích Thành Công", response.data.message);
 
           closeModalUnLike();
-          fetchData();
         } else {
           // console.error("Không thể xoá:", response.data.message || "Lỗi không xác định");
           setAlertTypeLike('error')
@@ -557,10 +545,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     await Promise.all(deleteRequests);
 
     // Xóa các size đã chọn khỏi trạng thái
+    fetchWishList();
+    closeModalUnLike();
     setSelectedSizes([]);
     setAlertTypeLike('success');
     setAlertVisibleLike(true);
-    setTitleAlert('Tất cả các màu đã chọn đã được xoá khỏi yêu thích.');
+    setTitleAlert('Xoá Yêu Thích Thành Công');
   };
 
 // Kết Thúc WishList
@@ -1534,12 +1524,23 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         visible={alertVisibleLike}
         onClose={() => setAlertVisibleLike(false)}
       />
+      {loading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+},
   content: {
     padding: 20,
     alignItems: "center",
