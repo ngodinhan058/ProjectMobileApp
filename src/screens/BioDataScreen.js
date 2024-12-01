@@ -19,18 +19,23 @@ import axios from 'axios';
 import { BASE_URL } from './api/config';
 import IconI from 'react-native-vector-icons/Ionicons';
 import { ScrollView } from 'react-native-gesture-handler';
+import Up_Image from '../components/Up_Image';
 
 const BiodataScreen = ({ navigation, route }) => {
-  const { userData } = route.params
-  console.log("userData", userData);
+  const { userData } = route.params;
 
   const [userPhone, setUserPhone] = useState(userData.userPhone);
-  const [userBirthday, setUserBirthday] = useState(new Date(userData.userBirthday));
+  const [userBirthday, setUserBirthday] = useState(
+    new Date(userData.userBirthday)
+  );
   const [userLastName, setUserLastName] = useState(userData.userLastName);
   const [userFirstName, setUserFirstName] = useState(userData.userFirstName);
-  const [userImagePath, setUserImagePath] = useState('https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg');
+  const [userImagePath, setUserImagePath] = useState(
+    'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg'
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState({}); // Để lưu thông tin user (bao gồm token)
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -55,25 +60,54 @@ const BiodataScreen = ({ navigation, route }) => {
   };
 
   const handleUpdateProfile = async () => {
-    const formattedDate = userBirthday.toISOString().split('T')[0] + ' 00:00:00';
+    const formData = new FormData();
+
+    const formattedDate =
+      userBirthday.toISOString().split('T')[0] + ' 00:00:00';
 
     const updatedData = {
       userPhone,
       userBirthday: formattedDate,
       userLastName,
       userFirstName,
-      userImagePath: userImagePath || 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg', // Sử dụng default nếu không cập nhật
+      userImagePath:
+        userImagePath ||
+        'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg', // Sử dụng default nếu không cập nhật
     };
+
+    const fileType = selectedImage.split('.').pop();
+
+    const newFile = {
+      uri: selectedImage,
+      name: `user-image.${fileType}`,
+      type: `image/${fileType}`,
+    };
+
+    formData.append('image', newFile);
+
+    const params = {
+      request: {
+        userPhone: '+841234567890',
+        userBirthday: '1990-01-01 00:00:00',
+        userImagePath: '/images/profile.jpg',
+        userPasswordLevel2: '123456',
+        userLastName: 'Admin',
+        userFirstName: '11',
+        userWrongPassword: 1111,
+      },
+    };
+    formData.append('params', JSON.stringify(params));
 
     if (!user.token) {
       Alert.alert('Error', 'User token is missing. Please log in again.');
       return;
     }
+    console.log(user.token);
 
     try {
       const response = await axios.put(
         `${BASE_URL}auth/customer/myInfo`,
-        updatedData,
+        formData,
         {
           headers: {
             Authorization: `Bearer ${user.token}`, // Token được lấy từ AsyncStorage
@@ -102,17 +136,21 @@ const BiodataScreen = ({ navigation, route }) => {
 
       {/* Avatar */}
       <View style={styles.avatarContainer}>
-        <Image
-          style={styles.avatar}
-          source={{
-            uri: userImagePath
-          }} />
+        <Up_Image onImagesSelected={setSelectedImage} />
+
         <Text style={styles.nameText}>{user.username || 'Tên người dùng'}</Text>
       </View>
-      <ScrollView style={{ flex: 1, marginTop: 30, marginHorizontal: 2}}>
+
+      <ScrollView style={{ flex: 1, marginTop: 30, marginHorizontal: 2 }}>
         {/* First Name */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 20, }}>
-          <View style={{flex: 1}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            gap: 20,
+          }}
+        >
+          <View style={{ flex: 1 }}>
             <Text style={styles.textTitle}>Họ và Tên Đệm: </Text>
             <TextInput
               style={styles.input}
@@ -122,7 +160,7 @@ const BiodataScreen = ({ navigation, route }) => {
             />
           </View>
 
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             {/* Last Name */}
             <Text style={styles.textTitle}>Tên Của Bạn: </Text>
             <TextInput
@@ -132,7 +170,6 @@ const BiodataScreen = ({ navigation, route }) => {
               onChangeText={setUserLastName}
             />
           </View>
-
         </View>
 
         {/* Phone Number */}
@@ -151,7 +188,9 @@ const BiodataScreen = ({ navigation, route }) => {
           style={styles.input}
           onPress={() => setShowDatePicker(true)}
         >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          >
             <Text>
               {userBirthday
                 ? userBirthday.toISOString().split('T')[0]
@@ -159,7 +198,6 @@ const BiodataScreen = ({ navigation, route }) => {
             </Text>
             <IconI name="calendar-outline" size={22} color="#000" />
           </View>
-
         </TouchableOpacity>
 
         {showDatePicker && (
@@ -172,9 +210,11 @@ const BiodataScreen = ({ navigation, route }) => {
         )}
       </ScrollView>
 
-
       {/* Update Button */}
-      <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile}>
+      <TouchableOpacity
+        style={styles.updateButton}
+        onPress={handleUpdateProfile}
+      >
         <Text style={styles.updateButtonText}>Sửa Thông Tin Của Bạn</Text>
       </TouchableOpacity>
     </View>
