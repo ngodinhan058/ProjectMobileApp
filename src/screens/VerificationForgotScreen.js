@@ -58,13 +58,13 @@ const VerificationForgotScreen = ({ navigation, route }) => {
 
   const verifyOTP = async (otp) => {
     try {
-      console.log(`${BASE_URL}?email=${email}&otp=${otp}`);
+      console.log(`${BASE_URL}auth/verifyPass?email=${email}&otp=${otp}`);
 
       const response = await axios.post(
-        `${BASE_URL}auth/verify?email=${email}&otp=${otp}`
+        `${BASE_URL}auth/verifyPass?email=${email}&otp=${otp}`
       );
 
-      console.log(`${BASE_URL}?email=${email}&otp=${otp}`);
+      console.log(`${BASE_URL}auth/verifyPass?email=${email}&otp=${otp}`);
 
       const userData = response.data;
       //await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
@@ -83,7 +83,7 @@ const VerificationForgotScreen = ({ navigation, route }) => {
   const handleVerifyOTP = async (otp) => {
     try {
       const userData = await verifyOTP(otp); // Gọi API để kiểm tra
-      navigation.navigate('PasswordScreen', { userEmail: email });
+      navigation.navigate('UpdatePassScreen', { email });
     } catch (error) {
       Alert.alert(
         'Thất bại',

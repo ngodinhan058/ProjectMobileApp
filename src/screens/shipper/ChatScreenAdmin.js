@@ -11,6 +11,8 @@ import {
 import { Client as StompClient } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { BASE_URL } from '../api/config';
+import { SOCKET_URL} from '../api/config_onlyURL'
 
 const ChatScreen = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
@@ -26,7 +28,7 @@ const ChatScreen = ({ navigation, route }) => {
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          `http://192.168.219.16:8080/api/chat/messages?sender=admin@gmail.com&receiver=${email}`
+          `${BASE_URL}auth/messages?sender=admin@gmail.com&receiver=${email}`
         );
         const data = await response.json();
         const formattedMessages = data.map((msg) => ({
@@ -45,7 +47,7 @@ const ChatScreen = ({ navigation, route }) => {
 
   // Kết nối WebSocket
   useEffect(() => {
-    const socketUrl = 'http://192.168.219.16:8080/ws/chat';
+    const socketUrl = `${SOCKET_URL}/ws/chat`;
     const stompClient = new StompClient({
       brokerURL: socketUrl,
       connectHeaders: {},

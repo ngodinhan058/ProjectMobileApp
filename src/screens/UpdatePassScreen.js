@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import axios from 'axios';
+import { BASE_URL } from './api/config'; // Ensure this points to your API's base URL
 
-
-
-const UpdatePassScreen = ({ navigation }) => {
+const UpdatePassScreen = ({ navigation, route }) => {
   const [password, setPassword] = useState('');
   const [passwordAgain, setPasswordAgain] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 
+  const { email } = route.params; // Get email passed from the previous screen
+
   useEffect(() => {
-    // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
+    // Enable the button only if both passwords are at least 8 characters long
     if (password.length >= 8 && passwordAgain.length >= 8) {
       setIsButtonEnabled(true);
     } else {
@@ -20,93 +22,97 @@ const UpdatePassScreen = ({ navigation }) => {
     }
   }, [password, passwordAgain]);
 
-//   // Hàm giả lập đăng nhập
-  const handleLogin = () => {
+  // Handle password reset by making an API call to the backend
+  const handlePasswordReset = async () => {
     if (password === passwordAgain) {
-      // Đăng nhập thành công
-      Alert.alert('Thành công', 'Thay đổi mật khẩu thành công!');
+      try {
+        const response = await axios.post(`${BASE_URL}auth/reset?email=${email}`, {
+          userPassword: password,
+          confirmPassword: passwordAgain,
+        });
+
+        // Show success alert if the password is updated
+        Alert.alert('Thành công', 'Mật khẩu đã được cập nhật!');
+        navigation.navigate('LoginScreen'); // Navigate to the login screen
+      } catch (error) {
+        // Show error alert if there's an issue
+        Alert.alert('Thất bại', 'Đã có lỗi xảy ra, vui lòng thử lại.');
+        console.error(error);
+      }
     } else {
-      // Đăng nhập thất bại
-      Alert.alert('Thất bại', 'Mật khẩu không trùng. Vui lòng thử lại.');
+      // Alert if the passwords do not match
+      Alert.alert('Thất bại', 'Mật khẩu không trùng khớp, vui lòng thử lại.');
     }
   };
 
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
-      enableOnAndroid={true}  // Kích hoạt hỗ trợ trên Android
-      extraHeight={150}  // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-200}  // Tùy chỉnh thêm khoảng cách cuộn
-      keyboardShouldPersistTaps="handled"  // Xử lý khi nhấn ngoài input
+      enableOnAndroid={true}
+      extraHeight={150}
+      extraScrollHeight={-200}
+      keyboardShouldPersistTaps="handled"
     >
-    <View style={{flex:1}}>
-      {/* Nút quay lại */}
-      <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="angle-left" size={35} color="#000" />
-      </Pressable>
-
-      {/* Tiêu đề */}
-      <Text style={styles.title}>Cập Nhập Mật Khẩu</Text>
-      <Text style={styles.subtitle}>Hoàn thành dữ liệu cuối cùng sau đây để vào ứng dụng Mega Mall</Text>
-
-      {/* Input Password */}
-      <Text style={styles.label}>Mật Khẩu</Text>
-      <View style={styles.passwordContainer}>
-        <TextInput
-          style={styles.inputPassword}
-          placeholder="Mật Khẩu"
-          placeholderTextColor="#C4C4C4"
-          secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <Pressable
-          style={styles.eyeButton}
-          onPress={() => setShowPassword(!showPassword)}
-        >
-          <Icon name={showPassword ? "eye" : "eye-slash"} size={20} color="#C4C4C4" />
+      <View style={{ flex: 1 }}>
+        {/* Back Button */}
+        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
-      </View>
-      <Text style={{color: '#C4C4C4'}}><Icon name="info-circle" size={15} color="#C4C4C4" /> Mật khẩu phải có 8 ký tự trở lên</Text>
 
-      {/* Input Again Password */}
-      <Text style={styles.label}>Nhập Lại Mật Khẩu</Text>
-      <View style={styles.passwordContainer}>
-        <TextInput
-          style={styles.inputPassword}
-          placeholder="Mật Khẩu"
-          placeholderTextColor="#C4C4C4"
-          secureTextEntry={!showPassword}
-          value={passwordAgain}
-          onChangeText={setPasswordAgain}
-        />
-        <Pressable
-          style={styles.eyeButton}
-          onPress={() => setShowPassword(!showPassword)}
-        >
-          <Icon name={showPassword ? "eye" : "eye-slash"} size={20} color="#C4C4C4" />
-        </Pressable>
-      </View>
+        {/* Title */}
+        <Text style={styles.title}>Cập Nhật Mật Khẩu</Text>
+        <Text style={styles.subtitle}>Hoàn thành dữ liệu cuối cùng sau đây để vào ứng dụng Mega Mall</Text>
 
-      {/* Nút Sign In và Cancel */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.signInButton,
-            { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
-          ]}
-          disabled={!isButtonEnabled}
-          onPress={handleLogin} // Gọi hàm đăng nhập khi nhấn nút
-        >
-          <Text style={styles.signInText}>Đăng Nhập</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton}>
-          <Text style={styles.cancelText} onPress={() => navigation.goBack()}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Password Input */}
+        <Text style={styles.label}>Mật Khẩu</Text>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.inputPassword}
+            placeholder="Mật Khẩu"
+            placeholderTextColor="#C4C4C4"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <Pressable
+            style={styles.eyeButton}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Icon name={showPassword ? "eye" : "eye-slash"} size={20} color="#C4C4C4" />
+          </Pressable>
+        </View>
+        <Text style={{ color: '#C4C4C4' }}><Icon name="info-circle" size={15} color="#C4C4C4" /> Mật khẩu phải có 8 ký tự trở lên</Text>
 
-      
-    </View>
+        {/* Confirm Password Input */}
+        <Text style={styles.label}>Nhập Lại Mật Khẩu</Text>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.inputPassword}
+            placeholder="Mật Khẩu"
+            placeholderTextColor="#C4C4C4"
+            secureTextEntry={!showPassword}
+            value={passwordAgain}
+            onChangeText={setPasswordAgain}
+          />
+          <Pressable
+            style={styles.eyeButton}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Icon name={showPassword ? "eye" : "eye-slash"} size={20} color="#C4C4C4" />
+          </Pressable>
+        </View>
+
+        {/* Sign In Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.signInButton, { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' }]}
+            disabled={!isButtonEnabled}
+            onPress={handlePasswordReset} // Call API to reset the password
+          >
+            <Text style={styles.signInText}>Cập Nhật Mật Khẩu</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </KeyboardAwareScrollView>
   );
 };

@@ -21,27 +21,21 @@ const ResetPassScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Điều kiện để thay đổi màu nút: Email không rỗng và password trên 8 ký tự
-    if (email.trim() !== '') {
-      setIsButtonEnabled(true);
-    } else {
-      setIsButtonEnabled(false);
-    }
+    // Kiểm tra email để kích hoạt nút
+    setIsButtonEnabled(email.trim() !== '');
   }, [email]);
 
   const enterEmail = async (email) => {
     setIsLoading(true);
-
     try {
-      console.log({ userEmail: email });
       const response = await axios.post(
         `${BASE_URL}auth/forgot?email=${email}`
       );
-
-      const userData = response.data;
-      return userData;
+      return response.data;
     } catch (error) {
-      throw error; // Ném lỗi để có thể hiển thị thông báo
+      console.error(error.response ? error.response.data : error.message);
+      Alert.alert('Thất bại', 'Không thể gửi email xác nhận.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -49,47 +43,43 @@ const ResetPassScreen = ({ navigation }) => {
 
   const handleReset = async () => {
     try {
-      const userData = await enterEmail(email); // Gọi API để kiểm tra
-      navigation.navigate('VerificationForgotScreen', { userEmail: email });
+      await enterEmail(email);
+      navigation.navigate('VerificationForgotScreen', { email }); // Truyền email đúng key
     } catch (error) {
-      //Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
+      // Báo lỗi nếu không gửi được email
+      Alert.alert('Thất bại', 'Không thể gửi email xác nhận.');
     }
   };
+  
 
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
-      enableOnAndroid={true} // Kích hoạt hỗ trợ trên Android
-      extraHeight={150} // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-280} // Tùy chỉnh thêm khoảng cách cuộn
-      keyboardShouldPersistTaps="handled" // Xử lý khi nhấn ngoài input
+      enableOnAndroid={true}
+      extraHeight={150}
+      extraScrollHeight={-280}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={{ flex: 1 }}>
-        {/* Nút quay lại */}
-        <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="angle-left" size={35} color="#000" />
         </Pressable>
 
-        {/* Tiêu đề */}
         <Text style={styles.title}>Quên Mật Khẩu</Text>
         <Text style={styles.titleBold}>Mega Mall</Text>
         <Text style={styles.subtitle}>
-          Nhập email/ Số điện thoại để lấy mã xác nhận
+          Nhập email để lấy mã xác nhận
         </Text>
-        {/* Input email/ Số điện thoại */}
-        <Text style={styles.label}>Email/ Số điện thoại</Text>
+
+        <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nhập email/ Số điện thoại"
+          placeholder="Nhập email"
           placeholderTextColor="#C4C4C4"
           value={email}
           onChangeText={setEmail}
         />
 
-        {/* Nút Sign In và Cancel */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[
@@ -97,7 +87,7 @@ const ResetPassScreen = ({ navigation }) => {
               { backgroundColor: isButtonEnabled ? '#3669c9' : '#E0E0E0' },
             ]}
             disabled={!isButtonEnabled}
-            onPress={handleReset} // Gọi hàm đăng nhập khi nhấn nút
+            onPress={handleReset}
           >
             <Text style={styles.signInText}>Tiếp tục</Text>
           </TouchableOpacity>
