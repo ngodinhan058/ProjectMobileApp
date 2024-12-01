@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -14,50 +14,37 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import IconI from 'react-native-vector-icons/Ionicons';
 import ProductItem from '../components/ProductItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CommonActions } from '@react-navigation/native';
+import {
+  CommonActions,
+  useFocusEffect,
+  useIsFocused,
+} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-
-const ProfileScreen = ({ navigation }) => {
-  // const [user, setUser] = useState({});
-
-  // useEffect(() => {
-  //   const loadUser = async () => {
-  //     try {
-  //       const savedCart = await AsyncStorage.getItem('userData');
-
-  //       if (savedCart) {
-  //         const { username, token } = JSON.parse(savedCart);
-  //         setUser({ username, token });
-  //       }
-  //     } catch (error) {
-  //       console.error('Error loading cart from AsyncStorage:', error);
-  //     }
-  //   };
-
-  //   loadUser();
-  // }, []);
+const ProfileScreen = ({ navigation, route }) => {
   const [user, setUserInfo] = useState(null);
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        // Lấy dữ liệu từ AsyncStorage
-        const userInfoString = await AsyncStorage.getItem('userInfo');
+  const fetchUserInfo = async () => {
+    try {
+      // Lấy dữ liệu từ AsyncStorage
+      const userInfoString = await AsyncStorage.getItem('userInfo');
 
-        // Nếu có dữ liệu thì parse nó thành JSON
-        if (userInfoString) {
-          const userInfoData = JSON.parse(userInfoString);
-          setUserInfo(userInfoData); // Lưu vào state
-        }
-      } catch (error) {
-        console.error('Error fetching user info from AsyncStorage:', error);
+      // Nếu có dữ liệu thì parse nó thành JSON
+      if (userInfoString) {
+        const userInfoData = JSON.parse(userInfoString);
+        setUserInfo(userInfoData); // Lưu vào state
       }
-    };
+    } catch (error) {
+      console.error('Error fetching user info from AsyncStorage:', error);
+    }
+  };
 
+  const isFocused = useIsFocused();
+
+  useFocusEffect(() => {
     fetchUserInfo();
-  }, []);
-  console.log("user", user);
+  });
+  console.log('user', user);
 
   const handleLogout = async () => {
     try {
@@ -98,7 +85,6 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="angle-left" size={35} color="#000" />
           </Pressable>
           <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
-
         </View>
 
         {/* Header thông tin cá nhân */}
@@ -107,22 +93,27 @@ const ProfileScreen = ({ navigation }) => {
             <Image
               style={styles.avatar}
               source={{
-                uri: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
+                uri: user?.userImagePath
+                  ? user?.userImagePath
+                  : 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg?1704788682389',
               }} // URL hình ảnh đại diện
             />
             <View>
-              <Text style={styles.name}>{user?.userFirstName} {user?.userLastName}</Text>
+              <Text style={styles.name}>
+                {user?.userFirstName} {user?.userLastName}
+              </Text>
               <Text style={styles.email}>{user?.userEmail}</Text>
               <Text style={styles.balance}>0đ</Text>
             </View>
             <TouchableOpacity
               style={styles.editIcon}
-              onPress={() => navigation.navigate('BioDataScreen', {userData: user})}
+              onPress={() =>
+                navigation.navigate('BioDataScreen', { userData: user })
+              }
             >
               <Icon name="pencil" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
-
         </View>
         {/* <View style={styles.line}></View> */}
         <View style={styles.containerRow}>
@@ -133,14 +124,20 @@ const ProfileScreen = ({ navigation }) => {
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('MyOrderScreen')}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => navigation.navigate('MyOrderScreen')}
+          >
             <View style={styles.row}>
               <IconI name="clipboard-outline" size={22} color="#000" />
               <Text style={styles.textPro}>Đơn Hàng Của Tôi</Text>
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('CreateAddressScreen')}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => navigation.navigate('CreateAddressScreen')}
+          >
             <View style={styles.row}>
               <IconI name="location-outline" size={22} color="#000" />
               <Text style={styles.textPro}>Địa Chỉ</Text>
@@ -156,11 +153,16 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <View style={styles.containerRow}>
-          <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('ChatScreen', {
-            email: user?.userEmail,
-            userFirstName: user?.userFirstName,
-            userLastName: user?.userLastName,
-          })}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() =>
+              navigation.navigate('ChatScreen', {
+                email: user?.userEmail,
+                userFirstName: user?.userFirstName,
+                userLastName: user?.userLastName,
+              })
+            }
+          >
             <View style={styles.row}>
               <IconI name="chatbox-ellipses-outline" size={22} color="#000" />
               <Text style={styles.textPro}>Hỗ Trợ</Text>
@@ -174,10 +176,7 @@ const ProfileScreen = ({ navigation }) => {
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
-
         </View>
-
-
       </ScrollView>
 
       {/* <View style={{ position: 'relative' }}>
@@ -207,9 +206,7 @@ const ProfileScreen = ({ navigation }) => {
           <Ionicons name="chatbox-ellipses-outline" size={30} color="#fff" />
         </TouchableOpacity>
       </View> */}
-
     </>
-
   );
 };
 
@@ -316,7 +313,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 2,
     backgroundColor: '#EDEDED',
-    marginVertical: 20
+    marginVertical: 20,
   },
   suggestionsSection: {
     paddingVertical: 20,
