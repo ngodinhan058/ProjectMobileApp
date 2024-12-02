@@ -48,7 +48,7 @@ const Footer = React.memo(({ state, descriptors, navigation, isVisible }) => {
 
             if (result) {
               setUserData(result.data); // Lưu thông tin người dùng vào state
-              setUserImg(result.data.userImagePath)
+              setUserImg(result.data.userImagePath || "https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg")
               // Lưu thông tin người dùng vào AsyncStorage
               await AsyncStorage.setItem(
                 'userInfo',

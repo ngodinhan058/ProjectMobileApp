@@ -11,7 +11,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { ROLE_USER, ROLE_ADMIN ,ROLE_SHIPPER} from './src/constants/Role';
+import { ROLE_USER, ROLE_ADMIN, ROLE_SHIPPER } from './src/constants/Role';
 import Icon from "react-native-vector-icons/FontAwesome";
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -593,20 +593,74 @@ function CouponAdmin() {
   );
 }
 function AdminDrawerNavigator() {
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    const getItem = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        if (userData) {
+          // setUser(userData);
+          setUser(JSON.parse(userData));
+        }
+      } catch (error) {
+        console.error('Error loading user data from AsyncStorage:', error);
+      }
+    };
+    getItem();
+  }, []);
 
+  console.log("User roles:", user?.role);
+
+  const hasPermission = (role) => user?.role?.includes(role);
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
-      <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
-      <Drawer.Screen name="Người Dùng" component={UserAdmin} />
-      {/* <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} /> */}
-      <Drawer.Screen name="Màu" component={SizeAdmin} />
-      <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
-      <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
-      <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
-      <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
-      <Drawer.Screen name="Chat" component={ChatAdmin} />
+      {hasPermission("PERMISSION_PRODUCT") && (
+        <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+      )}
+      {hasPermission("PERMISSION_CATEGORIES") && (
+        <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
+      )}
+      {hasPermission("PERMISSION_USERS") && (
+        <Drawer.Screen name="Người Dùng" component={UserAdmin} />
+      )}
+      {hasPermission("PERMISSION_SHIPMENTS") && (
+        <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
+      )}
+      {hasPermission("PERMISSION_COLORS") && (
+        <Drawer.Screen name="Màu" component={SizeAdmin} />
+      )}
+      {hasPermission("PERMISSION_SUPPLIERS") && (
+        <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
+      )}
+      {hasPermission("PERMISSION_PERMISSIONS") && (
+        <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
+      )}
+      {hasPermission("PERMISSION_ROLES") && (
+        <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+      )}
+      {hasPermission("PERMISSION_COUPONS") && (
+        <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
+      )}
+      {hasPermission("PERMISSION_CHAT") && (
+        <Drawer.Screen name="Chat" component={ChatAdmin} />
+      )}
+      {hasPermission("PERMISSION_GETALL") && (
+        <>
+          <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+          <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
+          <Drawer.Screen name="Người Dùng" component={UserAdmin} />
+          <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
+          <Drawer.Screen name="Màu" component={SizeAdmin} />
+          <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
+          <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
+          <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+          <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
+          <Drawer.Screen name="Chat" component={ChatAdmin} />
+          <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
+        </>
+      )}
       <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
+      <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{headerShown: false}}/>
     </Drawer.Navigator>
   );
 }
@@ -671,6 +725,7 @@ function ShipperDrawerNavigator() {
         drawerActiveTintColor: "#3669C9",
         drawerInactiveTintColor: "#333",
         drawerActiveBackgroundColor: "#e1efff",
+        
       }}
     >
       <Drawer.Screen
@@ -844,10 +899,8 @@ export default function App() {
       if (savedCart) {
         const { username, token } = JSON.parse(savedCart);
         const decoded = jwtDecode(token);
-
-        setUser({ username, token, role: decoded.scope.split(' ') });        
-        // setUser({ username, token, role: decoded.scope.split(' ')[0] });
-
+        setUser({ username, token, role: decoded.scope.split(' ') });
+        // setUser({ username, token, role: decoded.scope.split(' ')[0] }); 
       } else {
         setUser({});
       }
@@ -876,90 +929,90 @@ export default function App() {
     getItem();
   }, []);
 
-    const loadUserInfo = async () => {
-        if (user) {
-            try {
-                const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${user.token}`,
-                    },
+  const loadUserInfo = async () => {
+    if (user) {
+      try {
+        const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+
+        // Kiểm tra mã trạng thái phản hồi
+        if (response.ok) {
+          const result = await response.json();
+
+          if (result) {
+            let userInfo = result.data;
+
+            // Check if cartId is null and create a new cart if necessary
+            if (userInfo.cartId == null) {
+              try {
+                const createCartResponse = await fetch(`${BASE_URL}cart/user/`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                  body: JSON.stringify({
+                    userId: userInfo.userId,
+                  }),
                 });
 
-                // Kiểm tra mã trạng thái phản hồi
-                if (response.ok) {
-                    const result = await response.json();
+                if (createCartResponse.ok) {
+                  const cartResult = await createCartResponse.json();
+                  userInfo.cartId = cartResult.data.cartId;
 
-                    if (result) {
-                        let userInfo = result.data;
-
-                        // Check if cartId is null and create a new cart if necessary
-                        if (userInfo.cartId == null) {
-                            try {
-                                const createCartResponse = await fetch(`${BASE_URL}cart/user/`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        Authorization: `Bearer ${user.token}`,
-                                    },
-                                    body: JSON.stringify({
-                                        userId: userInfo.userId,
-                                    }),
-                                });
-
-                                if (createCartResponse.ok) {
-                                    const cartResult = await createCartResponse.json();
-                                    userInfo.cartId = cartResult.data.cartId;
-
-                                    console.log('New cart created:', cartResult.data.cartId);
-                                } else {
-                                    console.log('Failed to create cart. Status:', createCartResponse.status);
-                                }
-                            } catch (error) {
-                                console.error('Error creating cart:', error);
-                            }
-                        }
-
-                        setUserData(userInfo); // Lưu thông tin người dùng vào state
-
-                        // Lưu thông tin người dùng vào AsyncStorage
-                        await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
-                        console.log('User info saved to AsyncStorage');
-                    } else {
-                        console.log('No data in API response');
-                    }
+                  console.log('New cart created:', cartResult.data.cartId);
                 } else {
-                    console.log('Failed to fetch user info. Status:', response.status);
+                  console.log('Failed to create cart. Status:', createCartResponse.status);
                 }
-            } catch (error) {
-                console.error('Error fetching user info:', error);
+              } catch (error) {
+                console.error('Error creating cart:', error);
+              }
             }
-        } else {
-            await AsyncStorage.removeItem('userInfo');
-            await AsyncStorage.removeItem('userData');
-        }
-    };
 
-    useEffect(() => {
-        loadUserInfo();
-    }, [user.token]);
+            setUserData(userInfo); // Lưu thông tin người dùng vào state
+
+            // Lưu thông tin người dùng vào AsyncStorage
+            await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+            console.log('User info saved to AsyncStorage');
+          } else {
+            console.log('No data in API response');
+          }
+        } else {
+          console.log('Failed to fetch user info. Status:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    } else {
+      await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem('userRole');
+    }
+  };
+
+  useEffect(() => {
+    loadUserInfo();
+  }, [user.token]);
 
   // console.log(user);
   const hasRole = (role) => user?.role?.includes(role);
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-     {Object.keys(user).length !== 0 && hasRole("ROLE_USER") && <HaveLoginHome />}
       {Object.keys(user).length === 0 && <NoLoginHome />}
+      {Object.keys(user).length !== 0 && hasRole("ROLE_USER") && <HaveLoginHome />}
       {Object.keys(user).length !== 0 && hasRole("ROLE_ADMIN") && <AdminDrawerNavigator />}
       {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />}
-      {Object.keys(user).length !== 0 && hasRole("SHIPMENT") && <ShipmentAdmin />}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
-        
+
       {/* <Accouting /> */}
     </NavigationContainer>
   );
