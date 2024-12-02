@@ -146,9 +146,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   imageIcon: {
-    width: 155,
-    height: 140,
+    width: 200,
+    height: 200,
     marginVertical: 20,
+    borderRadius: 100,
   },
   imageSelectIcon: {
     width: 200,
