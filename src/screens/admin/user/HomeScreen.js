@@ -41,8 +41,6 @@ const HomeAdminScreen = ({ navigation }) => {
     loadUser();
   }, []);
 
-  console.log('USER', user);
-
   const fetchData = async () => {
     if (!user.token) {
       // Đợi token sẵn sàng trước khi fetch
@@ -71,6 +69,8 @@ const HomeAdminScreen = ({ navigation }) => {
       setRefreshing(false);
     }
   };
+
+  console.log(user.token);
 
   useEffect(() => {
     if (user.token) {
@@ -108,6 +108,7 @@ const HomeAdminScreen = ({ navigation }) => {
           birthday: item['userBirthday'],
           address: item['userAddress'],
           phone: item['userPhone'],
+          iCard: item['iCard'],
           // money: item['userMoney'],
           // role: item.role,
           // rank: item.rank,
