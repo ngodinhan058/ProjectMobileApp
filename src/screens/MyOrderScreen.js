@@ -78,44 +78,7 @@ const MyOrderScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleCancelOrder = async () => {
-    try {
-      const requestBody = {
-        status: 4,
-        orderId: orders.orderId,
-      };
-      const response = await axios.put(`${BASE_URL}order/change`, requestBody);
-      if (response.status === 200) {
-        Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
-        navigation.goBack();
-      } else {
-        Alert.alert('Error', 'Failed to cancel order');
-      }
-    } catch (error) {
-      console.error('Error cancelling order:', error);
-      Alert.alert('Error', 'Failed to cancel order');
-    }
-  };
 
-  const handleConfirmOrder = async () => {
-    try {
-      const requestBody = {
-        status: 1,
-        orderId: orderDetails.orderId,
-      };
-      const response = await axios.put(`${BASE_URL}order/change`, requestBody);
-      if (response.status === 200) {
-        clearTimeout(timerRef.current); // Clear the timer
-        Alert.alert('Order Confirmed', 'Your order has been confirmed successfully');
-        navigation.navigate('CompletedOrderConfirmationScreen', { orderDetails });
-      } else {
-        Alert.alert('Error', 'Failed to confirm order');
-      }
-    } catch (error) {
-      console.error('Error confirming order:', error);
-      Alert.alert('Error', 'Failed to confirm order');
-    }
-  };
 
   const filterByStatus = (statuses) => {
     if (!orders) return [];
@@ -126,7 +89,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   };
 
 
-  console.log(orders);
+  // console.log(orders);
 
   const PendingConfirmationRoute = () => (
     <FlatList
@@ -134,6 +97,9 @@ const MyOrderScreen = ({ route, navigation }) => {
       renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
 
@@ -143,54 +109,70 @@ const MyOrderScreen = ({ route, navigation }) => {
       renderItem={({ item }) => <OrderItem order={item} />}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
-
+  const PreparedRoute = () => (
+    <FlatList
+      data={filterByStatus([2])}
+      renderItem={({ item }) => <OrderItem order={item} />}
+      keyExtractor={(item) => item.orderId.toString()}
+      style={{ marginTop: 40 }}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
+    />
+  );
   const ShippingRoute = () => {
     return (
       <FlatList
-        data={filterByStatus([2])}
+        data={filterByStatus([3])}
         renderItem={({ item }) => <OrderItem order={item} />}
         keyExtractor={(item) => item.orderId.toString()}
         style={{ marginTop: 40 }}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+        }
       />
     );
   };
 
   const SuccessRoute = () => (
     <FlatList
-      data={''}
+      data={filterByStatus([4])}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.orderId}
+      keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
-  const cancelRoute = () => (
+  const CompleteRoute = () => (
     <FlatList
-      data={'Đã Huỷ'}
+      data={filterByStatus([5])}
       renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.orderId}
+      keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
-  const returnRoute = () => (
-    <FlatList
-      data={'Trả Hàng'}
-      renderItem={({ item }) => <OrderItem order={item} />}
-      keyExtractor={(item) => item.orderId}
-      style={{ marginTop: 40 }}
-    />
-  );
+  
+ 
 
   // State để quản lý tab hiện tại
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: 'pending', title: 'Chờ Xác Nhận' },
-    { key: 'preparing', title: 'Chờ Lấy Hàng' },
-    { key: 'shipping', title: 'Chờ Giao Hàng' },
+    { key: 'preparing', title: 'Chờ Đóng Gói' },
+    { key: 'prepared', title: 'Đã Đóng Gói' },
+    { key: 'shipping', title: 'Đang Giao Hàng' },
     { key: 'success', title: 'Đã Giao Hàng' },
-    { key: 'cancel', title: 'Đã Huỷ' },
-    { key: 'return', title: 'Trả Hàng' },
+    { key: 'complete', title: 'Hoàn Tất' },
 
   ]);
   useEffect(() => {
@@ -232,10 +214,10 @@ const MyOrderScreen = ({ route, navigation }) => {
         renderScene={SceneMap({
           pending: PendingConfirmationRoute,
           preparing: PreparingRoute,
+          prepared: PreparedRoute,
           shipping: ShippingRoute,
           success: SuccessRoute,
-          cancel: cancelRoute,
-          return: returnRoute,
+          complete: CompleteRoute,
         })}
         onIndexChange={setIndex}
         renderTabBar={(props) => (
@@ -346,7 +328,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
-
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#666',
+    marginTop: 30,
+    fontStyle: 'italic',
+  },
 });
 
 export default MyOrderScreen;
