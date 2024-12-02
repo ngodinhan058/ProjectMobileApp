@@ -126,7 +126,7 @@ function DetailScreen({ route, navigation }) {
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
                 <TouchableOpacity
                     style={styles.iconButton}
-                    onPress={() => navigation.navigate('EditPermissionScreen', { id, name })}
+                    onPress={() => navigation.navigate('EditRoleScreen', { id, name, permissions })}
                 >
                     <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.iconButtonGradient}>
                         <Icon name="pencil" size={20} color="#fff" />

@@ -31,31 +31,31 @@ const HomeAdminScreen = ({ navigation }) => {
     };
     const handleLogout = async () => {
         try {
-            Alert.alert(
-                'Xác nhận đăng xuất',
-                'Bạn muốn đăng xuất phải không?',
-                [
-                    {
-                        text: 'Huỷ',
-                        style: 'cancel',
-                    },
-                    {
-                        text: 'Đúng',
-                        onPress: async () => {
-                            await AsyncStorage.removeItem('userData');
-                            await AsyncStorage.removeItem('userInfo');
-
-                            Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
-                            navigation.navigate('Người Dùng');
-                        },
-                    },
-                ],
-                { cancelable: false }
-            );
+          Alert.alert(
+            'Xác nhận đăng xuất',
+            'Bạn muốn đăng xuất phải không?',
+            [
+              {
+                text: 'Huỷ',
+                style: 'cancel',
+              },
+              {
+                text: 'Đúng',
+                onPress: async () => {
+                  await AsyncStorage.removeItem('userData');              
+                  await AsyncStorage.removeItem('userInfo');
+    
+                  Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+                  navigation.navigate('Người Dùng');
+                },
+              },
+            ],
+            { cancelable: false }
+          );
         } catch (error) {
-            Alert.alert('Thất bại', error);
+          Alert.alert('Thất bại', error);
         }
-    };
+      };
     const renderProduct = ({ item }) => (
         <View>
             <TouchableOpacity

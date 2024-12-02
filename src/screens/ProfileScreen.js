@@ -41,9 +41,13 @@ const ProfileScreen = ({ navigation, route }) => {
 
   const isFocused = useIsFocused();
 
-  useFocusEffect(() => {
-    fetchUserInfo();
-  });
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+    }, [])
+  );
+
+
   console.log('user', user);
 
   const handleLogout = async () => {

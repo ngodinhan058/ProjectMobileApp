@@ -111,7 +111,7 @@ const BiodataScreen = ({ navigation, route }) => {
         }
       );
       Alert.alert('Success', 'Profile updated successfully.');
-      navigation.navigate('ProfileScreen');
+      navigation.replace('ProfileScreen');
     } catch (error) {
       console.error('Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile. Please try again.');

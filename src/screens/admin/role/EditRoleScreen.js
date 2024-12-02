@@ -16,6 +16,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const EditProductScreen = ({ route, navigation }) => {
     const { id, name } = route.params; // categoryId truyền từ màn hình trước

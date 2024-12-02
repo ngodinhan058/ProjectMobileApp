@@ -20,7 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 
 const AddPermissionScreen = ({ navigation }) => {
-    const [PermissionName, setPermissionName] = useState();
+    const [PermissionName, setPermissionName] = useState('PERMISSION_');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAddPermission = async () => {

@@ -62,16 +62,16 @@ function DetailScreen({ route, navigation }) {
     });
     const deletePermission = async () => {
         try {
-            const apiUrl = `${BASE_URL}product-sizes/${id}`;
+            const apiUrl = `${BASE_URL}auth/permission/${id}`;
 
             // Using request config to add data in the body
             const response = await axios.delete(apiUrl);
 
             Alert.alert("Success", "Xoá Thành Công");
-            navigation.replace('SizeList');
+            navigation.replace('PermissionList');
         } catch (error) {
             console.error('Error deleting Size:', error.response ? error.response.data : error.message);
-            Alert.alert("Error", "Failed to delete Size.");
+            Alert.alert("Error", "Failed to delete permission.");
         }
     };
 

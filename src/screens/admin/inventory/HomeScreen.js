@@ -1,7 +1,13 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, Alert } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Icon5 from 'react-native-vector-icons/FontAwesome5';
+import { LinearGradient } from 'expo-linear-gradient';
+import AlertComponent from '../../../components/AlertComponent';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../../api/config';
+import axios from 'axios';
 
 
 const HomeAdminScreen = ({ navigation }) => {
@@ -18,14 +24,39 @@ const HomeAdminScreen = ({ navigation }) => {
 
     ];
 
+    const handleLogout = async () => {
+        try {
+            Alert.alert(
+                'Xác nhận đăng xuất',
+                'Bạn muốn đăng xuất phải không?',
+                [
+                    {
+                        text: 'Huỷ',
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'Đúng',
+                        onPress: async () => {
+                            await AsyncStorage.removeItem('userData');
+                            await AsyncStorage.removeItem('userInfo');
+
+                            Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+                            navigation.navigate('Người Dùng');
+                        },
+                    },
+                ],
+                { cancelable: false }
+            );
+        } catch (error) {
+            Alert.alert('Thất bại', error);
+        }
+    };
     const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
             onPress={() => navigation.navigate('DetailInventoryScreen')}
         >
-
             <View style={{
-
                 marginRight: 20,
             }}>
                 <Image source={require('../../../assets/box.png')} style={styles.productIcon} />
@@ -39,7 +70,7 @@ const HomeAdminScreen = ({ navigation }) => {
                 <Text style={styles.productCode}>Tổng Giá: {item.price} ₫</Text>
             </View>
             <Pressable>
-                <Icon name="angle-right" size={25} color="#000" />
+                <Icon name="arrow-forward-circle-outline" size={25} color="#000" />
             </Pressable>
         </TouchableOpacity>
     );
@@ -47,17 +78,20 @@ const HomeAdminScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
-                <View style={styles.welcomeContainer}>
-                    <Text style={styles.welcomeText}>Hi Tồn Kho!</Text>
-                    <Text style={styles.subtitleText}>Welcome back to your panel.</Text>
+            <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
+                <View style={styles.headerContent}>
+                    <Image
+                        source={{
+                            uri: 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474119Xok/hinh-anh-cho-cute-chibi-dep-nhat_100649530.png',
+                        }}
+                        style={styles.avatar}
+                    />
+                    <Text style={styles.welcomeText}>Hi Admin!</Text>
                 </View>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('LoginScreen')}
-                >
-                    <Image source={require('../../../assets/right_from_bracket.png')} style={{ width: 30, height: 30, marginLeft: 115 }} />
+                <TouchableOpacity onPress={handleLogout}>
+                    <Icon name="log-out-outline" size={30} color="#fff" />
                 </TouchableOpacity>
-            </View>
+            </LinearGradient>
             {/* Product List */}
             <FlatList
                 data={products}
@@ -73,7 +107,6 @@ const HomeAdminScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
         backgroundColor: '#fff',
     },
     line: {
@@ -85,8 +118,30 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 30,
-
+        justifyContent: 'space-between',
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        marginBottom: 15,
+        borderRadius: 10,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    avatar: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 15,
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    welcomeText: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#fff',
+        letterSpacing: 0.5,
     },
     menuButton: {
         marginRight: 10,
@@ -98,11 +153,6 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         borderWidth: 2,
         marginTop: 0,
-    },
-
-    welcomeText: {
-        fontSize: 24,
-        fontWeight: 'bold',
     },
     subtitleText: {
         fontSize: 16,
@@ -118,19 +168,27 @@ const styles = StyleSheet.create({
     },
     productList: {
         flex: 1,
+        padding: 20,
+
     },
     productItem: {
         flexDirection: 'row',
         alignItems: 'center',
         borderColor: '#ededed',
-        borderWidth: 2,
         padding: 20,
+        margin: 2,
         borderRadius: 10,
         marginBottom: 10,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+        elevation: 4,
     },
     productIcon: {
-        width: 40,
-        height: 40,
+        width: 30,
+        height: 30,
         marginLeft: 5,
         marginTop: 5,
 

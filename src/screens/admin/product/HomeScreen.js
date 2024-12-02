@@ -132,7 +132,6 @@ const HomeAdminScreen = ({ navigation, route }) => {
   const renderProduct = ({ item }) => {
     return <ProductItem item={item} />;
   };
-
   const handleLogout = async () => {
     try {
       Alert.alert(
