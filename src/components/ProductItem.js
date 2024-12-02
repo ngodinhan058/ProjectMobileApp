@@ -230,9 +230,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       const userData = response.data.data.cartItem;
 
       setCartDataUser(userData);
-      const isLiked = userData.some((item) => item.productId === id );
-      console.log(isLiked);
-      
+      const isLiked = userData.some((item) => item.productId === id );      
       setLiked(isLiked); // Cập nhật trạng thái liked
       // Tìm các size đã chọn từ danh sách cartDataUser
       const matchingSizes = userData

@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 const OrderItem = ({ order }) => { // Nhận order từ props
+  const [disable, setDisable] = useState(true);
   const navigation = useNavigation();
 
   const truncateName = (text) => {
@@ -47,6 +48,24 @@ const OrderItem = ({ order }) => { // Nhận order từ props
       Alert.alert('Error', 'Failed to confirm order');
     }
   };
+  const handleConfirmCompleteOrder = async () => {
+    try {
+      const requestBody = {
+        status: 5,
+        orderId: order?.orderId,
+      };
+      const response = await axios.put(`${BASE_URL}order/change`, requestBody);
+      if (response.status === 200) {
+        Alert.alert('Order Confirmed', 'Your order has been confirmed successfully');
+
+      } else {
+        Alert.alert('Error', 'Failed to confirm order');
+      }
+    } catch (error) {
+      console.error('Error confirming order:', error);
+      Alert.alert('Error', 'Failed to confirm order');
+    }
+  };
 
   const [statusName, setStatusName] = useState('');
 
@@ -54,11 +73,27 @@ const OrderItem = ({ order }) => { // Nhận order từ props
     if (order?.orderStatus === 0) {
       setStatusName('Chờ Xác Nhận');
     }
+    else if (order?.orderStatus === 1) {
+      setStatusName('Chờ Đóng Gói');
+    }
+    else if (order?.orderStatus === 2) {
+      setStatusName('Đã Đóng Gói, Chờ Lấy Hàng');
+    }
+    else if (order?.orderStatus === 3) {
+      setStatusName('Đang Giao Hàng');
+    }
+    else if (order?.orderStatus === 4) {
+      setStatusName('Đã Giao Hàng, Chờ Xác Nhận');
+    }
+    else if (order?.orderStatus === 5) {
+      setStatusName('Hoàn Tất');
+    }
   }, [order?.orderStatus]); // Chỉ chạy khi order.orderStatus thay đổi
   return (
     <View style={styles.orderContainer}>
       <View style={styles.orderHeader}>
-        <Text>{order.orderDate}</Text>
+        <Text>{new Date(order.orderDate).toISOString().split('T')[0]}</Text>
+
         <Text style={styles.orderStatus}>{statusName}</Text>
       </View>
 
@@ -93,23 +128,22 @@ const OrderItem = ({ order }) => { // Nhận order từ props
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
               <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => navigation.navigate('')}
+                disabled // Kiểm soát trạng thái nhấn
+                style={styles.disable} // Áp dụng style dựa trên trạng thái
               >
-                <Text style={styles.cancelText}>Hủy đơn</Text>
+                <Text style={styles.confirmText}>Xác Nhận Thanh Toán</Text>
               </TouchableOpacity>
             </View>
           </View>
-        ) : order.orderStatus === "Đang Giao Hàng" ? (
+        ) : order.orderStatus === 2 ? (
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
               <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => navigation.navigate('')}
+                disabled // Kiểm soát trạng thái nhấn
+                style={styles.disable} // Áp dụng style dựa trên trạng thái
               >
-                <Text style={styles.cancelText}>Hủy đơn</Text>
+                <Text style={styles.confirmText}>Xác Nhận Thanh Toán</Text>
               </TouchableOpacity>
-
             </View>
           </View>
         ) : order.orderStatus === 0 ? (
@@ -131,37 +165,37 @@ const OrderItem = ({ order }) => { // Nhận order từ props
               </TouchableOpacity>
             </View>
           </View>
-        ) : order.orderStatus === "Đang Giao Hàng" ? (
+        ) : order.orderStatus === 3 ? (
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
               <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={() => navigation.navigate('')}
+                disabled // Kiểm soát trạng thái nhấn
+                style={styles.disable} // Áp dụng style dựa trên trạng thái
               >
                 <Text style={styles.confirmText}>Xác Nhận Thanh Toán</Text>
               </TouchableOpacity>
             </View>
           </View>
-        ) : order.orderStatus === "Đã Giao Hàng, Hãy Xác Nhận" ? (
+        ) : order.orderStatus === 4 ? (
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => navigation.navigate('')}
               >
                 <Text style={styles.cancelText}>Trả Hàng</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
             <View style={styles.button}>
               <TouchableOpacity
                 style={styles.confirmButton}
-                onPress={() => navigation.navigate('')}
+                onPress={handleConfirmCompleteOrder}
               >
                 <Text style={styles.confirmText}>Xác Nhận Thanh Toán</Text>
               </TouchableOpacity>
             </View>
           </View>
-        ) : order.orderStatus === "Đã Giao Hàng" ? (
+        ) : order.orderStatus === 5 ? (
           <View style={styles.buttonContainer}>
 
             <View style={styles.button}>
@@ -170,30 +204,6 @@ const OrderItem = ({ order }) => { // Nhận order từ props
                 onPress={() => navigation.navigate('')}
               >
                 <Text style={styles.confirmText}>Đánh Giá</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : order.orderStatus === "Đã Huỷ" ? (
-          <View style={styles.buttonContainer}>
-
-            <View style={styles.button}>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={() => navigation.navigate('')}
-              >
-                <Text style={styles.confirmText}>Mua Lại</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : order.orderStatus === "Trả Hàng" ? (
-          <View style={styles.buttonContainer}>
-
-            <View style={styles.button}>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={() => navigation.navigate('')}
-              >
-                <Text style={styles.confirmText}>Chi Tiết Hoàn Tiền</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -230,6 +240,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   orderStatus: {
+
     color: '#3669C9',
     fontSize: 15,
     fontWeight: 'bold',
@@ -289,7 +300,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingVertical: 10,
     borderRadius: 50,
-    borderRadius: 1000,
     maxWidth: 300,
     width: 100,
     marginHorizontal: 2,
@@ -305,11 +315,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#aaa',
   },
+  disable: {
+    backgroundColor: '#ccc',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 50,
+    alignItems: 'center',
+    opacity: 0.6, // Làm mờ nút khi bị vô hiệu
+  },
   confirmButton: {
     backgroundColor: '#3669C9',
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
   },
   confirmText: {
     textAlign: 'center',
