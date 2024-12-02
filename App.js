@@ -593,12 +593,13 @@ function CouponAdmin() {
   );
 }
 function AdminDrawerNavigator() {
+
   return (
     <Drawer.Navigator>
       <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       <Drawer.Screen name="Người Dùng" component={UserAdmin} />
-      <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
+      {/* <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} /> */}
       <Drawer.Screen name="Màu" component={SizeAdmin} />
       <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
       <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
@@ -844,7 +845,9 @@ export default function App() {
         const { username, token } = JSON.parse(savedCart);
         const decoded = jwtDecode(token);
 
-        setUser({ username, token, role: decoded.scope.split(' ')[0] });
+        setUser({ username, token, role: decoded.scope.split(' ') });        
+        // setUser({ username, token, role: decoded.scope.split(' ')[0] });
+
       } else {
         setUser({});
       }
@@ -942,21 +945,15 @@ export default function App() {
         loadUserInfo();
     }, [user.token]);
 
-  // console.log(user.token);
-
+  // console.log(user);
+  const hasRole = (role) => user?.role?.includes(role);
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
-        <HaveLoginHome />
-      )}
+     {Object.keys(user).length !== 0 && hasRole("ROLE_USER") && <HaveLoginHome />}
       {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
-        <AdminDrawerNavigator />
-      )}
-      {Object.keys(user).length !== 0 && user?.role === ROLE_SHIPPER && (
-        <ShipperDrawerNavigator/>
-        // <AdminDrawerNavigator />
-      )}
+      {Object.keys(user).length !== 0 && hasRole("ROLE_ADMIN") && <AdminDrawerNavigator />}
+      {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />}
+      {Object.keys(user).length !== 0 && hasRole("SHIPMENT") && <ShipmentAdmin />}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}

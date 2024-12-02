@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
+import { Rating, AirbnbRating } from 'react-native-ratings';
+
 const OrderItem = ({ order }) => { // Nhận order từ props
   const [disable, setDisable] = useState(true);
   const navigation = useNavigation();
