@@ -11,6 +11,7 @@ import {
   Pressable,
   Image,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -19,10 +20,11 @@ import axios from 'axios';
 import { BASE_URL } from './api/config';
 import IconI from 'react-native-vector-icons/Ionicons';
 import { ScrollView } from 'react-native-gesture-handler';
-import Up_Image from '../components/Up_Image';
+import UploadImage from '../components/Up_Image';
 
 const BiodataScreen = ({ navigation, route }) => {
   const { userData } = route.params;
+  console.log(userData);
 
   const [userPhone, setUserPhone] = useState(userData.userPhone);
   const [userBirthday, setUserBirthday] = useState(
@@ -35,7 +37,8 @@ const BiodataScreen = ({ navigation, route }) => {
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState({}); // Để lưu thông tin user (bao gồm token)
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(userData?.userImagePath);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -60,20 +63,13 @@ const BiodataScreen = ({ navigation, route }) => {
   };
 
   const handleUpdateProfile = async () => {
+    if (!selectedImage) {
+      Alert.alert('Error', 'images is required.');
+      return;
+    }
     const formData = new FormData();
 
-    const formattedDate =
-      userBirthday.toISOString().split('T')[0] + ' 00:00:00';
-
-    const updatedData = {
-      userPhone,
-      userBirthday: formattedDate,
-      userLastName,
-      userFirstName,
-      userImagePath:
-        userImagePath ||
-        'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg', // Sử dụng default nếu không cập nhật
-    };
+    const formattedDate = userBirthday.toISOString().split('T')[0];
 
     const fileType = selectedImage.split('.').pop();
 
@@ -82,44 +78,49 @@ const BiodataScreen = ({ navigation, route }) => {
       name: `user-image.${fileType}`,
       type: `image/${fileType}`,
     };
+    console.log('New FIle', newFile);
 
     formData.append('image', newFile);
 
-    const params = {
-      request: {
-        userPhone: '+841234567890',
-        userBirthday: '1990-01-01 00:00:00',
-        userImagePath: '/images/profile.jpg',
-        userPasswordLevel2: '123456',
-        userLastName: 'Admin',
-        userFirstName: '11',
-        userWrongPassword: 1111,
-      },
+    const userData = {
+      userPhone: userPhone,
+      userBirthday: formattedDate,
+      userLastName: userLastName,
+      userFirstName: userFirstName,
+      userPassword: '12345678', // Replace with the real password or hashed password
     };
-    formData.append('params', JSON.stringify(params));
+
+    formData.append('request', JSON.stringify(userData));
 
     if (!user.token) {
       Alert.alert('Error', 'User token is missing. Please log in again.');
       return;
     }
-    console.log(user.token);
+    console.log(`${BASE_URL}auth/customer/myInfo`);
 
     try {
+      setLoading(true);
       const response = await axios.put(
         `${BASE_URL}auth/customer/myInfo`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${user.token}`, // Token được lấy từ AsyncStorage
+            Authorization: `Bearer ${user.token}`,
+            'Content-Type': 'multipart/form-data', // Token được lấy từ AsyncStorage
           },
         }
       );
       Alert.alert('Success', 'Profile updated successfully.');
+      navigation.navigate('ProfileScreen');
     } catch (error) {
       console.error('Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  console.log('Image URI:', user.token);
 
   return (
     <View style={styles.container}>
@@ -136,7 +137,10 @@ const BiodataScreen = ({ navigation, route }) => {
 
       {/* Avatar */}
       <View style={styles.avatarContainer}>
-        <Up_Image onImagesSelected={setSelectedImage} />
+        <UploadImage
+          onImagesSelected={setSelectedImage}
+          image={selectedImage}
+        />
 
         <Text style={styles.nameText}>{user.username || 'Tên người dùng'}</Text>
       </View>
@@ -217,6 +221,12 @@ const BiodataScreen = ({ navigation, route }) => {
       >
         <Text style={styles.updateButtonText}>Sửa Thông Tin Của Bạn</Text>
       </TouchableOpacity>
+
+      {loading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </View>
   );
 };
@@ -319,6 +329,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 
