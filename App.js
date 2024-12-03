@@ -644,6 +644,9 @@ function AdminDrawerNavigator() {
       {hasPermission("PERMISSION_CHAT") && (
         <Drawer.Screen name="Chat" component={ChatAdmin} />
       )}
+       {hasPermission("PERMISSION_INVENTORY") && (
+        <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
+      )}
       {hasPermission("PERMISSION_GETALL") && (
         <>
           <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
