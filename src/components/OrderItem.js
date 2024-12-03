@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -7,8 +7,31 @@ import { BASE_URL } from '../screens/api/config';
 import { Rating, AirbnbRating } from 'react-native-ratings';
 
 const OrderItem = ({ order }) => { // Nhận order từ props
-  const [disable, setDisable] = useState(true);
   const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+
+  const openModalRate = () => {
+    setModalVisible(true);
+  };
+  const closeModalRate = () => setModalVisible(false);
+  const handleRatingComplete = (ratingValue) => {
+    setRating(ratingValue);
+  };
+
+  const handleSubmit = () => {
+    // Xử lý dữ liệu đánh giá ở đây
+    console.log('Rating:', rating);
+    console.log('Comment:', comment);
+
+    // Đóng modal
+    closeModalRate();
+    setRating(0);
+    setComment('');
+  };
+
+
 
   const truncateName = (text) => {
     return text.length > 17 ? text.substring(0, 17) + '...' : text;
@@ -203,7 +226,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
             <View style={styles.button}>
               <TouchableOpacity
                 style={styles.confirmButton}
-                onPress={() => navigation.navigate('')}
+                onPress={openModalRate}
               >
                 <Text style={styles.confirmText}>Đánh Giá</Text>
               </TouchableOpacity>
@@ -211,7 +234,44 @@ const OrderItem = ({ order }) => { // Nhận order từ props
           </View>
         ) : null
       }
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+         <TouchableWithoutFeedback onPress={closeModalRate}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Đánh giá sản phẩm</Text>
 
+            {/* Rating */}
+            <Rating
+              type="star"
+              startingValue={0}
+              imageSize={30}
+              onFinishRating={handleRatingComplete}
+              style={{ marginVertical: 10, }}
+            />
+
+            {/* Input comment */}
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Nhập nhận xét của bạn..."
+              multiline={true}
+              value={comment}
+              onChangeText={setComment}
+            />
+
+            {/* Nút gửi */}
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Gửi</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -341,6 +401,49 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'relative',
+  },
+  modalContainer: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '50%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
+
+  modalTitle: { fontSize: 18, fontWeight: 'bold' },
+  commentInput: {
+    width: '100%',
+    height: 150,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginVertical: 10,
+    padding: 10,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    backgroundColor: '#3669c9',
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+    marginVertical: 5,
+    
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+    
+  },
+ 
 });
 
 export default OrderItem;
