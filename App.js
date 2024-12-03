@@ -19,7 +19,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from './src/screens/api/config';
+import { BASE_URL, BASE_URLS } from './src/screens/api/config';
 import * as encoding from 'text-encoding';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
@@ -411,12 +411,17 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
     { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
+
     {
       name: 'CreateAddressScreen',
       component: CreateAddressScreen,
       showFooter: false,
     },
-    <Stack.Screen name="EditIdCardScreen" component={EditIdCardScreen} />,
+    {
+      name: 'EditIdCardScreen',
+      component: EditIdCardScreen,
+      showFooter: false,
+    },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -589,19 +594,84 @@ function CouponAdmin() {
   );
 }
 function AdminDrawerNavigator() {
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    const getItem = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        if (userData) {
+          // setUser(userData);
+          setUser(JSON.parse(userData));
+        }
+      } catch (error) {
+        console.error('Error loading user data from AsyncStorage:', error);
+      }
+    };
+    getItem();
+  }, []);
+
+  console.log('User roles:', user?.role);
+
+  const hasPermission = (role) => user?.role?.includes(role);
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
-      <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
-      <Drawer.Screen name="Người Dùng" component={UserAdmin} />
-      <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
-      <Drawer.Screen name="Màu" component={SizeAdmin} />
-      <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
-      <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
-      <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
-      <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
-      <Drawer.Screen name="Chat" component={ChatAdmin} />
+      {hasPermission('PERMISSION_PRODUCT') && (
+        <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+      )}
+      {hasPermission('PERMISSION_CATEGORIES') && (
+        <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
+      )}
+      {hasPermission('PERMISSION_USERS') && (
+        <Drawer.Screen name="Người Dùng" component={UserAdmin} />
+      )}
+      {hasPermission('PERMISSION_SHIPMENTS') && (
+        <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
+      )}
+      {hasPermission('PERMISSION_COLORS') && (
+        <Drawer.Screen name="Màu" component={SizeAdmin} />
+      )}
+      {hasPermission('PERMISSION_SUPPLIERS') && (
+        <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
+      )}
+      {hasPermission('PERMISSION_PERMISSIONS') && (
+        <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
+      )}
+      {hasPermission('PERMISSION_ROLES') && (
+        <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+      )}
+      {hasPermission('PERMISSION_COUPONS') && (
+        <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
+      )}
+      {hasPermission('PERMISSION_CHAT') && (
+        <Drawer.Screen name="Chat" component={ChatAdmin} />
+      )}
+      {hasPermission('PERMISSION_INVENTORY') && (
+        <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
+      )}
+      {hasPermission('PERMISSION_GETALL') && (
+        <>
+          <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+          <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
+          <Drawer.Screen name="Người Dùng" component={UserAdmin} />
+          <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
+          <Drawer.Screen name="Màu" component={SizeAdmin} />
+          <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
+          <Drawer.Screen
+            name="Cho Phép Chức Năng"
+            component={PermissionAdmin}
+          />
+          <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+          <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
+          <Drawer.Screen name="Chat" component={ChatAdmin} />
+          <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
+        </>
+      )}
       <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
+      <Drawer.Screen
+        name="Trang Chủ Shipper"
+        component={ShipperDrawerNavigator}
+        options={{ headerShown: false }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -838,8 +908,8 @@ export default function App() {
       if (savedCart) {
         const { username, token } = JSON.parse(savedCart);
         const decoded = jwtDecode(token);
-
-        setUser({ username, token, role: decoded.scope.split(' ')[0] });
+        setUser({ username, token, role: decoded.scope.split(' ') });
+        // setUser({ username, token, role: decoded.scope.split(' ')[0] });
       } else {
         setUser({});
       }
@@ -871,7 +941,7 @@ export default function App() {
   const loadUserInfo = async () => {
     if (user) {
       try {
-        const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+        const response = await fetch(`${BASE_URLS}auth/users/myInfo`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -936,6 +1006,7 @@ export default function App() {
     } else {
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem('userRole');
     }
   };
 
@@ -943,20 +1014,19 @@ export default function App() {
     loadUserInfo();
   }, [user.token]);
 
-  // console.log(user.token);
-
+  // console.log(user);
+  const hasRole = (role) => user?.role?.includes(role);
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {Object.keys(user).length !== 0 && user?.role === ROLE_USER && (
+      {Object.keys(user).length === 0 && <NoLoginHome />}
+      {Object.keys(user).length !== 0 && hasRole('ROLE_USER') && (
         <HaveLoginHome />
       )}
-      {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0 && user?.role === ROLE_ADMIN && (
+      {Object.keys(user).length !== 0 && hasRole('ROLE_ADMIN') && (
         <AdminDrawerNavigator />
       )}
-      {Object.keys(user).length !== 0 && user?.role === ROLE_SHIPPER && (
+      {Object.keys(user).length !== 0 && hasRole('ROLE_SHIPPER') && (
         <ShipperDrawerNavigator />
-        // <AdminDrawerNavigator />
       )}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
