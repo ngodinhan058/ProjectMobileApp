@@ -17,7 +17,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { BASE_URL, BASE_URLS } from './api/config';
+import { BASE_URL } from './api/config';
 import IconI from 'react-native-vector-icons/Ionicons';
 import { ScrollView } from 'react-native-gesture-handler';
 import UploadImage from '../components/Up_Image';
@@ -65,7 +65,7 @@ const BiodataScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       const response = await axios.put(
-        `${BASE_URLS}auth/customer/myInfo`,
+        `${BASE_URL}auth/customer/myInfo`,
         formData,
         {
           headers: {
@@ -75,7 +75,7 @@ const BiodataScreen = ({ navigation, route }) => {
         }
       );
       Alert.alert('Success', 'Profile updated successfully.');
-      navigation.navigate('ProfileScreen');
+      navigation.goBack();
     } catch (error) {
       console.error('Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile. Please try again.');
@@ -136,7 +136,10 @@ const BiodataScreen = ({ navigation, route }) => {
 
       {/* Avatar */}
       <View style={styles.avatarContainer}>
-        <UploadImage onImagesSelected={setSelectedImage} />
+        <UploadImage
+          onImagesSelected={setSelectedImage}
+          image={selectedImage}
+        />
 
         <Text style={styles.nameText}>{user.username || 'Tên người dùng'}</Text>
       </View>

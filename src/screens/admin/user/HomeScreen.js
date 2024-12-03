@@ -14,7 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useWindowDimensions } from 'react-native';
-import { BASE_URL, BASE_URLS } from '../../api/config';
+import { BASE_URL } from '../../api/config';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -51,7 +51,7 @@ const HomeAdminScreen = ({ navigation }) => {
       return;
     }
 
-    const apiUrl = `${BASE_URLS}auth/users`;
+    const apiUrl = `${BASE_URL}auth/users`;
 
     try {
       setLoading(true);
@@ -231,7 +231,7 @@ const HomeAdminScreen = ({ navigation }) => {
           {
             text: 'Đúng',
             onPress: async () => {
-              await AsyncStorage.removeItem('userData');              
+              await AsyncStorage.removeItem('userData');
               await AsyncStorage.removeItem('userInfo');
 
               Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');

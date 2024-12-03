@@ -19,16 +19,22 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import UploadImage from '../../../../components/Up_Image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL, BASE_URLS } from '../../../api/config';
+import { BASE_URL } from '../../../api/config';
 
 const EditIdCardScreen = ({ route, navigation }) => {
   const cardInfo = route.params.iCard;
 
+  console.log('Äaaaa', cardInfo.imageFrontPath);
+
   const [CCCDNumber, setCCCDNumber] = useState(
     cardInfo?.idCardNumber ? cardInfo?.idCardNumber : ''
   );
-  const [selectedImageFront, setSelectedFront] = useState(null);
-  const [selectedImageBack, setSelectedImageBack] = useState(null);
+  const [selectedImageFront, setSelectedFront] = useState(
+    cardInfo.imageFrontPath
+  );
+  const [selectedImageBack, setSelectedImageBack] = useState(
+    cardInfo.imageFrontPath
+  );
 
   const [dateOfBirth, setDateOfBirth] = useState(
     cardInfo?.idCardDate ? new Date(cardInfo?.idCardDate) : new Date()
@@ -65,9 +71,6 @@ const EditIdCardScreen = ({ route, navigation }) => {
     getItem();
   }, []);
 
-  console.log('Äsâsasasasas', `${cardInfo.cardId}`);
-  console.log('bbbbbbbbb', user.token);
-
   const putImage = async (formData) => {
     if (!user.token) {
       Alert.alert('Error', 'User token is missing. Please log in again.');
@@ -76,10 +79,9 @@ const EditIdCardScreen = ({ route, navigation }) => {
 
     try {
       setLoading(true);
-      console.log('URL:', `${BASE_URL}auth/idcard/${cardInfo.cardId}`);
 
       const response = await fetch(
-        `${BASE_URLS}auth/idcard/${cardInfo.cardId}`,
+        `${BASE_URL}auth/idcard/${cardInfo.cardId}`,
         {
           method: 'PUT',
           body: formData,
@@ -179,10 +181,16 @@ const EditIdCardScreen = ({ route, navigation }) => {
           )}
           <Text style={styles.label}>Hình Mặt Trước CCCD:</Text>
           {/* Icon Image */}
-          <UploadImage onImagesSelected={setSelectedFront} />
+          <UploadImage
+            onImagesSelected={setSelectedFront}
+            image={selectedImageFront}
+          />
           <Text style={styles.label}>Hình Mặt Sau CCCD:</Text>
           {/* Icon Image */}
-          <UploadImage onImagesSelected={setSelectedImageBack} />
+          <UploadImage
+            onImagesSelected={setSelectedImageBack}
+            image={selectedImageBack}
+          />
 
           <TouchableOpacity style={styles.button} onPress={handleUpdateCard}>
             <Text style={styles.buttonText}>Sửa</Text>

@@ -19,7 +19,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL, BASE_URLS } from './src/screens/api/config';
+import { BASE_URL } from './src/screens/api/config';
 import * as encoding from 'text-encoding';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
@@ -941,7 +941,7 @@ export default function App() {
   const loadUserInfo = async () => {
     if (user) {
       try {
-        const response = await fetch(`${BASE_URLS}auth/users/myInfo`, {
+        const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
