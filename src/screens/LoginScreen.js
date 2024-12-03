@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './api/config';
+import { jwtDecode } from 'jwt-decode';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -36,10 +37,10 @@ const LoginScreen = ({ navigation }) => {
       });
 
       const userData = response.data.result;
-
+      const decoded = jwtDecode(userData.token);
       await AsyncStorage.setItem(
         'userData',
-        JSON.stringify({ username: email, token: userData.token })
+        JSON.stringify({ username: email, token: userData.token, role: decoded.scope.split(' ') })
       ); // Lưu thông tin người dùng
       return userData;
     } catch (error) {

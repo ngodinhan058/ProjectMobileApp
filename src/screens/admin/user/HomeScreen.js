@@ -220,9 +220,27 @@ const HomeAdminScreen = ({ navigation }) => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('userData');
-      Alert.alert('Thành công', 'Đăng xuất thành công!');
-      navigation.navigate('Danh Sách Người Dùng'); // Điều hướng sau khi đăng nhập
+      Alert.alert(
+        'Xác nhận đăng xuất',
+        'Bạn muốn đăng xuất phải không?',
+        [
+          {
+            text: 'Huỷ',
+            style: 'cancel',
+          },
+          {
+            text: 'Đúng',
+            onPress: async () => {
+              await AsyncStorage.removeItem('userData');              
+              await AsyncStorage.removeItem('userInfo');
+
+              Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+              navigation.navigate('Người Dùng');
+            },
+          },
+        ],
+        { cancelable: false }
+      );
     } catch (error) {
       Alert.alert('Thất bại', error);
     }
@@ -245,7 +263,7 @@ const HomeAdminScreen = ({ navigation }) => {
           />
           <Text style={styles.welcomeText}>Hi Admin!</Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleLogout}>
           <Icon name="log-out-outline" size={30} color="#fff" />
         </TouchableOpacity>
       </LinearGradient>

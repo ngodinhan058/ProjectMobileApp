@@ -13,13 +13,55 @@ import {
     Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { BASE_URL } from '../../api/config';
+import axios from 'axios';
+import { LinearGradient } from 'expo-linear-gradient';
 
-function DetailScreen({ navigation }) {
+function DetailScreen({ navigation, route }) {
+    const { id, items } = route?.params
     // Modal Hiển Thị
+    const handleCancelOrder = async () => {
+        try {
+            const requestBody = {
+                status: 6,
+                orderId: id,
+            };
+            const response = await axios.put(`${BASE_URL}order/change`, requestBody);
+            if (response.status === 200) {
+                Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
+            } else {
+                Alert.alert('Error', 'Failed to cancel order');
+            }
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            Alert.alert('Error', 'Failed to cancel order');
+        }
+    };
+
+    const handleConfirmOrder = async () => {
+        try {
+            const requestBody = {
+                status: 2,
+                orderId: id,
+            };
+            const response = await axios.put(`${BASE_URL}order/change`, requestBody);
+            if (response.status === 200) {
+                navigation.replace('InventoryList', { 
+                    alertVisible: true,
+                    alertType: 'success',
+                    title: 'Đóng Gói Thành Công'});
+            } else {
+                Alert.alert('Error', 'Failed to confirm order');
+            }
+        } catch (error) {
+            console.error('Error confirming order:', error);
+            Alert.alert('Error', 'Failed to confirm order');
+        }
+    };
     const ConfirmDialog = ({ isVisible, onClose, onConfirm }) => {
         return (
             <Modal
-                animationType="slide"
+                animationType="fade"
                 transparent={true}
                 visible={isVisible}
                 onRequestClose={onClose}>
@@ -41,82 +83,71 @@ function DetailScreen({ navigation }) {
             </Modal>
         );
     };
-    // Sản Phẩm
-    const products = [
-        {
-            id: '1', name: '#HWDSF776567DS', price: '1.500.000', quantity: 500, rating: '4.0',
-            review: '860', sale: 80, category: 1, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-        {
-            id: '2', name: '#Ha5s1d56sa7DS', price: '1.000.000', quantity: 500, rating: '3.0',
-            review: '860', sale: 0, category: 2, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-        {
-            id: '3', name: '#HADSAF776567DS', price: '500.000', quantity: 500, rating: '3.0',
-            review: '860', sale: 50, category: 3, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-        {
-            id: '4', name: '#HWDSF776567DS', price: '1.500.000', quantity: 500, rating: '4.0',
-            review: '860', sale: 80, category: 1, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-        {
-            id: '5', name: '#Ha5s1d56sa7DS', price: '1.000.000', quantity: 500, rating: '3.0',
-            review: '860', sale: 0, category: 2, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
-        {
-            id: '6', name: '#HADSAF776567DS', price: '500.000', quantity: 500, rating: '3.0',
-            review: '860', sale: 50, category: 3, image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' },
-        },
+    // console.log(items);
 
-    ];
     // checked Sản Phẩm
     const [selectedProducts, setSelectedProducts] = useState({});
     const toggleCheckbox = (productId) => {
         setSelectedProducts(prevState => ({
             ...prevState,
-            [productId]: !prevState[productId] // nếu sản phẩm đã được chọn thì bỏ chọn, ngược lại thì chọn
+            [productId]: !prevState[productId]
         }));
     };
+    const uniqueCartItems = items
+        .flatMap(item => item.cartItem)
+        .filter((item, index, self) =>
+            index === self.findIndex(t => t.productName === item.productName && t.productImage === item.productImage)
+        );
+
     // Kiểm tra tất cả sản phẩm có được chọn hay không
-    const allProductsChecked = products.length > 0 && products.every(product => selectedProducts[product.id]);
+    // const allProductsChecked = items.length > 0 && items.every(product => selectedProducts[product.id]);
+    // const allProductsChecked = items.length > 0 && items.every((_, index) => selectedProducts[index]);
+    const allProductsChecked = uniqueCartItems.length > 0 &&
+        uniqueCartItems.every((_, index) => selectedProducts[index]);
+
+    const toggleSelectAll = () => {
+        const isAllChecked = uniqueCartItems.every((_, index) => selectedProducts[index]);
+        setSelectedProducts(
+            uniqueCartItems.reduce((acc, _, index) => {
+                acc[index] = !isAllChecked; // Toggle tất cả
+                return acc;
+            }, {})
+        );
+    };
     // Xuất ra ListSản Phẩm
-    const renderProduct = ({ item }) => (
+    const renderProduct = ({ item, index }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => toggleCheckbox(item.id)}
+            onPress={() => toggleCheckbox(index)}
+            key={index} // Sử dụng index
         >
-
-            <View style={{
-
-                marginRight: 20,
-            }}>
-                <Image source={item.image} style={styles.productIcon} />
+            <View style={{ marginRight: 20 }}>
+                <Image source={{ uri: item.productImage }} style={styles.productIcon} />
             </View>
 
             <View style={styles.productDetails}>
-                <Text style={styles.productCode}>{item.name}</Text>
-                <Text style={styles.productStatus}>Số Lượng: {item.quantity} cái</Text>
+                <Text style={styles.productCode}>{item.productName}</Text>
+                <Text style={styles.productStatus}>Số Lượng: {item.productQuantity} cái</Text>
+                <Text style={styles.productCode}>Màu: {item.productSize}</Text>
                 <View style={styles.line}></View>
-                <Text style={styles.productCode}>Giá: {item.price} ₫</Text>
+                <Text style={styles.productCode}>Giá: {item.productPrice}</Text>
             </View>
+
             {/* Custom checkbox */}
-            <TouchableOpacity onPress={() => toggleCheckbox(item.id)} style={styles.checkboxContainer}>
-                {/* Hiển thị checkbox dựa trên trạng thái đã chọn */}
-                {selectedProducts[item.id] ? (
-                    <View style={styles.checkedCheckbox} />
+            <TouchableOpacity
+                onPress={() => toggleCheckbox(index)}
+                style={styles.checkboxContainer}
+            >
+                {selectedProducts[index] ? (
+                    <Icon name="check" size={15} color="#3669c9" />
                 ) : (
                     <View style={styles.uncheckedCheckbox} />
                 )}
             </TouchableOpacity>
-
         </TouchableOpacity>
-
-
-
     );
-    // State quản lý việc nút mở rộng được mở hay không
     const [isOpen, setIsOpen] = useState(false);
-    const [animation] = useState(new Animated.Value(0)); // giá trị hoạt ảnh
+    const [animation] = useState(new Animated.Value(0));
     const [rotation] = useState(new Animated.Value(0));
 
     const toggleMenu = () => {
@@ -141,7 +172,6 @@ function DetailScreen({ navigation }) {
         setIsOpen(!isOpen);
     };
 
-    // Tạo hiệu ứng mở các nút theo chiều dọc
     const position1 = animation.interpolate({
         inputRange: [0, 1],
         outputRange: [30, 160], // Chuyển từ vị trí của editButton lên trên
@@ -150,113 +180,123 @@ function DetailScreen({ navigation }) {
         inputRange: [0, 1],
         outputRange: [30, 100], // Chuyển từ vị trí của editButton lên trên
     });
-    // Tạo hiệu ứng xoay dựa trên giá trị của rotation
     const rotateIcon = rotation.interpolate({
         inputRange: [0, 1],
         outputRange: ['0deg', '90deg'], // Xoay 90 độ khi bấm
     });
 
-    // Thao Tác Modal Hiển Thị
     const [modalVisible, setModalVisible] = useState(false);
 
     const handleConfirm = () => {
         setModalVisible(false);
-        navigation.navigate('SuccessScreen'); // Điều hướng sau khi xác nhận
+        navigation.navigate('SuccessScreen');
     };
 
 
-
     return (
-        <View style={styles.container}>
-
-
-            {/* Product List Title */}
-            <View style={{ position: 'relative', marginBottom: 30 }}>
-                <Pressable style={styles.menuIcon} onPress={() => navigation.goBack()}>
-                    <Icon name="angle-left" size={35} color="#000" />
-                </Pressable>
-
-                <Text style={styles.productListTitle}>Chi Tiết Trong Đơn</Text>
-
-                {/* Checkbox chọn tất cả */}
-                <Pressable
-                    style={{
-                        position: 'absolute', right: 0, top: 5, width: 25,
-                        height: 25,
-                        borderWidth: 2,
-                        borderColor: '#000', justifyContent: 'center',
-                        alignItems: 'center',
-
-                        borderRadius: 5,
-                    }}  // Căn phải ở trên cùng
-                    onPress={() => {
-                        // Toggle giữa trạng thái chọn tất cả hoặc bỏ chọn tất cả
-                        const isAllChecked = products.every(product => selectedProducts[product.id]);
-                        setSelectedProducts(products.reduce((acc, product) => {
-                            acc[product.id] = !isAllChecked; // Nếu đã chọn hết, bỏ chọn, ngược lại thì chọn tất cả
-                            return acc;
-                        }, {}));
-                    }}
-                >
-                    {
-                        products.every(product => selectedProducts[product.id]) ? (
-                            <View style={styles.checkedCheckbox} />  // Hiển thị khi tất cả được chọn
+        <>
+            <View style={styles.container}>
+                <View style={{ position: 'relative', marginBottom: 30 }}>
+                    <Pressable style={{ width: 50 }} onPress={() => navigation.goBack()}>
+                        <Icon name="angle-left" size={35} color="#000" />
+                    </Pressable>
+                    <Text style={styles.productListTitle}>Chi Tiết Trong Đơn</Text>
+                    {/* Checkbox chọn tất cả */}
+                    <TouchableOpacity
+                        style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 5,
+                            width: 25,
+                            height: 25,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderRadius: 5,
+                            // borderWidth: 2,
+                            // borderColor: '#000',
+                            backgroundColor: '#eee',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.5,
+                            shadowRadius: 4,
+                            elevation: 4,
+                        }}
+                        onPress={toggleSelectAll} // Sử dụng hàm sửa đổi
+                    >
+                        {allProductsChecked ? (
+                            // <View style={styles.checkedCheckbox} />
+                            <Icon name="check" size={20} color="#3669c9" />
                         ) : (
-                            <View style={styles.uncheckedCheckbox} />  // Hiển thị khi chưa chọn tất cả
-                        )
-                    }
-                </Pressable>
+                            <View style={styles.uncheckedCheckbox} />
+                        )}
+                    </TouchableOpacity>
+
+                </View>
+                <FlatList
+                    data={uniqueCartItems} // Dữ liệu đã được làm sạch
+                    renderItem={renderProduct}
+                    keyExtractor={(_, index) => index.toString()} // Sử dụng index làm key
+                    style={styles.productList}
+                />
+
+                {/* Add Button */}
+                <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
+                    <Animated.View style={{ transform: [{ rotate: rotateIcon }] }}>
+                        <Icon name="cog" size={30} color="#fff" />
+                    </Animated.View>
+                </TouchableOpacity>
+
+                <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
+                    <TouchableOpacity
+                        style={[
+                            styles.iconButton,
+                            { backgroundColor: allProductsChecked ? '#3669c9' : '#ccc' }
+                        ]}
+                        onPress={() => {
+                            if (allProductsChecked) {
+                                setModalVisible(true);
+                            }
+                        }}
+                        disabled={!allProductsChecked}
+                    >
+                        <LinearGradient colors={allProductsChecked ? ['#4CAF50', '#388E3C'] : ['#ccc', '#ccc']} style={styles.iconButtonGradient}>
+                            <Icon name="check" size={20} color="#fff" />
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </Animated.View>
+
+                <Animated.View style={[styles.subButton, { bottom: position1 }]}>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => {
+                        Alert.alert(
+                            "Xác Nhận!!!",
+                            "Bạn có chắc muốn xoá không??",
+                            [
+                                {
+                                    text: "Huỷ",
+                                    style: "cancel"
+                                },
+                                { text: "Có", onPress: handleCancelOrder }
+                            ]
+                        );
+                    }}>
+                        <LinearGradient colors={['#FF5252', '#FF1744']} style={styles.iconButtonGradient}>
+                            <Icon name="trash" size={20} color="#fff" />
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </Animated.View>
+
+
+
+                {/* Modal confirm */}
+                <ConfirmDialog
+                    isVisible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    onConfirm={handleConfirmOrder}
+                />
             </View>
+           
+        </>
 
-
-
-            {/* Product List */}
-            <FlatList
-                data={products}
-                renderItem={renderProduct}
-                keyExtractor={(item) => item.id}
-                style={styles.productList}
-            />
-
-
-
-            {/* Add Button */}
-            <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
-                <Animated.Text style={[styles.editButtonText, { transform: [{ rotate: rotateIcon }] }]}>
-                    ▶
-                </Animated.Text>
-            </TouchableOpacity>
-
-            {/* Các nút con */}
-            <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity
-                    style={[
-                        styles.iconButton,
-                        { backgroundColor: allProductsChecked ? '#3669c9' : '#ccc' }  // Đổi màu nếu đã chọn hết sản phẩm
-                    ]}
-                    onPress={() => {
-                        if (allProductsChecked) {
-                            setModalVisible(true);  // Chỉ mở modal khi tất cả sản phẩm đã được chọn
-                        }
-                    }}
-                    disabled={!allProductsChecked}  // Chỉ cho phép bấm khi tất cả sản phẩm đã được chọn
-                >
-                    <Icon name="check" size={20} color="#fff" />
-                </TouchableOpacity>
-            </Animated.View>
-
-            <Animated.View style={[styles.subButton, { bottom: position1 }]}>
-                <TouchableOpacity style={styles.iconButton}>
-                    <Icon name="trash" size={20} color="#fff" />
-                </TouchableOpacity>
-            </Animated.View>
-            {/* Modal confirm */}
-            <ConfirmDialog
-                isVisible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                onConfirm={handleConfirm}
-            />
-        </View>
     );
 }
 
@@ -271,18 +311,23 @@ const styles = StyleSheet.create({
     checkboxContainer: {
         width: 20,
         height: 20,
-        borderWidth: 2,
-        borderColor: '#000',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 10,
         borderRadius: 5,
+        backgroundColor: '#eee',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+        elevation: 4,
     },
     uncheckedCheckbox: {
         width: 14,
         height: 14,
         backgroundColor: 'transparent',
         borderRadius: 14,
+
     },
     checkedCheckbox: {
         width: 12,
@@ -392,18 +437,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginLeft: 10,
         marginBottom: 10,
-
-    },
-
-    subButtonPen: {
-        position: 'absolute',
-        right: 35,
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#3669c9',
-        justifyContent: 'center',
-        alignItems: 'center',
     },
     subButton: {
         position: 'absolute',
@@ -411,13 +444,28 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#ff5757',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    subButtonPen: {
+        position: 'absolute',
+        right: 35,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
     },
     iconButton: {
         width: 50,
         height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconButtonGradient: {
+        width: '100%',
+        height: '100%',
         borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
@@ -437,10 +485,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         borderColor: '#ededed',
-        borderWidth: 2,
         padding: 20,
+        margin: 2,
         borderRadius: 10,
         marginBottom: 10,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+        elevation: 4,
     },
     productIcon: {
         width: 40,
