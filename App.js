@@ -615,9 +615,7 @@ function AdminDrawerNavigator() {
   const hasPermission = (role) => user?.role?.includes(role);
   return (
     <Drawer.Navigator>
-      {hasPermission("PERMISSION_PRODUCT") && (
-        <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
-      )}
+      <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       {hasPermission("PERMISSION_CATEGORIES") && (
         <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       )}
@@ -661,10 +659,16 @@ function AdminDrawerNavigator() {
           <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
           <Drawer.Screen name="Chat" component={ChatAdmin} />
           <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
+          <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
+          <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
         </>
       )}
-      <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
-      <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
+      {hasPermission("PERMISSION_USER") && (
+        <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
+      )}
+      {hasPermission("PERMISSION_SHIPPER") && (
+        <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
+      )}
     </Drawer.Navigator>
   );
 }
@@ -923,14 +927,14 @@ export default function App() {
       console.error('Error loading cart from AsyncStorage:', error);
       // Check if guestId exists in AsyncStorage
       let storedUUID = await AsyncStorage.getItem('guestId');
-        if (!storedUUID) {
-          // If not, generate a new one
-          storedUUID = UUID.v4();
-          await AsyncStorage.setItem('guestId', storedUUID);
-          setUUID(storedUUID);
-        } else {
-          setUUID(storedUUID);
-        }
+      if (!storedUUID) {
+        // If not, generate a new one
+        storedUUID = UUID.v4();
+        await AsyncStorage.setItem('guestId', storedUUID);
+        setUUID(storedUUID);
+      } else {
+        setUUID(storedUUID);
+      }
     }
   };
   const handleStateChange = async (state) => {

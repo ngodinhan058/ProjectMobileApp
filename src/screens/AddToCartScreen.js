@@ -417,7 +417,7 @@ function AddToCartScreen({ route, navigation }) {
 
   const calculateShippingFee = (distance) => {
     const basePrice = 10000;
-    const baseDistance = 10;
+    const baseDistance = 2;
     const extraPricePerKm = 5000;
 
     if (distance <= baseDistance) {
@@ -449,7 +449,7 @@ function AddToCartScreen({ route, navigation }) {
         const distanceInMeters = data.rows[0].elements[0].distance.value;
         const distanceInKm = (distanceInMeters / 1000).toFixed(2);
         setDistance(distanceInKm);
-        return distanceInKm; 
+        return distanceInKm;
       } else {
         alert("Không thể tính toán khoảng cách!");
         return null;
@@ -462,7 +462,11 @@ function AddToCartScreen({ route, navigation }) {
   };
   useEffect(() => {
     if (distance !== null) {
-      setShippingFee(calculateShippingFee(distance));
+      if (distance > 250) {
+        setShippingFee(50000);
+      } else {
+        setShippingFee(calculateShippingFee(distance));
+      }
     }
   }, [distance]);
 
@@ -485,7 +489,8 @@ function AddToCartScreen({ route, navigation }) {
       user: userInfo?.userId,
       orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
       orderNote: orderNote,
-      orderPayment: selectedPaymentMethod, // 1 = Tiền mặt, 0 = VNPay
+      orderPayment: selectedPaymentMethod,
+      feeShip: shippingFee,
       totalPrice: finalTotal,
     };
 
