@@ -11,8 +11,8 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { ROLE_USER, ROLE_ADMIN ,ROLE_SHIPPER} from './src/constants/Role';
-import Icon from "react-native-vector-icons/FontAwesome";
+import { ROLE_USER, ROLE_ADMIN, ROLE_SHIPPER } from './src/constants/Role';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -158,7 +158,7 @@ import ShippingDetailScreen from './src/screens/shipper/ShippingDetailScreen';
 import WaitingShippingScreen from './src/screens/shipper/WaitingShippingScreen';
 import CompletedCancelOrderScreen from './src/screens/shipper/CompletedCancelOrderScreen';
 import ChangePasswordScreen from './src/screens/shipper/ChangePasswordScreen';
-import ShipperAddressScreen from "./src/screens/shipper/ShipperAddressScreen";
+import ShipperAddressScreen from './src/screens/shipper/ShipperAddressScreen';
 
 {
   /* Accouting */
@@ -411,7 +411,12 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
     { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
-    { name: 'CreateAddressScreen', component: CreateAddressScreen, showFooter: false },
+    {
+      name: 'CreateAddressScreen',
+      component: CreateAddressScreen,
+      showFooter: false,
+    },
+    <Stack.Screen name="EditIdCardScreen" component={EditIdCardScreen} />,
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -577,18 +582,9 @@ function CouponAdmin() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="CouponList" component={HomeCouponScreen} />
-      <Stack.Screen
-        name="DetailCouponScreen"
-        component={DetailCouponScreen}
-      />
-      <Stack.Screen
-        name="AddCouponScreen"
-        component={AddCouponScreen}
-      />
-      <Stack.Screen
-        name="EditCouponScreen"
-        component={EditCouponScreen}
-      />
+      <Stack.Screen name="DetailCouponScreen" component={DetailCouponScreen} />
+      <Stack.Screen name="AddCouponScreen" component={AddCouponScreen} />
+      <Stack.Screen name="EditCouponScreen" component={EditCouponScreen} />
     </Stack.Navigator>
   );
 }
@@ -660,16 +656,16 @@ function ShipperDrawerNavigator() {
     <Drawer.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#3669C9",
+          backgroundColor: '#3669C9',
         },
-        headerTintColor: "#fff",
+        headerTintColor: '#fff',
         drawerStyle: {
-          backgroundColor: "#f5f5f5",
+          backgroundColor: '#f5f5f5',
           width: 250,
         },
-        drawerActiveTintColor: "#3669C9",
-        drawerInactiveTintColor: "#333",
-        drawerActiveBackgroundColor: "#e1efff",
+        drawerActiveTintColor: '#3669C9',
+        drawerInactiveTintColor: '#333',
+        drawerActiveBackgroundColor: '#e1efff',
       }}
     >
       <Drawer.Screen
@@ -679,7 +675,7 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />
           ),
-          headerTitle: "Trang Chủ",
+          headerTitle: 'Trang Chủ',
         }}
       />
       <Drawer.Screen
@@ -689,7 +685,7 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="history" size={size} color={color} />
           ),
-          headerTitle: "Lịch Sử Giao Hàng",
+          headerTitle: 'Lịch Sử Giao Hàng',
         }}
       />
       <Drawer.Screen
@@ -699,7 +695,7 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="truck" size={size} color={color} />
           ),
-          headerTitle: "Đang Chờ Giao",
+          headerTitle: 'Đang Chờ Giao',
         }}
       />
       <Drawer.Screen
@@ -709,13 +705,12 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="user" size={size} color={color} />
           ),
-          headerTitle: "Thông Tin Cá Nhân",
+          headerTitle: 'Thông Tin Cá Nhân',
         }}
       />
     </Drawer.Navigator>
   );
 }
-
 
 function ShipperHome() {
   return (
@@ -873,74 +868,80 @@ export default function App() {
     getItem();
   }, []);
 
-    const loadUserInfo = async () => {
-        if (user) {
-            try {
-                const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
-                    method: 'GET',
+  const loadUserInfo = async () => {
+    if (user) {
+      try {
+        const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+
+        // Kiểm tra mã trạng thái phản hồi
+        if (response.ok) {
+          const result = await response.json();
+
+          if (result) {
+            let userInfo = result.data;
+
+            // Check if cartId is null and create a new cart if necessary
+            if (userInfo.cartId == null) {
+              try {
+                const createCartResponse = await fetch(
+                  `${BASE_URL}cart/user/`,
+                  {
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${user.token}`,
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${user.token}`,
                     },
-                });
+                    body: JSON.stringify({
+                      userId: userInfo.userId,
+                    }),
+                  }
+                );
 
-                // Kiểm tra mã trạng thái phản hồi
-                if (response.ok) {
-                    const result = await response.json();
+                if (createCartResponse.ok) {
+                  const cartResult = await createCartResponse.json();
+                  userInfo.cartId = cartResult.data.cartId;
 
-                    if (result) {
-                        let userInfo = result.data;
-
-                        // Check if cartId is null and create a new cart if necessary
-                        if (userInfo.cartId == null) {
-                            try {
-                                const createCartResponse = await fetch(`${BASE_URL}cart/user/`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        Authorization: `Bearer ${user.token}`,
-                                    },
-                                    body: JSON.stringify({
-                                        userId: userInfo.userId,
-                                    }),
-                                });
-
-                                if (createCartResponse.ok) {
-                                    const cartResult = await createCartResponse.json();
-                                    userInfo.cartId = cartResult.data.cartId;
-
-                                    console.log('New cart created:', cartResult.data.cartId);
-                                } else {
-                                    console.log('Failed to create cart. Status:', createCartResponse.status);
-                                }
-                            } catch (error) {
-                                console.error('Error creating cart:', error);
-                            }
-                        }
-
-                        setUserData(userInfo); // Lưu thông tin người dùng vào state
-
-                        // Lưu thông tin người dùng vào AsyncStorage
-                        await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
-                        console.log('User info saved to AsyncStorage');
-                    } else {
-                        console.log('No data in API response');
-                    }
+                  console.log('New cart created:', cartResult.data.cartId);
                 } else {
-                    console.log('Failed to fetch user info. Status:', response.status);
+                  console.log(
+                    'Failed to create cart. Status:',
+                    createCartResponse.status
+                  );
                 }
-            } catch (error) {
-                console.error('Error fetching user info:', error);
+              } catch (error) {
+                console.error('Error creating cart:', error);
+              }
             }
-        } else {
-            await AsyncStorage.removeItem('userInfo');
-            await AsyncStorage.removeItem('userData');
-        }
-    };
 
-    useEffect(() => {
-        loadUserInfo();
-    }, [user.token]);
+            setUserData(userInfo); // Lưu thông tin người dùng vào state
+
+            // Lưu thông tin người dùng vào AsyncStorage
+            await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+            console.log('User info saved to AsyncStorage');
+          } else {
+            console.log('No data in API response');
+          }
+        } else {
+          console.log('Failed to fetch user info. Status:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    } else {
+      await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('userData');
+    }
+  };
+
+  useEffect(() => {
+    loadUserInfo();
+  }, [user.token]);
 
   // console.log(user.token);
 
@@ -954,7 +955,7 @@ export default function App() {
         <AdminDrawerNavigator />
       )}
       {Object.keys(user).length !== 0 && user?.role === ROLE_SHIPPER && (
-        <ShipperDrawerNavigator/>
+        <ShipperDrawerNavigator />
         // <AdminDrawerNavigator />
       )}
       {/* <HaveLoginHome /> */}
@@ -962,7 +963,7 @@ export default function App() {
       {/* <HaveLoginHome /> */}
       {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
-        
+
       {/* <Accouting /> */}
     </NavigationContainer>
   );

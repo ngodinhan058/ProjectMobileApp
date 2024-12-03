@@ -80,6 +80,8 @@ const Up_Image = ({ onImagesSelected, image = '' }) => {
     setImageModalVisible(false); // Đóng modal sau khi chọn ảnh
   };
 
+  console.log(selectedImage);
+
   return (
     <View style={styles.container}>
       {/* Icon Image */}
@@ -87,13 +89,13 @@ const Up_Image = ({ onImagesSelected, image = '' }) => {
         <TouchableOpacity onPress={() => setImageModalVisible(true)}>
           {selectedImage ? (
             <Image
-              source={{ uri: selectedImage && image ? selectedImage : image }} // Hiển thị hình ảnh đã chọn
+              source={{ uri: selectedImage }} // Hiển thị hình ảnh đã chọn
               style={styles.imageIcon}
             />
           ) : (
             <Image
               source={require('../assets/upload_image_icon.png')} // Thay bằng đường dẫn tới ảnh của bạn
-              style={styles.imageIcon}
+              style={styles.imageIconDefault}
             />
           )}
         </TouchableOpacity>
@@ -146,10 +148,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   imageIcon: {
-    width: 200,
-    height: 200,
+    width: 155,
+    height: 140,
     marginVertical: 20,
-    borderRadius: 100,
+  },
+  imageIconDefault: {
+    width: 155,
+    height: 140,
+    marginVertical: 20,
   },
   imageSelectIcon: {
     width: 200,

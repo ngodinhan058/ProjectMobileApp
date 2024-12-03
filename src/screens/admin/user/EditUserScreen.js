@@ -14,7 +14,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import UploadImage from '../../../components/Up_Image';
-import { BASE_URL } from '../../api/config';
+import { BASE_URL, BASE_URLS } from '../../api/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EditUserScreen = ({ route, navigation }) => {
@@ -73,7 +73,7 @@ const EditUserScreen = ({ route, navigation }) => {
     if (user) {
       try {
         const response = await fetch(
-          `${BASE_URL}auth/users/${route.params.id}`,
+          `${BASE_URLS}auth/users/${route.params.id}`,
           {
             method: 'GET',
             headers: {

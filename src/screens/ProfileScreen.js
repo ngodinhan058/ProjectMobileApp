@@ -39,12 +39,10 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
 
-  const isFocused = useIsFocused();
-
   useFocusEffect(() => {
     fetchUserInfo();
   });
-  console.log('user', user);
+  console.log('usernehe', user);
 
   const handleLogout = async () => {
     try {
@@ -148,6 +146,22 @@ const ProfileScreen = ({ navigation, route }) => {
             <View style={styles.row}>
               <IconI name="lock-closed-outline" size={22} color="#000" />
               <Text style={styles.textPro}>Thay Đổi Mật Khẩu</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() =>
+              navigation.navigate('EditIdCardScreen', {
+                iCard: user.iCard,
+                id: user.userId,
+              })
+            }
+          >
+            <View style={styles.row}>
+              <IconI name="card" size={22} color="#000" />
+              <Text style={styles.textPro}>CCCD</Text>
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
