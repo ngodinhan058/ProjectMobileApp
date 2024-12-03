@@ -21,6 +21,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './src/screens/api/config';
 import * as encoding from 'text-encoding';
+import UUID from 'react-native-uuid';
 
 import AddedProductToWishlist from './src/screens/AddedProductToWishlist';
 import AddToCartScreen from './src/screens/AddToCartScreen';
@@ -644,7 +645,7 @@ function AdminDrawerNavigator() {
       {hasPermission("PERMISSION_CHAT") && (
         <Drawer.Screen name="Chat" component={ChatAdmin} />
       )}
-       {hasPermission("PERMISSION_INVENTORY") && (
+      {hasPermission("PERMISSION_INVENTORY") && (
         <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
       )}
       {hasPermission("PERMISSION_GETALL") && (
@@ -663,7 +664,7 @@ function AdminDrawerNavigator() {
         </>
       )}
       <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
-      <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{headerShown: false}}/>
+      <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
     </Drawer.Navigator>
   );
 }
@@ -728,7 +729,7 @@ function ShipperDrawerNavigator() {
         drawerActiveTintColor: "#3669C9",
         drawerInactiveTintColor: "#333",
         drawerActiveBackgroundColor: "#e1efff",
-        
+
       }}
     >
       <Drawer.Screen
@@ -894,6 +895,7 @@ function Accouting() {
 export default function App() {
   const [user, setUser] = useState({});
   const [userData, setUserData] = useState({});
+  const [uuid, setUUID] = useState("");
 
   const getItem = async () => {
     try {
@@ -904,11 +906,31 @@ export default function App() {
         const decoded = jwtDecode(token);
         setUser({ username, token, role: decoded.scope.split(' ') });
         // setUser({ username, token, role: decoded.scope.split(' ')[0] }); 
+
       } else {
         setUser({});
+        let storedUUID = await AsyncStorage.getItem('guestId');
+        if (!storedUUID) {
+          // If not, generate a new one
+          storedUUID = UUID.v4();
+          await AsyncStorage.setItem('guestId', storedUUID);
+          setUUID(storedUUID);
+        } else {
+          setUUID(storedUUID);
+        }
       }
     } catch (error) {
       console.error('Error loading cart from AsyncStorage:', error);
+      // Check if guestId exists in AsyncStorage
+      let storedUUID = await AsyncStorage.getItem('guestId');
+        if (!storedUUID) {
+          // If not, generate a new one
+          storedUUID = UUID.v4();
+          await AsyncStorage.setItem('guestId', storedUUID);
+          setUUID(storedUUID);
+        } else {
+          setUUID(storedUUID);
+        }
     }
   };
   const handleStateChange = async (state) => {
@@ -994,7 +1016,6 @@ export default function App() {
     } else {
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('userData');
-      await AsyncStorage.removeItem('userRole');
     }
   };
 

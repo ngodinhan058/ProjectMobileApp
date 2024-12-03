@@ -7,6 +7,8 @@ import AlertComponent from '../../../components/AlertComponent';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../../api/config';
+import { WS_URL } from '../../api/configWS';
+import useWebSocket from '../../api/useWebSocket';
 import axios from 'axios';
 
 
@@ -37,7 +39,32 @@ const HomeAdminScreen = ({ navigation, route }) => {
             fetchOrder();
         }, [])
     );
+    const wsUrl = `${WS_URL}/ws`;
 
+    const handleOrderUpdate = (updatedOrder) => {
+        setOrder((prevOrders) => {
+          if (updatedOrder.orderId) {
+            // Check if the order already exists
+            const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
+      
+            if (orderIndex !== -1) {
+              // Update the existing order
+              const newOrders = [...prevOrders];
+              newOrders[orderIndex] = updatedOrder;
+              return newOrders;
+            } else {
+              // Add the new order
+              return [...prevOrders, updatedOrder];
+            }
+          } else {
+            // Handle order deletion by `orderId`
+            return prevOrders.filter(order => order.orderId !== updatedOrder);
+          }
+        });
+      };
+
+  
+    const { client } = useWebSocket(wsUrl, handleOrderUpdate);
     const handleRefresh = () => {
         fetchOrder();
     };
@@ -119,6 +146,7 @@ const HomeAdminScreen = ({ navigation, route }) => {
                     renderItem={renderProduct}
                     keyExtractor={(item) => item.orderId.toString()}
                     style={styles.productList}
+                    extraData={order}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
                     }

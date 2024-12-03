@@ -8,6 +8,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
 import { LinearGradient } from 'expo-linear-gradient';
+import { WS_URL } from './api/configWS';
+import useWebSocket from './api/useWebSocket';
 
 const MyOrderScreen = ({ route, navigation }) => {
   const layout = useWindowDimensions();
@@ -38,7 +40,32 @@ const MyOrderScreen = ({ route, navigation }) => {
   }, []);
   const flatListRef = useRef(null);
 
+  const wsUrl = `${WS_URL}/ws`;
 
+  const handleOrderUpdate = (updatedOrder) => {
+    setOrders((prevOrders) => {
+        if (updatedOrder.orderId) {
+          // Check if the order already exists
+          const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
+    
+          if (orderIndex !== -1) {
+            // Update the existing order
+            const newOrders = [...prevOrders];
+            newOrders[orderIndex] = updatedOrder;
+            return newOrders;
+          } else {
+            // Add the new order
+            return [...prevOrders, updatedOrder];
+          }
+        } else {
+          // Handle order deletion by `orderId`
+          return prevOrders.filter(order => order.orderId !== updatedOrder);
+        }
+      });
+    };
+
+
+  const { client } = useWebSocket(wsUrl, handleOrderUpdate);
   const getItemLayout = (data, index) => ({
     length: 30, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
     offset: 150 * index, // Offset dựa trên index của item

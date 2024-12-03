@@ -33,7 +33,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const [image, setImage] = useState(); // Dữ liệu sản phẩm
   const [size, setSize] = useState(); // Đặt size mặc định
-  
+
   const [selectedSize, setSelectedSize] = useState(); // Đặt size mặc định
   const [productPriceSale, setProductPriceSale] = useState(); // Đặt size mặc định
   const { id } = route.params;
@@ -225,6 +225,21 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     }
   }, [selectedSize]);
 
+  const [uuid, setUUID] = useState("");
+  useEffect(() => {
+    const fetchUUID = async () => {
+      try {
+        const storedUUID = await AsyncStorage.getItem("guestId");
+        setUUID(storedUUID); // Lưu giá trị thực vào state
+      } catch (error) {
+        console.error("Error retrieving guestId:", error);
+      }
+    };
+
+    fetchUUID();
+  }, []);
+
+  console.log(uuid); 
 
   const handleAddToCartUser = async () => {
     if (!selectedSize) {
@@ -294,7 +309,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           ],
           { cancelable: false }
         );
-      } 
+      }
     } catch (error) {
       const response = await axios.put(`${BASE_URL}cart/${userInfo.cartId}`, cartItemData);
       // console.log(response);
@@ -354,6 +369,118 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   };
+
+  const handleAddToCartGuest = async () => {
+    if (!selectedSize) {
+      setError('Vui Lòng Chọn Màu Sản Phẩm');
+      setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    if (quantity < 1) {
+      setError('Vui Lòng Chọn Số Lượng Hợp Lệ');
+      setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+    // Lấy thông tin kích thước đã chọn từ productSizes
+    const selectedProductSize = productsState.productSizes.find(
+      (size) => size.productSizeName === selectedSize
+    );
+
+    if (!selectedProductSize) {
+      setError('Kích thước sản phẩm không tồn tại');
+      setErrorCheck(false);
+      setAlertType('error');
+      setAlertVisible(true);
+      setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+
+    if (quantity > 20) {
+      setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
+      setAlertType('error');
+      setAlertVisible(true);
+
+      setErrorCheckQuantity(false);
+      setTimeout(() => setErrorCheckQuantity(true), 5);
+      return;
+    }
+
+    // Nếu vượt qua các kiểm tra, tiến hành thêm sản phẩm vào giỏ hàng
+    setError('');
+    setErrorCheck(false);
+
+
+    const cartItemDataUUID = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId,
+      },
+      guestId: uuid,
+    };
+    const cartItemData = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId,
+      },
+    };
+
+    try {
+      const cartResponse = await axios.get(`${BASE_URL}carts/guest/${uuid}`);
+      if (cartResponse.status === 200) {
+        const cartId = cartResponse.data.data.cartId;
+        if (cartId) {
+          await axios.put(`${BASE_URL}cart/${cartId}`, cartItemData);
+          console.log('Sản phẩm đã được thêm vào giỏ hàng');
+          closeModalBuy();
+          navigation.navigate('AddToCartScreen', {
+            alertVisible: true,
+            alertType: 'success',
+          })
+        } else {
+          console.log('Cart ID không tồn tại trong phản hồi.');
+        }
+      } else {
+        console.log('Unexpected response status:', cartResponse.status, cartResponse);
+      }
+    } catch (error) {
+      try {
+        
+        const createCartResponse = await axios.post(`${BASE_URL}cart/create_guest`, cartItemDataUUID);
+
+        if (createCartResponse.status === 201 || createCartResponse.status === 200) {
+          const newCartId = createCartResponse.data.data.cartId;
+          await axios.put(`${BASE_URL}cart/${newCartId}`, cartItemDataUUID);
+          closeModalBuy();
+          navigation.navigate('AddToCartScreen', {
+            alertVisible: true,
+            alertType: 'success',
+          })
+        }
+      } catch (createError) {
+        // console.error('Lỗi khi tạo giỏ hàng:', createError);
+      }
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
   const handleQuantityChange = (amount) => {
     setQuantity(Math.max(1, quantity + amount));
     setErrorCheckQuantity(false);
@@ -445,7 +572,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   const handleWishListUser = async () => {
     console.log(size);
-    
+
     const selectedProductSizes = size.filter((size) =>
       selectedSizes.includes(size.productSizeName)
     );
@@ -467,7 +594,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           sizeId: selectedProductSize.productSizeId,
         },
       };
-      console.log("cartItemData",cartItemData);
+      console.log("cartItemData", cartItemData);
 
       try {
         const response = await axios.put(
@@ -553,9 +680,9 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     setTitleAlert('Xoá Yêu Thích Thành Công');
   };
 
-// Kết Thúc WishList
+  // Kết Thúc WishList
 
-// console.log(userInfo);
+  // console.log(userInfo);
   //Kết thúc
   return (
     <View>
@@ -624,7 +751,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           <View style={styles.productInfo}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.productName}>{productsState.productName}</Text>
-              {liked ? ( <TouchableOpacity
+              {liked ? (<TouchableOpacity
                 style={{
                   borderColor: '#ccc',
                   borderWidth: 1,
@@ -653,38 +780,38 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     source={require('../assets/heart.png')}
                   />
                 </View>
-              </TouchableOpacity>) : 
-              ( <TouchableOpacity
-                style={{
-                  backgroundColor: '#fff',
-                  borderColor: '#ccc',
-                  borderWidth: 1,
-                  padding: 10,
-                  borderRadius: 10,
-                }}
-                onPress={openModalLike}>
-                <View
+              </TouchableOpacity>) :
+                (<TouchableOpacity
                   style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
+                    backgroundColor: '#fff',
+                    borderColor: '#ccc',
+                    borderWidth: 1,
+                    padding: 10,
+                    borderRadius: 10,
                   }}
-                >
-                  <Text
+                  onPress={openModalLike}>
+                  <View
                     style={{
-                      textAlign: 'center',
-                      fontWeight: '600',
-                      color: '#FFF',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
                     }}
                   >
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        fontWeight: '600',
+                        color: '#FFF',
+                      }}
+                    >
 
-                  </Text>
-                  <Image
-                    style={{ width: 20, height: 20, tintColor: '#3669c9' }}
-                    source={require('../assets/heart.png')}
-                  />
-                </View>
-              </TouchableOpacity>)}
-             
+                    </Text>
+                    <Image
+                      style={{ width: 20, height: 20, tintColor: '#3669c9' }}
+                      source={require('../assets/heart.png')}
+                    />
+                  </View>
+                </TouchableOpacity>)}
+
             </View>
 
             <View>
@@ -930,7 +1057,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   paddingVertical: 20,
                   borderRadius: 10,
                 }}
-                onPress={openModalLogin}
+                onPress={openModalBuy}
               >
                 <Text
                   style={{
@@ -953,7 +1080,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   padding: 20,
                   borderRadius: 10,
                 }}
-                onPress={openModalLogin}
+                onPress={openModalBuyNow}
               >
                 <Text
                   style={{
@@ -1164,9 +1291,17 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
               <Text style={{ fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
             </View>
-            <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
+            { !userInfo?.userId ? 
+            ( <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartGuest}>
               <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>) : 
+            ( <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
+              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
+            </TouchableOpacity>) }
+            {/* <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
+              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
+            </TouchableOpacity> */}
+   
           </View>
         </View>
         <AlertComponent
@@ -1327,16 +1462,13 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         />
       </Modal>
       {/* No Login */}
-      <Modal visible={isLoginModalVisible} animationType="slide"
+      {/* <Modal visible={isLoginModalVisible} animationType="slide"
         transparent={true}
         onRequestClose={closeModalLogin}>
         <TouchableWithoutFeedback onPress={closeModalLogin}>
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={styles.modalContainerLogin}>
-          {/* Close Button */}
-
-          {/* Modal Content */}
           <View style={styles.content}>
             <Text style={styles.title}>Đăng Nhập tài Khoản</Text>
             <View style={styles.line}></View>
@@ -1348,14 +1480,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             <Text style={styles.subMessage}>
               Có vẻ nhưng bạn chưa đăng nhập? Hãy đăng nhập hoặc đăng ký để có thể nhận thông báo về cái ưa đãi khủng
             </Text>
-
-            {/* Login Button */}
             <TouchableOpacity style={styles.loginButton} onPress={closeModalLogin}>
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
       {/* Add WishList */}
       <Modal
         visible={isLikeModalVisible}
@@ -1540,7 +1670,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
-},
+  },
   content: {
     padding: 20,
     alignItems: "center",

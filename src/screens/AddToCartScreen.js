@@ -49,15 +49,19 @@ function AddToCartScreen({ route, navigation }) {
   const [selectedCoupon, setSelectedCoupon] = useState(null); // Coupon được chọn
   const [discount, setDiscount] = useState(0); // Giá trị khuyến mãi
   const [discountShip, setDiscountShip] = useState(0); // Giá trị khuyến mãi
-  const [shippingFee, setShippingFee] = useState(20000); // Giá trị khuyến mãi
+  const [shippingFee, setShippingFee] = useState(0); // Giá trị khuyến mãi
   const [orderNote, setOrderNote] = useState('');
 
   const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
   const [isCouponModal, setIsCouponModal] = useState(false);
 
-
+  const [origin, setOrigin] = useState("53 Đường Võ Văn Ngân Linh Chiểu Thành Phố Thủ Đức Hồ Chí Minh"); // Địa chỉ bắt đầu
+  const [destination, setDestination] = useState(""); // Địa chỉ kết thúc
+  const [distance, setDistance] = useState(null);
   const [total, setTotal] = useState();
+
+  const GOONG_API_KEY = "7d6NMyBGea1uqvClvnSeN9WC4ywy3hzbhoT0pwFI";
 
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
@@ -87,11 +91,13 @@ function AddToCartScreen({ route, navigation }) {
       try {
         // Lấy dữ liệu từ AsyncStorage
         const userInfoString = await AsyncStorage.getItem('userInfo');
-
-        // Nếu có dữ liệu thì parse nó thành JSON
         if (userInfoString) {
           const userInfoData = JSON.parse(userInfoString);
           setUserInfo(userInfoData); // Lưu vào state
+          setDestination(
+            `${userInfoData?.address?.addressName} ${userInfoData?.address?.ward} ${userInfoData?.address?.district} ${userInfoData?.address?.city}`
+          );
+
         }
       } catch (error) {
         console.error('Error fetching user info from AsyncStorage:', error);
@@ -246,10 +252,6 @@ function AddToCartScreen({ route, navigation }) {
       console.error("Lỗi khi xử lý cập nhật số lượng:", error);
     }
   };
-
-
-
-  // Delete item from cart
   const handleDeleteUser = async (id, quantity, size) => {
     const cartItemData = {
       cartItem: {
@@ -291,8 +293,6 @@ function AddToCartScreen({ route, navigation }) {
       // setAlertType("error");
     }
   };
-
-
   const fetchCouponsByType = async (type, setCouponsState) => {
     const apiUrl = `${BASE_URL}coupons/type/${type}`;
     try {
@@ -415,8 +415,63 @@ function AddToCartScreen({ route, navigation }) {
     }
   }, [total, selectedCoupon, shippingFee]);
 
+  const calculateShippingFee = (distance) => {
+    const basePrice = 10000;
+    const baseDistance = 10;
+    const extraPricePerKm = 5000;
 
-  // Tính tổng cuối cùng
+    if (distance <= baseDistance) {
+      return basePrice;
+    }
+
+    const extraDistance = distance - baseDistance;
+    return basePrice + extraDistance * extraPricePerKm;
+  };
+
+  const calculateDistance = async () => {
+    try {
+      const geocodeAddress = async (address) => {
+        const response = await axios.get(
+          `https://rsapi.goong.io/geocode?address=${encodeURIComponent(address)}&api_key=${GOONG_API_KEY}`
+        );
+        return response.data.results[0].geometry.location;
+      };
+
+      const originCoords = await geocodeAddress(origin);
+      const destinationCoords = await geocodeAddress(destination);
+
+      const response = await axios.get(
+        `https://rsapi.goong.io/DistanceMatrix?origins=${originCoords.lat},${originCoords.lng}&destinations=${destinationCoords.lat},${destinationCoords.lng}&vehicle=car&api_key=${GOONG_API_KEY}`
+      );
+
+      const data = response.data;
+      if (data.rows && data.rows[0].elements[0].distance) {
+        const distanceInMeters = data.rows[0].elements[0].distance.value;
+        const distanceInKm = (distanceInMeters / 1000).toFixed(2);
+        setDistance(distanceInKm);
+        return distanceInKm; 
+      } else {
+        alert("Không thể tính toán khoảng cách!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Lỗi:", error.response?.data || error.message);
+      alert("Đã xảy ra lỗi khi tính khoảng cách!");
+      return null;
+    }
+  };
+  useEffect(() => {
+    if (distance !== null) {
+      setShippingFee(calculateShippingFee(distance));
+    }
+  }, [distance]);
+
+  useEffect(() => {
+    if (origin && destination) {
+      calculateDistance();
+    }
+  }, [origin, destination]);
+
   const finalTotal = total
     ? (discount ? total - discount + shippingFee : total - discountShip + shippingFee)
     : 0;
@@ -628,7 +683,7 @@ function AddToCartScreen({ route, navigation }) {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 10 }}>
           {/* Phương thức thanh toán đã chọn */}
           <TouchableOpacity style={styles.paymentMethod} onPress={toggleModal}>
-            <Image source={selectedPaymentIcon} style={{ width: 24, height: 24, marginRight: 10,}} />
+            <Image source={selectedPaymentIcon} style={{ width: 24, height: 24, marginRight: 10, }} />
             <Text style={styles.selectedPaymentText}>{selectedPaymentName}</Text>
             <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
@@ -690,13 +745,6 @@ function AddToCartScreen({ route, navigation }) {
         </TouchableWithoutFeedback>
         <View style={styles.modalCouponBackground}>
           <Text style={styles.modalTitle}>Chọn Mã Khuyến Mãi</Text>
-          {/* <ScrollView>
-            {couponAll.map((item) => (
-              <View key={item.couponId.toString()}>
-                {renderCoupon({ item })}
-              </View>
-            ))}
-          </ScrollView> */}
           <TabView
             navigationState={{ index, routes }}
             renderScene={SceneMap({

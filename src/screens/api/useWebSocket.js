@@ -32,7 +32,17 @@ const useWebSocket = (url, onProductUpdate) => {
           console.error('Error parsing message:', error);
         }
       }
-      )
+      );
+      client.subscribe('/topic/orders', message => {
+        try {
+          const updatedOrder = JSON.parse(message.body);
+          onProductUpdate(updatedOrder); // Handle order updates
+        } catch (error) {
+          console.error('Error parsing order message:', error);
+        }
+      }
+      );
+
     },
   });
 
