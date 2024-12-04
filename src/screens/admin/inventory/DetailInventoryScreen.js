@@ -115,6 +115,7 @@ function DetailScreen({ navigation, route }) {
         );
     };
     // Xuất ra ListSản Phẩm
+
     const renderProduct = ({ item, index }) => (
         <TouchableOpacity
             style={styles.productItem}
@@ -149,7 +150,7 @@ function DetailScreen({ navigation, route }) {
     const [isOpen, setIsOpen] = useState(false);
     const [animation] = useState(new Animated.Value(0));
     const [rotation] = useState(new Animated.Value(0));
-
+    
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
 
@@ -233,9 +234,9 @@ function DetailScreen({ navigation, route }) {
 
                 </View>
                 <FlatList
-                    data={uniqueCartItems} // Dữ liệu đã được làm sạch
+                    data={items[0].cartItem} // Dữ liệu đã được làm sạch
                     renderItem={renderProduct}
-                    keyExtractor={(_, index) => index.toString()} // Sử dụng index làm key
+                    keyExtractor={(item) => item.productId}
                     style={styles.productList}
                 />
 
