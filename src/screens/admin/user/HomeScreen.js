@@ -9,6 +9,7 @@ import {
   Pressable,
   Alert,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
@@ -23,6 +24,7 @@ const HomeAdminScreen = ({ navigation }) => {
   const [usersState, setUsersState] = useState([]); // Danh sách người dùng
   const [user, setUser] = useState({}); // Thông tin người dùng hiện tại
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -40,6 +42,7 @@ const HomeAdminScreen = ({ navigation }) => {
 
     loadUser();
   }, []);
+  console.log('TOKEN', user.token);
 
   const fetchData = async () => {
     if (!user.token) {
@@ -51,6 +54,7 @@ const HomeAdminScreen = ({ navigation }) => {
     const apiUrl = `${BASE_URL}auth/users`;
 
     try {
+      setLoading(true);
       const response = await axios.get(apiUrl, {
         headers: {
           'Content-Type': 'application/json',
@@ -67,10 +71,9 @@ const HomeAdminScreen = ({ navigation }) => {
       );
     } finally {
       setRefreshing(false);
+      setLoading(false);
     }
   };
-
-  console.log(user.token);
 
   useEffect(() => {
     if (user.token) {
@@ -177,26 +180,23 @@ const HomeAdminScreen = ({ navigation }) => {
 
   const [users, setUsers] = useState([]);
   const handleDisplayUser = (index) => {
-    console.log(
-      'ROLES',
-      usersState.map((us) =>
-        us['roles'].filter((u) => u['roleName'] === 'ADMIN')
-      )
-    );
-    console.log('Called', index);
-
+    setLoading(true);
     switch (index) {
+      case 0:
+        console.log('USER', resultShipper);
+
+        const resultUser = usersState.filter((us) =>
+          us['roles'].some((u) => u['roleName'] === 'USER')
+        );
+        setUsers(resultUser);
+        console.log('USER', resultShipper);
+
+        break;
       case 1:
         const resultAdmin = usersState.filter((us) =>
           us['roles'].some((u) => u['roleName'] === 'ADMIN')
         );
         setUsers(resultAdmin);
-        break;
-      case 0:
-        const resultUser = usersState.filter((us) =>
-          us['roles'].some((u) => u['roleName'] === 'USER')
-        );
-        setUsers(resultUser);
         break;
       case 2:
         const resultShipper = usersState.filter((us) =>
@@ -209,11 +209,14 @@ const HomeAdminScreen = ({ navigation }) => {
       default:
         break;
     }
+    setLoading(false);
   };
 
   useEffect(() => {
     handleDisplayUser(index);
-  }, [index]);
+  }, [index, usersState]);
+
+  console.log('djsdhsdhsdh', user);
 
   const handleLogout = async () => {
     try {
@@ -228,7 +231,7 @@ const HomeAdminScreen = ({ navigation }) => {
           {
             text: 'Đúng',
             onPress: async () => {
-              await AsyncStorage.removeItem('userData');              
+              await AsyncStorage.removeItem('userData');
               await AsyncStorage.removeItem('userInfo');
 
               Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
@@ -306,6 +309,12 @@ const HomeAdminScreen = ({ navigation }) => {
           <Icon name="add-circle" size={40} color="#fff" />
         </LinearGradient>
       </TouchableOpacity>
+
+      {loading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </View>
   );
 };
@@ -409,6 +418,13 @@ const styles = StyleSheet.create({
     borderRadius: 32.5,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
 });
 
