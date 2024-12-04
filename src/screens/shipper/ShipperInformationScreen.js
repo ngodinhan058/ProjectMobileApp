@@ -66,7 +66,7 @@ function ShipperInformationScreen({ navigation }) {
 
       {/* Account Settings Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account Settings</Text>
+        <Text style={styles.sectionTitle}>Tài Khoản</Text>
         <View style={styles.settingsList}>
           <TouchableOpacity
             style={styles.settingItem}
@@ -78,7 +78,7 @@ function ShipperInformationScreen({ navigation }) {
                 style={styles.icon}
               />
             </View>
-            <Text style={styles.settingText}>Profile Setting</Text>
+            <Text style={styles.settingText}>Thông tin </Text>
             <Text style={styles.arrow}>›</Text>
           </TouchableOpacity>
 
@@ -92,21 +92,7 @@ function ShipperInformationScreen({ navigation }) {
                 style={styles.icon}
               />
             </View>
-            <Text style={styles.settingText}>Change Password</Text>
-            <Text style={styles.arrow}>›</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => navigation.navigate("ChatScreen")}
-          >
-            <View style={styles.iconWrapper}>
-              <Image
-                source={require("../../assets/Chat.png")}
-                style={styles.icon}
-              />
-            </View>
-            <Text style={styles.settingText}>Chat Support</Text>
+            <Text style={styles.settingText}>Đổi mật khẩu</Text>
             <Text style={styles.arrow}>›</Text>
           </TouchableOpacity>
         </View>
@@ -120,16 +106,6 @@ function ShipperInformationScreen({ navigation }) {
             style={styles.footerIcon}
           />
           <Text style={styles.footerText}>Log Out</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.footerItem}>
-          <Image
-            source={require("../../assets/Deactive.png")}
-            style={styles.footerIcon}
-          />
-          <Text style={[styles.footerText, styles.deactivateText]}>
-            Deactivate Account
-          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -190,18 +166,14 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
   iconWrapper: {
-    backgroundColor: "#e1e6ff",
-    width: 40,
-    height: 40,
+    width: 20,
+    height: 20,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
   },
-  icon: {
-    width: 24,
-    height: 24,
-  },
+
   settingText: {
     flex: 1,
     fontSize: 16,
@@ -220,17 +192,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 15,
-  },
-  footerIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
+    color:"red"
   },
   footerText: {
     fontSize: 16,
-    color: "#333",
-  },
-  deactivateText: {
     color: "#FF4310",
   },
 });
