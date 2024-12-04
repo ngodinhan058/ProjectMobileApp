@@ -58,6 +58,7 @@ import PaymentWebViewScreen from './src/screens/payment/PaymentWebViewScreen';
 {
   /* Admin */
 }
+import AdminHome from './src/screens/admin/AdminHome';
 
 {
   /* AdminProduct */
@@ -615,7 +616,10 @@ function AdminDrawerNavigator() {
   const hasPermission = (role) => user?.role?.includes(role);
   return (
     <Drawer.Navigator>
-      <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+      <Drawer.Screen name="Trang Chủ Admin" component={AdminHome} />
+      {hasPermission("PERMISSION_PRODUCTS") && (
+        <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+      )}
       {hasPermission("PERMISSION_CATEGORIES") && (
         <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       )}
@@ -1033,7 +1037,7 @@ export default function App() {
     <NavigationContainer onStateChange={handleStateChange}>
       {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && hasRole("ROLE_USER") && <HaveLoginHome />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_ADMIN") && <AdminDrawerNavigator />}
+      {Object.keys(user).length !== 0 && hasRole("PERMISSION_ADMIN") && <AdminDrawerNavigator />}
       {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}

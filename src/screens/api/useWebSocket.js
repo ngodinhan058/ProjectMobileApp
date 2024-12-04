@@ -38,7 +38,7 @@ const useWebSocket = (url, onProductUpdate) => {
           const updatedOrder = JSON.parse(message.body);
           onProductUpdate(updatedOrder); // Handle order updates
         } catch (error) {
-          console.error('Error parsing order message:', error);
+          // console.error('Error parsing order message:', error);
         }
       }
       );
