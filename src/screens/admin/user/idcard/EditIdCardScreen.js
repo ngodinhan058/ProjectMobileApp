@@ -19,17 +19,22 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import UploadImage from '../../../../components/Up_Image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { BASE_URL } from '../../../api/config';
 
 const EditIdCardScreen = ({ route, navigation }) => {
   const cardInfo = route.params.iCard;
 
+  console.log('Äaaaa', cardInfo.imageFrontPath);
+
   const [CCCDNumber, setCCCDNumber] = useState(
     cardInfo?.idCardNumber ? cardInfo?.idCardNumber : ''
   );
-  const [selectedImageFront, setSelectedFront] = useState(null);
-  const [selectedImageBack, setSelectedImageBack] = useState(null);
+  const [selectedImageFront, setSelectedFront] = useState(
+    cardInfo.imageFrontPath
+  );
+  const [selectedImageBack, setSelectedImageBack] = useState(
+    cardInfo.imageFrontPath
+  );
 
   const [dateOfBirth, setDateOfBirth] = useState(
     cardInfo?.idCardDate ? new Date(cardInfo?.idCardDate) : new Date()
@@ -43,8 +48,6 @@ const EditIdCardScreen = ({ route, navigation }) => {
     setShowDatePicker(false);
     setDateOfBirth(currentDate);
   };
-
-  console.log(cardInfo);
 
   const getItem = async () => {
     try {
@@ -68,6 +71,32 @@ const EditIdCardScreen = ({ route, navigation }) => {
     getItem();
   }, []);
 
+  const putImage = async (formData) => {
+    if (!user.token) {
+      Alert.alert('Error', 'User token is missing. Please log in again.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `${BASE_URL}auth/idcard/${cardInfo.cardId}`,
+        {
+          method: 'PUT',
+          body: formData,
+        }
+      );
+
+      Alert.alert('Thành công', 'Chỉnh sửa CCCD thành công.');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleUpdateCard = async () => {
     if (!selectedImageFront || !selectedImageBack) {
       Alert.alert('Error', 'Both front and back images are required.');
@@ -101,33 +130,8 @@ const EditIdCardScreen = ({ route, navigation }) => {
     formData.append('idCardNumber', CCCDNumber);
     formData.append('idCardDate', formattedDate);
 
-    console.log(JSON.stringify(formData));
-    console.log(`${BASE_URL}auth/idcard/${cardInfo.cardId}`);
-
-    if (!user.token) {
-      Alert.alert('Error', 'User token is missing. Please log in again.');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await axios.put(
-        `${BASE_URL}auth/idcard/${cardInfo.cardId}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data', // Specify content type for form data
-          },
-        }
-      );
-      Alert.alert('Thành công', 'Chỉnh sửa CCCD thành công.');
-      navigation.navigate('EditUserScreen', { id: route.params.id });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    console.log('cccc', JSON.stringify(formData));
+    putImage(formData);
   };
 
   return (
@@ -179,13 +183,13 @@ const EditIdCardScreen = ({ route, navigation }) => {
           {/* Icon Image */}
           <UploadImage
             onImagesSelected={setSelectedFront}
-            image={cardInfo['imageFrontPath']}
+            image={selectedImageFront}
           />
           <Text style={styles.label}>Hình Mặt Sau CCCD:</Text>
           {/* Icon Image */}
           <UploadImage
             onImagesSelected={setSelectedImageBack}
-            image={cardInfo['imageBackPath']}
+            image={selectedImageBack}
           />
 
           <TouchableOpacity style={styles.button} onPress={handleUpdateCard}>

@@ -24,7 +24,6 @@ import UploadImage from '../components/Up_Image';
 
 const BiodataScreen = ({ navigation, route }) => {
   const { userData } = route.params;
-  console.log(userData);
 
   const [userPhone, setUserPhone] = useState(userData.userPhone);
   const [userBirthday, setUserBirthday] = useState(
@@ -62,7 +61,30 @@ const BiodataScreen = ({ navigation, route }) => {
     setUserBirthday(currentDate);
   };
 
-  const handleUpdateProfile = async () => {
+  const callApiUpdate = async (token, formData) => {
+    try {
+      setLoading(true);
+      const response = await axios.put(
+        `${BASE_URL}auth/customer/myInfo`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data', // Token được lấy từ AsyncStorage
+          },
+        }
+      );
+      Alert.alert('Success', 'Profile updated successfully.');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = () => {
     if (!selectedImage) {
       Alert.alert('Error', 'images is required.');
       return;
@@ -78,7 +100,6 @@ const BiodataScreen = ({ navigation, route }) => {
       name: `user-image.${fileType}`,
       type: `image/${fileType}`,
     };
-    console.log('New FIle', newFile);
 
     formData.append('image', newFile);
 
@@ -96,31 +117,9 @@ const BiodataScreen = ({ navigation, route }) => {
       Alert.alert('Error', 'User token is missing. Please log in again.');
       return;
     }
-    console.log(`${BASE_URL}auth/customer/myInfo`);
 
-    try {
-      setLoading(true);
-      const response = await axios.put(
-        `${BASE_URL}auth/customer/myInfo`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            'Content-Type': 'multipart/form-data', // Token được lấy từ AsyncStorage
-          },
-        }
-      );
-      Alert.alert('Success', 'Profile updated successfully.');
-      navigation.replace('ProfileScreen');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    callApiUpdate(user.token, formData);
   };
-
-  console.log('Image URI:', user.token);
 
   return (
     <View style={styles.container}>

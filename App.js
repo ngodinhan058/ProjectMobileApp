@@ -12,7 +12,7 @@ import {
   Easing,
 } from 'react-native';
 import { ROLE_USER, ROLE_ADMIN, ROLE_SHIPPER } from './src/constants/Role';
-import Icon from "react-native-vector-icons/FontAwesome";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -158,7 +158,7 @@ import ShippingDetailScreen from './src/screens/shipper/ShippingDetailScreen';
 import WaitingShippingScreen from './src/screens/shipper/WaitingShippingScreen';
 import CompletedCancelOrderScreen from './src/screens/shipper/CompletedCancelOrderScreen';
 import ChangePasswordScreen from './src/screens/shipper/ChangePasswordScreen';
-import ShipperAddressScreen from "./src/screens/shipper/ShipperAddressScreen";
+import ShipperAddressScreen from './src/screens/shipper/ShipperAddressScreen';
 
 {
   /* Accouting */
@@ -411,7 +411,17 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
     { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
-    { name: 'CreateAddressScreen', component: CreateAddressScreen, showFooter: false },
+
+    {
+      name: 'CreateAddressScreen',
+      component: CreateAddressScreen,
+      showFooter: false,
+    },
+    {
+      name: 'EditIdCardScreen',
+      component: EditIdCardScreen,
+      showFooter: false,
+    },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -577,18 +587,9 @@ function CouponAdmin() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="CouponList" component={HomeCouponScreen} />
-      <Stack.Screen
-        name="DetailCouponScreen"
-        component={DetailCouponScreen}
-      />
-      <Stack.Screen
-        name="AddCouponScreen"
-        component={AddCouponScreen}
-      />
-      <Stack.Screen
-        name="EditCouponScreen"
-        component={EditCouponScreen}
-      />
+      <Stack.Screen name="DetailCouponScreen" component={DetailCouponScreen} />
+      <Stack.Screen name="AddCouponScreen" component={AddCouponScreen} />
+      <Stack.Screen name="EditCouponScreen" component={EditCouponScreen} />
     </Stack.Navigator>
   );
 }
@@ -609,45 +610,45 @@ function AdminDrawerNavigator() {
     getItem();
   }, []);
 
-  console.log("User roles:", user?.role);
+  console.log('User roles:', user?.role);
 
   const hasPermission = (role) => user?.role?.includes(role);
   return (
     <Drawer.Navigator>
-      {hasPermission("PERMISSION_PRODUCT") && (
+      {hasPermission('PERMISSION_PRODUCT') && (
         <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
       )}
-      {hasPermission("PERMISSION_CATEGORIES") && (
+      {hasPermission('PERMISSION_CATEGORIES') && (
         <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       )}
-      {hasPermission("PERMISSION_USERS") && (
+      {hasPermission('PERMISSION_USERS') && (
         <Drawer.Screen name="Người Dùng" component={UserAdmin} />
       )}
-      {hasPermission("PERMISSION_SHIPMENTS") && (
+      {hasPermission('PERMISSION_SHIPMENTS') && (
         <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
       )}
-      {hasPermission("PERMISSION_COLORS") && (
+      {hasPermission('PERMISSION_COLORS') && (
         <Drawer.Screen name="Màu" component={SizeAdmin} />
       )}
-      {hasPermission("PERMISSION_SUPPLIERS") && (
+      {hasPermission('PERMISSION_SUPPLIERS') && (
         <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
       )}
-      {hasPermission("PERMISSION_PERMISSIONS") && (
+      {hasPermission('PERMISSION_PERMISSIONS') && (
         <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
       )}
-      {hasPermission("PERMISSION_ROLES") && (
+      {hasPermission('PERMISSION_ROLES') && (
         <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
       )}
-      {hasPermission("PERMISSION_COUPONS") && (
+      {hasPermission('PERMISSION_COUPONS') && (
         <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
       )}
-      {hasPermission("PERMISSION_CHAT") && (
+      {hasPermission('PERMISSION_CHAT') && (
         <Drawer.Screen name="Chat" component={ChatAdmin} />
       )}
-       {hasPermission("PERMISSION_INVENTORY") && (
+      {hasPermission('PERMISSION_INVENTORY') && (
         <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
       )}
-      {hasPermission("PERMISSION_GETALL") && (
+      {hasPermission('PERMISSION_GETALL') && (
         <>
           <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
           <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
@@ -655,7 +656,10 @@ function AdminDrawerNavigator() {
           <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
           <Drawer.Screen name="Màu" component={SizeAdmin} />
           <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
-          <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
+          <Drawer.Screen
+            name="Cho Phép Chức Năng"
+            component={PermissionAdmin}
+          />
           <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
           <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
           <Drawer.Screen name="Chat" component={ChatAdmin} />
@@ -663,7 +667,11 @@ function AdminDrawerNavigator() {
         </>
       )}
       <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
-      <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{headerShown: false}}/>
+      <Drawer.Screen
+        name="Trang Chủ Shipper"
+        component={ShipperDrawerNavigator}
+        options={{ headerShown: false }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -718,17 +726,16 @@ function ShipperDrawerNavigator() {
     <Drawer.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#3669C9",
+          backgroundColor: '#3669C9',
         },
-        headerTintColor: "#fff",
+        headerTintColor: '#fff',
         drawerStyle: {
-          backgroundColor: "#f5f5f5",
+          backgroundColor: '#f5f5f5',
           width: 250,
         },
-        drawerActiveTintColor: "#3669C9",
-        drawerInactiveTintColor: "#333",
-        drawerActiveBackgroundColor: "#e1efff",
-        
+        drawerActiveTintColor: '#3669C9',
+        drawerInactiveTintColor: '#333',
+        drawerActiveBackgroundColor: '#e1efff',
       }}
     >
       <Drawer.Screen
@@ -738,7 +745,7 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />
           ),
-          headerTitle: "Trang Chủ",
+          headerTitle: 'Trang Chủ',
         }}
       />
       <Drawer.Screen
@@ -748,7 +755,7 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="history" size={size} color={color} />
           ),
-          headerTitle: "Lịch Sử Giao Hàng",
+          headerTitle: 'Lịch Sử Giao Hàng',
         }}
       />
       <Drawer.Screen
@@ -758,7 +765,7 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="truck" size={size} color={color} />
           ),
-          headerTitle: "Đang Chờ Giao",
+          headerTitle: 'Đang Chờ Giao',
         }}
       />
       <Drawer.Screen
@@ -768,13 +775,12 @@ function ShipperDrawerNavigator() {
           drawerIcon: ({ color, size }) => (
             <Icon name="user" size={size} color={color} />
           ),
-          headerTitle: "Thông Tin Cá Nhân",
+          headerTitle: 'Thông Tin Cá Nhân',
         }}
       />
     </Drawer.Navigator>
   );
 }
-
 
 function ShipperHome() {
   return (
@@ -903,7 +909,7 @@ export default function App() {
         const { username, token } = JSON.parse(savedCart);
         const decoded = jwtDecode(token);
         setUser({ username, token, role: decoded.scope.split(' ') });
-        // setUser({ username, token, role: decoded.scope.split(' ')[0] }); 
+        // setUser({ username, token, role: decoded.scope.split(' ')[0] });
       } else {
         setUser({});
       }
@@ -953,16 +959,19 @@ export default function App() {
             // Check if cartId is null and create a new cart if necessary
             if (userInfo.cartId == null) {
               try {
-                const createCartResponse = await fetch(`${BASE_URL}cart/user/`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${user.token}`,
-                  },
-                  body: JSON.stringify({
-                    userId: userInfo.userId,
-                  }),
-                });
+                const createCartResponse = await fetch(
+                  `${BASE_URL}cart/user/`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${user.token}`,
+                    },
+                    body: JSON.stringify({
+                      userId: userInfo.userId,
+                    }),
+                  }
+                );
 
                 if (createCartResponse.ok) {
                   const cartResult = await createCartResponse.json();
@@ -970,7 +979,10 @@ export default function App() {
 
                   console.log('New cart created:', cartResult.data.cartId);
                 } else {
-                  console.log('Failed to create cart. Status:', createCartResponse.status);
+                  console.log(
+                    'Failed to create cart. Status:',
+                    createCartResponse.status
+                  );
                 }
               } catch (error) {
                 console.error('Error creating cart:', error);
@@ -1007,9 +1019,15 @@ export default function App() {
   return (
     <NavigationContainer onStateChange={handleStateChange}>
       {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_USER") && <HaveLoginHome />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_ADMIN") && <AdminDrawerNavigator />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />}
+      {Object.keys(user).length !== 0 && hasRole('ROLE_USER') && (
+        <HaveLoginHome />
+      )}
+      {Object.keys(user).length !== 0 && hasRole('ROLE_ADMIN') && (
+        <AdminDrawerNavigator />
+      )}
+      {Object.keys(user).length !== 0 && hasRole('ROLE_SHIPPER') && (
+        <ShipperDrawerNavigator />
+      )}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}

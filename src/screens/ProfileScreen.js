@@ -20,35 +20,88 @@ import {
   useIsFocused,
 } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { BASE_URL } from './api/config';
+import { loadData } from '../utils/SearchMemory';
 
 const ProfileScreen = ({ navigation, route }) => {
-  const [user, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [user, setUser] = useState({});
+  const [userImg, setUserImg] = useState();
 
-  const fetchUserInfo = async () => {
+  const getItem = async () => {
     try {
-      // Lấy dữ liệu từ AsyncStorage
-      const userInfoString = await AsyncStorage.getItem('userInfo');
+      const savedCart = await AsyncStorage.getItem('userData');
 
-      // Nếu có dữ liệu thì parse nó thành JSON
-      if (userInfoString) {
-        const userInfoData = JSON.parse(userInfoString);
-        setUserInfo(userInfoData); // Lưu vào state
+      if (savedCart) {
+        const { username, token } = JSON.parse(savedCart);
+        setUserInfo({ username, token });
+      } else {
+        setUser({});
       }
     } catch (error) {
-      console.error('Error fetching user info from AsyncStorage:', error);
+      console.error('Error loading cart from AsyncStorage:', error);
+    }
+  };
+  useEffect(() => {
+    getItem();
+  }, []);
+
+  const loadUserInfo = async () => {
+    if (user) {
+      try {
+        const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        });
+
+        // Kiểm tra mã trạng thái phản hồi
+        if (response.ok) {
+          const result = await response.json();
+          // console.log('result', result.data);
+
+          if (result) {
+            setUser(result.data); // Lưu thông tin người dùng vào state
+            setUserImg(
+              result.data.userImagePath ||
+                'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg'
+            );
+            // Lưu thông tin người dùng vào AsyncStorage
+            await AsyncStorage.setItem('userInfo', JSON.stringify(result.data));
+            // console.log('User info saved to AsyncStorage');
+          } else {
+            // console.log('No data in API response');
+          }
+        } else {
+          // console.log('Failed to fetch user info. Status:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
     }
   };
 
-  const isFocused = useIsFocused();
+  useEffect(() => {
+    // Gọi API lấy thông tin người dùng nếu token có giá trị
+
+    loadUserInfo();
+  }, [userInfo?.token]);
+
+  // listen for isFocused, if useFocused changes
+  // call the function that you use to mount the component.
 
   useFocusEffect(
-    useCallback(() => {
-      fetchUserInfo();
-    }, [])
+    React.useCallback(() => {
+      loadUserInfo(); // Fetch user info whenever the screen is focused
+
+      // Optionally, return a cleanup function if necessary
+      return () => {
+        // You can perform cleanup tasks here if needed
+      };
+    }, [userInfo?.token]) // Empty dependency array means this runs on every focus
   );
-
-
-  console.log('user', user);
 
   const handleLogout = async () => {
     try {
@@ -152,6 +205,22 @@ const ProfileScreen = ({ navigation, route }) => {
             <View style={styles.row}>
               <IconI name="lock-closed-outline" size={22} color="#000" />
               <Text style={styles.textPro}>Thay Đổi Mật Khẩu</Text>
+            </View>
+            <Icon name="angle-right" size={32} color="#000" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() =>
+              navigation.navigate('EditIdCardScreen', {
+                iCard: user.iCard,
+                id: user.userId,
+              })
+            }
+          >
+            <View style={styles.row}>
+              <IconI name="card" size={22} color="#000" />
+              <Text style={styles.textPro}>CCCD</Text>
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
