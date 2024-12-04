@@ -2,33 +2,37 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   Alert,
+  TextInput,
+  Image,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { BASE_URL } from "../api/config";
 
+
 function ShipperHomeScreen({ navigation }) {
   const [user, setUser] = useState({
+    id: null,
     name: "Loading...",
     address: "Loading...",
     avatar: "",
   });
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
+    const fetchData = async () => {
       try {
         const userData = await AsyncStorage.getItem("userData");
         if (!userData) throw new Error("No user token found");
-        
+
         const { token } = JSON.parse(userData);
+
+        // Fetch user info
         const response = await axios.get(`${BASE_URL}auth/users/myInfo`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -36,24 +40,64 @@ function ShipperHomeScreen({ navigation }) {
         });
 
         const userInfo = response.data.data;
-
         setUser({
+          id: userInfo.userId,
           name: `${userInfo.userLastName} ${userInfo.userFirstName}`,
           address: `${userInfo.address.addressName}, ${userInfo.address.ward}, ${userInfo.address.district}, ${userInfo.address.city}`,
           avatar: userInfo.userImagePath,
         });
+
+        // Fetch orders with status = 2
+        const ordersResponse = await axios.get(
+          `${BASE_URL}orders/status?status=2`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setOrders(ordersResponse.data.data);
       } catch (error) {
-        console.error("Failed to fetch user info:", error);
+        console.error("Failed to fetch data:", error);
         Alert.alert("Error", "Failed to fetch user information");
       }
     };
 
-    fetchUserInfo();
+    fetchData();
   }, []);
 
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
+
+      const { token } = JSON.parse(userData);
+
+      const payload = {
+        status: 3,
+        orderId,
+        shipper: user.id,
+      };
+
+      console.log("Sending payload:", payload);
+
+      await axios.put(`${BASE_URL}order/change`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      Alert.alert("Success", "Order accepted successfully!");
+      setOrders((prevOrders) =>
+        prevOrders.filter((order) => order.orderId !== orderId)
+      );
+    } catch (error) {
+      console.error("Failed to accept order:", error);
+      Alert.alert("Error", "Unable to accept the order");
+    }
+  };
   return (
     <View style={styles.container}>
-      <StatusBar hidden={true} />
       {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
@@ -119,44 +163,36 @@ function ShipperHomeScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </View>
-      {/* Shipment Section */}
       <ScrollView style={styles.shipments}>
-        <View>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Current Shipment</Text>
-            <Text style={styles.viewAll}>View All</Text>
-          </View>
-          <View style={styles.shipmentCard}>
-            <Text style={styles.shipmentId}>#HWDSF776567DS</Text>
-            <Text style={styles.shipmentStatus}>On the way - 00:01:00</Text>
-            <Text style={styles.shipmentRoute}>
-              From: Vũng Tàu - To: Hồ Chí Minh
-            </Text>
-          </View>
+      {/* Đơn hàng hôm nay */}
+      <View>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Đơn hàng hôm nay</Text>
         </View>
+        {orders.length > 0 ? (
+          orders.map((order) => (
+            <View key={order.orderId} style={styles.shipmentCard}>
+              <Text style={styles.shipmentId}>Mã đơn: {order.orderId}</Text>
+              <Text style={styles.shipmentAddress}>
+                Địa chỉ: {order.orderAddress}
+              </Text>
+              <Text style={styles.shipmentPrice}>Giá: {order.orderTotal} VND</Text>
+              <TouchableOpacity
+                style={styles.acceptButton}
+                onPress={() => handleAcceptOrder(order.orderId)}
+              >
+                <Text style={styles.acceptButtonText}>Nhận đơn</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        ) : (
+          <View style={styles.noOrderContainer}>
+            <Text style={styles.noOrderText}>Không có đơn hàng</Text>
+          </View>
+        )}
+      </View>
+    </ScrollView>
 
-        <View>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Shipment</Text>
-            <Text style={styles.viewAll}>View All</Text>
-          </View>
-          <View style={styles.shipmentCard}>
-          <Text style={styles.shipmentId}>#MKZ8WT8762KCS47</Text>
-          <Text style={styles.shipmentStatus}>Delivered - 10:00:00</Text>
-          <TouchableOpacity style={styles.acceptButton}>
-            <Text style={styles.acceptButtonText}>Nhận đơn</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.shipmentCard}>
-          <Text style={styles.shipmentId}>#HWDSF776567DS</Text>
-          <Text style={styles.shipmentStatus}>Delivered - 10:00:00</Text>
-          <TouchableOpacity style={styles.acceptButton}>
-            <Text style={styles.acceptButtonText}>Nhận đơn</Text>
-          </TouchableOpacity>
-        </View>
-
-        </View>
-      </ScrollView>
     </View>
   );
 }
@@ -319,10 +355,27 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   
-  shipmentStatus: {
+  shipmentAddress: {
     color: "#666",
     fontSize: 14,
     marginBottom: 10,
+  },
+  shipmentPrice: {
+    color: "black",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  noOrderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 200, // Đảm bảo chiều cao để căn giữa
+  },
+  noOrderText: {
+    fontSize: 18,
+    color: "#888",
+    fontWeight: "bold",
   },
   
   acceptButton: {
@@ -356,6 +409,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#3669C9",
     borderRadius: 3,
   },
+  confirmButton: {
+    marginTop: 10,
+    backgroundColor: "#28a745",
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  confirmButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  
 });
 
 export default ShipperHomeScreen;

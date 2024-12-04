@@ -1,66 +1,181 @@
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { BASE_URL } from "../api/config";
 
 function WaitingShippingScreen({ navigation }) {
+  const [orders, setOrders] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentStatus, setCurrentStatus] = useState(3); // Default: Lấy hàng (status = 3)
+
+  // Fetch orders based on status
+  const fetchOrders = async (status) => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
+
+      const { token } = JSON.parse(userData);
+
+      const response = await axios.get(
+        `${BASE_URL}orders/status?status=${status}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setOrders(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+      Alert.alert("Error", "Failed to fetch orders");
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(currentStatus);
+  }, [currentStatus]);
+
+
+  // Handle order status updates
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
+
+      const { token } = JSON.parse(userData);
+
+      const payload = {
+        status: newStatus, // Update to new status
+        orderId,
+      };
+
+      await axios.put(`${BASE_URL}order/change`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      Alert.alert(
+        "Thành công",
+        newStatus === 6
+          ? "Đơn hàng đã được hủy!"
+          : "Đơn hàng đã được cập nhật!"
+      );
+
+      setOrders(orders.filter((order) => order.orderId !== orderId));
+    } catch (error) {
+      console.error("Không thể cập nhật đơn hàng:", error);
+      Alert.alert("Lỗi", "Không thể cập nhật đơn hàng");
+    }
+  };
+
+  const filteredOrders = orders.filter((order) =>
+    order.orderId.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <View style={styles.container}>
-      <StatusBar hidden={true} />
-      {/* Header Section */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Đang chờ giao</Text>
+        <Text style={styles.headerTitle}>Quản lý đơn hàng</Text>
         <View style={styles.searchBox}>
           <Icon name="search" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Tìm kiếm đơn hàng"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
         </View>
       </View>
 
-      {/* Tabs Section */}
+      {/* Tabs for status selection */}
+      <View style={styles.tabs}>
+        {[
+          { label: "Lấy hàng", status: 3 },
+          { label: "Giao hàng", status: 4 },
+          { label: "Thành công", status: 5 },
+          { label: "Hủy hàng", status: 6 },
+        ].map((tab) => (
+          <TouchableOpacity
+            key={tab.status}
+            style={[
+              styles.tab,
+              currentStatus === tab.status && styles.activeTab,
+            ]}
+            onPress={() => setCurrentStatus(tab.status)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                currentStatus === tab.status && styles.activeTabText,
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-      {/* Shipment List */}
       <ScrollView style={styles.shipments}>
-        <View style={styles.shipmentCard}>
-          <Text style={styles.shipmentId}>#HWDSF776567DS</Text>
-          <Text style={styles.shipmentStatus}>Đang giao - 28 Aug, 4:39 PM</Text>
-          <Text style={styles.shipmentRoute}>
-            Địa chỉ: 87, South Lester Street, London Close Belgium
-          </Text>
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={() =>
-              navigation.navigate("DetailWaitingShippingItemScreen")
-            }
-          >
-            <Text style={styles.detailsButtonText}>Chi tiết</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.shipmentCard}>
-          <Text style={styles.shipmentId}>#MKZ8WT8762KCS47</Text>
-          <Text style={styles.shipmentStatus}>Đang chờ xác nhận</Text>
-          <Text style={styles.shipmentRoute}>
-            Địa chỉ: 45, Central Park, New York City
-          </Text>
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={() =>
-              navigation.navigate("DetailWaitingShippingItemScreen")
-            }
-          >
-            <Text style={styles.detailsButtonText}>Chi tiết</Text>
-          </TouchableOpacity>
-        </View>
+        {filteredOrders.length > 0 ? (
+          filteredOrders.map((order) => (
+            <View key={order.orderId} style={styles.shipmentCard}>
+              <Text style={styles.shipmentId}>Mã đơn: {order.orderId}</Text>
+              <Text style={styles.shipmentStatus}>
+                Trạng thái: {currentStatus === 3
+                  ? "Lấy hàng"
+                  : currentStatus === 4
+                  ? "Giao hàng"
+                  : currentStatus === 5
+                  ? "Thành công"
+                  : "Hủy hàng"}
+              </Text>
+              <Text style={styles.shipmentRoute}>
+                Địa chỉ: {order.orderAddress}
+              </Text>
+              {currentStatus === 4 ? (
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <TouchableOpacity
+                    style={styles.confirmButton}
+                    onPress={() => handleUpdateOrderStatus(order.orderId, 5)}
+                  >
+                    <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => handleUpdateOrderStatus(order.orderId, 6)}
+                  >
+                    <Text style={styles.cancelButtonText}>Hủy hàng</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : currentStatus !== 6 ? (
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={() => handleUpdateOrderStatus(order.orderId, currentStatus + 1)}
+                >
+                  <Text style={styles.confirmButtonText}>
+                    {currentStatus === 5 ? "Hoàn tất" : "Cập nhật"}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ))
+        ) : (
+          <View style={styles.noOrderContainer}>
+            <Text style={styles.noOrderText}>Không có đơn hàng nào</Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -105,23 +220,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     backgroundColor: "#fff",
-    borderRadius: 10,
     padding: 10,
-    marginHorizontal: 20,
-    marginTop: -20,
   },
   tab: {
-    flex: 1,
-    alignItems: "center",
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
   },
   activeTab: {
     backgroundColor: "#3669C9",
-    borderRadius: 10,
   },
   tabText: {
     fontSize: 14,
-    fontWeight: "bold",
     color: "#666",
   },
   activeTabText: {
@@ -136,11 +246,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   shipmentId: {
     fontWeight: "bold",
@@ -156,17 +261,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#333",
   },
-  detailsButton: {
+  confirmButton: {
     marginTop: 10,
     backgroundColor: "#3669C9",
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
+    flex: 1,
+    marginHorizontal: 5,
   },
-  detailsButtonText: {
+  confirmButtonText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  cancelButton: {
+    marginTop: 10,
+    backgroundColor: "#D9534F", // Red color for cancel button
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  cancelButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  noOrderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 300,
+  },
+  noOrderText: {
+    fontSize: 18,
+    color: "#888",
   },
 });
 
