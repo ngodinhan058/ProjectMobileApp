@@ -55,7 +55,6 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       const userData = await login(email, password);  // Gọi API để kiểm tra
-      await AsyncStorage.removeItem('guestId');
       Alert.alert('Thành công', 'Đăng nhập thành công!');
       navigation.navigate('Mega Mall'); // Điều hướng sau khi đăng nhập
     } catch (error) {

@@ -61,7 +61,28 @@ function BuyNow({ route, navigation }) {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-
+  const fetchData = async () => {
+    // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}carts/user/${userInfo?.userId}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const userData = response.data.data.cartItem;
+      const cartTotal = response.data.data.productTotalPrice;
+      const idCart = response.data.data.cartId;
+      setIdCart(idCart)
+      setCartDataUser(userData); // Lưu giỏ hàng vào state
+      setTotal(parseInt(cartTotal.replace(/\./g, '').replace('₫', '').trim(), 10));
+    } catch (error) {
+      console.log('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, [userInfo?.userId]);
+  const [title, setTitle] = useState('');
   const handleSelectPayment = (method, methodIcon, use) => {
 
     if (use == false) {

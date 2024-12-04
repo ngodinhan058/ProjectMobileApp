@@ -239,7 +239,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     fetchUUID();
   }, []);
 
-  console.log(uuid); 
+  // console.log(uuid); 
 
   const handleAddToCartUser = async () => {
     if (!selectedSize) {
@@ -328,6 +328,9 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   };
 
   const handleBuyNowUser = async () => {
+     const selectedProductSize = productsState.productSizes.find(
+      (size) => size.productSizeName === selectedSize
+    );
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -360,15 +363,69 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     setError('');
     setErrorCheck(false);
     // Chuẩn bị dữ liệu để gửi đến API
-    navigation.navigate('BuyNow', {
-      product: productsState, alertVisible: true, alertType: 'success',
-      size: selectedSize,
-      quantity: quantity,
-      total: total,
-    })
+    // navigation.navigate('BuyNow', {
+    //   product: productsState, alertVisible: true, alertType: 'success',
+    //   size: selectedSize,
+    //   quantity: quantity,
+    //   total: total,
+    // })
+    // const cartItemData = {
+    //   cartItem: {
+    //     productQuantity: quantity,
+    //     productId: id,
+    //     sizeId: selectedProductSize.productSizeId,
+    //   },
+    // };
+    const cartItemDataUUID = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId,
+      },
+      userId: userInfo?.userId,
+    };
+ 
+    try {
+      const createCartResponse = await axios.post(`${BASE_URL}cart/buynow`, cartItemDataUUID);
+      // console.log(createCartResponse);
+      if (createCartResponse.status === 200 || createCartResponse.status === 201) {
+        closeModalBuy();
+        navigation.navigate('AddToCartScreen', {
+          alertVisible: true,
+          alertType: 'success',
+        })
+      }
+     
+
+    } catch (createError) {
+      console.error('Lỗi khi tạo giỏ hàng:', createError);
+    }
+    // try {
+    //   const cartResponse = await axios.get(`${BASE_URL}cart/buynow/${userInfo?.userId}`);
+    //   if (cartResponse.status === 200) {
+    //     const cartId = cartResponse.data.data.cartId;
+    //     if (cartId) {
+    //       await axios.put(`${BASE_URL}cart/${cartId}`, cartItemDataUUID);
+    //       console.log('Sản phẩm đã được thêm vào giỏ hàng');
+    //       closeModalBuy();
+    //       navigation.navigate('AddToCartScreen', {
+    //         alertVisible: true,
+    //         alertType: 'success',
+    //       })
+    //     } else {
+    //       console.log('Cart ID không tồn tại trong phản hồi.');
+    //     }
+    //   } else {
+    //     console.log('Unexpected response status:', cartResponse.status, cartResponse);
+    //   }
+    // } catch (error) {
+    //   console.log('Unexpected response status:', error);
+     
+    // }
 
 
   };
+
 
   const handleAddToCartGuest = async () => {
     if (!selectedSize) {
@@ -470,16 +527,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       }
     }
   };
-
-
-
-
-
-
-
-
-
-
 
   const handleQuantityChange = (amount) => {
     setQuantity(Math.max(1, quantity + amount));
@@ -1046,41 +1093,17 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       }}>
         {!userInfo?.userId ?
           (<>
-
             <View style={{ flex: 1, position: 'relative', }}>
               {/* Số lượng */}
               <TouchableOpacity
-                style={{
-                  borderColor: '#3669C9',
-                  borderWidth: 1,
-                  paddingHorizontal: 20,
-                  paddingVertical: 20,
-                  borderRadius: 10,
-                }}
+               style={{
+                backgroundColor: '#3669C9',
+                borderColor: '#ccc',
+                borderWidth: 1,
+                padding: 20,
+                borderRadius: 10,
+              }}
                 onPress={openModalBuy}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#3669C9',
-                  }}
-                >
-                  Thêm vào giỏ hàng
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ flex: 1, position: 'relative', }}>
-              {/* Số lượng */}
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#3669C9',
-                  borderColor: '#ccc',
-                  borderWidth: 1,
-                  padding: 20,
-                  borderRadius: 10,
-                }}
-                onPress={openModalBuyNow}
               >
                 <Text
                   style={{
@@ -1089,7 +1112,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     color: '#fff',
                   }}
                 >
-                  Mua Ngay
+                  Thêm vào giỏ hàng
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1298,9 +1321,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             ( <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
               <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
             </TouchableOpacity>) }
-            {/* <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
-              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity> */}
    
           </View>
         </View>
@@ -1462,7 +1482,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         />
       </Modal>
       {/* No Login */}
-      {/* <Modal visible={isLoginModalVisible} animationType="slide"
+      <Modal visible={isLoginModalVisible} animationType="slide"
         transparent={true}
         onRequestClose={closeModalLogin}>
         <TouchableWithoutFeedback onPress={closeModalLogin}>
@@ -1485,7 +1505,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal> */}
+      </Modal>
       {/* Add WishList */}
       <Modal
         visible={isLikeModalVisible}

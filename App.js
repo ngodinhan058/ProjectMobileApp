@@ -1036,9 +1036,9 @@ export default function App() {
   return (
     <NavigationContainer onStateChange={handleStateChange}>
       {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_USER") && <HaveLoginHome />}
-      {Object.keys(user).length !== 0 && hasRole("PERMISSION_ADMIN") && <AdminDrawerNavigator />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />}
+      {Object.keys(user).length !== 0  && <HaveLoginHome />}
+      {/* {Object.keys(user).length !== 0 && hasRole("PERMISSION_ADMIN") && <AdminDrawerNavigator />}
+      {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />} */}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}
