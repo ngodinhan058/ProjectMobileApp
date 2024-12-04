@@ -7,64 +7,74 @@ const CompletedOrderConfirmationScreen = ({ route, navigation }) => {
   const { orderDetails } = route.params;
 
   const renderOrderItem = (item, index) => (
-      <View style={styles.itemRow} key={index}>
-        <Image style={styles.itemImage} source={{ uri: item.productImage }} />
-        <View style={styles.itemDetails}>
-          <Text style={styles.boldText}>{item.productName}</Text>
-          <Text style={styles.detailText}>Màu: {item.productSize}</Text>
-          <Text style={styles.detailText}>Số Lượng: {item.productQuantity}</Text>
-          <Text style={styles.detailText}>Giảm Giá Voucher: {item.productDiscountPrice || 0}</Text>
-          <Text style={styles.detailText}>Tổng Cộng: {item.productTotalPrice} ₫</Text>
-        </View>
+    <View style={styles.itemRow} key={index}>
+      <Image style={styles.itemImage} source={{ uri: item.productImage }} />
+      <View style={styles.itemDetails}>
+        <Text style={styles.boldText}>{item.productName}</Text>
+        <Text style={styles.detailText}>Màu: {item.productSize}</Text>
+        <Text style={styles.detailText}>Số Lượng: {item.productQuantity}</Text>
+        <Text style={styles.detailText}>Giảm Giá Voucher: {item.productDiscountPrice || 0}</Text>
+        <Text style={styles.detailText}>Tổng Cộng: {item.productTotalPrice} ₫</Text>
       </View>
+    </View>
   );
 
   return (
-      <LinearGradient colors={['#a8dadc', '#f1faee']} style={styles.container}>
-        <ScrollView style={styles.scrollContent}>
-          <View style={styles.content}>
-            <View style={styles.row}>
-              <View style={styles.iconContainer}>
-                <Icon name="check" size={40} color="#3CAF47" />
-              </View>
-              <View>
+    <LinearGradient colors={['#a8dadc', '#f1faee']} style={styles.container}>
+      <ScrollView style={styles.scrollContent}>
+        <View style={styles.content}>
+          <View style={styles.row}>
+            <View style={styles.iconContainer}>
+              <Icon name="check" size={40} color="#3CAF47" />
+            </View>
+            <View>
               <Text style={styles.headerText}>Xin Cảm Ơn</Text>
 
-                <Text
-                    style={[
-                      styles.subHeaderText,
-                      { backgroundColor: '#a8dadc', color: '#1d3557', padding: 5, borderRadius: 5 },
-                    ]}
-                >
-                  Đơn Của Bạn Là #{orderDetails.orderId.substring(0, 8)}
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.infoText}>
-              Chúng tôi xin cảm ơn bạn {orderDetails.userEmail} vì đã tin tưởng chúng tôi mà đặt hàng. Chúc bạn 1 ngày tốt lành
-            </Text>
-            <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
-            <Text style={styles.sectionHeader}>Biên Lai</Text>
-            <View style={styles.infoContainer}>
-              <Text style={styles.boldText}>{orderDetails.userName}</Text>
-              <Text style={styles.label}>{orderDetails.userEmail}</Text>
-              <Text style={styles.label}>{orderDetails.userPhone}</Text>
-              <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
-            </View>
-            <Text style={styles.sectionHeader}>Sản Phẩm Đã Đặt</Text>
-            {orderDetails.items.length > 0 ? (
-                orderDetails.items[0].cartItem.map((item, index) => renderOrderItem(item, index))
-            ) : (
-                <Text style={styles.label}>No items in the cart.</Text>
-            )}
-            <Text style={styles.sectionHeader}>Tóm tắt đơn hàng</Text>
-            <View style={[styles.summaryRow, styles.summaryTopBorder]}>
-              <Text style={styles.label}>Tổng Cộng:</Text>
-              <Text style={styles.label}>{orderDetails.orderTotal} ₫</Text>
+              <Text
+                style={[
+                  styles.subHeaderText,
+                  { backgroundColor: '#a8dadc', color: '#1d3557', padding: 5, borderRadius: 5 },
+                ]}
+              >
+                Đơn Của Bạn Là #{orderDetails.orderId.substring(0, 8)}
+              </Text>
             </View>
           </View>
-        </ScrollView>
-      </LinearGradient>
+          <Text style={styles.infoText}>
+            Chúng tôi xin cảm ơn bạn {orderDetails.userEmail} vì đã tin tưởng chúng tôi mà đặt hàng. Chúc bạn 1 ngày tốt lành
+          </Text>
+          <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
+          <Text style={styles.sectionHeader}>Thông Tin Người Dùng</Text>
+          <View style={styles.infoContainer}>
+            <Text style={styles.boldText}>{orderDetails.userName}</Text>
+            <Text style={styles.label}>{orderDetails.userEmail}</Text>
+            <Text style={styles.label}>{orderDetails.userPhone}</Text>
+            <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
+          </View>
+          <Text style={styles.sectionHeader}>Sản Phẩm Đã Đặt</Text>
+          {orderDetails.items.length > 0 ? (
+            orderDetails.items[0].cartItem.map((item, index) => renderOrderItem(item, index))
+          ) : (
+            <Text style={styles.label}>No items in the cart.</Text>
+          )}
+          <Text style={styles.sectionHeader}>Tóm tắt đơn hàng</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.label}>Giảm giá Voucher:</Text>
+            {orderDetails.orderCouponPrice == 0 ?
+              (<Text style={styles.label}>- {orderDetails.orderCouponPerHundred || 0}%</Text>)
+              : (<Text style={styles.label}>- {orderDetails.orderCouponPrice || 0}</Text>)}
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.label}>Phí Vận Chuyển:</Text>
+            <Text style={styles.label}>{orderDetails.orderShipper || 0}</Text>
+          </View>
+          <View style={[styles.summaryRow, styles.summaryTopBorder]}>
+            <Text style={styles.label}>Tổng Cộng:</Text>
+            <Text style={styles.label}>{orderDetails.orderTotal} ₫</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 

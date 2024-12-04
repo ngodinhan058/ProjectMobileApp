@@ -484,17 +484,19 @@ function AddToCartScreen({ route, navigation }) {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
-
+    // console.log("discountShip",discountShip <= 0 ? shippingFee : discountShip);
+    
     const orderData = {
       user: userInfo?.userId,
       orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
       orderNote: orderNote,
       orderPayment: selectedPaymentMethod,
-      feeShip: shippingFee,
+      feeShip: discountShip <= 0 ? shippingFee : discountShip,
       totalPrice: finalTotal,
     };
 
-
+    console.log(orderData);
+    
     if (selectedPaymentMethod === 0) {
       try {
         const paymentResponse = await axios.get(apiPaymentUrl);
