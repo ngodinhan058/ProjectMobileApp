@@ -23,6 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AlertComponent from '../../../components/AlertComponent';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LogBox } from 'react-native';
 
 const AnimatedTouchableOpacity =
   Animated.createAnimatedComponent(TouchableOpacity);
@@ -35,16 +36,9 @@ const HomeAdminScreen = ({ navigation, route }) => {
   const { alertVisible, alertType, title } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
 
-  // useEffect(() => {
-  //     if (alertVisible) {
-  //         // Tự động ẩn thông báo sau 2 giây
-  //         const timer = setTimeout(() => {
-  //             setIsAlertVisible(false);
-  //         }, 2000);
-
-  //         return () => clearTimeout(timer);
-  //     }
-  // }, [alertVisible]);
+  useEffect(() => {
+    LogBox.ignoreAllLogs(); 
+  }, []);
 
   const fetchProducts = async () => {
     setIsLoading(true);

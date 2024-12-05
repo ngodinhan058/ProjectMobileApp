@@ -46,10 +46,11 @@ function DetailScreen({ navigation, route }) {
             };
             const response = await axios.put(`${BASE_URL}order/change`, requestBody);
             if (response.status === 200) {
-                navigation.replace('InventoryList', { 
+                navigation.replace('InventoryList', {
                     alertVisible: true,
                     alertType: 'success',
-                    title: 'Đóng Gói Thành Công'});
+                    title: 'Đóng Gói Thành Công'
+                });
             } else {
                 Alert.alert('Error', 'Failed to confirm order');
             }
@@ -87,40 +88,44 @@ function DetailScreen({ navigation, route }) {
 
     // checked Sản Phẩm
     const [selectedProducts, setSelectedProducts] = useState({});
-    const toggleCheckbox = (productId) => {
-        setSelectedProducts(prevState => ({
-            ...prevState,
-            [productId]: !prevState[productId]
-        }));
-    };
     const uniqueCartItems = items
-        .flatMap(item => item.cartItem)
-        .filter((item, index, self) =>
-            index === self.findIndex(t => t.productName === item.productName && t.productImage === item.productImage)
+        .flatMap((item) => item.cartItem)
+        .filter(
+            (item, index, self) =>
+                index === self.findIndex((t) => t.productId === item.productId)
         );
 
-    // Kiểm tra tất cả sản phẩm có được chọn hay không
-    // const allProductsChecked = items.length > 0 && items.every(product => selectedProducts[product.id]);
-    // const allProductsChecked = items.length > 0 && items.every((_, index) => selectedProducts[index]);
-    const allProductsChecked = uniqueCartItems.length > 0 &&
-        uniqueCartItems.every((_, index) => selectedProducts[index]);
+    // Kiểm tra tất cả sản phẩm đã được chọn chưa
+    const allProductsChecked = uniqueCartItems.every(
+        (product) => selectedProducts[product.productId]
+    );
 
+    // Toggle trạng thái checkbox của sản phẩm
+    const toggleCheckbox = (productId) => {
+        setSelectedProducts((prevState) => ({
+            ...prevState,
+            [productId]: !prevState[productId],
+        }));
+    };
+
+    // Toggle trạng thái chọn tất cả
     const toggleSelectAll = () => {
-        const isAllChecked = uniqueCartItems.every((_, index) => selectedProducts[index]);
+        const isAllChecked = uniqueCartItems.every(
+            (product) => selectedProducts[product.productId]
+        );
         setSelectedProducts(
-            uniqueCartItems.reduce((acc, _, index) => {
-                acc[index] = !isAllChecked; // Toggle tất cả
+            uniqueCartItems.reduce((acc, product) => {
+                acc[product.productId] = !isAllChecked;
                 return acc;
             }, {})
         );
     };
-    // Xuất ra ListSản Phẩm
 
-    const renderProduct = ({ item, index }) => (
+    const renderProduct = ({ item }) => (
         <TouchableOpacity
             style={styles.productItem}
-            onPress={() => toggleCheckbox(index)}
-            key={index} // Sử dụng index
+            onPress={() => toggleCheckbox(item.productId)}
+            key={item.productId}
         >
             <View style={{ marginRight: 20 }}>
                 <Image source={{ uri: item.productImage }} style={styles.productIcon} />
@@ -133,13 +138,12 @@ function DetailScreen({ navigation, route }) {
                 <View style={styles.line}></View>
                 <Text style={styles.productCode}>Giá: {item.productPrice}</Text>
             </View>
-
             {/* Custom checkbox */}
             <TouchableOpacity
-                onPress={() => toggleCheckbox(index)}
+                onPress={() => toggleCheckbox(item.productId)}
                 style={styles.checkboxContainer}
             >
-                {selectedProducts[index] ? (
+                {selectedProducts[item.productId] ? (
                     <Icon name="check" size={15} color="#3669c9" />
                 ) : (
                     <View style={styles.uncheckedCheckbox} />
@@ -150,7 +154,7 @@ function DetailScreen({ navigation, route }) {
     const [isOpen, setIsOpen] = useState(false);
     const [animation] = useState(new Animated.Value(0));
     const [rotation] = useState(new Animated.Value(0));
-    
+
     const toggleMenu = () => {
         const toValue = isOpen ? 0 : 1;
 
@@ -202,7 +206,6 @@ function DetailScreen({ navigation, route }) {
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
                     <Text style={styles.productListTitle}>Chi Tiết Trong Đơn</Text>
-                    {/* Checkbox chọn tất cả */}
                     <TouchableOpacity
                         style={{
                             position: 'absolute',
@@ -213,8 +216,6 @@ function DetailScreen({ navigation, route }) {
                             justifyContent: 'center',
                             alignItems: 'center',
                             borderRadius: 5,
-                            // borderWidth: 2,
-                            // borderColor: '#000',
                             backgroundColor: '#eee',
                             shadowColor: '#000',
                             shadowOffset: { width: 0, height: 2 },
@@ -222,19 +223,17 @@ function DetailScreen({ navigation, route }) {
                             shadowRadius: 4,
                             elevation: 4,
                         }}
-                        onPress={toggleSelectAll} // Sử dụng hàm sửa đổi
+                        onPress={toggleSelectAll}
                     >
                         {allProductsChecked ? (
-                            // <View style={styles.checkedCheckbox} />
                             <Icon name="check" size={20} color="#3669c9" />
                         ) : (
                             <View style={styles.uncheckedCheckbox} />
                         )}
                     </TouchableOpacity>
-
                 </View>
                 <FlatList
-                    data={items[0].cartItem} // Dữ liệu đã được làm sạch
+                    data={uniqueCartItems}
                     renderItem={renderProduct}
                     keyExtractor={(item) => item.productId}
                     style={styles.productList}
@@ -295,7 +294,7 @@ function DetailScreen({ navigation, route }) {
                     onConfirm={handleConfirmOrder}
                 />
             </View>
-           
+
         </>
 
     );

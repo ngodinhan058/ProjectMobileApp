@@ -31,6 +31,7 @@ import CreateAddressScreen from './src/screens/CreateAddressScreen';
 import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import InformationScreen from './src/screens/InformationScreen';
 import MyOrderScreen from './src/screens/MyOrderScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import NewsScreen from './src/screens/NewsScreen';
@@ -141,6 +142,13 @@ import HomeCouponScreen from './src/screens/admin/coupon/HomeScreen';
 import AddCouponScreen from './src/screens/admin/coupon/AddCouponScreen';
 import EditCouponScreen from './src/screens/admin/coupon/EditCouponScreen';
 import DetailCouponScreen from './src/screens/admin/coupon/DetailCouponScreen';
+{
+  /* AdminSlide */
+}
+import AddSlideScreen from './src/screens/admin/slideShow/AddSlideScreen';
+import EditSlideScreen from './src/screens/admin/slideShow/EditSlideScreen';
+import HomeSlideScreen from './src/screens/admin/slideShow/HomeScreen';
+import DetailSlideScreen from './src/screens/admin/slideShow/DetailSlideScreen';
 {
   /* Shipper */
 }
@@ -341,6 +349,14 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       name: 'PaymentWebViewScreen',
       component: PaymentWebViewScreen,
       showFooter: false,
+    },
+    {
+      name: 'InformationScreen',
+      component: InformationScreen,
+      showFooter: false,
+      options: {
+        headerShown: false,
+      },
     },
   ];
 
@@ -594,6 +610,19 @@ function CouponAdmin() {
     </Stack.Navigator>
   );
 }
+{
+  /* Admin Slide */
+}
+function SlideAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SlideList" component={HomeSlideScreen} />
+      <Stack.Screen name="DetailSlideScreen" component={DetailSlideScreen}/>
+      <Stack.Screen name="AddSlideScreen" component={AddSlideScreen} />
+      <Stack.Screen name="EditSlideScreen" component={EditSlideScreen} />
+    </Stack.Navigator>
+  );
+}
 function AdminDrawerNavigator() {
   const [user, setUser] = useState({});
   useEffect(() => {
@@ -663,6 +692,7 @@ function AdminDrawerNavigator() {
           <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
           <Drawer.Screen name="Chat" component={ChatAdmin} />
           <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
+          <Drawer.Screen name="Slide Show" component={SlideAdmin} />
           <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
           <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
         </>
@@ -1036,7 +1066,7 @@ export default function App() {
   return (
     <NavigationContainer onStateChange={handleStateChange}>
       {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_USER") && <HaveLoginHome />}
+      {Object.keys(user).length !== 0  && hasRole("ROLE_USER") && <HaveLoginHome />}
       {Object.keys(user).length !== 0 && hasRole("PERMISSION_ADMIN") && <AdminDrawerNavigator />}
       {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />}
       {/* <HaveLoginHome /> */}

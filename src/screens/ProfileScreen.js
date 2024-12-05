@@ -78,7 +78,7 @@ const ProfileScreen = ({ navigation, route }) => {
           // console.log('Failed to fetch user info. Status:', response.status);
         }
       } catch (error) {
-        console.error('Error fetching user info:', error);
+        // console.error('Error fetching user info:', error);
       }
     }
   };
