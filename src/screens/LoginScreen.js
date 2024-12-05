@@ -56,6 +56,10 @@ const LoginScreen = ({ navigation }) => {
     try {
       const userData = await login(email, password);  // Gọi API để kiểm tra
       Alert.alert('Thành công', 'Đăng nhập thành công!');
+      await AsyncStorage.removeItem('guestInfo');
+      await AsyncStorage.removeItem('guestId');        
+      await AsyncStorage.removeItem('cartGuestId');
+
       navigation.navigate('Mega Mall'); // Điều hướng sau khi đăng nhập
     } catch (error) {
       Alert.alert('Thất bại', 'Sai email hoặc mật khẩu. Vui lòng thử lại.');
@@ -219,7 +223,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 50,
+    gap: 35,
     marginVertical: 20,
   },
   signInButton: {

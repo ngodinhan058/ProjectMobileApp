@@ -31,6 +31,7 @@ import CreateAddressScreen from './src/screens/CreateAddressScreen';
 import CompletedOrderConfirmationScreen from './src/screens/CompletedOrderConfirmationScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import InformationScreen from './src/screens/InformationScreen';
 import MyOrderScreen from './src/screens/MyOrderScreen';
 import NewsDetailScreen from './src/screens/NewsDetailScreen';
 import NewsScreen from './src/screens/NewsScreen';
@@ -341,6 +342,14 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       name: 'PaymentWebViewScreen',
       component: PaymentWebViewScreen,
       showFooter: false,
+    },
+    {
+      name: 'InformationScreen',
+      component: InformationScreen,
+      showFooter: false,
+      options: {
+        headerShown: false,
+      },
     },
   ];
 
@@ -1036,9 +1045,9 @@ export default function App() {
   return (
     <NavigationContainer onStateChange={handleStateChange}>
       {Object.keys(user).length === 0 && <NoLoginHome />}
-      {Object.keys(user).length !== 0  && <HaveLoginHome />}
-      {/* {Object.keys(user).length !== 0 && hasRole("PERMISSION_ADMIN") && <AdminDrawerNavigator />}
-      {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />} */}
+      {Object.keys(user).length !== 0  && hasRole("ROLE_USER") && <HaveLoginHome />}
+      {Object.keys(user).length !== 0 && hasRole("PERMISSION_ADMIN") && <AdminDrawerNavigator />}
+      {Object.keys(user).length !== 0 && hasRole("ROLE_SHIPPER") && <ShipperDrawerNavigator />}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}
