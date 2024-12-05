@@ -43,28 +43,31 @@ const HomeAdminScreen = ({ navigation, route }) => {
 
     const handleOrderUpdate = (updatedOrder) => {
         setOrder((prevOrders) => {
-          if (updatedOrder.orderId) {
-            // Check if the order already exists
-            const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
-      
-            if (orderIndex !== -1) {
-              // Update the existing order
-              const newOrders = [...prevOrders];
-              newOrders[orderIndex] = updatedOrder;
-              return newOrders;
+            if (updatedOrder.orderId) {
+                // Check if the order already exists
+                const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
+                if (updatedOrder.orderStatus == 2) {
+                    return prevOrders.filter(order => order.orderId !== updatedOrder.orderId);
+                } else {
+                    if (orderIndex !== -1) {
+                        // Update the existing order
+                        const newOrders = [...prevOrders];
+                        newOrders[orderIndex] = updatedOrder;
+                        return newOrders;
+                    } else {
+                        return [...prevOrders, updatedOrder]
+                    }
+                }
             } else {
-              // Add the new order
-              return [...prevOrders, updatedOrder];
+                // Handle order deletion by `orderId`
+                return prevOrders.filter(order => order.orderId !== updatedOrder.orderId);
             }
-          } else {
-            // Handle order deletion by `orderId`
-            return prevOrders.filter(order => order.orderId !== updatedOrder);
-          }
         });
-      };
 
-  
+    };
     const { client } = useWebSocket(wsUrl, handleOrderUpdate);
+
+
     const handleRefresh = () => {
         fetchOrder();
     };

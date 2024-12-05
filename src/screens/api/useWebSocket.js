@@ -24,7 +24,7 @@ const useWebSocket = (url, onProductUpdate) => {
         }
       }
       );
-      client.subscribe('/topic/products/delete', message => {
+      client.subscribe('/topic/products/delete', message => {``
         try {
           const deletedProduct = JSON.parse(message.body);
           onProductUpdate(deletedProduct); // Gọi callback với sản phẩm bị xóa

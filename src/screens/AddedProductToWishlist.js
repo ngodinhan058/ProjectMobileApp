@@ -166,23 +166,22 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   };
 
   const [userInfo, setUserInfo] = useState(null);
+  const fetchUserInfo = async () => {
+    try {
+      // Lấy dữ liệu từ AsyncStorage
+      const userInfoString = await AsyncStorage.getItem('userInfo');
+
+      // Nếu có dữ liệu thì parse nó thành JSON
+      if (userInfoString) {
+        const userInfoData = JSON.parse(userInfoString);
+        setUserInfo(userInfoData); // Lưu vào state
+      }
+    } catch (error) {
+      console.error('Error fetching user info from AsyncStorage:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        // Lấy dữ liệu từ AsyncStorage
-        const userInfoString = await AsyncStorage.getItem('userInfo');
-
-        // Nếu có dữ liệu thì parse nó thành JSON
-        if (userInfoString) {
-          const userInfoData = JSON.parse(userInfoString);
-          setUserInfo(userInfoData); // Lưu vào state
-        }
-      } catch (error) {
-        console.error('Error fetching user info from AsyncStorage:', error);
-      }
-    };
-
     fetchUserInfo();
   }, []);
   // console.log(userInfo);
@@ -190,7 +189,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   //Cart
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState('');
   const [cartData, setCartData] = useState([]);
   const [idCart, setIdCart] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -226,10 +225,14 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   }, [selectedSize]);
 
   const [uuid, setUUID] = useState("");
+  const [user, setUser] = useState("");
   useEffect(() => {
     const fetchUUID = async () => {
       try {
         const storedUUID = await AsyncStorage.getItem("guestId");
+        const cartGuestId = await AsyncStorage.getItem('cartGuestId');
+        console.log("cartGuestId", cartGuestId);
+
         setUUID(storedUUID); // Lưu giá trị thực vào state
       } catch (error) {
         console.error("Error retrieving guestId:", error);
@@ -238,8 +241,25 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     fetchUUID();
   }, []);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem("userData");
 
-  console.log(uuid); 
+        if (savedCart) {
+          const { username, token } = JSON.parse(savedCart);
+          setUser({ username, token });
+
+        }
+      } catch (error) {
+        console.error("Error retrieving guestId:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+
 
   const handleAddToCartUser = async () => {
     if (!selectedSize) {
@@ -315,7 +335,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       // console.log(response);
 
       if (response.status === 200) {
-        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+        // console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
         closeModalBuy();
         navigation.navigate('AddToCartScreen', {
           alertVisible: true,
@@ -326,8 +346,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       }
     }
   };
-
   const handleBuyNowUser = async () => {
+    const selectedProductSize = productsState.productSizes.find(
+      (size) => size.productSizeName === selectedSize
+    );
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -359,18 +381,75 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     setError('');
     setErrorCheck(false);
-    // Chuẩn bị dữ liệu để gửi đến API
-    navigation.navigate('BuyNow', {
-      product: productsState, alertVisible: true, alertType: 'success',
-      size: selectedSize,
-      quantity: quantity,
-      total: total,
-    })
 
+    const cartItemDataUUID = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId,
+      },
+      userId: userInfo?.userId,
+    };
+    try {
+      const response = await axios.get(`${BASE_URL}order/cart/${userInfo.cartBuyNowId}`);
+      const responseCart = await axios.get(`${BASE_URL}order/cart/${userInfo.cartId}`);
+      if (response.status === 200 && response?.data?.data?.orderStatus === 0) {
+        Alert.alert(
+          'Xác nhận lại đơn hàng',
+          'Vui lòng xác nhận trước khi thêm sản phẩm mới vào giỏ hàng',
+          [
+            {
+              text: 'Xem Chi Tiết',
+              onPress: async () => {
+                navigation.navigate('OrderConfirmationScreen', { orderId: userInfo.cartBuyNowId });
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      }
+    } catch (error) {
+      // Không cần đợi xử lý ngay lập tức, thực hiện ngoài luồng
+      (async () => {
+        try {
+          const createCartResponse = await axios.post(`${BASE_URL}cart/user/buynow`, cartItemDataUUID);
+          if (createCartResponse.status === 200 || createCartResponse.status === 201) {
+            const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${user.token}`,
+              },
+            });
+            if (response.status === 200 || response.status === 201) {
+              const result = await response.json();
+              if (result) {
+                let userInfo = result.data;
+                // Lưu thông tin vào AsyncStorage
+                await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+                console.log('User info saved to AsyncStorage');
+              } else {
+                console.log('No data in API response');
+              }
+            }
+          }
+        } catch (innerError) {
+          console.error('Error in inner async call:', innerError);
+        } finally {
+          closeModalBuy();
+          navigation.navigate('BuyNow', {
+            alertVisible: true,
+            alertType: 'success',
+          });
+        }
+      })();
+    }
 
   };
 
   const handleAddToCartGuest = async () => {
+    closeModalBuy();
+    setLoading(true)
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -415,7 +494,13 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     // Nếu vượt qua các kiểm tra, tiến hành thêm sản phẩm vào giỏ hàng
     setError('');
     setErrorCheck(false);
-
+    const cartItemData = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId,
+      },
+    };
 
     const cartItemDataUUID = {
       cartItem: {
@@ -425,61 +510,67 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       },
       guestId: uuid,
     };
-    const cartItemData = {
-      cartItem: {
-        productQuantity: quantity,
-        productId: id,
-        sizeId: selectedProductSize.productSizeId,
-      },
-    };
-
     try {
-      const cartResponse = await axios.get(`${BASE_URL}carts/guest/${uuid}`);
-      if (cartResponse.status === 200) {
-        const cartId = cartResponse.data.data.cartId;
-        if (cartId) {
-          await axios.put(`${BASE_URL}cart/${cartId}`, cartItemData);
-          console.log('Sản phẩm đã được thêm vào giỏ hàng');
-          closeModalBuy();
-          navigation.navigate('AddToCartScreen', {
-            alertVisible: true,
-            alertType: 'success',
-          })
-        } else {
-          console.log('Cart ID không tồn tại trong phản hồi.');
-        }
-      } else {
-        console.log('Unexpected response status:', cartResponse.status, cartResponse);
-      }
-    } catch (error) {
-      try {
-        
-        const createCartResponse = await axios.post(`${BASE_URL}cart/create_guest`, cartItemDataUUID);
+      const createCartResponse = await axios.post(`${BASE_URL}cart/create_guest`, cartItemDataUUID);
 
-        if (createCartResponse.status === 201 || createCartResponse.status === 200) {
-          const newCartId = createCartResponse.data.data.cartId;
-          await axios.put(`${BASE_URL}cart/${newCartId}`, cartItemDataUUID);
-          closeModalBuy();
-          navigation.navigate('AddToCartScreen', {
-            alertVisible: true,
-            alertType: 'success',
-          })
-        }
-      } catch (createError) {
-        // console.error('Lỗi khi tạo giỏ hàng:', createError);
+      if (createCartResponse.status === 201 || createCartResponse.status === 200) {
+        const newCartId = createCartResponse.data.data.cartId;
+        console.log('Giỏ hàng được tạo thành công:', newCartId);
+        closeModalBuy();
+        navigation.navigate('AddToCartScreen', {
+          alertVisible: true,
+          alertType: 'success',
+        })
+        // await axios.put(`${BASE_URL}cart/${newCartId}`, cartItemDataUUID);
+        console.log('Sản phẩm đã được thêm vào giỏ hàng');
       }
+    } catch (createError) {
+      closeModalBuy();
+      navigation.navigate('AddToCartScreen', {
+        alertVisible: true,
+        alertType: 'success',
+      })
     }
+    // try {
+    //   const cartResponse = await axios.get(`${BASE_URL}carts/guest/${uuid}`);
+    //   if (cartResponse.status === 200) {
+    //     const cartId = cartResponse.data.data.cartId;
+
+    //     if (cartId) {
+    //       // Nếu đã có cartId, cập nhật giỏ hàng
+    //       // const cartId123 = await axios.put(`${BASE_URL}cart/${cartId}`, cartItemData);
+    //       // console.log('Sản phẩm đã được thêm vào giỏ hàng' + cartId123);
+    //       closeModalBuy();
+    //       navigation.navigate('AddToCartScreen', {
+    //         alertVisible: true,
+    //         alertType: 'success',
+    //       })
+    //     } else {
+    //       console.log('Cart ID không tồn tại trong phản hồi.');
+    //     }
+    //   } else {
+    //     console.log('Unexpected response status:', cartResponse.status, cartResponse);
+    //   }
+    // } catch (error) {
+    //   try {
+    //     const createCartResponse = await axios.post(`${BASE_URL}cart/create_guest`, cartItemDataUUID);
+
+    //     if (createCartResponse.status === 201 || createCartResponse.status === 200) {
+    //       const newCartId = createCartResponse.data.data.cartId;
+    //       console.log('Giỏ hàng được tạo thành công:', newCartId);
+
+    //       await axios.put(`${BASE_URL}cart/${newCartId}`, cartItemDataUUID);
+    //       console.log('Sản phẩm đã được thêm vào giỏ hàng');
+    //     }
+    //   } catch (createError) {
+    //     closeModalBuy();
+    //     navigation.navigate('AddToCartScreen', {
+    //       alertVisible: true,
+    //       alertType: 'success',
+    //     })
+    //   }
+    // }
   };
-
-
-
-
-
-
-
-
-
-
 
   const handleQuantityChange = (amount) => {
     setQuantity(Math.max(1, quantity + amount));
@@ -571,7 +662,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const closeModalUnLike = () => setIsUnLikeModalVisible(false);
 
   const handleWishListUser = async () => {
-    console.log(size);
+    // console.log(size);
 
     const selectedProductSizes = size.filter((size) =>
       selectedSizes.includes(size.productSizeName)
@@ -603,7 +694,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         );
 
         if (response.status === 200) {
-          console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+          // console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
           setAlertTypeLike('success')
           setAlertVisibleLike(true)
           setTitleAlert('Sản phẩm đã được thêm vào danh sách yêu thích')
@@ -682,7 +773,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   // Kết Thúc WishList
 
-  // console.log(userInfo);
   //Kết thúc
   return (
     <View>
@@ -1046,30 +1136,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       }}>
         {!userInfo?.userId ?
           (<>
-
-            <View style={{ flex: 1, position: 'relative', }}>
-              {/* Số lượng */}
-              <TouchableOpacity
-                style={{
-                  borderColor: '#3669C9',
-                  borderWidth: 1,
-                  paddingHorizontal: 20,
-                  paddingVertical: 20,
-                  borderRadius: 10,
-                }}
-                onPress={openModalBuy}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#3669C9',
-                  }}
-                >
-                  Thêm vào giỏ hàng
-                </Text>
-              </TouchableOpacity>
-            </View>
             <View style={{ flex: 1, position: 'relative', }}>
               {/* Số lượng */}
               <TouchableOpacity
@@ -1080,7 +1146,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   padding: 20,
                   borderRadius: 10,
                 }}
-                onPress={openModalBuyNow}
+                onPress={openModalBuy}
               >
                 <Text
                   style={{
@@ -1089,7 +1155,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     color: '#fff',
                   }}
                 >
-                  Mua Ngay
+                  Thêm vào giỏ hàng
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1291,17 +1357,14 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
               <Text style={{ fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
             </View>
-            { !userInfo?.userId ? 
-            ( <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartGuest}>
-              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity>) : 
-            ( <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
-              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity>) }
-            {/* <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
-              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity> */}
-   
+            {!userInfo?.userId ?
+              (<TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartGuest}>
+                <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
+              </TouchableOpacity>) :
+              (<TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
+                <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
+              </TouchableOpacity>)}
+
           </View>
         </View>
         <AlertComponent
@@ -1462,7 +1525,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         />
       </Modal>
       {/* No Login */}
-      {/* <Modal visible={isLoginModalVisible} animationType="slide"
+      <Modal visible={isLoginModalVisible} animationType="slide"
         transparent={true}
         onRequestClose={closeModalLogin}>
         <TouchableWithoutFeedback onPress={closeModalLogin}>
@@ -1485,7 +1548,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal> */}
+      </Modal>
       {/* Add WishList */}
       <Modal
         visible={isLikeModalVisible}

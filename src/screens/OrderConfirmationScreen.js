@@ -11,6 +11,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -22,15 +23,16 @@ const { width, height } = Dimensions.get('window');
 const buttonWidth = width * 0.42;
 const buttonHeight = 50;
 
-function OrderConfirmationScreen({ navigation }) {
+function OrderConfirmationScreen({ navigation, route }) {
+  const { orderId } = route?.params
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [orderDetails, setOrderDetails] = useState(null);
   const [timeLeft, setTimeLeft] = useState(120);
   const opacityAnim = useState(new Animated.Value(0))[0];
   const timerRef = useRef(null);
-
   useEffect(() => {
+    setLoading(true)
     const fetchUserInfo = async () => {
       try {
         const userInfoString = await AsyncStorage.getItem('userInfo');
@@ -42,7 +44,13 @@ function OrderConfirmationScreen({ navigation }) {
           }
 
           setUserInfo(userInfoData);
-          await fetchOrderDetails(userInfoData.cartId);
+          await fetchOrderDetails(orderId);
+          // await fetchOrderDetails(userInfoData.cartBuyNowId);
+        }
+        else {
+          const idCart = await AsyncStorage.getItem('cartGuestId');
+          await fetchOrderDetails(idCart);
+
         }
       } catch (error) {
         console.error('Error fetching user info from AsyncStorage:', error);
@@ -85,10 +93,10 @@ function OrderConfirmationScreen({ navigation }) {
     return userInfoData;
   };
 
-  const fetchOrderDetails = async (cartId) => {
+  const fetchOrderDetails = async (orderId) => {
     try {
-      const response = await axios.get(`${BASE_URL}order/cart/${cartId}`);
-      console.log(response);
+      console.log(`${BASE_URL}order/cart/${orderId}`);
+      const response = await axios.get(`${BASE_URL}order/cart/${orderId}`);
 
       if (response.status === 200) {
         setOrderDetails(response.data.data);
@@ -98,9 +106,13 @@ function OrderConfirmationScreen({ navigation }) {
     } catch (error) {
       console.error('Error fetching order details:', error);
     }
+
+
   };
 
   const handleCancelOrder = async () => {
+    setLoading(true)
+
     try {
       const requestBody = {
         status: 6,
@@ -116,10 +128,14 @@ function OrderConfirmationScreen({ navigation }) {
     } catch (error) {
       console.error('Error cancelling order:', error);
       Alert.alert('Error', 'Failed to cancel order');
+    } finally {
+      setLoading(false)
+
     }
   };
 
   const handleConfirmOrder = async () => {
+    setLoading(true)
     try {
       const requestBody = {
         status: 1,
@@ -129,6 +145,8 @@ function OrderConfirmationScreen({ navigation }) {
       if (response.status === 200) {
         clearTimeout(timerRef.current); // Clear the timer
         // Alert.alert('Order Confirmed', 'Your order has been confirmed successfully');
+        await AsyncStorage.removeItem('guestId');
+        await AsyncStorage.removeItem('cartGuestId');
         navigation.navigate('CompletedOrderConfirmationScreen', { orderDetails });
       } else {
         Alert.alert('Error', 'Failed to confirm order');
@@ -136,6 +154,9 @@ function OrderConfirmationScreen({ navigation }) {
     } catch (error) {
       console.error('Error confirming order:', error);
       Alert.alert('Error', 'Failed to confirm order');
+    } finally {
+      setLoading(false)
+
     }
   };
 
@@ -156,7 +177,7 @@ function OrderConfirmationScreen({ navigation }) {
         <Text style={styles.detailText}>Màu: {item.productSize}</Text>
         <Text style={styles.detailText}>Số Lượng: {item.productQuantity}</Text>
         <Text style={styles.detailText}>Giảm Giá Voucher: {item.productDiscountPrice || 0}</Text>
-        <Text style={styles.detailText}>Tổng Cộng: {item.productTotalPrice} ₫</Text>
+        <Text style={styles.detailText}>Tổng Cộng: {Number(item.productTotalPrice).toLocaleString('vi-VN')} ₫</Text>
       </View>
     </View>
   );
@@ -183,82 +204,97 @@ function OrderConfirmationScreen({ navigation }) {
     );
   }
   return (
-    <LinearGradient colors={['#a8dadc', '#f1faee']} style={styles.container}>
-      <ScrollView style={styles.scrollContent}>
-        <Animated.View style={[styles.content, { opacity: opacityAnim }]}>
-          <View style={styles.row}>
-            <View style={styles.iconContainer}>
-              <Icon name="clock-o" size={40} color="#1d3557" />
+    <>
+      <LinearGradient colors={['#a8dadc', '#f1faee']} style={styles.container}>
+        <ScrollView style={styles.scrollContent}>
+          <Animated.View style={[styles.content, { opacity: opacityAnim }]}>
+            <View style={styles.row}>
+              <View style={styles.iconContainer}>
+                <Icon name="clock-o" size={40} color="#1d3557" />
+              </View>
+              <View>
+                <Text style={styles.headerText}>Vui Lòng Xác Nhận ({formatTime(timeLeft)})</Text>
+                <Text
+                  style={[
+                    styles.subHeaderText,
+                    { backgroundColor: '#a8dadc', color: '#1d3557', padding: 5, borderRadius: 5 },
+                  ]}
+                >
+                  Đơn Của Bạn Là #{orderDetails.orderId.substring(0, 8)}
+                </Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.headerText}>Vui Lòng Xác Nhận ({formatTime(timeLeft)})</Text>
-              <Text
-                style={[
-                  styles.subHeaderText,
-                  { backgroundColor: '#a8dadc', color: '#1d3557', padding: 5, borderRadius: 5 },
-                ]}
-              >
-                Đơn Của Bạn Là #{orderDetails.orderId.substring(0, 8)}
-              </Text>
+            <Text style={styles.infoText}>
+              Chúng tôi xin cảm ơn bạn {orderDetails.userName} vì đã tin tưởng chúng tôi mà đặt hàng. Chúc bạn 1 ngày tốt lằnh
+            </Text>
+            <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
+            <Text style={styles.sectionHeader}>Thông Tin Người Dùng</Text>
+            <View style={styles.infoContainer}>
+              <Text style={styles.boldText}>{orderDetails.userName}</Text>
+              <Text style={styles.label}>{orderDetails.userEmail}</Text>
+              <Text style={styles.label}>{orderDetails.userPhone}</Text>
+              <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
             </View>
+            <Text style={styles.sectionHeader}>Đơn Hàng Sản Phẩm</Text>
+            {orderDetails.items.length > 0 ? (
+              orderDetails.items[0].cartItem.map((item, index) => renderOrderItem(item, index))
+            ) : (
+              <Text style={styles.label}>No items in the cart.</Text>
+            )}
+            <Text style={styles.sectionHeader}>Tóm tắt đơn hàng</Text>
+            <View style={styles.summaryRow}>
+              <Text style={styles.label}>Giảm giá Voucher:</Text>
+              {orderDetails.orderCouponPrice == 0 ?
+                (<Text style={styles.label}>- {orderDetails.orderCouponPerHundred || 0}%</Text>)
+                : (<Text style={styles.label}>- {orderDetails.orderCouponPrice || 0}</Text>)}
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.label}>Phí Vận Chuyển:</Text>
+              <Text style={styles.label}>{orderDetails.orderShipper || 0}</Text>
+            </View>
+            <View style={[styles.summaryRow, styles.summaryTopBorder]}>
+              <Text style={styles.label}>Tổng Cộng:</Text>
+              <Text style={styles.label}>{Number(orderDetails.orderTotal).toLocaleString('vi-VN')} ₫</Text>
+            </View>
+          </Animated.View>
+        </ScrollView>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.cancelButton, { width: buttonWidth, height: buttonHeight }]}
+            onPress={handleCancelOrder}
+          >
+            <LinearGradient colors={['#e63946', '#ff6b6b']} style={styles.gradient}>
+              <Text style={styles.buttonText}>Hủy Đơn</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.confirmButton, { width: buttonWidth, height: buttonHeight }]}
+            onPress={handleConfirmOrder}
+          >
+            <LinearGradient colors={['#457b9d', '#1d3557']} style={styles.gradient}>
+              <Text style={styles.buttonText}>Xác Nhận</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+        {loading && (
+          <View style={styles.overlay}>
+            <ActivityIndicator size="large" color="#3669c9" />
           </View>
-          <Text style={styles.infoText}>
-            Chúng tôi xin cảm ơn bạn {orderDetails.userEmail} vì đã tin tưởng chúng tôi mà đặt hàng. Chúc bạn 1 ngày tốt lằnh
-          </Text>
-          <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
-          <Text style={styles.sectionHeader}>Thông Tin Người Dùng</Text>
-          <View style={styles.infoContainer}>
-            <Text style={styles.boldText}>{orderDetails.userName}</Text>
-            <Text style={styles.label}>{orderDetails.userEmail}</Text>
-            <Text style={styles.label}>{orderDetails.userPhone}</Text>
-            <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
-          </View>
-          <Text style={styles.sectionHeader}>Đơn Hàng Sản Phẩm</Text>
-          {orderDetails.items.length > 0 ? (
-            orderDetails.items[0].cartItem.map((item, index) => renderOrderItem(item, index))
-          ) : (
-            <Text style={styles.label}>No items in the cart.</Text>
-          )}
-          <Text style={styles.sectionHeader}>Tóm tắt đơn hàng</Text>
-          <View style={styles.summaryRow}>
-            <Text style={styles.label}>Giảm giá Voucher:</Text>
-            {orderDetails.orderCouponPrice == 0 ?
-              (<Text style={styles.label}>- {orderDetails.orderCouponPerHundred || 0}%</Text>)
-              : (<Text style={styles.label}>- {orderDetails.orderCouponPrice || 0}</Text>)}
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.label}>Phí Vận Chuyển:</Text>
-            <Text style={styles.label}>{orderDetails.orderShipper || 0}</Text>
-          </View>
-          <View style={[styles.summaryRow, styles.summaryTopBorder]}>
-            <Text style={styles.label}>Tổng Cộng:</Text>
-            <Text style={styles.label}>{orderDetails.orderTotal} ₫</Text>
-          </View>
-        </Animated.View>
-      </ScrollView>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.cancelButton, { width: buttonWidth, height: buttonHeight }]}
-          onPress={handleCancelOrder}
-        >
-          <LinearGradient colors={['#e63946', '#ff6b6b']} style={styles.gradient}>
-            <Text style={styles.buttonText}>Hủy Đơn</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.confirmButton, { width: buttonWidth, height: buttonHeight }]}
-          onPress={handleConfirmOrder}
-        >
-          <LinearGradient colors={['#457b9d', '#1d3557']} style={styles.gradient}>
-            <Text style={styles.buttonText}>Xác Nhận</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+        )}
+      </LinearGradient>
+
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',

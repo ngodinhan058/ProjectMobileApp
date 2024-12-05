@@ -20,8 +20,8 @@ import { useWindowDimensions } from 'react-native';
 
 import CartItem from '../components/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from './api/config';
 import axios from 'axios';
+import { BASE_URL } from './api/config';
 import AlertComponent from '../components/AlertComponent';
 
 
@@ -35,6 +35,7 @@ function AddToCartScreen({ route, navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [invoiceOption, setInvoiceOption] = useState(false);
   const [idCart, setIdCart] = useState([]);
+  const [idBuyNow, setIdBuyNow] = useState([]);
 
   const [cartData, setCartData] = useState([]);
   const [cartDataUser, setCartDataUser] = useState([]);
@@ -86,6 +87,7 @@ function AddToCartScreen({ route, navigation }) {
   };
 
   const [userInfo, setUserInfo] = useState(null);
+  const [guestInfo, setGuestInfo] = useState(null);
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -97,6 +99,7 @@ function AddToCartScreen({ route, navigation }) {
           setDestination(
             `${userInfoData?.address?.addressName} ${userInfoData?.address?.ward} ${userInfoData?.address?.district} ${userInfoData?.address?.city}`
           );
+          setIdBuyNow(userInfoData?.cartBuyNowId)
 
         }
       } catch (error) {
@@ -107,12 +110,84 @@ function AddToCartScreen({ route, navigation }) {
     fetchUserInfo();
   }, []);
   // console.log(userInfo?.userId);
+  useEffect(() => {
+    const fetchguestInfo = async () => {
+      try {
+        // Lấy dữ liệu từ AsyncStorage
+        const guestInfoString = await AsyncStorage.getItem('guestInfo');
+        if (guestInfoString) {
+          const guestInfoData = JSON.parse(guestInfoString);
+          setGuestInfo(guestInfoData); // Lưu vào state
+          setDestination(
+            `${guestInfoData.address.addressName} ${guestInfoData.address.ward} ${guestInfoData.address.district} ${guestInfoData.address.city}`
+          );
+
+        }
+      } catch (error) {
+        console.error('Error fetching user info from AsyncStorage:', error);
+      }
+    };
+
+    fetchguestInfo();
+  }, []);
+  const fetchUserCart = async () => {
+    if (!userInfo?.userId) return;
+
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}carts/user/${userInfo?.userId}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const userData = response.data.data.cartItem;
+      const cartTotal = response.data.data.productTotalPrice;
+      const idCart = response.data.data.cartId;
+      setIdCart(idCart);
+      setCartDataUser(userData); // Lưu giỏ hàng vào state
+      setTotal(parseInt(cartTotal.replace(/\./g, '').replace('₫', '').trim(), 10));
+    } catch (error) {
+      console.log('Error fetching user cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchGuestCart = async () => {
+    let storedUUID = await AsyncStorage.getItem('guestId');
+    if (!storedUUID) return;
+
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}carts/guest/${storedUUID}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const userData = response.data.data.cartItem;
+      const cartTotal = response.data.data.productTotalPrice;
+      const idCart = response.data.data.cartId;
+
+      await AsyncStorage.setItem('cartGuestId', idCart);
+      setIdCart(idCart);
+      setCartDataUser(userData); // Lưu giỏ hàng vào state
+      setTotal(parseInt(cartTotal.replace(/\./g, '').replace('₫', '').trim(), 10));
+    } catch (error) {
+      console.log('Error fetching guest cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCartDetails = async () => {
+    if (userInfo?.userId) {
+      fetchUserCart();
+    } else {
+      fetchGuestCart();
+    }
+  }, [userInfo?.userId]);
+
+  // console.log(userInfo);
+
+  useEffect(() => {
+    const fetchData = async () => {
       try {
         const response = await axios.get(`${BASE_URL}order/cart/${idCart}`);
-        if (response.status === 200) {
+        if (response.status === 200 || responseBuyNow.status === 200) {
           Alert.alert(
             'Xác nhận lại đơn hàng',
             'Bạn muốn xác nhận lại đơn hàng??',
@@ -120,7 +195,7 @@ function AddToCartScreen({ route, navigation }) {
               {
                 text: 'Xem Chi Tiết',
                 onPress: async () => {
-                  navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+                  navigation.navigate('OrderConfirmationScreen', { orderId: idCart });
                 },
               },
             ],
@@ -133,34 +208,36 @@ function AddToCartScreen({ route, navigation }) {
         // console.error('Error fetching order details:', error);
       }
     };
-
-    fetchCartDetails(); // Gọi hàm async
+    fetchData(); // Gọi hàm async
   }, [idCart]);
-
-
-
-
-  const fetchData = async () => {
-    // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
-    setIsLoading(true);
-    const apiUrl = `${BASE_URL}carts/user/${userInfo?.userId}`;
-    try {
-      const response = await axios.get(apiUrl);
-      const userData = response.data.data.cartItem;
-      const cartTotal = response.data.data.productTotalPrice;
-      const idCart = response.data.data.cartId;
-      setIdCart(idCart)
-      setCartDataUser(userData); // Lưu giỏ hàng vào state
-      setTotal(parseInt(cartTotal.replace(/\./g, '').replace('₫', '').trim(), 10));
-    } catch (error) {
-      console.log('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   useEffect(() => {
-    fetchData();
-  }, [userInfo?.userId]);
+    const fetchCartDetails = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}order/cart/${idBuyNow}`);
+        if (response.status === 200 || responseBuyNow.status === 200 && response?.data?.data?.orderStatus == 0) {
+          Alert.alert(
+            'Xác nhận lại đơn hàng',
+            'Bạn muốn xác nhận lại đơn hàng??',
+            [
+              {
+                text: 'Xem Chi Tiết',
+                onPress: async () => {
+                  navigation.navigate('OrderConfirmationScreen', { orderId: idBuyNow });
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          console.log('Không có dữ liệu đơn hàng hoặc lỗi');
+        }
+      } catch (error) {
+        // console.error('Error fetching order details:', error);
+      }
+    };
+    fetchCartDetails(); // Gọi hàm async
+  }, [idBuyNow]);
+
   const [title, setTitle] = useState('');
 
 
@@ -188,7 +265,9 @@ function AddToCartScreen({ route, navigation }) {
 
       if (response.status === 200 || response.status === 201) {
         console.log("Cập nhật giỏ hàng thành công:", response.data);
-        fetchData();
+        fetchUserCart();
+        fetchGuestCart();
+
       } else {
         console.error("Không thể cập nhật giỏ hàng:", response.data.message);
       }
@@ -221,7 +300,8 @@ function AddToCartScreen({ route, navigation }) {
 
         if (response.status === 200 || response.status === 201) {
           // console.log("Đã giảm số lượng sản phẩm:", response.data);
-          fetchData(); // Làm mới dữ liệu giỏ hàng
+          fetchUserCart(); // Làm mới dữ liệu giỏ hàng
+          fetchGuestCart();
         } else {
           console.error("Không thể giảm số lượng sản phẩm:", response.data.message);
         }
@@ -240,7 +320,8 @@ function AddToCartScreen({ route, navigation }) {
 
         if (response.status === 200 || response.status === 201) {
           // console.log("Đã tăng số lượng sản phẩm:", response.data);
-          fetchData(); // Làm mới dữ liệu giỏ hàng
+          fetchUserCart(); // Làm mới dữ liệu giỏ hàng
+          fetchGuestCart();
         } else {
           console.error("Không thể tăng số lượng sản phẩm:", response.data.message);
         }
@@ -257,42 +338,52 @@ function AddToCartScreen({ route, navigation }) {
       cartItem: {
         productId: id,
         sizeId: size,
+        productQuantity: quantity,
       },
     };
+  
     try {
-      // Gửi yêu cầu xoá sản phẩm
+      // Gửi yêu cầu xoá sản phẩm từ giỏ hàng
       const response = await axios.delete(`${BASE_URL}cart/${idCart}`, {
         data: cartItemData,
       });
-
+  
       if (response.status === 200) {
         console.log("Sản phẩm đã được xoá:", response.data);
-
-        // Cập nhật giỏ hàng ngay trong state
+  
+        // Cập nhật giỏ hàng trong state sau khi xoá sản phẩm
         const updatedCart = cartDataUser.filter(
           (item) => !(item.productId === id && item.productSizeId === size)
         );
         setCartDataUser(updatedCart);
-
-        // Nếu cần, cập nhật tổng giá trị giỏ hàng
+  
+        // Cập nhật tổng giá trị giỏ hàng
         const newTotal = updatedCart.reduce(
           (sum, item) => sum + item.productDiscountPrice * item.productQuantity,
           0
         );
         setTotal(newTotal);
-
+  
         // Hiển thị thông báo thành công
         setIsAlertVisible(true);
-        setTitle('Xoá Sản Phẩm Thành Công')
+        setTitle('Xoá Sản Phẩm Thành Công');
       } else {
         console.error("Không thể xoá sản phẩm khỏi giỏ hàng:", response.data.message);
       }
     } catch (error) {
-      // console.error("Lỗi khi xoá sản phẩm:", error.message);
+      console.error("Lỗi khi xoá sản phẩm:", error.message);
+      // Hiển thị thông báo lỗi nếu có
       setIsAlertVisible(true);
-      // setAlertType("error");
+      setTitle('Có lỗi khi xoá sản phẩm. Vui lòng thử lại!');
+    } finally {
+      // Cập nhật lại giỏ hàng sau khi xoá sản phẩm
+      fetchUserCart();
+      fetchGuestCart();
     }
   };
+  
+
+
   const fetchCouponsByType = async (type, setCouponsState) => {
     const apiUrl = `${BASE_URL}coupons/type/${type}`;
     try {
@@ -387,7 +478,10 @@ function AddToCartScreen({ route, navigation }) {
     toggleCouponModal(); // Đóng modal sau khi chọn
   };
 
-  useEffect(() => {
+
+
+
+   useEffect(() => {
     if (selectedCoupon != null && total) {
       let discountValue = 0;
       if (selectedCoupon.couponPerHundred) {
@@ -414,7 +508,6 @@ function AddToCartScreen({ route, navigation }) {
       setDiscountShip(0);
     }
   }, [total, selectedCoupon, shippingFee]);
-
   const calculateShippingFee = (distance) => {
     const basePrice = 10000;
     const baseDistance = 2;
@@ -463,7 +556,7 @@ function AddToCartScreen({ route, navigation }) {
   useEffect(() => {
     if (distance !== null) {
       if (distance > 250) {
-        setShippingFee(50000);
+        setShippingFee(100000);
       } else {
         setShippingFee(calculateShippingFee(distance));
       }
@@ -475,28 +568,32 @@ function AddToCartScreen({ route, navigation }) {
       calculateDistance();
     }
   }, [origin, destination]);
-
+  // Tính tổng cuối cùng
   const finalTotal = total
     ? (discount ? total - discount + shippingFee : total - discountShip + shippingFee)
     : 0;
+
+
+
 
   const handleOrder = async () => {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
     // console.log("discountShip",discountShip <= 0 ? shippingFee : discountShip);
-    
+
     const orderData = {
       user: userInfo?.userId,
       orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
       orderNote: orderNote,
       orderPayment: selectedPaymentMethod,
-      feeShip: discountShip <= 0 ? shippingFee : discountShip,
+      feeShip: discountShip == 0 ? shippingFee : shippingFee - discountShip,
+
       totalPrice: finalTotal,
     };
 
     console.log(orderData);
-    
+
     if (selectedPaymentMethod === 0) {
       try {
         const paymentResponse = await axios.get(apiPaymentUrl);
@@ -509,7 +606,7 @@ function AddToCartScreen({ route, navigation }) {
         const paymentUrl = paymentResponse.data.data.paymentUrl;
 
         // Điều hướng đến màn hình thanh toán
-        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData });
+        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart });
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
@@ -524,7 +621,7 @@ function AddToCartScreen({ route, navigation }) {
 
         if (response.status === 200 || response.status === 201) {
           Alert.alert('Success', 'Order placed successfully!');
-          navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+          navigation.navigate('OrderConfirmationScreen', { orderId: idCart });
         } else {
           Alert.alert('Error', 'Failed to place the order. Please try again.');
         }
@@ -537,7 +634,68 @@ function AddToCartScreen({ route, navigation }) {
     }
 
   };
+  const handlePlaceOrder = async () => {
+    const apiUrl = `${BASE_URL}order/guest`;
+    const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
 
+    const orderData = {
+      cart: idCart,
+      orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
+      orderNote: orderNote,
+      orderPayment: selectedPaymentMethod,
+      feeShip: discountShip == 0 ? shippingFee : shippingFee - discountShip,
+      totalPrice: finalTotal,
+      userName: guestInfo.userName,
+      userPhone: guestInfo.userPhone,
+      userEmail: guestInfo.userEmail,
+      userAddress: guestInfo.address.userAddress,
+      userDistrict: guestInfo.address.district,
+      userCity: guestInfo.address.city,
+      userWard: guestInfo.address.ward,
+    };
+    // console.log(orderData);
+
+    if (selectedPaymentMethod === 0) {
+      try {
+        const paymentResponse = await axios.get(apiPaymentUrl);
+
+        if (paymentResponse.status !== 200 || paymentResponse.data.code !== 200) {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
+          setIsLoading(false);
+          return;
+        }
+        const paymentUrl = paymentResponse.data.data.paymentUrl;
+
+        // Điều hướng đến màn hình thanh toán
+        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart });
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    else {
+      try {
+        // Gọi API đặt hàng
+        const response = await axios.post(apiUrl, orderData);
+
+        if (response.status === 200 || response.status === 201) {
+          navigation.navigate('OrderConfirmationScreen', { orderId: idCart });
+        } else {
+          Alert.alert('Error', 'Failed to place the order. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error during payment or order:', error);
+        Alert.alert('Error', 'An error occurred. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  // useEffect (() =>  {
+  //   AsyncStorage.removeItem('guestInfo')
+  // }, [])
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView style={{ padding: 20 }}>
@@ -546,10 +704,21 @@ function AddToCartScreen({ route, navigation }) {
 
           <View style={styles.deliveryAddressContainer}>
             <Icon name="map-marker" size={18} color="#3669C9" />
-            <Text style={styles.deliveryAddressText}>
-              {userInfo?.address.addressName}{'\n'}
-              {userInfo?.address.ward}, {userInfo?.address.district}, {userInfo?.address.city}
-            </Text>
+            {userInfo ?
+              (<Text style={styles.deliveryAddressText}>
+                {userInfo?.address.addressName}{'\n'}
+                {userInfo?.address.ward}, {userInfo?.address.district}, {userInfo?.address.city}
+              </Text>)
+              : guestInfo ?
+                (<Text style={styles.deliveryAddressText}>
+                  {guestInfo.address.userAddress}
+                  {'\n'}
+                  {guestInfo.address.ward}, {guestInfo.address.district}, {guestInfo.address.city}
+                </Text>)
+                : (<Text style={styles.deliveryAddressText}>Hiện tại chưa có thông tin của bạn{'\n'}
+                  Vui lòng đăng nhập hoặc thêm thông tin của bạn</Text>)}
+
+
             <TouchableOpacity>
               <Icon name="edit" size={18} color="#3669C9" />
             </TouchableOpacity>
@@ -557,44 +726,40 @@ function AddToCartScreen({ route, navigation }) {
         </View>
         <View>
           <View style={{ marginHorizontal: 2 }}>
-            {
-              userInfo?.userId ? (
-                cartDataUser.length > 0 ? (
-                  cartDataUser.map((item, index) => (
-                    <CartItem
-                      key={index}
-                      id={item.productId}
-                      name={item.productName}
-                      price={item.productDiscountPrice}
-                      oldPrice={item.productPrice}
-                      initialQuantity={item.productQuantity}
-                      sizeId={item.productSizeId}
-                      size={item.productSize}
-                      image={item.productImage}
-                      total={(item.productTotalPrice).toLocaleString() + " ₫"}
-                      onDelete={handleDeleteUser}
-                      onQuantityChange={handleQuantityChangeUser}
-                      onInput={handleInputQuantityChangeUser}
-                    />
-                  ))
-                ) : (
-                  <View style={{
-                    alignItems: 'center',
-                    justifyContent: 'center', overflow: 'hidden', marginVertical: 10
-                  }}>
-                    <Image source={require('../assets/NoItemCart.png')}
-                      style={{
-                        width: '100%',
-                        height: 200,
+            {cartDataUser.length > 0 ? (
+              cartDataUser.map((item, index) => (
+                <CartItem
+                  key={index}
+                  id={item.productId}
+                  name={item.productName}
+                  price={item.productDiscountPrice}
+                  oldPrice={item.productPrice}
+                  initialQuantity={item.productQuantity}
+                  sizeId={item.productSizeId}
+                  size={item.productSize}
+                  image={item.productImage}
+                  total={(item.productTotalPrice).toLocaleString() + " ₫"}
+                  onDelete={(id, quantity, sizeId) => handleDeleteUser(id, quantity, sizeId)}
+                  onQuantityChange={handleQuantityChangeUser}
+                  onInput={handleInputQuantityChangeUser}
+                />
+              ))
+            ) : (
+              <View style={{
+                alignItems: 'center',
+                justifyContent: 'center', overflow: 'hidden', marginVertical: 10
+              }}>
+                <Image source={require('../assets/NoItemCart.png')}
+                  style={{
+                    width: '100%',
+                    height: 200,
 
-                      }} />
-                    <Text style={{ fontSize: 20, fontWeight: '500' }}>Giỏ Hàng Của Bạn Trống</Text>
-                  </View>
+                  }} />
+                <Text style={{ fontSize: 20, fontWeight: '500' }}>Giỏ Hàng Của Bạn Trống</Text>
+              </View>
 
-                )
-              ) : (
-                null
-              )
+            )
+
             }
           </View>
           <View style={{ marginTop: 10, gap: 10 }}>
@@ -700,7 +865,7 @@ function AddToCartScreen({ route, navigation }) {
         </View>
 
         <View>
-          <TouchableOpacity
+          {userInfo ? (<TouchableOpacity
             style={{
               width: '100%',
               backgroundColor: cartDataUser.length === 0 ? '#ccc' : '#3669C9', // Thay đổi màu nếu disabled
@@ -718,7 +883,48 @@ function AddToCartScreen({ route, navigation }) {
             >
               Thanh toán
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity>)
+            : guestInfo ?
+              (<TouchableOpacity
+                style={{
+                  width: '100%',
+                  backgroundColor: cartDataUser.length === 0 ? '#ccc' : '#3669C9', // Thay đổi màu nếu disabled
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  padding: 20,
+                  borderRadius: 10,
+                  opacity: cartDataUser.length === 0 ? 0.7 : 1, // Làm mờ nếu disabled
+                }}
+                disabled={cartDataUser.length === 0} // Disabled khi giỏ hàng rỗng
+                onPress={handlePlaceOrder}
+              >
+                <Text
+                  style={{ textAlign: 'center', fontWeight: '600', color: '#fff' }}
+                >
+                  Thanh toán
+                </Text>
+              </TouchableOpacity>)
+              : (<TouchableOpacity
+                style={{
+                  width: '100%',
+                  backgroundColor: cartDataUser.length === 0 ? '#ccc' : '#3669C9', // Thay đổi màu nếu disabled
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  padding: 20,
+                  borderRadius: 10,
+                  opacity: cartDataUser.length === 0 ? 0.7 : 1, // Làm mờ nếu disabled
+                }}
+                disabled={cartDataUser.length === 0} // Disabled khi giỏ hàng rỗng
+                onPress={() => navigation.navigate('InformationScreen')}
+              >
+                <Text
+                  style={{ textAlign: 'center', fontWeight: '600', color: '#fff' }}
+                >
+                  Thêm Thông Tin Của Bạn
+                </Text>
+              </TouchableOpacity>)}
+
+
 
           {/* Modal chọn phương thức thanh toán */}
           <Modal visible={isModalVisible} animationType="slide" transparent>
@@ -817,7 +1023,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     marginRight: 10,
-    fontSize: 14,
+    fontSize: 16,
     color: '#555',
   },
   paymentMethod: {
@@ -954,6 +1160,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  
 });
 
 export default AddToCartScreen;

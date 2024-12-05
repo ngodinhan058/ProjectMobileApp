@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -27,63 +27,59 @@ import AlertComponent from '../components/AlertComponent';
 function BuyNow({ route, navigation }) {
   const layout = useWindowDimensions(); // Lấy thông tin kích thước màn hình
 
-  const { product, alertVisible, alertType, size, quantity, total } = route.params || {}; // Nhận params từ navigation
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Tiền mặt');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(1);
+  const [selectedPaymentName, setSelectedPaymentName] = useState('Tiền mặt');
   const [selectedPaymentIcon, setSelectedPaymentIcon] = useState(require('../assets/wallet.png'));
   const [selectedPaymentUse, setSelectedPaymentUse] = useState(true);
   const [isModalVisible, setModalVisible] = useState(false);
   const [invoiceOption, setInvoiceOption] = useState(false);
+  const [idCart, setIdCart] = useState([]);
+  const [idCartReal, setIdCartReal] = useState([]);
 
+  const [quantity, setQuantity] = useState([]);
+  const [cartDataUser, setCartDataUser] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
   const [couponAll, setCouponAll] = useState([]);
   const [shipperCoupons, setShipperCoupons] = useState([]);
 
   const [couponName, setCouponName] = useState();
-  const [discountShip, setDiscountShip] = useState(0); // Giá trị khuyến mãi
-  const [orderNote, setOrderNote] = useState('');
   const [selectedCoupon, setSelectedCoupon] = useState(null); // Coupon được chọn
   const [discount, setDiscount] = useState(0); // Giá trị khuyến mãi
-  const [shippingFee, setShippingFee] = useState(20000); // Giá trị khuyến mãi
-  const [isCouponModal, setIsCouponModal] = useState(false);
+  const [discountShip, setDiscountShip] = useState(0); // Giá trị khuyến mãi
+  const [shippingFee, setShippingFee] = useState(0); // Giá trị khuyến mãi
+  const [orderNote, setOrderNote] = useState('');
 
+  const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
+  const [isCouponModal, setIsCouponModal] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
-  const img = product?.productImages[0];
-  const convertTotal = total.toLocaleString() + " ₫"
+
+  const [origin, setOrigin] = useState("53 Đường Võ Văn Ngân Linh Chiểu Thành Phố Thủ Đức Hồ Chí Minh"); // Địa chỉ bắt đầu
+  const [destination, setDestination] = useState(""); // Địa chỉ kết thúc
+  const [distance, setDistance] = useState(null);
+  const [total, setTotal] = useState();
+
+
+  const GOONG_API_KEY = "7d6NMyBGea1uqvClvnSeN9WC4ywy3hzbhoT0pwFI";
 
   const paymentOptions = [
-    { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true },
-    { label: 'Ví Mega (Đang cập nhập)', icon: require('../assets/star.png'), use: false },
-    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false },
+    { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
+    { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
+    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 2 },
   ];
-
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
-
-  const handleSelectPayment = (method, methodIcon, use) => {
-
-    if (use == false) {
-      Alert.alert("Thông Báo", "Phương Thức Đang Cập Nhập")
-    } else {
-      setSelectedPaymentMethod(method)
-      setSelectedPaymentIcon(methodIcon)
-      toggleModal();
-
-    }
-  };
   const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         // Lấy dữ liệu từ AsyncStorage
         const userInfoString = await AsyncStorage.getItem('userInfo');
-
-        // Nếu có dữ liệu thì parse nó thành JSON
         if (userInfoString) {
           const userInfoData = JSON.parse(userInfoString);
           setUserInfo(userInfoData); // Lưu vào state
+          setDestination(
+            `${userInfoData?.address?.addressName} ${userInfoData?.address?.ward} ${userInfoData?.address?.district} ${userInfoData?.address?.city}`
+          );
+
         }
       } catch (error) {
         console.error('Error fetching user info from AsyncStorage:', error);
@@ -92,10 +88,230 @@ function BuyNow({ route, navigation }) {
 
     fetchUserInfo();
   }, []);
-  // Size ID
-  const selectedProductSize = product.productSizes.find(
-    (sizeId) => sizeId.productSizeName === size
-  );
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+  const fetchData = async () => {
+    // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}carts/user/buynow/${userInfo?.userId}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const userData = response.data.data.cartItem;
+      const cartTotal = response.data.data.productTotalPrice;
+      const idCart = response.data.data.cartId;
+      const quantity = response.data.data.productQuantity;
+      setQuantity(quantity)
+      setIdCart(idCart)
+      setCartDataUser(userData); // Lưu giỏ hàng vào stat
+      setTotal(parseInt(cartTotal.replace(/\./g, '').replace('₫', '').trim(), 10));
+    } catch (error) {
+      console.log('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, [userInfo?.userId]);
+
+
+  const fetchUserCart = async () => {
+    if (!userInfo?.userId) return;
+
+    setIsLoading(true);
+    const apiUrl = `${BASE_URL}carts/user/${userInfo?.userId}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const idCart = response.data.data.cartId;
+      setIdCartReal(idCart);
+    } catch (error) {
+      console.log('Error fetching user cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (userInfo?.userId) {
+      fetchUserCart();
+    }
+  }, [userInfo?.userId]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}order/cart/${idCartReal}`);
+        if (response.status === 200 || responseBuyNow.status === 200) {
+          Alert.alert(
+            'Xác nhận lại đơn hàng',
+            'Bạn muốn xác nhận lại đơn hàng??',
+            [
+              {
+                text: 'Xem Chi Tiết',
+                onPress: async () => {
+                  navigation.navigate('OrderConfirmationScreen', { orderId: idCartReal });
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          console.log('Không có dữ liệu đơn hàng hoặc lỗi');
+        }
+      } catch (error) {
+        // console.error('Error fetching order details:', error);
+      }
+    };
+    fetchData(); // Gọi hàm async
+  }, [idCartReal]);
+  const [title, setTitle] = useState('');
+  const handleSelectPayment = (method, methodIcon, use, value) => {
+    if (!use) {
+      Alert.alert("Thông Báo", "Phương Thức Đang Cập Nhập");
+    } else {
+      // Xác định giá trị của selectedPaymentMethod
+      setSelectedPaymentName(method)
+      setSelectedPaymentMethod(value);
+      setSelectedPaymentIcon(methodIcon);
+      toggleModal();
+    }
+  };
+
+
+
+  const handleQuantityChangeUser = async (id, isDecrease, sizeId) => {
+    // Nếu giảm, kiểm tra số lượng không dưới 1 trước khi gửi yêu cầu
+
+    if (cartDataUser.productQuantity < 1) {
+      console.warn("Số lượng không thể nhỏ hơn 1.");
+      return;
+    }
+    // Chuẩn bị payload
+    const cartItemData = {
+      cartItem: {
+        productQuantity: 1, // -1 nếu giảm, +1 nếu tăng
+        productId: id,
+        sizeId: sizeId,
+      },
+    };
+
+    try {
+      // Gửi yêu cầu tương ứng dựa trên hành động
+      const response = isDecrease
+        ? await axios.delete(`${BASE_URL}cart/${idCart}`, { data: cartItemData }) // Xóa sản phẩm nếu giảm
+        : await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData); // Cập nhật nếu tăng
+
+      if (response.status === 200 || response.status === 201) {
+        // console.log("Cập nhật giỏ hàng thành công:", response.data);
+        fetchData();
+      } else {
+        console.error("Không thể cập nhật giỏ hàng:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật giỏ hàng:", error);
+    }
+  };
+  // console.log(userInfo?.cartBuyNowId);
+
+  const handleInputQuantityChangeUser = async (id, sizeId, oldQuantity, newQuantity) => {
+    // Kiểm tra hợp lệ
+    if (newQuantity < 1) {
+      console.warn("Số lượng không thể nhỏ hơn 1.");
+      return;
+    }
+
+    try {
+      if (oldQuantity > newQuantity) {
+        // Trường hợp giảm số lượng
+        const difference = oldQuantity - newQuantity; // Số lượng cần giảm
+        const cartItemData = {
+          cartItem: {
+            productQuantity: difference, // Giảm đúng số lượng chênh lệch
+            productId: id,
+            sizeId: sizeId,
+          },
+        };
+
+        const response = await axios.delete(`${BASE_URL}cart/${idCart}`, {
+          data: cartItemData,
+        });
+
+        if (response.status === 200 || response.status === 201) {
+          // console.log("Đã giảm số lượng sản phẩm:", response.data);
+          fetchData(); // Làm mới dữ liệu giỏ hàng
+        } else {
+          console.error("Không thể giảm số lượng sản phẩm:", response.data.message);
+        }
+      } else if (oldQuantity < newQuantity) {
+        // Trường hợp tăng số lượng
+        const difference = newQuantity - oldQuantity; // Số lượng cần tăng
+        const cartItemData = {
+          cartItem: {
+            productQuantity: difference, // Tăng đúng số lượng chênh lệch
+            productId: id,
+            sizeId: sizeId,
+          },
+        };
+
+        const response = await axios.put(`${BASE_URL}cart/${idCart}`, cartItemData);
+
+        if (response.status === 200 || response.status === 201) {
+          // console.log("Đã tăng số lượng sản phẩm:", response.data);
+          fetchData(); // Làm mới dữ liệu giỏ hàng
+        } else {
+          console.error("Không thể tăng số lượng sản phẩm:", response.data.message);
+        }
+      } else {
+        // Nếu không thay đổi số lượng, không làm gì
+        console.log("Số lượng không thay đổi.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xử lý cập nhật số lượng:", error);
+    }
+  };
+  const handleDeleteUser = async (id, quantity, size) => {
+    const cartItemData = {
+      cartItem: {
+        productId: id,
+        sizeId: size,
+      },
+    };
+    try {
+      // Gửi yêu cầu xoá sản phẩm
+      const response = await axios.delete(`${BASE_URL}cart/${idCart}`, {
+        data: cartItemData,
+      });
+
+      if (response.status === 200) {
+        // console.log("Sản phẩm đã được xoá:", response.data);
+
+        // Cập nhật giỏ hàng ngay trong state
+        const updatedCart = cartDataUser.filter(
+          (item) => !(item.productId === id && item.productSizeId === size)
+        );
+        setCartDataUser(updatedCart);
+
+        // Nếu cần, cập nhật tổng giá trị giỏ hàng
+        const newTotal = updatedCart.reduce(
+          (sum, item) => sum + item.productDiscountPrice * item.productQuantity,
+          0
+        );
+        setTotal(newTotal);
+
+        // Hiển thị thông báo thành công
+        setIsAlertVisible(true);
+        setTitle('Xoá Sản Phẩm Thành Công')
+      } else {
+        console.error("Không thể xoá sản phẩm khỏi giỏ hàng:", response.data.message);
+      }
+    } catch (error) {
+      // console.error("Lỗi khi xoá sản phẩm:", error.message);
+      setIsAlertVisible(true);
+      // setAlertType("error");
+    }
+  };
+
+
 
   const fetchCouponsByType = async (type, setCouponsState) => {
     setIsLoading(true);
@@ -194,6 +410,10 @@ function BuyNow({ route, navigation }) {
     toggleCouponModal(); // Đóng modal sau khi chọn
   };
 
+
+
+
+
   useEffect(() => {
     if (selectedCoupon != null && total) {
       let discountValue = 0;
@@ -221,43 +441,127 @@ function BuyNow({ route, navigation }) {
       setDiscountShip(0);
     }
   }, [total, selectedCoupon, shippingFee]);
+  const calculateShippingFee = (distance) => {
+    const basePrice = 10000;
+    const baseDistance = 2;
+    const extraPricePerKm = 5000;
 
+    if (distance <= baseDistance) {
+      return basePrice;
+    }
+
+    const extraDistance = distance - baseDistance;
+    return basePrice + extraDistance * extraPricePerKm;
+  };
+
+  const calculateDistance = async () => {
+    try {
+      const geocodeAddress = async (address) => {
+        const response = await axios.get(
+          `https://rsapi.goong.io/geocode?address=${encodeURIComponent(address)}&api_key=${GOONG_API_KEY}`
+        );
+        return response.data.results[0].geometry.location;
+      };
+
+      const originCoords = await geocodeAddress(origin);
+      const destinationCoords = await geocodeAddress(destination);
+
+      const response = await axios.get(
+        `https://rsapi.goong.io/DistanceMatrix?origins=${originCoords.lat},${originCoords.lng}&destinations=${destinationCoords.lat},${destinationCoords.lng}&vehicle=car&api_key=${GOONG_API_KEY}`
+      );
+
+      const data = response.data;
+      if (data.rows && data.rows[0].elements[0].distance) {
+        const distanceInMeters = data.rows[0].elements[0].distance.value;
+        const distanceInKm = (distanceInMeters / 1000).toFixed(2);
+        setDistance(distanceInKm);
+        return distanceInKm;
+      } else {
+        alert("Không thể tính toán khoảng cách!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Lỗi:", error.response?.data || error.message);
+      alert("Đã xảy ra lỗi khi tính khoảng cách!");
+      return null;
+    }
+  };
+  useEffect(() => {
+    if (distance !== null) {
+      if (distance > 250) {
+        setShippingFee(100000);
+      } else {
+        setShippingFee(calculateShippingFee(distance));
+      }
+    }
+  }, [distance]);
+
+  useEffect(() => {
+    if (origin && destination) {
+      calculateDistance();
+    }
+  }, [origin, destination]);
   // Tính tổng cuối cùng
   const finalTotal = total
     ? (discount ? total - discount + shippingFee : total - discountShip + shippingFee)
     : 0;
 
+
+
+
   const handleOrder = async () => {
     setIsLoading(true);
-    const apiUrl = `${BASE_URL}order/user`;
-
-
+    const apiUrl = `${BASE_URL}order/user/buynow`;
+    const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
     const orderData = {
       user: userInfo?.userId,
       orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
       orderNote: orderNote,
-      orderPayment: selectedPaymentMethod === 'Tiền mặt' ? 1 : 0,
+      orderPayment: selectedPaymentMethod,
+      feeShip: discountShip == 0 ? shippingFee : shippingFee - discountShip,
       totalPrice: finalTotal,
     };
-    console.log(orderData);
 
-    try {
-      // Make the API call to place the order
-      const response = await axios.post(apiUrl, orderData);
+    // console.log(orderData);
 
-      // Handle the response
-      if (response.status === 200 || response.status === 201) {
-        Alert.alert('Success', 'Order placed successfully!');
-        navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
-      } else {
-        Alert.alert('Error', 'Failed to place the order. Please try again.');
+    if (selectedPaymentMethod === 0) {
+      try {
+        const paymentResponse = await axios.get(apiPaymentUrl);
+
+        if (paymentResponse.status !== 200 || paymentResponse.data.code !== 200) {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại');
+          setIsLoading(false);
+          return;
+        }
+        const paymentUrl = paymentResponse.data.data.paymentUrl;
+
+        // Điều hướng đến màn hình thanh toá
+        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart });
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error placing order:', error);
-      Alert.alert('Error', 'Failed to place the order. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
+    else {
+      try {
+        // Gọi API đặt hàn
+        const response = await axios.post(apiUrl, orderData);
+
+        if (response.status === 200 || response.status === 201) {
+          navigation.navigate('OrderConfirmationScreen', { orderId: idCart });
+        } else {
+          Alert.alert('Error', 'Failed to place the order. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error during payment or order:', error);
+        Alert.alert('Error', 'An error occurred. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
   };
 
 
@@ -281,31 +585,51 @@ function BuyNow({ route, navigation }) {
           </View>
 
           <View style={{ marginHorizontal: 2 }}>
-            <CartItem
-              key={product.productId}
-              id={product.productId}
-              name={product.productName}
-              price={product.productPriceSale}
-              oldPrice={product.productPrice}
-              initialQuantity={quantity}
-              size={size}
-              image={img.productImagePath}
-            // total={(product.productTotalPrice).toLocaleString() + " ₫"}
-            />
+            {cartDataUser.length > 0 ? (
+              cartDataUser.map((item, index) => (
+                <CartItem
+                  key={index}
+                  id={item.productId}
+                  name={item.productName}
+                  price={item.productDiscountPrice}
+                  oldPrice={item.productPrice}
+                  initialQuantity={item.productQuantity}
+                  sizeId={item.productSizeId}
+                  size={item.productSize}
+                  image={item.productImage}
+                  total={(item.productTotalPrice).toLocaleString() + " ₫"}
+                  onDelete={handleDeleteUser}
+                  onQuantityChange={handleQuantityChangeUser}
+                  onInput={handleInputQuantityChangeUser}
+                />
+              ))
+            ) : (
+              <View style={{
+                alignItems: 'center',
+                justifyContent: 'center', overflow: 'hidden', marginVertical: 10
+              }}>
+                <Image source={require('../assets/NoItemCart.png')}
+                  style={{
+                    width: '100%',
+                    height: 200,
+
+                  }} />
+                <Text style={{ fontSize: 20, fontWeight: '500' }}>Giỏ Hàng Của Bạn Trống</Text>
+              </View>
+
+            )
+
+            }
           </View>
 
           <View style={{ marginTop: 10, gap: 10 }}>
             <Text>Ghi Chú</Text>
             <TextInput
-              style={{
-                backgroundColor: '#ddd',
-                padding: 10,
-                borderRadius: 10,
-                opacity: 0.25,
-                marginBottom: 10
-              }}
+              style={styles.noteInput}
               placeholder="Nhập Ghi Chú"
-            ></TextInput>
+              value={orderNote}
+              onChangeText={setOrderNote}
+            />
           </View>
 
           <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Ưa Đãi Của Tôi</Text>
@@ -391,8 +715,8 @@ function BuyNow({ route, navigation }) {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 10 }}>
           {/* Phương thức thanh toán đã chọn */}
           <TouchableOpacity style={styles.paymentMethod} onPress={toggleModal}>
-            <Image source={selectedPaymentIcon} style={styles.icon} />
-            <Text style={styles.selectedPaymentText}>{selectedPaymentMethod}</Text>
+            <Image source={selectedPaymentIcon} style={{ width: 24, height: 24, marginRight: 10, }} />
+            <Text style={styles.selectedPaymentText}>{selectedPaymentName}</Text>
             <Icon name="angle-down" size={22} color="#000" />
           </TouchableOpacity>
           <View style={{ justifyContent: 'center' }}>
@@ -410,7 +734,7 @@ function BuyNow({ route, navigation }) {
               padding: 20,
               borderRadius: 10,
             }}
-            onPress={() => navigation.navigate('OrderConfirmationScreen')}
+            onPress={handleOrder}
           >
             <Text
               style={{ textAlign: 'center', fontWeight: '600', color: '#fff' }}
@@ -449,13 +773,6 @@ function BuyNow({ route, navigation }) {
         </TouchableWithoutFeedback>
         <View style={styles.modalCouponBackground}>
           <Text style={styles.modalTitle}>Chọn Mã Khuyến Mãi</Text>
-          {/* <ScrollView>
-            {couponAll.map((item) => (
-              <View key={item.couponId.toString()}>
-                {renderCoupon({ item })}
-              </View>
-            ))}
-          </ScrollView> */}
           <TabView
             navigationState={{ index, routes }}
             renderScene={SceneMap({
@@ -481,9 +798,7 @@ function BuyNow({ route, navigation }) {
       <AlertComponent
         title={alertType === 'success' ? 'Success' : 'Error'}
         description={
-          alertType === 'success'
-            ? 'Thêm Sản Phẩm Thành Công.'
-            : 'Thêm Sản Phẩm Thất Bại.'
+          alertType === 'success' ? (title == '' ? 'Thêm Sản Phẩm Thành Công.' : 'Xoá Sản Phẩm Thành Công.') : (null)
         }
         alertType={alertType}
         visible={isAlertVisible}
@@ -608,6 +923,13 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     color: '#000',
+  },
+  noteInput: {
+    backgroundColor: '#eee',
+    padding: 10,
+    borderRadius: 10,
+    opacity: 0.85,
+    marginBottom: 10,
   },
   invoiceOption: {
     flexDirection: 'row',
