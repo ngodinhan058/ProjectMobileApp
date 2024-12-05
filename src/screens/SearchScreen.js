@@ -14,17 +14,23 @@ import ProductItem from '../components/ProductItem';
 import Filter from '../components/FilterSearch';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
+import { SEARCH_KEY } from '../constants/SearchKey';
+import { loadData, saveData } from '../utils/SearchMemory';
 
 const SearchScreen = ({ navigation, route }) => {
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const [minPrice, setMinPrice] = useState();
   const [maxPrice, setMaxPrice] = useState();
 
-  const { query } = route.params;
+  const { query = '' } = route?.params || {};
 
   const finalQuery = query || '';
 
+  const timeoutRef = React.useRef(null);
+
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [isFilterModalVisibleMemory, setIsFilterModalVisibleMemory] =
+    useState(false);
   const [appliedFilters, setAppliedFilters] = useState(null);
   const [searchQuery, setSearchQuery] = useState(finalQuery); // Lưu trữ trạng thái cho thanh tìm kiếm
 
@@ -33,13 +39,97 @@ const SearchScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true); // Thêm biến loading nếu thiếu
   // const [categoryId, setCategoryId] = useState([]);
 
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [suggestion, setSuggestion] = useState([]);
+  const [toggleItem, setToggleItem] = useState(false);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      const savedData = await loadData(SEARCH_KEY);
+      setRecentSearches(savedData);
+    };
+
+    initializeData(); // Call the combined function
+  }, [searchQuery]);
+
+  const handleMemory = async () => {
+    if (recentSearches.includes(searchQuery) || searchQuery.length === 0) {
+      return; // Early return if term already exists
+    }
+
+    // Update the state with the new term
+    const updatedSearches = [...recentSearches, searchQuery];
+    g;
+    try {
+      // Save the updated searches to AsyncStorage
+      await saveData(SEARCH_KEY, JSON.stringify(updatedSearches));
+
+      // Update the state after saving
+      setRecentSearches(updatedSearches);
+
+      // Update the search query
+      setSearchQuery(term);
+    } catch (error) {
+      console.log('Error saving recent searches:', error);
+    }
+    // Navigate to the search screen with the current query
+  };
+  console.log('äsâsas', recentSearches);
+
   const handleSearch = () => {
-    navigation.replace('SearchScreen', { query: searchQuery });
+    handleMemory();
+    setToggleItem(true);
   };
 
   const toggleFilterModal = () => {
     setIsFilterModalVisible(!isFilterModalVisible);
   };
+
+  const fetchData = async (url) => {
+    setLoading(true);
+    try {
+      const productsResponse = await axios.get(url);
+
+      const productsData = productsResponse.data.data.content;
+
+      setSuggestion(productsData);
+    } catch (error) {
+      console.log('Error fetching data:', error);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    if (searchQuery && searchQuery.length < 2) {
+      setSuggestion([]); // Clear suggestions if the query is less than 2 characters
+      setLoading(false);
+      return; // Do not proceed if the search query is too short
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current); // Clear previous timeout
+    }
+
+    // Set a new timeout
+    timeoutRef.current = setTimeout(() => {
+      if (searchQuery.length >= 2) {
+        const productsApiUrl = `${BASE_URL}products/filters?search=${searchQuery}`;
+        fetchData(productsApiUrl); // Fetch data based on the query
+      } else {
+        setSuggestion([]); // Clear suggestions if search query is empty or too short
+      }
+    }, 0); // Wait for 3 seconds before fetching
+    setLoading(false);
+
+    return () => {
+      clearTimeout(timeoutRef.current); // Cleanup timeout on unmount
+    };
+  }, [searchQuery]);
 
   const handleApplyFilters = (filters) => {
     setAppliedFilters(filters);
@@ -59,6 +149,37 @@ const SearchScreen = ({ navigation, route }) => {
   const handleResetFilters = () => {
     setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
   };
+
+  const recentSearchesShow = isFilterModalVisibleMemory
+    ? recentSearches // Hiển thị tất cả nếu mở rộng
+    : recentSearches.slice(0, 2); // Chỉ hiển thị 2 mục đầu tiên
+
+  const toggleExpand = () => {
+    setIsFilterModalVisibleMemory(!isFilterModalVisibleMemory);
+  };
+
+  const handleRecentSearchClick = (term) => {
+    // Prevent duplicate entries
+    setToggleItem(true);
+    setSearchQuery(term);
+  };
+
+  const removeSearchTerm = async (term) => {
+    const updatedSearches = recentSearches.filter((item) => item !== term);
+    try {
+      // Save the updated searches to AsyncStorage
+      await saveData(SEARCH_KEY, JSON.stringify(updatedSearches));
+
+      // Update the state after saving
+      setRecentSearches(updatedSearches);
+
+      // Uncomment to navigate to SearchScreen if needed
+      //navigation.replace('SearchScreen', { query: term });
+    } catch (error) {
+      console.log('Error saving recent searches:', error);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
     let apiUrl = `${BASE_URL}products/filters?`;
@@ -93,6 +214,11 @@ const SearchScreen = ({ navigation, route }) => {
   const filteredSuggestions = productsState.filter((product) =>
     product.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleSearchQuery = (e) => {
+    setToggleItem(false);
+    setSearchQuery(e);
+  };
   return (
     <View style={styles.container}>
       {/* Thanh tìm kiếm */}
@@ -101,7 +227,7 @@ const SearchScreen = ({ navigation, route }) => {
           style={styles.searchInput}
           placeholder="Search Product Name"
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearchQuery}
           onSubmitEditing={handleSearch}
         />
         <TouchableOpacity onPress={handleSearch}>
@@ -119,7 +245,6 @@ const SearchScreen = ({ navigation, route }) => {
           />
         </TouchableOpacity>
       </View>
-
       {/* Filter Modal Component */}
       <Filter
         isVisible={isFilterModalVisible}
@@ -127,10 +252,103 @@ const SearchScreen = ({ navigation, route }) => {
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
       />
+      {/* Suggestions Section */}
+      {!toggleItem && searchQuery && (
+        // Show Suggestions if toggleItem is true
+        <View style={styles.suggestionsContainer}>
+          {searchQuery.length < 2 ? (
+            <Text style={{ marginTop: -24, marginBottom: 10 }}>
+              Nhập ít nhất 2 ký tự
+            </Text>
+          ) : (
+            <>
+              <Text style={styles.recentSearchesTitle}>Gợi ý</Text>
 
-      {/* Danh sách sản phẩm dạng lưới */}
+              {loading ? (
+                <Text>Loading...</Text>
+              ) : (
+                <>
+                  {suggestion.length === 0 ? (
+                    <Text>Không có giá trị để gợi ý</Text>
+                  ) : (
+                    <ScrollView
+                      contentContainerStyle={styles.suggestionsContainer}
+                    >
+                      {suggestion.map((item) => (
+                        <View key={item.productId}>
+                          <View style={styles.suggestionItem}>
+                            <TouchableOpacity
+                              onPress={() =>
+                                handleRecentSearchClick(item.productName)
+                              }
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Image
+                                source={require('../assets/iconSeach.png')}
+                                style={styles.clock}
+                              />
+                              <Text style={styles.suggestionText}>
+                                {item.productName}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                          <View style={styles.line}></View>
+                        </View>
+                      ))}
+                    </ScrollView>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </View>
+      )}
+      {!toggleItem && !searchQuery && (
+        // Show Recent Searches if toggleItem is false
+        <View style={styles.recentSearchesContainer}>
+          <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
 
-      {!loading && productsState.length > 0 && (
+          <ScrollView contentContainerStyle={styles.listContent}>
+            {recentSearchesShow.map((item, index) => (
+              <View key={index.toString()} style={styles.recentSearchItem}>
+                <TouchableOpacity
+                  onPress={() => handleRecentSearchClick(item)}
+                  style={{ flexDirection: 'row', alignItems: 'center' }}
+                >
+                  <Image
+                    source={require('../assets/clock.png')}
+                    style={styles.clock}
+                  />
+                  <Text style={styles.recentSearchText}>{item}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => removeSearchTerm(item)}>
+                  <Image
+                    source={require('../assets/iconClose.png')}
+                    style={styles.iconSmall}
+                  />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+
+          <TouchableOpacity
+            onPress={toggleExpand}
+            style={{
+              marginBottom: 10,
+              color: '#3669c9',
+            }}
+          >
+            <Text style={{ color: '#C4C5C4', textAlign: 'center' }}>
+              {isFilterModalVisibleMemory ? 'Collapse' : 'Show More'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {/* Display Product List after Search */}
+      {!loading && toggleItem && filteredSuggestions.length > 0 && (
         <FlatList
           data={filteredSuggestions}
           renderItem={({ item }) => {
@@ -155,8 +373,8 @@ const SearchScreen = ({ navigation, route }) => {
           contentContainerStyle={styles.listContent}
         />
       )}
-
-      {!loading && productsState.length === 0 && (
+      {/* No Products Found */}
+      {!loading && toggleItem && filteredSuggestions.length === 0 && (
         <View style={{ position: 'relative' }}>
           <View style={{ marginBottom: '70%' }}></View>
           <Image
@@ -170,7 +388,6 @@ const SearchScreen = ({ navigation, route }) => {
           />
         </View>
       )}
-
       {loading && (
         <View style={styles.overlay}>
           <ActivityIndicator size="large" color="#3669c9" />
@@ -237,6 +454,35 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: 'space-between',
+  },
+  recentSearchesContainer: { marginTop: 0 },
+  recentSearchesTitle: { fontSize: 16, fontWeight: 'bold' },
+  recentSearchItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  recentSearchText: { fontSize: 16 },
+  iconSmall: { width: 15, height: 15, marginLeft: 8 },
+
+  suggestionsContainer: { marginTop: 16 },
+  suggestionsTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  suggestionText: { fontSize: 16 },
+  greySection: {
+    width: '100%',
+    paddingTop: 20,
+    borderRadius: 30,
+  },
+  clock: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
   },
 });
 
