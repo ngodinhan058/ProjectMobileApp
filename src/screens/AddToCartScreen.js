@@ -67,7 +67,8 @@ function AddToCartScreen({ route, navigation }) {
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
     { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
-    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 2 },
+    { label: 'ZaloPay', icon: require('../assets/star.png'), use: true, value: 2 },
+    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 3 },
   ];
 
   const toggleModal = () => {
@@ -580,6 +581,7 @@ function AddToCartScreen({ route, navigation }) {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
+    const zalopayUrl = `http://192.168.189.69:3000/payment`;  
     // console.log("discountShip",discountShip <= 0 ? shippingFee : discountShip);
 
     const orderData = {
@@ -597,7 +599,7 @@ function AddToCartScreen({ route, navigation }) {
     if (selectedPaymentMethod === 0) {
       try {
         const paymentResponse = await axios.get(apiPaymentUrl);
-
+        
         if (paymentResponse.status !== 200 || paymentResponse.data.code !== 200) {
           Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
           setIsLoading(false);
@@ -610,6 +612,34 @@ function AddToCartScreen({ route, navigation }) {
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
+      }
+    } if (selectedPaymentMethod === 2) {
+      // Thanh toán qua ZaloPay
+      try {
+        const paymentResponse = await axios.post(zalopayUrl, {
+          amount: finalTotal,
+          description: `Thanh toán đơn hàng #${idCart}`,
+        });
+  
+        if (paymentResponse.status !== 200 || !paymentResponse.data) {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán ZaloPay. Vui lòng thử lại.');
+          setIsLoading(false);
+          return;
+        }
+  
+        const paymentUrl = paymentResponse.data.paymentUrl;
+  
+        // Điều hướng tới màn hình WebView để thanh toán qua ZaloPay
+        navigation.navigate('PaymentWebViewScreen', {
+          url: paymentUrl,
+          orderData,
+          orderId: idCart,
+        });
+      } catch (error) {
+        console.error('Error during ZaloPay payment:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi khi xử lý thanh toán ZaloPay. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);
       }

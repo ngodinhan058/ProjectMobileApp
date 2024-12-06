@@ -33,8 +33,8 @@ const ProfileScreen = ({ navigation, route }) => {
       const savedCart = await AsyncStorage.getItem('userData');
 
       if (savedCart) {
-        const { username, token } = JSON.parse(savedCart);
-        setUserInfo({ username, token });
+        const { username, token, role } = JSON.parse(savedCart);
+        setUserInfo({ username, token, role });
       } else {
         setUser({});
       }
@@ -66,7 +66,7 @@ const ProfileScreen = ({ navigation, route }) => {
             setUser(result.data); // Lưu thông tin người dùng vào state
             setUserImg(
               result.data.userImagePath ||
-                'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg'
+              'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg'
             );
             // Lưu thông tin người dùng vào AsyncStorage
             await AsyncStorage.setItem('userInfo', JSON.stringify(result.data));
@@ -88,21 +88,34 @@ const ProfileScreen = ({ navigation, route }) => {
 
     loadUserInfo();
   }, [userInfo?.token]);
+  // const [userRole, setUserRole] = useState({});
+  // useEffect(() => {
+  //   const getItem = async () => {
+  //     try {
+  //       const userData = await AsyncStorage.getItem('userData');
+  //       if (userData) {
+  //         // setUser(userData);
+  //         setUserRole(JSON.parse(userData));
+  //       }
+  //     } catch (error) {
+  //       console.error('Error loading user data from AsyncStorage:', error);
+  //     }
+  //   };
+  //   getItem();
+  // }, []);
 
-  // listen for isFocused, if useFocused changes
-  // call the function that you use to mount the component.
+  console.log("User roles:123213", userInfo?.role);
+
 
   useFocusEffect(
     React.useCallback(() => {
-      loadUserInfo(); // Fetch user info whenever the screen is focused
-
-      // Optionally, return a cleanup function if necessary
+      loadUserInfo();
       return () => {
         // You can perform cleanup tasks here if needed
       };
     }, [userInfo?.token]) // Empty dependency array means this runs on every focus
   );
-
+  const hasPermission = (role) => userInfo?.role?.includes(role);
   const handleLogout = async () => {
     try {
       Alert.alert(
@@ -119,7 +132,17 @@ const ProfileScreen = ({ navigation, route }) => {
               await AsyncStorage.removeItem('userData');
               await AsyncStorage.removeItem('userInfo');
               Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
-              navigation.navigate('Mega Mall');
+              {
+                hasPermission("PERMISSION_ADMIN") && (
+                  navigation.navigate('Trang Chủ Admin')
+                )
+              }
+              {
+                hasPermission("ROLE_USER") && (
+                  navigation.navigate('Mega Mall')
+                )
+              }
+
             },
           },
         ],
@@ -251,34 +274,6 @@ const ProfileScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* <View style={{ position: 'relative' }}>
-        <TouchableOpacity
-          style={{
-            position: 'absolute', // Để nút nằm ngoài luồng bình thường
-            bottom: 15,// Vị trí so với cạnh trên
-            right: 20,
-            backgroundColor: '#3669c9',
-            width: 60, // Định rõ kích thước hình ảnh
-            height: 60,
-            borderRadius: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 4,
-            elevation: 4,
-          }}
-          onPress={() => navigation.navigate('ChatScreen', {
-            email: user?.userEmail,
-            userFirstName: user?.userFirstName,
-            userLastName: user?.userLastName,
-          })}
-        >
-          <Ionicons name="chatbox-ellipses-outline" size={30} color="#fff" />
-        </TouchableOpacity>
-      </View> */}
     </>
   );
 };
