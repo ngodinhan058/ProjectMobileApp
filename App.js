@@ -55,6 +55,7 @@ import WishListScreen from './src/screens/WishListScreen';
   /* Payment */
 }
 import PaymentWebViewScreen from './src/screens/payment/PaymentWebViewScreen';
+import PaymentScreen from './src/screens/payment/PaymentScreen';
 
 {
   /* Admin */
@@ -348,6 +349,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     {
       name: 'PaymentWebViewScreen',
       component: PaymentWebViewScreen,
+      showFooter: false,
+    },
+    {
+      name: 'PaymentScreen',
+      component: PaymentScreen,
       showFooter: false,
     },
     {

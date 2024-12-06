@@ -342,29 +342,29 @@ function AddToCartScreen({ route, navigation }) {
         productQuantity: quantity,
       },
     };
-  
+
     try {
       // Gửi yêu cầu xoá sản phẩm từ giỏ hàng
       const response = await axios.delete(`${BASE_URL}cart/${idCart}`, {
         data: cartItemData,
       });
-  
+
       if (response.status === 200) {
         console.log("Sản phẩm đã được xoá:", response.data);
-  
+
         // Cập nhật giỏ hàng trong state sau khi xoá sản phẩm
         const updatedCart = cartDataUser.filter(
           (item) => !(item.productId === id && item.productSizeId === size)
         );
         setCartDataUser(updatedCart);
-  
+
         // Cập nhật tổng giá trị giỏ hàng
         const newTotal = updatedCart.reduce(
           (sum, item) => sum + item.productDiscountPrice * item.productQuantity,
           0
         );
         setTotal(newTotal);
-  
+
         // Hiển thị thông báo thành công
         setIsAlertVisible(true);
         setTitle('Xoá Sản Phẩm Thành Công');
@@ -382,7 +382,7 @@ function AddToCartScreen({ route, navigation }) {
       fetchGuestCart();
     }
   };
-  
+
 
 
   const fetchCouponsByType = async (type, setCouponsState) => {
@@ -482,7 +482,7 @@ function AddToCartScreen({ route, navigation }) {
 
 
 
-   useEffect(() => {
+  useEffect(() => {
     if (selectedCoupon != null && total) {
       let discountValue = 0;
       if (selectedCoupon.couponPerHundred) {
@@ -581,7 +581,7 @@ function AddToCartScreen({ route, navigation }) {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
-    const zalopayUrl = `http://192.168.189.69:3000/payment`;  
+    const apiPaymentUrlZalo = `https://5b80-2405-4802-9154-3a80-b09e-e709-6843-4dae.ngrok-free.app/payment`;
     // console.log("discountShip",discountShip <= 0 ? shippingFee : discountShip);
 
     const orderData = {
@@ -599,7 +599,7 @@ function AddToCartScreen({ route, navigation }) {
     if (selectedPaymentMethod === 0) {
       try {
         const paymentResponse = await axios.get(apiPaymentUrl);
-        
+
         if (paymentResponse.status !== 200 || paymentResponse.data.code !== 200) {
           Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
           setIsLoading(false);
@@ -615,33 +615,26 @@ function AddToCartScreen({ route, navigation }) {
       } finally {
         setIsLoading(false);
       }
-    } if (selectedPaymentMethod === 2) {
-      // Thanh toán qua ZaloPay
+    } else if (selectedPaymentMethod === 2) { // ZaloPay Payment
       try {
-        const paymentResponse = await axios.post(zalopayUrl, {
+        const paymentResponse = await axios.post(apiPaymentUrlZalo, {
           amount: finalTotal,
-          description: `Thanh toán đơn hàng #${idCart}`,
+          bankCode: "zalopayapp",
+          user: userInfo?.userId,
         });
-  
-        if (paymentResponse.status !== 200 || !paymentResponse.data) {
-          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán ZaloPay. Vui lòng thử lại.');
-          setIsLoading(false);
-          return;
+
+        if (paymentResponse.status === 200) {
+          const { order_url, trans_id } = paymentResponse.data;
+          navigation.navigate('PaymentScreen', { url: order_url, orderData, transId: trans_id });
+        } else {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
         }
-  
-        const paymentUrl = paymentResponse.data.paymentUrl;
-  
-        // Điều hướng tới màn hình WebView để thanh toán qua ZaloPay
-        navigation.navigate('PaymentWebViewScreen', {
-          url: paymentUrl,
-          orderData,
-          orderId: idCart,
-        });
       } catch (error) {
-        console.error('Error during ZaloPay payment:', error);
-        Alert.alert('Error', 'Đã xảy ra lỗi khi xử lý thanh toán ZaloPay. Vui lòng thử lại.');
+        console.error('Error creating ZaloPay transaction:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);
+
       }
     }
     else {
@@ -1190,7 +1183,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  
+
 });
 
 export default AddToCartScreen;
