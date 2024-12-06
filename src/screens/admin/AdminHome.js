@@ -12,74 +12,89 @@ import {
 } from 'react-native';
 import ProductItem from '../../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { Dimensions } from "react-native";
+import { Dimensions } from 'react-native';
 import {
   LineChart,
   BarChart,
   PieChart,
   ProgressChart,
   ContributionGraph,
-  StackedBarChart
-} from "react-native-chart-kit";
-const screenWidth = Dimensions.get("window").width;
-const featuredProducts = [
-  {
-    id: '1',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless0',
-    price: '1.500.000',
-    rating: '4.0',
-    review: '860',
-  },
-  {
-    id: '2',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless2',
-    price: '100.000',
-    rating: '2.6',
-    review: '6',
-  },
-  {
-    id: '3',
-    image: {
-      uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp',
-    },
-    name: 'TMA-2 HD Wireless',
-    price: '1.000.000',
-    rating: '0.6',
-    review: '106',
-  },
-];
+  StackedBarChart,
+} from 'react-native-chart-kit';
+const screenWidth = Dimensions.get('window').width;
+
+// each value represents a goal ring in Progress chart
 const data = {
-  labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"],
+  labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'], // Các tháng
   datasets: [
     {
-      data: [20, 45, 28, 80, 99, 43, 55, 66, 77, 88, 99, 100],
-      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      data: [500000, 700000, 1000000, 900000, 1300000, 1200000], // Doanh thu theo từng tháng
+      color: (opacity = 1) => `rgba(0, 128, 255, ${opacity})`, // Màu cột
       strokeWidth: 3,
     },
   ],
-  legend: ["Monthly Data"],
+  legend: ['Doanh Thu'], // Nhãn dưới các cột
 };
 
-const chartConfig = {
-  backgroundGradientFrom: "#2c2c2c",
-  backgroundGradientFromOpacity: 1,
-  backgroundGradientTo: "#1a1a1a",
-  backgroundGradientToOpacity: 1,
-  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-  strokeWidth: 3,
-  barPercentage: 0.5,
-  useShadowColorFromDataset: true,
-  propsForDots: {
-    r: "4",
-    strokeWidth: "2",
-    stroke: "#ffffff",
+const data2 = {
+  labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'], // Các tháng
+  datasets: [
+    {
+      data: [500000, 700000, 1000000, 900000, 1300000, 1200000], // Doanh thu theo từng tháng
+      color: (opacity = 1) => `rgba(0, 128, 255, ${opacity})`, // Màu đường
+      strokeWidth: 3, // Độ dày của đường
+    },
+  ],
+};
+
+const orderStatusData = [
+  {
+    name: 'Đơn hàng đã hoàn thành', // Trạng thái: Đơn hàng đã hoàn thành
+    population: 4000, // Tỷ trọng đơn hàng hoàn thành (Số lượng)
+    color: 'rgba(76, 175, 80, 1)', // Màu sắc biểu thị trạng thái hoàn thành (xanh lá)
+    legendFontColor: '#000', // Màu sắc của nhãn
+    legendFontSize: 15, // Kích thước chữ của nhãn
   },
+  {
+    name: 'Đơn hàng đang chờ', // Trạng thái: Đơn hàng đang chờ xử lý
+    population: 1500, // Tỷ trọng đơn hàng đang chờ
+    color: 'rgba(255, 165, 0, 1)', // Màu sắc biểu thị trạng thái chờ (vàng)
+    legendFontColor: '#000', // Màu sắc của nhãn
+    legendFontSize: 15, // Kích thước chữ của nhãn
+  },
+  {
+    name: 'Đơn hàng đã hủy', // Trạng thái: Đơn hàng đã hủy
+    population: 800, // Tỷ trọng đơn hàng đã hủy
+    color: 'rgba(255, 0, 0, 1)', // Màu sắc biểu thị trạng thái đã hủy (đỏ)
+    legendFontColor: '#000', // Màu sắc của nhãn
+    legendFontSize: 15, // Kích thước chữ của nhãn
+  },
+  {
+    name: 'Đơn hàng đã thanh toán', // Trạng thái: Đơn hàng đã thanh toán
+    population: 1200, // Tỷ trọng đơn hàng đã thanh toán
+    color: 'rgba(0, 123, 255, 1)', // Màu sắc biểu thị trạng thái thanh toán (xanh dương)
+    legendFontColor: '#000', // Màu sắc của nhãn
+    legendFontSize: 15, // Kích thước chữ của nhãn
+  },
+];
+
+const chartConfig = {
+  backgroundGradientToOpacity: 0.5,
+  color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+  strokeWidth: 2, // optional, default 3
+  barPercentage: 0.5,
+  useShadowColorFromDataset: false, // optional
+};
+
+const chartConfig2 = {
+  backgroundGradientFrom: '#1E2923',
+  backgroundGradientFromOpacity: 0,
+  backgroundGradientTo: '#08130D',
+  backgroundGradientToOpacity: 0.5,
+  color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+  strokeWidth: 2, // optional, default 3
+  barPercentage: 0.5,
+  useShadowColorFromDataset: false, // optional
 };
 
 function AccountHomeScreen({ route, navigation }) {
@@ -162,31 +177,62 @@ function AccountHomeScreen({ route, navigation }) {
         </View>
       </View>
 
-      <View style={{ flex: 5, backgroundColor: '#fff' }}>
-        <View style={{ flexDirection: "row", backgroundColor: "#1a1a1a" }}>
-          {/* Cột bên trái */}
-          <View style={{ width: 45, paddingHorizontal: 10 }}>
-            <Text style={{ color: "white", fontSize: 14, marginBottom: 25, marginTop: 35 }}>100</Text>
-            <Text style={{ color: "white", fontSize: 14, marginBottom: 25, }}>80</Text>
-            <Text style={{ color: "white", fontSize: 14, marginBottom: 0, }}>60</Text>
-            <Text style={{ color: "white", fontSize: 14, marginTop: 22, }}>40</Text>
-            <Text style={{ color: "white", fontSize: 14, marginTop: 20, }}>20</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <LineChart
+      <View style={styles.container}>
+        <ScrollView>
+          <Text style={styles.title}>Biểu đồ Doanh Thu</Text>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+            <BarChart
               data={data}
-              width={screenWidth * 2} // Độ rộng để cuộn được
-              height={220}
+              width={screenWidth - 10} // Độ rộng của biểu đồ
+              height={300} // Chiều cao của biểu đồ
               chartConfig={chartConfig}
-              withHorizontalLabels={true}
+              verticalLabelRotation={20} // Xoay nhãn trục X
+              fromZero={true} // Đảm bảo trục Y bắt đầu từ 0
+              showValuesOnTopOfBars={true} // Hiển thị giá trị trên cột
+              withVerticalLines={false} // Tắt các đường dọc
+              withHorizontalLines={true} // Hiển thị các đường ngang
+              yAxisLabel="$"
             />
           </ScrollView>
-        </View>
+
+          <Text style={styles.title}>Biểu đồ Đơn Hàng</Text>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+            <PieChart
+              data={orderStatusData}
+              width={screenWidth - 40}
+              height={100}
+              chartConfig={chartConfig2}
+              accessor={'population'}
+              backgroundColor={'transparent'}
+              paddingLeft={'-50%'}
+              center={[40, 10]}
+              style={styles.pieChartStyle}
+            />
+          </ScrollView>
+        </ScrollView>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  pieChartStyle: {
+    marginVertical: 10,
+    borderRadius: 15,
+  },
+});
 
 export default AccountHomeScreen;
