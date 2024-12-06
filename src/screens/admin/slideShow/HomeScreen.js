@@ -63,10 +63,32 @@ const HomeAdminScreen = ({ navigation, route }) => {
     setRefreshing(false);
   };
 
-  // Xử lý đăng xuất
-  const handleLogout = () => {
-    // Logic đăng xuất
-    console.log('Logging out...');
+  const handleLogout = async () => {
+    try {
+      Alert.alert(
+        'Xác nhận đăng xuất',
+        'Bạn muốn đăng xuất phải không?',
+        [
+          {
+            text: 'Huỷ',
+            style: 'cancel',
+          },
+          {
+            text: 'Đúng',
+            onPress: async () => {
+              await AsyncStorage.removeItem('userData');              
+              await AsyncStorage.removeItem('userInfo');
+
+              Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+              navigation.navigate('Trang Chủ Admin');
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error) {
+      Alert.alert('Thất bại', error);
+    }
   };
 
   // Render từng slide trong danh sách

@@ -655,7 +655,7 @@ function AdminDrawerNavigator() {
       {hasPermission("PERMISSION_USERS") && (
         <Drawer.Screen name="Người Dùng" component={UserAdmin} />
       )}
-      {hasPermission("PERMISSION_SHIPMENTS") && (
+      {hasPermission("PERMISSION_SHIPMENT") && (
         <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
       )}
       {hasPermission("PERMISSION_COLORS") && (
@@ -978,7 +978,7 @@ export default function App() {
     // If you want to fetch user data each time the navigation state changes
     if (
       currentRoute.name === 'Mega Mall' ||
-      currentRoute.name === 'Người Dùng'
+      currentRoute.name === 'Trang Chủ Admin'
     ) {
       try {
         getItem();

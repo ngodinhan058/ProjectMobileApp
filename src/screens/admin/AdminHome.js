@@ -118,7 +118,7 @@ function AccountHomeScreen({ route, navigation }) {
               await AsyncStorage.removeItem('userInfo');
 
               Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
-              navigation.navigate('Người Dùng');
+              navigation.navigate('Trang Chủ Admin');
             },
           },
         ],
