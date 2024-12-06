@@ -36,18 +36,8 @@ const HomeAdminScreen = ({ navigation, route }) => {
   const { alertVisible, alertType, title } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
   useEffect(() => {
-    LogBox.ignoreAllLogs(false);
-    const originalWarn = console.warn;
-  
-    console.warn = (...args) => {
-      // Nếu cần kiểm tra log cảnh báo, hãy xử lý ở đây hoặc bỏ qua hoàn toàn
-      // originalWarn(...args); // Kích hoạt nếu cần theo dõi cảnh báo cụ thể
-    };
-  
-    return () => {
-      console.warn = originalWarn;
-    };
-  }, []);
+    LogBox.ignoreAllLogs();
+  }, [])
   // Lấy danh sách slide show từ API
   const fetchSlides = async () => {
     setIsLoading(true);
