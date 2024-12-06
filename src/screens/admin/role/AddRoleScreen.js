@@ -72,7 +72,7 @@ const AddRoleScreen = ({ navigation }) => {
                         onChangeText={setRoleName}
                     />
                     <Text style={styles.label}>Quyền Người Dùng:</Text>
-                    <TouchableOpacity style={[styles.input, !Permission && styles.inputError]} onPress={toggleSizeModal}>
+                    <TouchableOpacity style={[styles.inputP, !Permission && styles.inputError]} onPress={toggleSizeModal}>
                         {Permission != null ? (<Text>{PermissionName}</Text>) : (<Text>Chưa Chọn Quyền Người Dùng</Text>)}
                     </TouchableOpacity>
                     <PermissionScreen
@@ -81,7 +81,7 @@ const AddRoleScreen = ({ navigation }) => {
                         onReset={handleResetFilters}
                         onApply={(selectedSizeId, selectedSizeName) => {
                             setPermission(selectedSizeId);
-                            const selectedSizeNames = selectedSizeName.join(', ');
+                            const selectedSizeNames = selectedSizeName.join(',     ');
                             setPermissionName(selectedSizeNames);
 
                         }}
@@ -165,7 +165,16 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 10,
         paddingHorizontal: 10,
-        justifyContent: 'center'
+        justifyContent: 'center',
+    },
+    inputP: {
+        height: 150,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+        marginBottom: 10,
+        paddingHorizontal: 10,
+        justifyContent: 'center',
     },
     label: {
         fontSize: 16,
