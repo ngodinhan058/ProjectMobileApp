@@ -22,6 +22,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import AlertComponent from '../../../components/AlertComponent';
 import { LogBox } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AnimatedTouchableOpacity =
   Animated.createAnimatedComponent(TouchableOpacity);
@@ -35,7 +36,17 @@ const HomeAdminScreen = ({ navigation, route }) => {
   const { alertVisible, alertType, title } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
   useEffect(() => {
-    LogBox.ignoreAllLogs();
+    LogBox.ignoreAllLogs(false);
+    const originalWarn = console.warn;
+  
+    console.warn = (...args) => {
+      // Nếu cần kiểm tra log cảnh báo, hãy xử lý ở đây hoặc bỏ qua hoàn toàn
+      // originalWarn(...args); // Kích hoạt nếu cần theo dõi cảnh báo cụ thể
+    };
+  
+    return () => {
+      console.warn = originalWarn;
+    };
   }, []);
   // Lấy danh sách slide show từ API
   const fetchSlides = async () => {

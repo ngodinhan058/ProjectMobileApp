@@ -7,11 +7,10 @@ import {
   Button,
   TouchableOpacity,
   FlatList,
-  Pressable,
+  Alert,
   TextInput,
 } from 'react-native';
-import ProductItem from '../../components/ProductItem';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { Dimensions } from "react-native";
 import {
   LineChart,
@@ -21,6 +20,11 @@ import {
   ContributionGraph,
   StackedBarChart
 } from "react-native-chart-kit";
+
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../api/config';
+
 const screenWidth = Dimensions.get("window").width;
 const featuredProducts = [
   {
@@ -83,6 +87,33 @@ const chartConfig = {
 };
 
 function AccountHomeScreen({ route, navigation }) {
+  const handleLogout = async () => {
+    try {
+      Alert.alert(
+        'Xác nhận đăng xuất',
+        'Bạn muốn đăng xuất phải không?',
+        [
+          {
+            text: 'Huỷ',
+            style: 'cancel',
+          },
+          {
+            text: 'Đúng',
+            onPress: async () => {
+              await AsyncStorage.removeItem('userData');
+              await AsyncStorage.removeItem('userInfo');
+
+              Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
+              navigation.navigate('Người Dùng');
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error) {
+      Alert.alert('Thất bại', error);
+    }
+  };
   return (
     <View style={{ flex: 1 }}>
       <View
@@ -109,40 +140,22 @@ function AccountHomeScreen({ route, navigation }) {
             <Text style={{ textAlign: 'center' }}>Name ⌄</Text>
             <Text>Golf city, Plot 8, Sector 75</Text>
           </View>
-
-          <View
-            style={{
-              position: 'relative',
-              borderRadius: 50,
-              borderWidth: 2,
-              padding: 5,
-              backgroundColor: '#fff',
-            }}
-          >
-            <Image
+          <TouchableOpacity onPress={handleLogout}>
+            <View
               style={{
-                width: 24,
-                height: 24,
-              }}
-              source={require('../../assets/bell.png')}
-            />
-            <Text
-              style={{
-                position: 'absolute',
-                right: -10,
-                top: -5,
-                backgroundColor: '#FF5E5E',
+                position: 'relative',
                 borderRadius: 50,
-                padding: 4,
-                color: '#fff',
-                width: 24,
-                height: 24,
-                textAlign: 'center',
+                borderWidth: 2,
+                padding: 5,
+                backgroundColor: '#fff',
+                alignItems: 'center'
               }}
             >
-              1
-            </Text>
-          </View>
+
+              <Icon name="log-out-outline" size={30} color="#000" />
+
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View
