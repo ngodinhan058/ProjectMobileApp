@@ -110,6 +110,7 @@ const BiodataScreen = ({ navigation, route }) => {
       userFirstName: userFirstName,
       userPassword: '12345678', // Replace with the real password or hashed password
     };
+    // const url = `https://rsapi.goong.io/Direction?origin=${origin}&destination=${destination}&vehicle=car&api_key=${apiKey}`;
 
     formData.append('request', JSON.stringify(userData));
 
