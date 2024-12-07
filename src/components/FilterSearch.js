@@ -54,6 +54,7 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
         setPriceRange([0, 2000000]);
         setSortOption(null);
         onReset();
+        onClose();
     };
 
     const handleQuickPriceSelect = (min, max) => {

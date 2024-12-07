@@ -55,6 +55,7 @@ import WishListScreen from './src/screens/WishListScreen';
   /* Payment */
 }
 import PaymentWebViewScreen from './src/screens/payment/PaymentWebViewScreen';
+import PaymentScreen from './src/screens/payment/PaymentScreen';
 
 {
   /* Admin */
@@ -143,12 +144,19 @@ import AddCouponScreen from './src/screens/admin/coupon/AddCouponScreen';
 import EditCouponScreen from './src/screens/admin/coupon/EditCouponScreen';
 import DetailCouponScreen from './src/screens/admin/coupon/DetailCouponScreen';
 {
-  /* AdminSlide */
+  /* Admin Slide */
 }
 import AddSlideScreen from './src/screens/admin/slideShow/AddSlideScreen';
 import EditSlideScreen from './src/screens/admin/slideShow/EditSlideScreen';
 import HomeSlideScreen from './src/screens/admin/slideShow/HomeScreen';
 import DetailSlideScreen from './src/screens/admin/slideShow/DetailSlideScreen';
+{
+  /* Admin Content*/
+}
+import HomeContentScreen from './src/screens/admin/contentSlide/HomeScreen';
+import AddContentScreen from './src/screens/admin/contentSlide/AddContentScreen';
+import EditContentScreen from './src/screens/admin/contentSlide/EditContentScreen';
+import DetailContentScreen from './src/screens/admin/contentSlide/DetailContentScreen';
 {
   /* Shipper */
 }
@@ -349,6 +357,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
     {
       name: 'PaymentWebViewScreen',
       component: PaymentWebViewScreen,
+      showFooter: false,
+    },
+    {
+      name: 'PaymentScreen',
+      component: PaymentScreen,
       showFooter: false,
     },
     {
@@ -619,6 +632,20 @@ function SlideAdmin() {
     </Stack.Navigator>
   );
 }
+{
+  /* Admin Content */
+}
+function ContentAdmin() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ContentList" component={HomeContentScreen} />
+      <Stack.Screen name="AddContentShipment" component={AddContentScreen} />
+      <Stack.Screen name="DetailContentScreen" component={DetailContentScreen} />
+      <Stack.Screen name="AddContentScreen" component={AddContentScreen} />
+      <Stack.Screen name="EditContentScreen" component={EditContentScreen} />
+    </Stack.Navigator>
+  );
+}
 function AdminDrawerNavigator() {
   const [user, setUser] = useState({});
   useEffect(() => {
@@ -677,6 +704,7 @@ function AdminDrawerNavigator() {
       )}
       {hasPermission('PERMISSION_GETALL') && (
         <>
+          <Drawer.Screen name="Chọn Đề Tài Slide" component={ContentAdmin} />
           <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
           <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
           <Drawer.Screen name="Người Dùng" component={UserAdmin} />

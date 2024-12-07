@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import {
   View,
   Text,
@@ -148,6 +148,10 @@ const SearchScreen = ({ navigation, route }) => {
 
   const handleResetFilters = () => {
     setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
+    setMinPrice();
+    setMaxPrice();
+    setDirection(null);
+      setSort(null);
   };
 
   const recentSearchesShow = isFilterModalVisibleMemory
@@ -214,7 +218,15 @@ const SearchScreen = ({ navigation, route }) => {
   const filteredSuggestions = productsState.filter((product) =>
     product.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  const searchInputRef = useRef(null);
+  useEffect(() => {
+    // Delay to ensure the screen is fully rendered before focusing
+    setTimeout(() => {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    }, 100); // Delay of 100ms
+  }, []);
   const handleSearchQuery = (e) => {
     setToggleItem(false);
     setSearchQuery(e);
@@ -225,10 +237,11 @@ const SearchScreen = ({ navigation, route }) => {
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search Product Name"
+          placeholder="Tìm Kiếm Sản Phẩm..."
           value={searchQuery}
           onChangeText={handleSearchQuery}
           onSubmitEditing={handleSearch}
+          ref={searchInputRef}
         />
         <TouchableOpacity onPress={handleSearch}>
           <Image
