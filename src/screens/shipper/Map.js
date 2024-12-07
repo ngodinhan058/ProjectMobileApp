@@ -25,22 +25,21 @@ const Map = () => {
   const [location, setLocation] = useState(null);
   const [directions, setDirections] = useState([]);
   const [showDirections, setShowDirections] = useState(false);
-  const [currentStep, setCurrentStep] = useState(null); // Track the current step
   const [destination, setDestination] = useState({
     latitude: 21.046666732000062,
     longitude: 105.79016956900006,
-  }); // Default destination (Điểm B)
-  const [address, setAddress] = useState(''); // Address input from the user
+  });
+  const [address, setAddress] = useState('');
   const [mapRegion, setMapRegion] = useState({
     latitude: 21.046666732000062,
     longitude: 105.79016956900006,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
-  }); // Map region state to control zoom
+  });
 
-  const arrowPosition = useRef(new Animated.Value(0)).current; // Animated value to move the arrow
+  const arrowPosition = useRef(new Animated.Value(0)).current;
   const origin = {
-    latitude: 21.046623224000029, // Tọa độ gốc (A)
+    latitude: 21.046623224000029,
     longitude: 105.79016820300006,
   };
 
@@ -78,7 +77,6 @@ const Map = () => {
     }
   };
 
-  // Decode polyline data from Goong API
   const decodePolyline = (encoded) => {
     let polyline = [];
     let index = 0;
@@ -130,7 +128,6 @@ const Map = () => {
       routeData.push(decodePolyline(overviewPolyline));
       setRoute(routeData);
 
-      // Store directions with distance and duration
       const directionsData = data.routes[0].legs[0].steps.map((step) => ({
         instruction: step.html_instructions,
         distance: step.distance.text,
@@ -150,7 +147,6 @@ const Map = () => {
     }
   }, [location, destination, getRouteFromGoongAPI]);
 
-  // Handle address search
   const handleSearchAddress = async () => {
     if (!address) {
       Alert.alert('Error', 'Please enter an address.');
@@ -172,7 +168,6 @@ const Map = () => {
         const { lat, lng } = results[0].geometry.location;
         setDestination({ latitude: lat, longitude: lng });
 
-        // Update the map region to zoom into the destination
         setMapRegion({
           latitude: lat,
           longitude: lng,
@@ -189,14 +184,35 @@ const Map = () => {
     }
   };
 
-  // Toggle directions visibility and change button title
   const toggleDirections = () => {
     setShowDirections((prev) => !prev);
   };
 
+  useEffect(() => {
+    const watchPosition = Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        timeInterval: 10000,
+        distanceInterval: 1,
+      },
+      (userLocation) => {
+        setLocation(userLocation.coords);
+      }
+    );
+
+    return () => {
+      watchPosition.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (location && destination) {
+      getRouteFromGoongAPI();
+    }
+  }, [location, destination]);
+
   return (
     <View style={styles.container}>
-      {/* Address Input */}
       <TextInput
         style={styles.input}
         placeholder="Enter Destination Address"
@@ -207,11 +223,11 @@ const Map = () => {
         <Text style={styles.buttonText}>Search Destination</Text>
       </TouchableOpacity>
 
-      {/* Map View */}
       <MapView
         style={styles.map}
         provider="google"
-        region={mapRegion} // Use the dynamic region
+        region={mapRegion}
+        onRegionChangeComplete={(region) => setMapRegion(region)}
       >
         <Marker
           coordinate={{
@@ -227,7 +243,7 @@ const Map = () => {
             <Polyline
               key={index}
               coordinates={polylinePoints}
-              strokeColor="#FF6347" // Stylish red color for the polyline
+              strokeColor="#FF6347"
               strokeWidth={6}
             />
           ))}
@@ -244,25 +260,22 @@ const Map = () => {
         )}
       </MapView>
 
-      {/* Loading Spinner */}
       {loading && (
         <View style={styles.overlay}>
           <ActivityIndicator size="large" color="#FF6347" />
         </View>
       )}
 
-      {/* Error message */}
       {error && !loading && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
 
-      {/* Toggle Button */}
       {!loading && !error && directions.length > 0 && (
         <TouchableOpacity
           style={styles.toggleButton}
-          onPress={toggleDirections} // Toggle the directions visibility
+          onPress={toggleDirections}
         >
           <Text style={styles.toggleButtonText}>
             {showDirections ? 'Ẩn chỉ đường' : 'Hiển thị chỉ đường'}
@@ -270,7 +283,6 @@ const Map = () => {
         </TouchableOpacity>
       )}
 
-      {/* Timeline Overlay */}
       {showDirections && (
         <View style={styles.timelineOverlay}>
           <Timeline
@@ -287,7 +299,7 @@ const Map = () => {
                 />
               ),
             }))}
-            circleSize={16} // Reduce the size of the circles
+            circleSize={16}
             circleColor="#FF6347"
             lineColor="#e1e1e1"
             timeContainerStyle={{ minWidth: 50 }}
@@ -295,7 +307,7 @@ const Map = () => {
             titleStyle={styles.titleStyle}
             descriptionStyle={styles.descriptionStyle}
             options={{
-              style: { paddingBottom: 10 }, // Add more space at the bottom to reduce tightness
+              style: { paddingBottom: 10 },
             }}
           />
         </View>
@@ -333,24 +345,24 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     position: 'absolute',
-    bottom: 20, // Điều chỉnh vị trí ở dưới
-    right: 20, // Điều chỉnh vị trí ở góc dưới bên phải
-    paddingVertical: 12, // Tăng độ cao cho nút
-    paddingHorizontal: 20, // Tăng độ rộng của nút
-    backgroundColor: '#FF6347', // Màu nền nổi bật
-    borderRadius: 30, // Bo góc tròn cho nút
+    bottom: 20,
+    right: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#FF6347',
+    borderRadius: 30,
     zIndex: 1000,
-    elevation: 5, // Thêm bóng đổ cho nút
-    shadowColor: '#000', // Màu bóng đổ
-    shadowOffset: { width: 0, height: 4 }, // Vị trí bóng đổ
-    shadowOpacity: 0.3, // Độ mờ của bóng đổ
-    shadowRadius: 5, // Độ lan tỏa của bóng đổ
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
   toggleButtonText: {
     color: 'white',
-    fontSize: 18, // Tăng kích thước chữ
+    fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center', // Căn giữa chữ trong nút
+    textAlign: 'center',
   },
   timelineOverlay: {
     position: 'absolute',
@@ -369,15 +381,15 @@ const styles = StyleSheet.create({
     flex: 0.2,
   },
   timeStyle: {
-    fontSize: 12, // Giảm kích thước chữ
-    color: '#FF6347', // Màu chữ đỏ cho đồng bộ
+    fontSize: 12,
+    color: '#FF6347',
   },
   titleStyle: {
-    fontSize: 14, // Kích thước chữ nhỏ hơn
+    fontSize: 14,
     fontWeight: 'bold',
   },
   descriptionStyle: {
-    fontSize: 12, // Kích thước chữ nhỏ
+    fontSize: 12,
     color: 'grey',
   },
   input: {
