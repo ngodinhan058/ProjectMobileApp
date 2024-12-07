@@ -25,6 +25,8 @@ import axios from 'axios';
 import { BASE_URL } from './api/config';
 import AlertComponent from '../components/AlertComponent';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 function AddedProductToWishlist({ route, navigation, onScroll }) {
   const scrollRef = React.useRef();
@@ -44,7 +46,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [alertVisibleLike, setAlertVisibleLike] = useState(false);
   const [alertTypeLike, setAlertTypeLike] = useState('success');
   const [titleAlert, setTitleAlert] = useState('');
-
+  const [isExpanded, setIsExpanded] = useState(false);
   useEffect(() => {
     if (alertVisible) {
       // Tự động ẩn thông báo sau 2 giây
@@ -164,6 +166,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setSelectedSize(sizeName);
     }
   };
+  const handleSelectSizeQuantity = (quantity) => {
+    // Nếu kích thước đã được chọn, nhấn lần nữa sẽ hủy chọn
+    setSelectedSizesQuantity(quantity);
+    
+  };
 
   const [userInfo, setUserInfo] = useState(null);
   const fetchUserInfo = async () => {
@@ -262,6 +269,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   const handleAddToCartUser = async () => {
+    console.log("selectedSizesQuantity",selectedSizesQuantity);
+    
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -277,6 +286,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setAlertType('error');
       setAlertVisible(true);
       setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+    if (quantity > selectedSizesQuantity) {
+      setError(`Sản phẩm hiện chỉ còn: ${'\n'}Số Lượng: ${selectedSizesQuantity}, Màu: ${selectedSize}`);
+      setAlertType('error');
+      setAlertVisible(true);
       return;
     }
 
@@ -323,7 +338,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             {
               text: 'Xem Chi Tiết',
               onPress: async () => {
-                navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+                navigation.navigate('OrderConfirmationScreen', { orderId: userInfo.cartId });
               },
             },
           ],
@@ -367,7 +382,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setTimeout(() => setErrorCheck(true), 0);
       return;
     }
-
+    if (quantity > selectedSizesQuantity) {
+      setError(`Sản phẩm hiện chỉ còn: ${'\n'}Số Lượng: ${selectedSizesQuantity}, Màu: ${selectedSize}`);
+      setAlertType('error');
+      setAlertVisible(true);
+      return;
+    }
 
     if (quantity > 20) {
       setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
@@ -391,12 +411,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       userId: userInfo?.userId,
     };
     try {
+
       const response = await axios.get(`${BASE_URL}order/cart/${userInfo.cartBuyNowId}`);
-      const responseCart = await axios.get(`${BASE_URL}order/cart/${userInfo.cartId}`);
       if (response.status === 200 && response?.data?.data?.orderStatus === 0) {
         Alert.alert(
           'Xác nhận lại đơn hàng',
-          'Vui lòng xác nhận trước khi thêm sản phẩm mới vào giỏ hàng',
+          'Vui lòng xác nhận trước khi mua sản phẩm mới',
           [
             {
               text: 'Xem Chi Tiết',
@@ -465,6 +485,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setAlertType('error');
       setAlertVisible(true);
       setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+    if (quantity > selectedSizesQuantity) {
+      setError(`Sản phẩm hiện chỉ còn: ${'\n'}Số Lượng: ${selectedSizesQuantity}, Màu: ${selectedSize}`);
+      setAlertType('error');
+      setAlertVisible(true);
       return;
     }
     // Lấy thông tin kích thước đã chọn từ productSizes
@@ -612,6 +638,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [liked, setLiked] = useState();
   const [cartDataUser, setCartDataUser] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]); // Lưu danh sách các size đã chọn
+  const [selectedSizesQuantity, setSelectedSizesQuantity] = useState([]); // Lưu danh sách các size đã chọn
 
   const [isUnLikeModalVisible, setIsUnLikeModalVisible] = useState(false);
   const [isLikeModalVisible, setIsLikeModalVisible] = useState(false);
@@ -770,7 +797,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     setAlertVisibleLike(true);
     setTitleAlert('Xoá Yêu Thích Thành Công');
   };
-
   // Kết Thúc WishList
 
   //Kết thúc
@@ -783,9 +809,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               <Icon name="angle-left" size={35} color="#000" />
             </Pressable>
             <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
-            {/* <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
-              <Icon name="share" size={25} color="#000" />
-            </Pressable> */}
           </View>
 
           <View>
@@ -940,9 +963,40 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             <Text style={styles.descriptionProductTitle}>
               {productsState.post?.postName}
             </Text>
-            <Text style={styles.descriptionProductText}>
+
+            {/* <Text
+              style={[
+                styles.descriptionProductText,
+                !isExpanded && { maxHeight: 300, overflow: 'hidden' },
+              ]}
+            >
               {productsState.post?.postContent}
             </Text>
+            <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+              <Text style={{ textAlign: 'center', color: '#3669c9' }}>
+                {isExpanded ? 'Ẩn bớt' : 'Hiển thị thêm'}
+              </Text>
+            </TouchableOpacity> */}
+            <View style={!isExpanded && { maxHeight: 300, overflow: 'hidden' }}>
+              <Text style={styles.descriptionProductText}>{productsState.post?.postContent}</Text>
+              {!isExpanded && (
+                <LinearGradient
+                  colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 200,
+                  }}
+                />
+              )}
+            </View>
+            <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+              <Text style={styles.showMoreText}>
+                {isExpanded ? 'Ẩn bớt' : 'Hiển thị thêm'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* Review Product */}
@@ -1316,7 +1370,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
             <View style={styles.line}></View>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Màu: </Text>
+              <Text style={styles.modalTitle}>Màu: {selectedSize}</Text>
+              <Text style={styles.modalTitle}>Số Lượng: {selectedSizesQuantity || 0} </Text>
             </View>
             <View style={styles.productOptions}>
               {loading ? (
@@ -1332,7 +1387,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                         size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
                         errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
                       ]}
-                      onPress={() => handleSelectSize(size.productSizeName)}
+                      onPress={() => {handleSelectSize(size.productSizeName),
+                        handleSelectSizeQuantity(size.productSizeQuantity?.productSizeQuantity)}}
                       disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
                     >
                       <Text
@@ -1466,7 +1522,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
             <View style={styles.line}></View>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Màu: </Text>
+              <Text style={styles.modalTitle}>Màu: {selectedSize}</Text>
+              <Text style={styles.modalTitle}>Số Lượng: {selectedSizesQuantity || 0} </Text>
             </View>
             <View style={styles.productOptions}>
               {loading ? (
@@ -1482,7 +1539,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                         size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
                         errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
                       ]}
-                      onPress={() => handleSelectSize(size.productSizeName)}
+                      onPress={() => {handleSelectSize(size.productSizeName),
+                        handleSelectSizeQuantity(size.productSizeQuantity?.productSizeQuantity)}}
                       disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
                     >
                       <Text
@@ -1840,7 +1898,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   confirmButtonText: { color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: 'bold' },
-
+  showMoreText: {
+    marginTop: 8,
+    color: '#3669c9',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   productDetailContainer: {
     flex: 1,
     backgroundColor: '#FFF',
