@@ -32,6 +32,7 @@ const HomeAdminScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
+  const [selectedSlide, setSelectedSlide] = useState(null);
 
   const { alertVisible, alertType, title } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
@@ -39,10 +40,24 @@ const HomeAdminScreen = ({ navigation, route }) => {
     LogBox.ignoreAllLogs();
   }, [])
   // Lấy danh sách slide show từ API
+  const fetchContentSlides = async () => {
+    const apiUrl = `${BASE_URL}contentslides`;
+    try {
+      const response = await axios.get(apiUrl);
+      const slidesData = response.data.data;
+
+      // Lọc các phần tử có status === 1 và lưu vào saveContent
+      const saveContent = slidesData.find(slide => slide.status === "1");
+      setSelectedSlide(saveContent)
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   const fetchSlides = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}slideshows?content=blackfriday`);
+      const response = await fetch(`${BASE_URL}slideshows?content=${selectedSlide?.content}`);
       const json = await response.json();
       if (response.ok && json.status === 200) {
         setSlides(json.data);
@@ -61,6 +76,8 @@ const HomeAdminScreen = ({ navigation, route }) => {
     setRefreshing(true);
     await fetchSlides();
     setRefreshing(false);
+    fetchContentSlides();
+
   };
 
   const handleLogout = async () => {
@@ -135,6 +152,10 @@ const HomeAdminScreen = ({ navigation, route }) => {
   // Hiệu ứng khi màn hình được tải
   useEffect(() => {
     fetchSlides();
+  }, [selectedSlide?.content]);
+  useEffect(() => {
+    fetchContentSlides();
+
   }, []);
 
   return (
@@ -164,7 +185,7 @@ const HomeAdminScreen = ({ navigation, route }) => {
           }
           ListEmptyComponent={
             !isLoading && (
-              <Text style={styles.emptyText}>Không có banner nào.</Text>
+              <Text style={styles.emptyText}>Đề tài này ko có banner nào, {'\n'}Vui lòng chọn đề tài khác</Text>
             )
           }
         />

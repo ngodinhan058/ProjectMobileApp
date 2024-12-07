@@ -56,6 +56,8 @@ const HomeScreen = () => {
 
   const [appliedFilters, setAppliedFilters] = useState(null);
 
+  const [selectedSlide, setSelectedSlide] = useState(null);
+
   const [refreshing, setRefreshing] = React.useState(false);
   const wsUrl = `${WS_URL}/ws`;
 
@@ -79,8 +81,26 @@ const HomeScreen = () => {
     });
   };
 
+
   const { client } = useWebSocket(wsUrl, handleProductUpdate);
 
+
+  const fetchContentSlides = async () => {
+    const apiUrl = `${BASE_URL}contentslides`;
+    try {
+      const response = await axios.get(apiUrl);
+      const slidesData = response.data.data;
+
+      // Lọc các phần tử có status === 1 và lưu vào saveContent
+      const saveContent = slidesData.find(slide => slide.status === "1");
+      setSelectedSlide(saveContent)
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  useEffect(() => {
+    fetchContentSlides();
+  }, []);
   const fetchData = async () => {
     try {
       const productsApiUrl = `${BASE_URL}products/filters?`;
@@ -150,27 +170,34 @@ const HomeScreen = () => {
     setSelectedSizes([]);
     setSelectedSupplier();
   };
+  console.log(selectedSlide?.content);
+
   const fetchSlides = async () => {
     try {
-      const response = await fetch(`${BASE_URL}slideshows?content=blackfriday`);
+      const response = await fetch(`${BASE_URL}slideshows?content=${selectedSlide?.content}`);
+
       const json = await response.json();
-      if (response.ok && json.status === 200) {
-        setBanner(json.data);
-      } else {
-        console.error('Error fetching slides:', json.message);
+      if (selectedSlide?.content) {
+        if (response.ok && json.status === 200) {
+          setBanner(json.data);
+        } else {
+          console.error('Error fetching slides:', json.message);
+        }
       }
+
     } catch (error) {
       console.error('Error fetching slides:', error);
-    } 
+    }
   };
-  
+
   useEffect(() => {
     fetchSlides()
-  }, []);
+  }, [selectedSlide?.content]);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     setLoading(true);
     fetchData();
+    fetchContentSlides();
   }, []);
 
   const scrollX = useRef(new Animated.Value(0)).current;

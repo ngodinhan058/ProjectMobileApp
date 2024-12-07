@@ -16,12 +16,18 @@ import { BASE_URL } from '../../api/config';
 import UploadImage from '../../../components/Up_One_Image';
 import { LinearGradient } from 'expo-linear-gradient';
 import AlertComponent from '../../../components/AlertComponent';
+import ContentScreen from '../../../components/Content';
+
 
 const AddSlideScreen = ({ route, navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertType, setAlertType] = useState('success');
     const [selectedImages, setSelectedImages] = useState([]);
+
+    const [Permission, setPermission] = useState(null);
+    const [PermissionName, setPermissionName] = useState(null);
+    const [isPerModal, setIsPerModal] = useState(false);
 
     const [slideData, setSlideData] = useState({
         imageAlt: '',
@@ -43,10 +49,11 @@ const AddSlideScreen = ({ route, navigation }) => {
             imageAlt: slideData.imageAlt,
             imageIndex: slideData.imageIndex,
             imageUrl: slideData.imageUrl,
-            content: slideData.content,
+            content: PermissionName[0],
         };
         formData.append('paramsJson', JSON.stringify(params));
-
+        console.log(params);
+        
         selectedImages.forEach((imageUri, index) => {
             const fileType = imageUri.split('.').pop();
             const newFile = {
@@ -94,6 +101,11 @@ const AddSlideScreen = ({ route, navigation }) => {
             imageContentError: slideData.content === '',
         });
     }, [slideData]);
+    const toggleSizeModal = () => setIsPerModal(!isPerModal);
+    const handleResetFilters = () => {
+       setPermission(null)
+       setPermissionName(null)
+    };
 
     return (
         <View style={styles.container}>
@@ -122,11 +134,19 @@ const AddSlideScreen = ({ route, navigation }) => {
                         onChangeText={(text) => setSlideData({ ...slideData, imageUrl: text })}
                     />
                     <Text style={styles.label}>Nội Dung:</Text>
-                    <TextInput
-                        style={[styles.input, error.imageUrlError && styles.inputError]}
-                        placeholder="Thêm Nội Dung"
-                        value={slideData.content}
-                        onChangeText={(text) => setSlideData({ ...slideData, content: text })}
+                    <TouchableOpacity style={[styles.input, !Permission && styles.inputError]} onPress={toggleSizeModal}>
+                        {Permission != null ? (<Text>{PermissionName}</Text>) : (<Text>Chưa Chọn Content</Text>)}
+                    </TouchableOpacity>
+                    <ContentScreen
+                        isVisible={isPerModal}
+                        onClose={toggleSizeModal}
+                        onReset={handleResetFilters}
+                        onApply={(selectedSizeId, selectedSizeName) => {
+                            setPermission(selectedSizeId);
+                            setPermissionName(selectedSizeName);
+
+                        }}
+
                     />
                 </View>
             </ScrollView>
