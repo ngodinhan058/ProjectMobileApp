@@ -22,6 +22,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Size from '../../../components/Size';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AlertComponent from '../../../components/AlertComponent';
+import ContentScreen from '../../../components/Content';
 
 const EditSlideScreen = ({ route, navigation }) => {
     const { id, existingSlide } = route.params; // Dữ liệu truyền từ màn hình trước
@@ -29,6 +30,10 @@ const EditSlideScreen = ({ route, navigation }) => {
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertType, setAlertType] = useState('success');
     const [selectedImages, setSelectedImages] = useState([existingSlide?.imagePath]);
+
+    const [Permission, setPermission] = useState(null);
+    const [PermissionName, setPermissionName] = useState(existingSlide?.content);
+    const [isPerModal, setIsPerModal] = useState(false);
 
     const [slideData, setSlideData] = useState({
         imageAlt: existingSlide?.imageAlt || '',
@@ -49,8 +54,10 @@ const EditSlideScreen = ({ route, navigation }) => {
             imageAlt: slideData.imageAlt,
             imageIndex: slideData.imageIndex,
             imageUrl: slideData.imageUrl,
-            content: slideData.content,
+            content: PermissionName[0],
         };
+        console.log(params);
+        
         formData.append('paramsJson', JSON.stringify(params));
 
         if (selectedImages && selectedImages.length > 0) {
@@ -105,6 +112,11 @@ const EditSlideScreen = ({ route, navigation }) => {
             imageUrlError: slideData.imageUrl === '',
         });
     }, [slideData]);
+    const toggleSizeModal = () => setIsPerModal(!isPerModal);
+    const handleResetFilters = () => {
+       setPermission(null)
+       setPermissionName(null)
+    };
 
     return (
         <View style={styles.container}>
@@ -134,13 +146,22 @@ const EditSlideScreen = ({ route, navigation }) => {
                         placeholder="Chỉnh Sửa URL Hình Ảnh"
                         value={slideData.imageUrl}
                         onChangeText={(text) => setSlideData({ ...slideData, imageUrl: text })}
-                    />
+                    /> 
                     <Text style={styles.label}>Nội Dung:</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Chỉnh Sửa Nội Dung"
-                        value={slideData.content}
-                        onChangeText={(text) => setSlideData({ ...slideData, content: text })}
+                    <TouchableOpacity style={[styles.input, !PermissionName && styles.inputError]} onPress={toggleSizeModal}>
+                        {PermissionName != null ? (<Text>{PermissionName}</Text>) : (<Text>Chưa Chọn Content</Text>)}
+                    </TouchableOpacity>
+                    <ContentScreen
+                        isVisible={isPerModal}
+                        onClose={toggleSizeModal}
+                        onReset={handleResetFilters}
+                        selectedpermissionName={existingSlide?.content}
+                        onApply={(selectedSizeId, selectedSizeName) => {
+                            setPermission(selectedSizeId);
+                            setPermissionName(selectedSizeName);
+
+                        }}
+
                     />
                 </View>
             </ScrollView>

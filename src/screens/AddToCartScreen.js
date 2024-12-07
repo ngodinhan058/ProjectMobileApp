@@ -67,7 +67,8 @@ function AddToCartScreen({ route, navigation }) {
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
     { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
-    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 2 },
+    { label: 'ZaloPay', icon: require('../assets/star.png'), use: true, value: 2 },
+    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 3 },
   ];
 
   const toggleModal = () => {
@@ -341,29 +342,29 @@ function AddToCartScreen({ route, navigation }) {
         productQuantity: quantity,
       },
     };
-  
+
     try {
       // Gửi yêu cầu xoá sản phẩm từ giỏ hàng
       const response = await axios.delete(`${BASE_URL}cart/${idCart}`, {
         data: cartItemData,
       });
-  
+
       if (response.status === 200) {
         console.log("Sản phẩm đã được xoá:", response.data);
-  
+
         // Cập nhật giỏ hàng trong state sau khi xoá sản phẩm
         const updatedCart = cartDataUser.filter(
           (item) => !(item.productId === id && item.productSizeId === size)
         );
         setCartDataUser(updatedCart);
-  
+
         // Cập nhật tổng giá trị giỏ hàng
         const newTotal = updatedCart.reduce(
           (sum, item) => sum + item.productDiscountPrice * item.productQuantity,
           0
         );
         setTotal(newTotal);
-  
+
         // Hiển thị thông báo thành công
         setIsAlertVisible(true);
         setTitle('Xoá Sản Phẩm Thành Công');
@@ -381,7 +382,7 @@ function AddToCartScreen({ route, navigation }) {
       fetchGuestCart();
     }
   };
-  
+
 
 
   const fetchCouponsByType = async (type, setCouponsState) => {
@@ -481,7 +482,7 @@ function AddToCartScreen({ route, navigation }) {
 
 
 
-   useEffect(() => {
+  useEffect(() => {
     if (selectedCoupon != null && total) {
       let discountValue = 0;
       if (selectedCoupon.couponPerHundred) {
@@ -580,6 +581,7 @@ function AddToCartScreen({ route, navigation }) {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
+    const apiPaymentUrlZalo = `https://5b80-2405-4802-9154-3a80-b09e-e709-6843-4dae.ngrok-free.app/payment`;
     // console.log("discountShip",discountShip <= 0 ? shippingFee : discountShip);
 
     const orderData = {
@@ -612,6 +614,27 @@ function AddToCartScreen({ route, navigation }) {
         Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);
+      }
+    } else if (selectedPaymentMethod === 2) { // ZaloPay Payment
+      try {
+        const paymentResponse = await axios.post(apiPaymentUrlZalo, {
+          amount: finalTotal,
+          bankCode: "zalopayapp",
+          user: userInfo?.userId,
+        });
+
+        if (paymentResponse.status === 200) {
+          const { order_url, trans_id } = paymentResponse.data;
+          navigation.navigate('PaymentScreen', { url: order_url, orderData, transId: trans_id });
+        } else {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
+        }
+      } catch (error) {
+        console.error('Error creating ZaloPay transaction:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
+
       }
     }
     else {
@@ -1160,7 +1183,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  
+
 });
 
 export default AddToCartScreen;
