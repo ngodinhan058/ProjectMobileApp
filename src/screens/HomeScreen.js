@@ -117,9 +117,10 @@ const HomeScreen = () => {
       if (Array.isArray(selectedSizes) && selectedSizes.length > 0) {
         queryParams.append('sizeIds', selectedSizes.join(','));
       }
-      if (Array.isArray(selectedSupplier) && selectedSupplier.length > 0) {
-        queryParams.append('supplierIds', selectedSupplier.join(','));
-      }
+
+      if (selectedSupplier) {
+        queryParams.append("supplierIds", selectedSupplier);
+    }
       const finalProductsApiUrl = productsApiUrl + queryParams.toString();
       // console.log('Products API URL:', finalProductsApiUrl);
 
@@ -170,8 +171,6 @@ const HomeScreen = () => {
     setSelectedSizes([]);
     setSelectedSupplier();
   };
-  console.log(selectedSlide?.content);
-
   const fetchSlides = async () => {
     try {
       const response = await fetch(`${BASE_URL}slideshows?content=${selectedSlide?.content}`);

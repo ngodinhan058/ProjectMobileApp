@@ -56,8 +56,8 @@ const ProductByCateScreen = ({ route, navigation, onScroll }) => {
         if (Array.isArray(selectedSizes) && selectedSizes.length !== 0) {
           queryParams.push(`sizeIds=${selectedSizes.join(',')}`);
         }
-        if (Array.isArray(selectedSupplier) && selectedSupplier.length !== 0) {
-          queryParams.push(`supplierIds=${selectedSizes.join(',')}`);
+        if (selectedSupplier) {
+          queryParams.push(`supplierIds=${selectedSupplier}`);
         }
   
         apiUrl += queryParams.join('&');
@@ -111,6 +111,10 @@ const ProductByCateScreen = ({ route, navigation, onScroll }) => {
 
   const handleResetFilters = () => {
     setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
+    setMinPrice();
+    setMaxPrice();
+    setSelectedSizes([]);
+    setSelectedSupplier();
   };
 
   return (
