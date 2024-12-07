@@ -192,7 +192,7 @@ const Map = () => {
     const watchPosition = Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 10000,
+        timeInterval: 1000000,
         distanceInterval: 1,
       },
       (userLocation) => {
@@ -201,7 +201,7 @@ const Map = () => {
     );
 
     return () => {
-      watchPosition.remove();
+      //watchPosition.remove();
     };
   }, []);
 
@@ -243,26 +243,35 @@ const Map = () => {
             <Polyline
               key={index}
               coordinates={polylinePoints}
-              strokeColor="#FF6347"
+              strokeColor="#283cff"
               strokeWidth={6}
             />
           ))}
 
         {route && route[0] && (
           <Marker coordinate={route[0][Math.floor(arrowPosition._value)]}>
-            <Icon
-              name="arrow-forward"
-              type="material"
-              color="#FF6347"
-              size={30}
-            />
+            <View
+              style={{
+                backgroundColor: '#283cff', // Custom color for the marker
+                borderRadius: 50,
+                justifyContent: 'center',
+                padding: 10, // Padding around the icon
+              }}
+            >
+              <Icon
+                name="motorcycle" // Use the FontAwesome motorcycle icon
+                type="font-awesome" // Specify the icon type (FontAwesome)
+                color="#fff" // Icon color (white for contrast)
+                size={20} // Size of the icon
+              />
+            </View>
           </Marker>
         )}
       </MapView>
 
       {loading && (
         <View style={styles.overlay}>
-          <ActivityIndicator size="large" color="#FF6347" />
+          <ActivityIndicator size="large" color="#283cff" />
         </View>
       )}
 
@@ -300,7 +309,7 @@ const Map = () => {
               ),
             }))}
             circleSize={16}
-            circleColor="#FF6347"
+            circleColor="#283cff"
             lineColor="#e1e1e1"
             timeContainerStyle={{ minWidth: 50 }}
             timeStyle={styles.timeStyle}
@@ -349,7 +358,7 @@ const styles = StyleSheet.create({
     right: 20,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#FF6347',
+    backgroundColor: '#283cff',
     borderRadius: 30,
     zIndex: 1000,
     elevation: 5,
@@ -382,7 +391,7 @@ const styles = StyleSheet.create({
   },
   timeStyle: {
     fontSize: 12,
-    color: '#FF6347',
+    color: '#283cff',
   },
   titleStyle: {
     fontSize: 14,
@@ -403,7 +412,7 @@ const styles = StyleSheet.create({
   },
   button: {
     padding: 10,
-    backgroundColor: '#FF6347',
+    backgroundColor: '#283cff',
     borderRadius: 5,
     marginBottom: 20,
     alignItems: 'center',
