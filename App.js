@@ -448,6 +448,11 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
       component: CreateAddressScreen,
       showFooter: false,
     },
+    {
+      name: 'EditIdCardScreen',
+      component: EditIdCardScreen,
+      showFooter: false,
+    },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -640,7 +645,10 @@ function ContentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ContentList" component={HomeContentScreen} />
       <Stack.Screen name="AddContentShipment" component={AddContentScreen} />
-      <Stack.Screen name="DetailContentScreen" component={DetailContentScreen} />
+      <Stack.Screen
+        name="DetailContentScreen"
+        component={DetailContentScreen}
+      />
       <Stack.Screen name="AddContentScreen" component={AddContentScreen} />
       <Stack.Screen name="EditContentScreen" component={EditContentScreen} />
     </Stack.Navigator>
