@@ -759,10 +759,11 @@ function AddToCartScreen({ route, navigation }) {
                   {guestInfo.address.ward}, {guestInfo.address.district}, {guestInfo.address.city}
                 </Text>)
                 : (<Text style={styles.deliveryAddressText}>Hiện tại chưa có thông tin của bạn{'\n'}
-                  Vui lòng đăng nhập hoặc thêm thông tin của bạn</Text>)}
+                  Vui lòng đăng nhập hoặc thêm thông tin của bạn</Text>)
+            }
 
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => userInfo ? navigation.navigate('CreateAddressScreen') : navigation.navigate('InformationScreen', {guestInfo: guestInfo})}>
               <Icon name="edit" size={18} color="#3669C9" />
             </TouchableOpacity>
           </View>

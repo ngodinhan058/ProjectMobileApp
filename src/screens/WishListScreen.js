@@ -21,14 +21,15 @@ import { BASE_URL } from './api/config';
 import axios from 'axios';
 import AlertComponent from '../components/AlertComponent';
 import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
-
-const WishListScreen = ({ route, navigation }) => {
+const WishListScreen = ({ route }) => {
+  const navigation = useNavigation();
   // Kiểm tra nếu route.params tồn tại và lấy giá trị query, nếu không có thì để là chuỗi rỗng
   const { query = '' } = route?.params || {};
   const [refreshing, setRefreshing] = React.useState(false);
-  const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
 
   const [idCart, setIdCart] = useState([]);
 
@@ -37,9 +38,7 @@ const WishListScreen = ({ route, navigation }) => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertType, setAlertType] = useState('success');
   const [titleAlert, setTitleAlert] = useState('');
-  const handleSearch = () => {
-    navigation.replace('SearchScreen', { query: searchQuery });
-  };
+
   // const filteredProducts = (cartDataUser || []).filter(product =>
   //   product?.productName.toLowerCase().includes(searchQuery.toLowerCase())
   // );
@@ -55,7 +54,10 @@ const WishListScreen = ({ route, navigation }) => {
   const handleResetFilters = () => {
     setAppliedFilters(null); // Khi reset, đưa appliedFilters về null
   };
-
+  const openModalLogin = () => {
+    setIsLoginModalVisible(true);
+  };
+  const closeModalLogin = () => setIsLoginModalVisible(false);
   const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -97,6 +99,9 @@ const WishListScreen = ({ route, navigation }) => {
   // }, [userInfo?.userId]);
   useFocusEffect(
     useCallback(() => {
+      if (userInfo == null) {
+        openModalLogin()
+      }
       fetchData();
     }, [userInfo?.userId])
   );
@@ -114,11 +119,8 @@ const WishListScreen = ({ route, navigation }) => {
           <TextInput
             style={styles.searchInput}
             placeholder="Search Product Name"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
           />
-          <TouchableOpacity onPress={handleSearch}>
+          <TouchableOpacity>
             <Image
               source={require('../assets/iconSeach.png')}
               style={styles.icon}
@@ -172,16 +174,16 @@ const WishListScreen = ({ route, navigation }) => {
               ))}
           </View>
         ) : <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ marginBottom: '100%', }}></View>
-        <Image
-          source={require('../assets/NoProduct.png')}
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '55%',
-          }}
-        />
-      </View>}
+          <View style={{ marginBottom: '100%', }}></View>
+          <Image
+            source={require('../assets/NoProduct.png')}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '55%',
+            }}
+          />
+        </View>}
       </ScrollView>
       <AlertComponent
         title={alertType === 'success' ? "Success" : "Error"}
@@ -194,6 +196,31 @@ const WishListScreen = ({ route, navigation }) => {
         visible={alertVisible}
         onClose={() => setAlertVisible(false)}
       />
+      {/* No Login */}
+      <Modal visible={isLoginModalVisible} animationType="slide"
+        transparent={true}
+        onRequestClose={closeModalLogin}>
+        <TouchableWithoutFeedback onPress={closeModalLogin}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalContainerLogin}>
+          <View style={styles.content}>
+            <Text style={styles.title}>Đăng Nhập tài Khoản</Text>
+            <View style={styles.line}></View>
+
+            <Image source={require("../assets/hello.png")} style={{ width: 50, height: 50, marginVertical: 5 }} />
+            <Text style={styles.message}>
+              Chào Mừng Bạn Mới
+            </Text>
+            <Text style={styles.subMessage}>
+              Có vẻ nhưng bạn chưa đăng nhập? Hãy đăng nhập hoặc đăng ký để có thể nhận thông báo về cái ưa đãi khủng
+            </Text>
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Đăng Nhập')}>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -255,7 +282,64 @@ const styles = StyleSheet.create({
   columnWrapper: {
     justifyContent: 'space-between',
   },
-
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'relative',
+  },
+  modalContainerLogin: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '45%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalTitle: { fontSize: 18, fontWeight: 'bold' },
+  productImage: { width: 120, height: 120, resizeMode: 'contain', borderWidth: 1, borderColor: '#CCC', borderRadius: 15, marginRight: 20, },
+  content: {
+    padding: 20,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  emoji: {
+    fontSize: 40,
+    marginBottom: 15,
+  },
+  message: {
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  subMessage: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#888",
+    marginBottom: 20,
+  },
+  loginButton: {
+    width: "100%",
+    backgroundColor: "#3669C9",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
 export default WishListScreen;
