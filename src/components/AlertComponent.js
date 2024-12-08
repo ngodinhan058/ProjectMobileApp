@@ -1,242 +1,158 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
+  Text,
   StyleSheet,
-  Dimensions,
-  ActivityIndicator,
-  Alert,
-  Button,
+  Animated,
+  TouchableOpacity,
 } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
-import * as Location from 'expo-location';
-import Timeline from 'react-native-timeline-flatlist';
-import Icon from 'react-native-vector-icons/Ionicons'; // Sử dụng Ionicons ở đây
-const { width, height } = Dimensions.get('window');
+// import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 
-const Map = () => {
-  const [route, setRoute] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [location, setLocation] = useState(null);
-  const [directions, setDirections] = useState([]); // Store directions with distance and duration
-  const [showDirections, setShowDirections] = useState(false); // State to control showing directions
-
-  const origin = {
-    latitude: 21.046623224000029, // Tọa độ gốc (A)
-    longitude: 105.79016820300006,
-  };
-  const destination = {
-    latitude: 21.046666732000062, // Tọa độ đến (B) gần gốc
-    longitude: 105.79016956900006,
-  };
+const AlertComponent = ({
+  title,
+  description,
+  alertType,
+  visible,
+  onClose,
+}) => {
+  const [fadeAnim] = useState(new Animated.Value(0)); // Opacity animation
+  const [translateYAnim] = useState(new Animated.Value(0)); // Slide animation
 
   useEffect(() => {
-    requestLocationPermission();
-  }, []);
+    if (visible) {
+      // Hiện alert với animation
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateYAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
 
-  const requestLocationPermission = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Denied',
-          'Location permission is required to use this feature.'
-        );
-        return;
-      }
-      getCurrentLocation();
-    } catch (err) {
-      setError('Failed to request permission');
+      // 2 giây sau, tự động ẩn alert
+      const timeout = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateYAnim, {
+            toValue: -20, // Đi lên trên
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          if (onClose) onClose(); // Gọi hàm onClose sau khi ẩn
+        });
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    } else {
+      // Ẩn ngay khi visible = false
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateYAnim, {
+          toValue: -20,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
-  };
+  }, [visible]);
 
-  const getCurrentLocation = async () => {
-    setLoading(true);
-    try {
-      const userLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      setLocation(userLocation.coords);
-    } catch (error) {
-      setError('Failed to get location');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Decode polyline data from Goong API
-  const decodePolyline = (encoded) => {
-    let polyline = [];
-    let index = 0;
-    let latitude = 0;
-    let longitude = 0;
-    while (index < encoded.length) {
-      let byte;
-      let shift = 0;
-      let result = 0;
-      do {
-        byte = encoded.charCodeAt(index++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-      let dlat = result & 1 ? ~(result >> 1) : result >> 1;
-      latitude += dlat;
-      shift = 0;
-      result = 0;
-      do {
-        byte = encoded.charCodeAt(index++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-      let dlng = result & 1 ? ~(result >> 1) : result >> 1;
-      longitude += dlng;
-      polyline.push({ latitude: latitude / 1e5, longitude: longitude / 1e5 });
-    }
-    return polyline;
-  };
-
-  const getRouteFromGoongAPI = useCallback(async () => {
-    if (!location) return;
-    setLoading(true);
-    setError(null);
-
-    const apiKey = '7d6NMyBGea1uqvClvnSeN9WC4ywy3hzbhoT0pwFI';
-    const url = `https://rsapi.goong.io/Direction?origin=${location.latitude},${location.longitude}&destination=${destination.latitude},${destination.longitude}&api_key=${apiKey}`;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.geocoded_waypoints[0].geocoder_status !== 'OK') {
-        throw new Error('Unable to find route.');
-      }
-
-      const routeData = [];
-      const overviewPolyline = data.routes[0].overview_polyline.points;
-      routeData.push(decodePolyline(overviewPolyline));
-      setRoute(routeData);
-
-      // Store directions with distance and duration
-      const directionsData = data.routes[0].legs[0].steps.map((step) => ({
-        instruction: step.html_instructions,
-        distance: step.distance.text,
-        duration: step.duration.text,
-      }));
-      setDirections(directionsData);
-    } catch (error) {
-      setError(error.message || 'Error fetching route');
-    } finally {
-      setLoading(false);
-    }
-  }, [location]);
-
-  useEffect(() => {
-    if (location) {
-      getRouteFromGoongAPI();
-    }
-  }, [location, getRouteFromGoongAPI]);
+  // Kiểm tra kiểu alert và áp dụng style cho tương ứng
+  const alertStyles =
+    alertType === 'error' ? styles.errorAlert : styles.successAlert;
 
   return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        provider="google"
-        initialRegion={{
-          latitude: 21.0285,
-          longitude: 105.8542,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      >
-        <Marker
-          coordinate={{
-            latitude: location ? location.latitude : origin.latitude,
-            longitude: location ? location.longitude : origin.longitude,
-          }}
-          title="Điểm A"
-        />
-        <Marker coordinate={destination} title="Điểm B" />
-
-        {route &&
-          route.map((polylinePoints, index) => (
-            <Polyline
-              key={index}
-              coordinates={polylinePoints}
-              strokeColor="#0000FF"
-              strokeWidth={6}
-            />
-          ))}
-      </MapView>
-
-      <Button
-        title="Hiển thị chỉ đường"
-        onPress={() => setShowDirections(!showDirections)}
-      />
-
-      {showDirections && directions.length > 0 && (
-        <Timeline
-          data={directions.map((step, index) => ({
-            time: `${index + 1}`,
-            title: step.instruction,
-            description: `${step.distance} - ${step.duration}`,
-            icon: <Icon name="ios-arrow-forward" size={30} color="red" />,
-          }))}
-          circleSize={20}
-          circleColor="blue"
-          lineColor="gray"
-          timeContainerStyle={{ minWidth: 52 }}
-        />
-      )}
-
-      {loading && (
-        <View style={styles.overlay}>
-          <ActivityIndicator size="large" color="#3669c9" />
-        </View>
-      )}
-
-      {error && !loading && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )}
-    </View>
+    <Animated.View
+      style={[
+        styles.alertContainer,
+        alertStyles, // Style cho error hoặc success
+        {
+          opacity: fadeAnim,
+          transform: [{ translateY: translateYAnim }],
+        },
+      ]}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {/* Kiểm tra kiểu alert để chọn icon */}
+        {alertType === 'error' ? (
+          <Icon name="alert-circle-outline" size={30} color="#fff" />
+        ) : (
+          <Icon name="checkmark-circle-outline" size={30} color="#fff" />
+        )}
+        <Text style={styles.alertDescription}>{description}</Text>
+      </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    width: width,
-    height: height,
-  },
-  overlay: {
+  alertContainer: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    top: 20,
+    left: 20,
+    right: 20,
+    padding: 16,
+    borderRadius: 8,
+    marginHorizontal: 20,
+    color: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
     zIndex: 999,
   },
-  errorContainer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(255, 0, 0, 0.7)',
-    padding: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 999,
+  errorAlert: {
+    backgroundColor: '#f44336',
+    borderColor: '#f44336',
+    borderWidth: 1,
+    color: '#fff',
   },
-  errorText: {
-    color: 'white',
-    fontSize: 16,
+  successAlert: {
+    backgroundColor: '#4caf50',
+    borderColor: '#4caf50',
+    borderWidth: 1,
+    color: '#fff',
+  },
+  // alertTitle: {
+  //     fontWeight: 'bold',
+  //     fontSize: 16,
+  //     marginBottom: 8,
+  //     color: '#fff',
+  // },
+  alertDescription: {
+    flexWrap: 'wrap',
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '500',
+    marginLeft: 2,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 4,
+    backgroundColor: 'transparent',
+  },
+  closeButtonText: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
   },
 });
 
-export default Map;
+export default AlertComponent;
