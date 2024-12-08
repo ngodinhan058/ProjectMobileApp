@@ -8,22 +8,45 @@ import {
   Image,
   StyleSheet,
 } from 'react-native';
-import { Client as StompClient } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import useWebSocket from '../api/useWebSocket';
 import { BASE_URL } from '../api/config';
-import { SOCKET_URL } from '../api/config_onlyURL'
+import { url } from '../api/url';
+
 
 const ChatScreen = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
-  const stompClientRef = useRef(null);
+  const webSocketClientRef = useRef(null);
 
-  const { email, userFirstName, userLastName } = route.params;
-  console.log("idádasd", email);
+  const { email } = route.params;
 
-  // Lấy tin nhắn từ cơ sở dữ liệu
+
+  // Hàm nhận tin nhắn từ WebSocket
+  const handleNewMessage = (message) => {
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      {
+        id: Date.now().toString(),
+        text: message.content,
+        isSender: message.sender === email,
+      },
+    ]);
+  };
+
+  // Kết nối WebSocket
+  useEffect(() => {
+    const socketUrl = `http://${url}/ws`;
+    // const socketUrl = `https://${url}/ws`;
+    const webSocketClient = useWebSocket(socketUrl, handleNewMessage);
+    webSocketClientRef.current = webSocketClient;
+
+    return () => {
+      webSocketClient.deactivate();
+    };
+  }, []);
+
+  // Lấy tin nhắn từ cơ sở dữ liệu khi mở màn hình
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -44,50 +67,10 @@ const ChatScreen = ({ navigation, route }) => {
 
     fetchMessages();
   }, []);
-console.log(`${SOCKET_URL}/ws/chat`);
 
-  // Kết nối WebSocket
-  useEffect(() => {
-    const socketUrl = `${SOCKET_URL}/ws/chat`;
-    const stompClient = new StompClient({
-      brokerURL: socketUrl,
-      connectHeaders: {},
-      debug: (str) => console.log(str),
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      webSocketFactory: () => new SockJS(socketUrl),
-    });
-
-    stompClient.onConnect = () => {
-      console.log('Connected to WebSocket');
-      stompClient.subscribe('/topic/messages', (messageOutput) => {
-        const message = JSON.parse(messageOutput.body);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: Date.now().toString(),
-            text: message.content,
-            isSender: message.sender === email,
-          },
-        ]);
-      });
-    };
-
-    stompClient.onStompError = (error) => {
-      console.error('STOMP Error:', error);
-    };
-
-    stompClient.activate();
-    stompClientRef.current = stompClient;
-
-    return () => {
-      stompClient.deactivate();
-    };
-  }, []);
-
+  // Gửi tin nhắn
   const sendMessage = () => {
-    if (inputText.trim()) {
+    if (inputText.trim() && webSocketClientRef.current.connected) {
       const message = {
         sender: email,
         receiver: 'admin@gmail.com',
@@ -95,15 +78,22 @@ console.log(`${SOCKET_URL}/ws/chat`);
         timestamp: new Date().toISOString(),
       };
 
-      if (stompClientRef.current && stompClientRef.current.connected) {
-        stompClientRef.current.publish({
-          destination: '/app/chat',
-          body: JSON.stringify(message),
-        });
-        setInputText('');
-      } else {
-        console.error('STOMP client is not connected');
-      }
+      webSocketClientRef.current.publish({
+        destination: '/app/chat',
+        body: JSON.stringify(message),
+      });
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now().toString(),
+          text: inputText.trim(),
+          isSender: true,
+        },
+      ]);
+      setInputText('');
+    } else {
+      console.error('STOMP client is not connected or input is empty');
     }
   };
 
@@ -114,9 +104,7 @@ console.log(`${SOCKET_URL}/ws/chat`);
         item.isSender ? styles.sender : styles.receiver,
       ]}
     >
-      <Text
-        style={item.isSender ? styles.messageTextSender : styles.messageText}
-      >
+      <Text style={item.isSender ? styles.messageTextSender : styles.messageText}>
         {item.text}
       </Text>
     </View>
@@ -130,24 +118,6 @@ console.log(`${SOCKET_URL}/ws/chat`);
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="angle-left" size={30} color="#000" />
-        </TouchableOpacity>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Chat With Admin </Text>
-          <View style={styles.onlineStatusContainer}>
-            <View style={styles.onlineDot} />
-            <Text style={styles.onlineText}>Online</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Messages */}
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -156,11 +126,10 @@ console.log(`${SOCKET_URL}/ws/chat`);
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Input */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Nhập Tin Nhắn Của Bạn"
+          placeholder="Nhập tin nhắn"
           value={inputText}
           onChangeText={setInputText}
         />

@@ -277,7 +277,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   }, []);
 
 
-
   const handleAddToCartUser = async () => {
     console.log("selectedSizesQuantity", selectedSizesQuantity);
 
@@ -789,14 +788,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const fetchProductReviews = async () => {
 
     const reviewsApiUrl = `${BASE_URL}auth/reviews/product/${id}`;
-    console.log(reviewsApiUrl);
-    
+
     try {
       const response = await axios.get(reviewsApiUrl);
       setReviews(response.data);
     } catch (error) {
-      console.error('Lỗi khi lấy review sản phẩm:', error);
-      throw error;
+      // console.error('Lỗi khi lấy review sản phẩm:', error);
     }
   };
 
@@ -881,7 +878,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setLoading(false);
     }
   };
-  
+
   const handleReply = async () => {
     if (!comment.trim()) {
       Alert.alert("Lỗi", "Vui lòng nhập nội dung phản hồi.");
@@ -954,25 +951,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   const isReviewOwner = (reviewUserId) => reviewUserId === user.id;
 
-  const handleDeleteReview = async (reviewId) => {
-    try {
-      const userData = await AsyncStorage.getItem("userData");
-      if (!userData) throw new Error("No user token found");
-
-      const { token } = JSON.parse(userData);
-      const deleteUrl = `${BASE_URL}auth/reviews/delete/${reviewId}`;
-      await axios.delete(deleteUrl, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setReviews((prevReviews) => prevReviews.filter((review) => review.reviewId !== reviewId));
-
-      Alert.alert("Thành công", "Bài đánh giá đã được xóa.");
-    } catch (error) {
-      console.error("Lỗi khi xóa bài đánh giá:", error);
-      Alert.alert("Lỗi", "Không thể xóa bài đánh giá.");
-    }
-  };
 
   //Kết thúc
   return (
@@ -1134,7 +1112,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           </View>
 
           {/* Description Product */}
-          <View>
+          <View style={{ marginBottom: 20, }}>
             <Text style={styles.descriptionProductTitle}>
               {productsState.post?.postName}
             </Text>
@@ -1162,20 +1140,17 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
           {/* Review Product */}
           <View style={styles.reviewProductContainer}>
-            <View style={styles.reviewProductHeader}>
-              <View>
-                <Text style={styles.reviewProductTitle}>Review</Text>
-                {/* <Text style={styles.reviewProductTitle}>({review})</Text> */}
-              </View>
-              <View style={styles.productStar}>
-                <Image source={require('../assets/star.png')} />
-                <Text>{productsState.productRating}</Text>
-              </View>
-            </View>
-
-
             <View style={styles.reviewContainer}>
-              <Text style={styles.reviewTitle}>Đánh Giá Sản Phẩm</Text>
+              <View style={styles.reviewProductHeader}>
+                <View>
+                  <Text style={styles.reviewTitle}>Đánh Giá Sản Phẩm</Text>
+                  {/* <Text style={styles.reviewProductTitle}>({review})</Text> */}
+                </View>
+                <View style={styles.productStar}>
+                  <Image source={require('../assets/star.png')} />
+                  <Text>{productsState.productRating}</Text>
+                </View>
+              </View>
               {/* Bộ lọc đánh giá theo mức sao */}
               <View style={styles.ratingStats}>
                 {[5, 4, 3, 2, 1].map((star) => (
@@ -1218,11 +1193,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                       createdAt={item?.createdAt}
                       isLikedByCurrentUser={item?.isLikedByCurrentUser}
                       children={item?.children}
-                      
+
                     />
                   );
                 })
-              ) : <Text>ádsadsadsa</Text>}
+              ) : null}
             </View>
           </View>
 
@@ -1236,10 +1211,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                 padding: 15,
                 marginVertical: 20,
                 borderRadius: 10,
-              }} onPress={() => navigation.navigate('ReviewProductScreen')}
+              }}
+              onPress={() => navigation.navigate('ReviewProductScreen', { productId: id })}
             >
               <Text style={{ textAlign: 'center', fontWeight: '600' }}>
-                See All Review
+                Xem Tất Cả Đánh Giá
               </Text>
             </TouchableOpacity>
           </View>
@@ -1249,7 +1225,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         <View style={styles.greySection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.textBold}>Sản Phẩm Đề Xuất</Text>
-            <Text style={styles.seeAll}>Xem Tất Cả</Text>
           </View>
           <FlatList
             horizontal
@@ -1318,10 +1293,13 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                 style={{
                   padding: 10,
                   borderRadius: 10,
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
-                onPress={() => navigation.navigate('ChatScreen')}
+                // onPress={() => navigation.navigate('ChatScreen', {email: userInfo?.userEmail})}
+                onPress={() => navigation.navigate('ChatBotScreen')}
               >
-                <Ionicons name="chatbox-ellipses-outline" size={30} color="#3669C9" />
+                <Ionicons name="happy-outline" size={30} color="#3669C9" />
                 <Text
                   style={{
                     textAlign: 'center',
@@ -1330,7 +1308,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     marginTop: 3,
                   }}
                 >
-                  Chat
+                  Chat Bot
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1896,6 +1874,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     alignItems: "center",
+
   },
   title: {
     fontSize: 18,
@@ -2124,6 +2103,7 @@ const styles = StyleSheet.create({
 
   reviewProductContainer: {
     flexDirection: 'column',
+    backgroundColor: '#fff',
   },
 
   reviewProductHeader: {
@@ -2236,11 +2216,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
 
-  reviewContainer: {
-    padding: 10,
-    backgroundColor: '#f8f8f8',
-    marginTop: 20,
-  },
+
   reviewTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -2370,7 +2346,7 @@ const styles = StyleSheet.create({
   },
   reviewContainer: {
     padding: 10,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#fff',
     flex: 1,
   },
   reviewTitle: {
@@ -2420,7 +2396,7 @@ const styles = StyleSheet.create({
   },
   progress: {
     height: '100%',
-    backgroundColor: '#3669C9',
+    backgroundColor: '#FFD700',
     borderRadius: 5,
   },
   ratingCount: {

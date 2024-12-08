@@ -198,8 +198,9 @@ import SuccessScreen from './src/screens/admin/SuccessScreen';
 
 import ModalConfirm from './src/screens/shipper/ModalConfirm';
 import HomeChatScreen from './src/screens/admin/chat/HomeScreen';
-import ChatScreen from './src/screens/shipper/ChatScreen';
-import ChatScreenAdmin from './src/screens/shipper/ChatScreenAdmin';
+import ChatScreen from './src/screens/chat/ChatScreen';
+import ChatScreenAdmin from './src/screens/chat/ChatScreenAdmin';
+import ChatBotScreen from './src/screens/chat/ChatBotScreen';
 
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
@@ -330,6 +331,14 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       component: ChatScreenAdmin,
       options: {
         headerShown: false, // Ẩn header
+      },
+      showFooter: false, // Đây là một thuộc tính tùy chỉnh bạn có thể xử lý riêng trong logic của mình
+    },
+    {
+      name: 'ChatBotScreen',
+      component: ChatBotScreen,
+      options: {
+        headerShown: false, // Ẩn headerChatBotScreen
       },
       showFooter: false, // Đây là một thuộc tính tùy chỉnh bạn có thể xử lý riêng trong logic của mình
     },
@@ -1065,8 +1074,6 @@ export default function App() {
                 console.error('Error creating cart:', error);
               }
             }
-            F;
-
             setUserData(userInfo); // Lưu thông tin người dùng vào state
 
             // Lưu thông tin người dùng vào AsyncStorage
