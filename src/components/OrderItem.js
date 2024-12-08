@@ -11,6 +11,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
   const [modalVisible, setModalVisible] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const openModalRate = () => {
     setModalVisible(true);
@@ -37,6 +38,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
     return text.length > 17 ? text.substring(0, 17) + '...' : text;
   };
   const handleCancelOrder = async () => {
+    setIsLoading(true)
     try {
       const requestBody = {
         status: 6,
@@ -45,17 +47,19 @@ const OrderItem = ({ order }) => { // Nhận order từ props
       const response = await axios.put(`${BASE_URL}order/change`, requestBody);
       if (response.status === 200) {
         Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
-        navigation.goBack();
       } else {
         Alert.alert('Error', 'Failed to cancel order');
       }
     } catch (error) {
       console.error('Error cancelling order:', error);
       Alert.alert('Error', 'Failed to cancel order');
+    } finally {
+      setIsLoading(false)
     }
   };
 
   const handleConfirmOrder = async () => {
+    setIsLoading(true)
     try {
       const requestBody = {
         status: 1,
@@ -71,6 +75,8 @@ const OrderItem = ({ order }) => { // Nhận order từ props
     } catch (error) {
       console.error('Error confirming order:', error);
       Alert.alert('Error', 'Failed to confirm order');
+    } finally {
+      setIsLoading(false)
     }
   };
   const handleConfirmCompleteOrder = async () => {
@@ -240,7 +246,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-         <TouchableWithoutFeedback onPress={closeModalRate}>
+        <TouchableWithoutFeedback onPress={closeModalRate}>
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={styles.modalContainer}>
@@ -272,11 +278,23 @@ const OrderItem = ({ order }) => { // Nhận order từ props
           </View>
         </View>
       </Modal>
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   loadingContainer: {
     marginTop: 150,
     flex: 1,
@@ -435,15 +453,15 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginVertical: 5,
-    
+
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 18,
-    
+
   },
- 
+
 });
 
 export default OrderItem;

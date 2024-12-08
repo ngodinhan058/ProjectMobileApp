@@ -4,9 +4,9 @@ import { Client } from '@stomp/stompjs';
 const useWebSocket = (url, onProductUpdate) => {
   const client = new Client({
     brokerURL: url,
-    reconnectDelay: 0,
-    heartbeatIncoming: 4000,
-    heartbeatOutgoing: 4000,
+    reconnectDelay: 4000,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
     appendMissingNULLonIncoming: true,
     logRawCommunication: true,
     forceBinaryWSFrames: true,

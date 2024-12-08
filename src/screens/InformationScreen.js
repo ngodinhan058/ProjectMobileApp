@@ -21,16 +21,17 @@ import AlertComponent from '../components/AlertComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const InformationScreen = ({ route, navigation }) => {
-  const [email, setEmail] = useState('');
-  const [firstName, setFirstname] = useState('');
-  const [lastName, setLastname] = useState('');
-  const [sdt, setSdt] = useState('');
+  const { guestInfo } = route?.params
+  const [email, setEmail] = useState(guestInfo?.userEmail|| '');
+  const [firstName, setFirstname] = useState(guestInfo?.userName.split(' ')[0] || '');
+  const [lastName, setLastname] = useState(guestInfo?.userName.split(' ')[1] || '');
+  const [sdt, setSdt] = useState(guestInfo?.userPhone || '');
   const [address, setAdrress] = useState('');
   const [isValidEmail, setIsValidEmail] = useState(true);
   const [isValidLastname, setIsValidLastname] = useState(true);
   const [isValidFirstname, setIsValidFistame] = useState(true);
   const [isValidSdt, setIsValidSdt] = useState(true);
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [dateOfBirth, setDateOfBirth] = useState(new Date(guestInfo?.userBirthday || null));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -49,7 +50,7 @@ const InformationScreen = ({ route, navigation }) => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertType, setAlertType] = useState('success');
 
-  const [addressInfo, setAddressInfo] = useState({});
+  const [addressInfo, setAddressInfo] = useState(guestInfo?.address || {});
   const [location, setLocation] = useState({
     provinces: [],
     districts: [],
@@ -159,7 +160,7 @@ const InformationScreen = ({ route, navigation }) => {
     setSelectedWard(
       location.wards.find((p) => p.name === addressInfo.ward)?.code
     );
-    setDetailedAddress(addressInfo?.addressName);
+    setDetailedAddress(addressInfo?.userAddress);
   }, [location, addressInfo]);
 
 

@@ -29,7 +29,7 @@ const PaymentScreen = ({ route, navigation }) => {
     useEffect(() => {
         const handleReturnFromZaloPay = async (event) => {
             console.log('Event URL:', event.url);
-            const returnUrl = `https://5b80-2405-4802-9154-3a80-b09e-e709-6843-4dae.ngrok-free.app/zalo-pay-callback`;
+            const returnUrl = `http://192.168.1.6:3000/zalo-pay-callback`;
             
             if (event.url.startsWith(returnUrl)) {
                 const params = new URLSearchParams(event.url.split('?')[1]);

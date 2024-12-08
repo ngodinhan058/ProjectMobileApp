@@ -902,7 +902,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     padding: 10,
                     borderRadius: 10,
                   }}
-                  onPress={openModalLike}>
+                  onPress={userInfo != null ? openModalLike : openModalLogin}>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -1601,7 +1601,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             <Text style={styles.subMessage}>
               Có vẻ nhưng bạn chưa đăng nhập? Hãy đăng nhập hoặc đăng ký để có thể nhận thông báo về cái ưa đãi khủng
             </Text>
-            <TouchableOpacity style={styles.loginButton} onPress={closeModalLogin}>
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Đăng Nhập')}>
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
           </View>

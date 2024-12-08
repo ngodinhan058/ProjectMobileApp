@@ -602,7 +602,7 @@ function AddToCartScreen({ route, navigation }) {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
-    const apiPaymentUrlZalo = `https://5b80-2405-4802-9154-3a80-b09e-e709-6843-4dae.ngrok-free.app/payment`;
+    const apiPaymentUrlZalo = `http://192.168.1.6:3000/payment`;
     // console.log("discountShip",discountShip <= 0 ? shippingFee : discountShip);
 
     const orderData = {
@@ -759,10 +759,11 @@ function AddToCartScreen({ route, navigation }) {
                   {guestInfo.address.ward}, {guestInfo.address.district}, {guestInfo.address.city}
                 </Text>)
                 : (<Text style={styles.deliveryAddressText}>Hiện tại chưa có thông tin của bạn{'\n'}
-                  Vui lòng đăng nhập hoặc thêm thông tin của bạn</Text>)}
+                  Vui lòng đăng nhập hoặc thêm thông tin của bạn</Text>)
+            }
 
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => userInfo ? navigation.navigate('CreateAddressScreen') : navigation.navigate('InformationScreen', {guestInfo: guestInfo})}>
               <Icon name="edit" size={18} color="#3669C9" />
             </TouchableOpacity>
           </View>
