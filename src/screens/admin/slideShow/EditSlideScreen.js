@@ -54,7 +54,7 @@ const EditSlideScreen = ({ route, navigation }) => {
             imageAlt: slideData.imageAlt,
             imageIndex: slideData.imageIndex,
             imageUrl: slideData.imageUrl,
-            content: PermissionName[0],
+            content: PermissionName,
         };
         console.log(params);
         
@@ -158,7 +158,7 @@ const EditSlideScreen = ({ route, navigation }) => {
                         selectedpermissionName={existingSlide?.content}
                         onApply={(selectedSizeId, selectedSizeName) => {
                             setPermission(selectedSizeId);
-                            setPermissionName(selectedSizeName);
+                            setPermissionName(selectedSizeName[0]);
 
                         }}
 

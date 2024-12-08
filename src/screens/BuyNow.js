@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -35,6 +36,7 @@ function BuyNow({ route, navigation }) {
   const [invoiceOption, setInvoiceOption] = useState(false);
   const [idCart, setIdCart] = useState([]);
   const [idCartReal, setIdCartReal] = useState([]);
+  const [productsState, setProductsState] = useState([]);
 
   const [quantity, setQuantity] = useState([]);
   const [cartDataUser, setCartDataUser] = useState([]);
@@ -53,6 +55,10 @@ function BuyNow({ route, navigation }) {
   const { alertVisible, alertType } = route.params || {}; // Nhận params từ navigation
   const [isCouponModal, setIsCouponModal] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
+
+  const [alertVisibleN, setAlertVisible] = useState(false);
+  const [alertTypeN, setAlertType] = useState('success');
+  const [titleAlert, setTitleAlert] = useState('');
 
   const [origin, setOrigin] = useState("53 Đường Võ Văn Ngân Linh Chiểu Thành Phố Thủ Đức Hồ Chí Minh"); // Địa chỉ bắt đầu
   const [destination, setDestination] = useState(""); // Địa chỉ kết thúc
@@ -178,7 +184,24 @@ function BuyNow({ route, navigation }) {
   };
 
 
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(`${BASE_URL}products`);
+      setProductsState(response.data.data.content);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      Alert.alert('Lỗi', 'Không thể tải dữ liệu sản phẩm.');
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  };
 
+
+  useEffect(() => {
+    fetchProducts();
+  }, [])
   const handleQuantityChangeUser = async (id, isDecrease, sizeId) => {
     // Nếu giảm, kiểm tra số lượng không dưới 1 trước khi gửi yêu cầu
 
@@ -586,23 +609,38 @@ function BuyNow({ route, navigation }) {
 
           <View style={{ marginHorizontal: 2 }}>
             {cartDataUser.length > 0 ? (
-              cartDataUser.map((item, index) => (
-                <CartItem
-                  key={index}
-                  id={item.productId}
-                  name={item.productName}
-                  price={item.productDiscountPrice}
-                  oldPrice={item.productPrice}
-                  initialQuantity={item.productQuantity}
-                  sizeId={item.productSizeId}
-                  size={item.productSize}
-                  image={item.productImage}
-                  total={(item.productTotalPrice).toLocaleString() + " ₫"}
-                  onDelete={handleDeleteUser}
-                  onQuantityChange={handleQuantityChangeUser}
-                  onInput={handleInputQuantityChangeUser}
-                />
-              ))
+              cartDataUser.map((item, index) => {
+                // Tìm số lượng kho của sản phẩm và kích thước
+                const matchedProduct = productsState.find(
+                  (product) => product.productId === item.productId
+                );
+                const matchedSize = matchedProduct?.productSizes.find(
+                  (size) => size.productSizeId === item.productSizeId
+                );
+                const productSizeQuantity = matchedSize?.productSizeQuantity?.productSizeQuantity || 0;
+
+                return (
+                  <CartItem
+                    key={index}
+                    id={item.productId}
+                    name={item.productName}
+                    price={item.productDiscountPrice}
+                    oldPrice={item.productPrice}
+                    initialQuantity={item.productQuantity}
+                    sizeId={item.productSizeId}
+                    size={item.productSize}
+                    image={item.productImage}
+                    total={(item.productTotalPrice).toLocaleString() + " ₫"}
+                    productSizeQuantity={productSizeQuantity} // Truyền số lượng kho
+                    onDelete={(id, quantity, sizeId) => handleDeleteUser(id, quantity, sizeId)}
+                    onQuantityChange={handleQuantityChangeUser}
+                    onInput={handleInputQuantityChangeUser}
+                    setAlertType={setAlertType}
+                    setAlertVisible={setAlertVisible}
+                    setTitleAlert={setTitleAlert}
+                  />
+                );
+              })
             ) : (
               <View style={{
                 alignItems: 'center',
@@ -804,12 +842,22 @@ function BuyNow({ route, navigation }) {
         visible={isAlertVisible}
         onClose={() => setIsAlertVisible(false)}
       />
-
-      {/* {isLoading && (
+      <AlertComponent
+        title={alertTypeN === 'success' ? "Success" : "Error"}
+        description={
+          alertTypeN === 'success'
+            ? titleAlert
+            : titleAlert
+        }
+        alertType={alertTypeN}
+        visible={alertVisibleN}
+        onClose={() => setAlertVisible(false)}
+      />
+      {isLoading && (
         <View style={styles.overlay}>
           <ActivityIndicator size="large" color="#3669c9" />
         </View>
-      )} */}
+      )}
     </View>
   );
 }
