@@ -359,7 +359,6 @@ const HomeScreen = () => {
           <View style={styles.greySection}>
             <View style={styles.sectionHeader}>
               <Text style={styles.textBold}>Tất cả sản phẩm</Text>
-              <Text style={styles.seeAll}>Xem Tất Cả</Text>
             </View>
             {productsState.length > 0 ? (
               // <View style={styles.gridContainer}>
