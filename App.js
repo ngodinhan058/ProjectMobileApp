@@ -725,6 +725,7 @@ function AdminDrawerNavigator() {
           <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
         </>
       )}
+      <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
       {hasPermission("PERMISSION_USER") && (
         <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
       )}
@@ -986,7 +987,7 @@ export default function App() {
         }
       }
     } catch (error) {
-      console.error('Error loading cart from AsyncStorage:', error);
+      // console.error('Error loading cart from AsyncStorage:', error);
       // Check if guestId exists in AsyncStorage
       let storedUUID = await AsyncStorage.getItem('guestId');
       if (!storedUUID) {
