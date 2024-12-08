@@ -702,7 +702,7 @@ function AdminDrawerNavigator() {
       {hasPermission('PERMISSION_INVENTORY') && (
         <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
       )}
-      {hasPermission('PERMISSION_GETALL') && (
+      {hasPermission("PERMISSION_GETALL") && (
         <>
           <Drawer.Screen name="Chọn Đề Tài Slide" component={ContentAdmin} />
           <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
@@ -711,32 +711,21 @@ function AdminDrawerNavigator() {
           <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
           <Drawer.Screen name="Màu" component={SizeAdmin} />
           <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
-          <Drawer.Screen
-            name="Cho Phép Chức Năng"
-            component={PermissionAdmin}
-          />
+          <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
           <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
           <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
           <Drawer.Screen name="Chat" component={ChatAdmin} />
           <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
           <Drawer.Screen name="Slide Show" component={SlideAdmin} />
           <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
-          <Drawer.Screen
-            name="Trang Chủ Shipper"
-            component={ShipperDrawerNavigator}
-            options={{ headerShown: false }}
-          />
+          <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
         </>
       )}
-      {hasPermission('PERMISSION_USER') && (
+      {hasPermission("PERMISSION_USER") && (
         <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
       )}
-      {hasPermission('PERMISSION_SHIPPER') && (
-        <Drawer.Screen
-          name="Trang Chủ Shipper"
-          component={ShipperDrawerNavigator}
-          options={{ headerShown: false }}
-        />
+      {hasPermission("PERMISSION_SHIPPER") && (
+        <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
       )}
     </Drawer.Navigator>
   );
@@ -992,7 +981,7 @@ export default function App() {
         }
       }
     } catch (error) {
-      console.error('Error loading cart from AsyncStorage:', error);
+      // console.error('Error loading cart from AsyncStorage:', error);
       // Check if guestId exists in AsyncStorage
       let storedUUID = await AsyncStorage.getItem('guestId');
       if (!storedUUID) {

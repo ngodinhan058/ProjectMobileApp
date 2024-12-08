@@ -7,14 +7,18 @@ const Header = () => {
   return (
     <View style={styles.headerContainer}>
       {/* Logo */}
-      <TouchableOpacity onPress={ () => navigation.navigate('Home') }>
+      <TouchableOpacity onPress={() => navigation.navigate('Home')}>
         <Text style={styles.logo}>Mega Mall</Text>
       </TouchableOpacity>
-    
+
       {/* Icon thông báo và giỏ hàng */}
       <View style={styles.iconsContainer}>
         <TouchableOpacity onPress={() => navigation.navigate('Yêu Thích')}>
-          <Image source={require('../assets/heart.png')} style={styles.icon} />
+          <Image source={require('../assets/heart.png')} style={{
+            width: 28,
+            height: 28,
+            marginLeft: 20,
+          }} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('AddToCartScreen')}>
           <Image source={require('../assets/cart.png')} style={styles.icon} />
