@@ -59,23 +59,24 @@ const WishListScreen = ({ route }) => {
   };
   const closeModalLogin = () => setIsLoginModalVisible(false);
   const [userInfo, setUserInfo] = useState(null);
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        // Lấy dữ liệu từ AsyncStorage
-        const userInfoString = await AsyncStorage.getItem('userInfo');
+  const fetchUserInfo = async () => {
+    try {
+      // Lấy dữ liệu từ AsyncStorage
+      const userInfoString = await AsyncStorage.getItem('userInfo');
 
-        // Nếu có dữ liệu thì parse nó thành JSON
-        if (userInfoString) {
-          const userInfoData = JSON.parse(userInfoString);
-          setUserInfo(userInfoData); // Lưu vào state
-        }
-      } catch (error) {
-        console.error('Error fetching user info from AsyncStorage:', error);
+      // Nếu có dữ liệu thì parse nó thành JSON
+      if (userInfoString) {
+        const userInfoData = JSON.parse(userInfoString);
+        setUserInfo(userInfoData); // Lưu vào state
+      } else {
+        openModalLogin();
       }
-    };
+    } catch (error) {
+      console.error('Error fetching user info from AsyncStorage:', error);
+    }
+  };
+  useEffect(() => {
 
-    fetchUserInfo();
   }, []);
   const fetchData = async () => {
     // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
@@ -94,14 +95,14 @@ const WishListScreen = ({ route }) => {
       setRefreshing(false);
     }
   };
-  // useEffect(() => {
-  //   fetchData();
-  // }, [userInfo?.userId]);
   useFocusEffect(
     useCallback(() => {
-      if (userInfo == null) {
-        openModalLogin()
-      }
+      fetchUserInfo();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
       fetchData();
     }, [userInfo?.userId])
   );
