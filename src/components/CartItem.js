@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, TextInput, TouchableOpacity,Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
@@ -16,21 +16,27 @@ const CartItem = ({
     size,
     image,
     total,
+    productSizeQuantity, // Thêm số lượng kho
     onDelete,
     onQuantityChange,
     onInput,
-
+    setAlertType, setAlertVisible, setTitleAlert
 }) => {
-    const [quantity, setQuantity] = useState(initialQuantity); // Quản lý state số lượng
+    const [quantity, setQuantity] = useState(initialQuantity);
+
     const truncateName = (text) => {
         return text.length > 17 ? text.substring(0, 17) + '...' : text;
     };
+
     const handleBlur = () => {
-        // Gửi số lượng khi mất focus
-        if (quantity) {
-            onInput(id, sizeId, quantity);
+        if (quantity < 1) {
+            setQuantity(1); // Đảm bảo số lượng không dưới 1
+            onInput(id, sizeId, initialQuantity, 1); // Reset số lượng về 1
+        } else if (quantity !== initialQuantity) {
+            onInput(id, sizeId, initialQuantity, quantity); // Cập nhật nếu thay đổi
         }
     };
+
     return (
         <View style={styles.modalContainer}>
             <View style={styles.row}>
@@ -40,17 +46,16 @@ const CartItem = ({
                 <View style={styles.detailsContainer}>
                     <View style={styles.productRow}>
                         <View>
-                            <Text
-                                style={styles.productName}
-                                numberOfLines={1}
-                                ellipsizeMode="tail"
-                            >
+                            <Text style={styles.productName} numberOfLines={1}>
                                 {truncateName(name)}
                             </Text>
                         </View>
                         <View>
-                            <TouchableOpacity style={{ position: 'absolute', right: 0 }} onPress={() => onDelete(id, quantity, sizeId)}>
-                                <Icon name='trash' size={20} color={'#bbb'} />
+                            <TouchableOpacity
+                                style={{ position: 'absolute', right: 0 }}
+                                onPress={() => onDelete(id, quantity, sizeId)}
+                            >
+                                <Icon name="trash" size={20} color={'#bbb'} />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -63,13 +68,12 @@ const CartItem = ({
                         <View style={styles.quantitySelector}>
                             <TouchableOpacity
                                 onPress={() => {
-                                    if (quantity > 1) { // Chỉ thực hiện nếu quantity lớn hơn 1
-                                        const newQuantity = quantity - 1; // Trừ số lượng
+                                    if (quantity > 1) {
+                                        const newQuantity = quantity - 1;
                                         setQuantity(newQuantity);
-                                        onQuantityChange(id, true, sizeId); // Truyền hành động giảm số lượng
+                                        onQuantityChange(id, true, sizeId);
                                     }
                                 }}
-
                                 style={styles.quantityButtonLeft}
                             >
                                 <Text style={styles.quantityText}>-</Text>
@@ -78,28 +82,24 @@ const CartItem = ({
                                 style={styles.quantityInput}
                                 value={String(quantity)}
                                 onChangeText={(text) => {
-                                    const validText = text.replace(/[^0-9]/g, ''); // Lọc số
-                                    const newQuantity = validText ? parseInt(validText, 10) : 0; // Nếu không có số, đặt thành 1
-                                    setQuantity(newQuantity); // Cập nhật số lượng
+                                    const validText = text.replace(/[^0-9]/g, '');
+                                    const newQuantity = validText ? parseInt(validText, 10) : 1;
+                                    setQuantity(newQuantity);
                                 }}
-                                onBlur={() => {
-                                    if (quantity < 1) {
-                                        setQuantity(1); // Đảm bảo số lượng không nhỏ hơn 1 khi mất focus
-                                        onInput(id, sizeId, initialQuantity, 1);
-                                    } else if (quantity !== initialQuantity) {
-                                        // Gọi hàm khi mất focus nếu số lượng thay đổi
-                                        onInput(id, sizeId, initialQuantity, quantity);
-                                    }
-                                }}
+                                onBlur={handleBlur}
                                 keyboardType="numeric"
                             />
-
-
                             <TouchableOpacity
                                 onPress={() => {
+                                    if (quantity + 1 > productSizeQuantity) {
+                                        setAlertType('error')
+                                        setAlertVisible(true)
+                                        setTitleAlert(`Số lượng tối đa là ${productSizeQuantity}`)
+                                        return;
+                                    }
                                     const newQuantity = quantity + 1;
                                     setQuantity(newQuantity);
-                                    onQuantityChange(id, false, sizeId); // Truyền hành động tăng số lượng
+                                    onQuantityChange(id, false, sizeId);
                                 }}
                                 style={styles.quantityButtonRight}
                             >
@@ -112,6 +112,7 @@ const CartItem = ({
         </View>
     );
 };
+
 
 
 const styles = StyleSheet.create({

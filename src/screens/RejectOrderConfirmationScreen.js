@@ -45,9 +45,9 @@ const RejectOrderConfirmationScreen = ({ route, navigation }) => {
           <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
           <Text style={styles.sectionHeader}>Thông Tin Người Dùng</Text>
           <View style={styles.infoContainer}>
-            <Text style={styles.boldText}>{orderDetails.userName}</Text>
-            <Text style={styles.label}>{orderDetails.userEmail}</Text>
-            <Text style={styles.label}>{orderDetails.userPhone}</Text>
+          <Text style={styles.boldText}>Tên: {orderDetails.userName}</Text>
+              <Text style={styles.label}>Email: {orderDetails.userEmail}</Text>
+              <Text style={styles.label}>Số Điện Thoại: {orderDetails.userPhone}</Text>
             <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
           </View>
           <Text style={styles.sectionHeader}>Sản Phẩm Đã Đặt</Text>

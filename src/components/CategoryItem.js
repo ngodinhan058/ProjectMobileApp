@@ -42,7 +42,7 @@ const CategoryItem = ({ id, image, name, isLoading }) => {
         <>
           <TouchableOpacity
             style={styles.categoryButton}
-            onPress={() => navigation.navigate('ProductByCateScreen', { id: id })}
+            onPress={() => navigation.navigate('ProductByCateScreen', { id: id, name: name })}
           >
             <Image source={{ uri: image }} style={styles.categoryImage} />
             <Text style={styles.categoryName} numberOfLines={2}>
