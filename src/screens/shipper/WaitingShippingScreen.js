@@ -123,7 +123,6 @@ function WaitingShippingScreen({ navigation }) {
 
 
 
-
   useEffect(() => {
     fetchOrders(currentStatus);
   }, [currentStatus]);
