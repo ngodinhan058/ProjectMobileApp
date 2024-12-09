@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,22 +7,32 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { BASE_URL } from '../api/config';
+  Image,
+  Switch,
+  Modal
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { BASE_URL } from "../api/config";
 
 function WaitingShippingScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentStatus, setCurrentStatus] = useState(3); // Default: Lấy hàng (status = 3)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentStatus, setCurrentStatus] = useState(3);
+  const [productStatus, setProductStatus] = useState({});
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
+  const cancelReasons = ["Khách hàng không nhận", "Giao hàng thất bại", "Khác"];
+
 
   // Fetch orders based on status
   const fetchOrders = async (status) => {
     try {
-      const userData = await AsyncStorage.getItem('userData');
-      if (!userData) throw new Error('No user token found');
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
 
       const { token } = JSON.parse(userData);
 
@@ -35,26 +45,94 @@ function WaitingShippingScreen({ navigation }) {
         }
       );
 
-      setOrders(response.data.data);
+      const fetchedOrders = response.data.data;
+
+      if (!Array.isArray(fetchedOrders)) {
+        throw new Error("Invalid data format from API");
+      }
+
+      // Initialize productStatus
+      const initialProductStatus = {};
+      fetchedOrders.forEach((order) => {
+        if (Array.isArray(order.items)) {
+          order.items.forEach((item) => {
+            if (Array.isArray(item.cartItem)) {
+              item.cartItem.forEach((product) => {
+                initialProductStatus[`${order.orderId}-${product.productId}`] =
+                  false;
+              });
+            }
+          });
+        }
+      });
+
+      setProductStatus(initialProductStatus);
+      setOrders(fetchedOrders);
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
-      Alert.alert('Error', 'Failed to fetch orders');
+      console.error("Failed to fetch orders:", error.message);
+      Alert.alert("Error", "Failed to fetch orders");
     }
   };
+  const areAllProductsToggled = (order) => {
+    return order.items.every((item) =>
+      item.cartItem.every(
+        (product) =>
+          productStatus[`${order.orderId}-${product.productId}`] === true
+      )
+    );
+  };
+  const handleToggleProduct = (orderId, productId) => {
+    setProductStatus((prevStatus) => ({
+      ...prevStatus,
+      [`${orderId}-${productId}`]: !prevStatus[`${orderId}-${productId}`],
+    }));
+  };
+  const handleCancelOrder = async () => {
+    if (selectedReason === "Khác" && !customReason.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập lý do khi chọn 'Khác'");
+      return;
+    }
+
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
+
+      const { token } = JSON.parse(userData);
+
+      const payload = {
+        status: 8,
+        orderId: selectedOrderId,
+        shipper: "",
+        reason: selectedReason === "Khác" ? customReason : selectedReason,
+      };
+
+      await axios.put(`${BASE_URL}order/change`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      Alert.alert("Thành công", "Đơn hàng đã được hủy!");
+      setOrders(orders.filter((order) => order.orderId !== selectedOrderId));
+      setCancelModalVisible(false); // Đóng Modal sau khi hủy
+    } catch (error) {
+      console.error("Không thể hủy đơn hàng:", error);
+      Alert.alert("Lỗi", "Không thể hủy đơn hàng");
+    }
+  };
+
+
 
   useEffect(() => {
     fetchOrders(currentStatus);
   }, [currentStatus]);
 
+
   // Handle order status updates
-  const handleUpdateOrderStatus = async (
-    orderId,
-    newStatus,
-    orderAddress = ''
-  ) => {
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      const userData = await AsyncStorage.getItem('userData');
-      if (!userData) throw new Error('No user token found');
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
 
       const { token } = JSON.parse(userData);
 
@@ -70,22 +148,18 @@ function WaitingShippingScreen({ navigation }) {
       });
 
       Alert.alert(
-        'Thành công',
-        newStatus === 6 ? 'Đơn hàng đã được hủy!' : 'Đơn hàng đã được cập nhật!'
+        "Thành công",
+        newStatus === 8
+          ? "Đơn hàng đã được hủy!"
+          : "Đơn hàng đã được cập nhật!"
       );
 
       setOrders(orders.filter((order) => order.orderId !== orderId));
-
-      if (currentStatus === 4) {
-        navigation.navigate('Map', { orderAddress });
-      }
     } catch (error) {
-      console.error('Không thể cập nhật đơn hàng:', error);
-      Alert.alert('Lỗi', 'Không thể cập nhật đơn hàng');
+      console.error("Không thể cập nhật đơn hàng:", error);
+      Alert.alert("Lỗi", "Không thể cập nhật đơn hàng");
     }
   };
-
-  console.log('Data', orders);
 
   const filteredOrders = orders.filter((order) =>
     order.orderId.toLowerCase().includes(searchQuery.toLowerCase())
@@ -95,24 +169,15 @@ function WaitingShippingScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Quản lý đơn hàng</Text>
-        <View style={styles.searchBox}>
-          <Icon name="search" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Tìm kiếm đơn hàng"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
       </View>
 
       {/* Tabs for status selection */}
       <View style={styles.tabs}>
         {[
-          { label: 'Lấy hàng', status: 3 },
-          { label: 'Giao hàng', status: 4 },
-          { label: 'Thành công', status: 5 },
-          { label: 'Hủy hàng', status: 6 },
+          { label: "Lấy hàng", status: 3 },
+          { label: "Giao hàng", status: 4 },
+          { label: "Thành công", status: 5 },
+          { label: "Trả hàng", status: 8 },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.status}
@@ -140,55 +205,168 @@ function WaitingShippingScreen({ navigation }) {
             <View key={order.orderId} style={styles.shipmentCard}>
               <Text style={styles.shipmentId}>Mã đơn: {order.orderId}</Text>
               <Text style={styles.shipmentStatus}>
-                Trạng thái:{' '}
-                {currentStatus === 3
-                  ? 'Lấy hàng'
+                Trạng thái: {currentStatus === 3
+                  ? "Lấy hàng"
                   : currentStatus === 4
-                  ? 'Giao hàng'
-                  : currentStatus === 5
-                  ? 'Thành công'
-                  : 'Hủy hàng'}
+                    ? "Giao hàng"
+                    : currentStatus === 5
+                      ? "Thành công"
+                      : "Hủy hàng"}
               </Text>
               <Text style={styles.shipmentRoute}>
                 Địa chỉ: {order.orderAddress}
               </Text>
-              {currentStatus === 4 ? (
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}
-                >
+              {currentStatus === 3 && (
+                <View>
+                  {order.items.map((item, itemIndex) =>
+                    item.cartItem.map((product, productIndex) => (
+                      <View
+                        key={`${order.orderId}-${itemIndex}-${productIndex}`}
+                        style={styles.productRow}
+                      >
+                        <Image
+                          source={{ uri: product.productImage }}
+                          style={styles.productImage}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.productName}>{product.productName}</Text>
+                          <Switch
+                            value={productStatus[`${order.orderId}-${product.productId}`]}
+                            onValueChange={() =>
+                              handleToggleProduct(order.orderId, product.productId)
+                            }
+                            thumbColor={
+                              productStatus[`${order.orderId}-${product.productId}`]
+                                ? "#4CAF50"
+                                : "#D9534F"
+                            }
+                            trackColor={{ false: "#D3D3D3", true: "#90EE90" }}
+                          />
+                        </View>
+                      </View>
+                    ))
+                  )}
+                  
                   <TouchableOpacity
-                    style={styles.confirmButton}
+                    style={[
+                      styles.confirmButton,
+                      !areAllProductsToggled(order) && styles.disabledButton,
+                    ]}
+                    disabled={!areAllProductsToggled(order)}
                     onPress={() =>
-                      handleUpdateOrderStatus(
-                        order.orderId,
-                        5,
-                        order.orderAddress
+                      Alert.alert(
+                        "Xác nhận",
+                        "Bạn có muốn cập nhật trạng thái đơn hàng không?",
+                        [
+                        
+                          {
+                            text: "Hủy",
+                            style: "cancel",
+                          },
+                          {
+                            text: "Xác nhận",
+                            onPress: () => handleUpdateOrderStatus(order.orderId, 4),
+                          },
+                        ]
                       )
                     }
                   >
-                    <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                    <Text style={styles.confirmButtonText}>Cập nhật</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => handleUpdateOrderStatus(order.orderId, 6)}
-                  >
-                    <Text style={styles.cancelButtonText}>Hủy hàng</Text>
-                  </TouchableOpacity>
+
                 </View>
-              ) : currentStatus !== 6 ? (
-                <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={() =>
-                    handleUpdateOrderStatus(order.orderId, currentStatus + 1)
-                  }
-                >
-                  <Text style={styles.confirmButtonText}>
-                    {currentStatus === 5 ? 'Hoàn tất' : 'Cập nhật'}
-                  </Text>
-                </TouchableOpacity>
+              )}
+
+
+              {currentStatus === 4 ? (
+                <View>
+                  {order.items.map((item, itemIndex) =>
+                    item.cartItem.map((product, productIndex) => (
+                      <View
+                        key={`${order.orderId}-${itemIndex}-${productIndex}`}
+                        style={styles.productRow}
+                      >
+                        <Image
+                          source={{ uri: product.productImage }}
+                          style={styles.productImage}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.productName}>{product.productName}</Text>
+                          <Text style={styles.productDetails}>
+                            Kích thước: {product.productSize}
+                          </Text>
+                          <Text style={styles.productDetails}>
+                            Số lượng: {product.productQuantity}
+                          </Text>
+                        </View>
+                      </View>
+                    ))
+                  )}
+
+                  {/* Hiển thị nút Xác nhận và Hủy hàng */}
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    {/* Nút Xác nhận */}
+                    <TouchableOpacity
+                      style={styles.confirmButton}
+                      onPress={() =>
+                        Alert.alert(
+                          "Xác nhận",
+                          "Bạn có muốn xác nhận đơn hàng này không?",
+                          [
+                            {
+                              text: "Hủy",
+                              style: "cancel",
+                            },
+                            {
+                              text: "Xác nhận",
+                              onPress: () => handleUpdateOrderStatus(order.orderId, 5),
+                            },
+                          ]
+                        )
+                      }
+                    >
+                      <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                    </TouchableOpacity>
+
+                    {/* Nút Hủy hàng */}
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={() => {
+                        setSelectedOrderId(order.orderId); // Đặt ID của đơn hàng được chọn
+                        setCancelModalVisible(true); // Hiển thị Modal
+                      }}
+                    >
+                      <Text style={styles.cancelButtonText}>Hủy hàng</Text>
+                    </TouchableOpacity>
+
+                  </View>
+
+                </View>
+              ) : currentStatus === 5 ? (
+                <View>
+                  {order.items.map((item, itemIndex) =>
+                    item.cartItem.map((product, productIndex) => (
+                      <View
+                        key={`${order.orderId}-${itemIndex}-${productIndex}`}
+                        style={styles.productRow}
+                      >
+                        <Image
+                          source={{ uri: product.productImage }}
+                          style={styles.productImage}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.productName}>{product.productName}</Text>
+                          <Text style={styles.productDetails}>
+                            Kích thước: {product.productSize}
+                          </Text>
+                          <Text style={styles.productDetails}>
+                            Số lượng: {product.productQuantity}
+                          </Text>
+                        </View>
+                      </View>
+                    ))
+                  )}
+                </View>
               ) : null}
             </View>
           ))
@@ -198,38 +376,98 @@ function WaitingShippingScreen({ navigation }) {
           </View>
         )}
       </ScrollView>
+      {/* Cancel Modal */}
+      <Modal
+        visible={cancelModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setCancelModalVisible(false)} // Đóng Modal khi nhấn nút quay lại
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Lý do hủy đơn hàng</Text>
+            {cancelReasons.map((reason, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.reasonButton}
+                onPress={() => setSelectedReason(reason)}
+              >
+                <Text
+                  style={[
+                    styles.reasonText,
+                    selectedReason === reason && styles.selectedReasonText,
+                  ]}
+                >
+                  {reason}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {selectedReason === "Khác" && (
+              <TextInput
+                style={styles.reasonInput}
+                placeholder="Nhập lý do khác"
+                value={customReason}
+                onChangeText={setCustomReason}
+              />
+            )}
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={() => {
+                  if (!selectedReason) {
+                    Alert.alert("Lỗi", "Vui lòng chọn lý do hủy");
+                    return;
+                  }
+                  handleCancelOrder(); // Gọi API hủy đơn hàng
+                }}
+              >
+                <Text style={styles.confirmButtonText}>Xác nhận</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setCancelModalVisible(false)} // Đóng Modal
+              >
+                <Text style={styles.cancelButtonText}>Đóng</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
     </View>
   );
+
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   header: {
-    backgroundColor: '#3669C9',
+    backgroundColor: "#3669C9",
     padding: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     height: 150,
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   searchBox: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    backgroundColor: "#fff",
     borderRadius: 10,
     paddingHorizontal: 15,
     paddingVertical: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   searchIcon: {
-    color: '#2490A9',
+    color: "#2490A9",
     fontSize: 20,
   },
   searchInput: {
@@ -238,9 +476,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabs: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#fff",
     padding: 10,
   },
   tab: {
@@ -249,77 +487,170 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   activeTab: {
-    backgroundColor: '#3669C9',
+    backgroundColor: "#3669C9",
   },
   tabText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   activeTabText: {
-    color: '#fff',
+    color: "#fff",
   },
   shipments: {
     marginTop: 20,
     paddingHorizontal: 20,
   },
   shipmentCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
   },
   shipmentId: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
     marginBottom: 5,
   },
   shipmentStatus: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
     marginBottom: 10,
   },
   shipmentRoute: {
     fontSize: 12,
-    color: '#333',
+    color: "#333",
   },
   confirmButton: {
     marginTop: 10,
-    backgroundColor: '#3669C9',
+    backgroundColor: "#3669C9",
     paddingVertical: 10,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
     marginHorizontal: 5,
   },
   confirmButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   cancelButton: {
     marginTop: 10,
-    backgroundColor: '#D9534F', // Red color for cancel button
+    backgroundColor: "#D9534F",
     paddingVertical: 10,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
     marginHorizontal: 5,
   },
   cancelButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   noOrderContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     height: 300,
   },
   noOrderText: {
     fontSize: 18,
-    color: '#888',
+    color: "#888",
   },
+  toggleButton: {
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  toggleButtonActive: {
+    backgroundColor: "#4CAF50", // Xanh lá khi bật
+  },
+  toggleButtonInactive: {
+    backgroundColor: "#D9534F", // Đỏ khi tắt
+  },
+  toggleButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  productRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 5,
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  productName: {
+    fontSize: 14,
+    color: "#333",
+    flex: 1,
+    marginRight: 10,
+  },
+  disabledButton: {
+    backgroundColor: "#ccc", // Màu xám khi không thể nhấn
+  },
+  productImage: {
+    width: 60, // Độ rộng của hình ảnh
+    height: 60, // Chiều cao của hình ảnh
+    borderRadius: 8, // Bo góc cho hình ảnh
+    marginRight: 10, // Khoảng cách giữa hình ảnh và nội dung bên cạnh
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)", // Nền mờ
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  reasonButton: {
+    padding: 10,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  reasonText: {
+    fontSize: 16,
+  },
+  selectedReasonText: {
+    fontWeight: "bold",
+    color: "#3669C9",
+  },
+  reasonInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+
+
 });
+
+
 
 export default WaitingShippingScreen;
