@@ -67,7 +67,11 @@ const PasswordScreen = ({ route, navigation }) => {
         .get(
           `https://provinces.open-api.vn/api/d/?province_code=${selectedProvince}`
         )
-        .then((response) => setDistricts(response.data))
+        .then((response) =>
+          setDistricts(
+            response.data.filter((d) => d.province_code === selectedProvince)
+          )
+        )
         .catch((error) => console.error(error));
     } else {
       setDistricts([]);
@@ -80,7 +84,11 @@ const PasswordScreen = ({ route, navigation }) => {
         .get(
           `https://provinces.open-api.vn/api/w/?district_code=${selectedDistrict}`
         )
-        .then((response) => setWards(response.data))
+        .then((response) =>
+          setWards(
+            response.data.filter((d) => d.district_code === selectedDistrict)
+          )
+        )
         .catch((error) => console.error(error));
     } else {
       setWards([]);
