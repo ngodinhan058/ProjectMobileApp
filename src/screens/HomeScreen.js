@@ -26,12 +26,12 @@ const news = [
   { id: '2', title: 'Philosophy That Addresses Topics Such As Goodness', description: 'Agar tetap kinclong, bodi motor ten...', date: '13 Jan 2021', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
 
 ];
-const banners = [
-  { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-  { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' }, },
-  { id: '3', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
-  { id: '4', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' }, },
-];
+// const banners = [
+//   { id: '1', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+//   { id: '2', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' }, },
+//   { id: '3', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2023/08/anh-phat-dep-lam-hinh-nen-62.jpg.webp' }, },
+//   { id: '4', image: { uri: 'https://hoanghamobile.com/tin-tuc/wp-content/webp-express/webp-images/uploads/2024/01/anh-nen-cute.jpg.webp' }, },
+// ];
 
 const HomeScreen = () => {
   {/* Loading Banner */ }
@@ -48,12 +48,15 @@ const HomeScreen = () => {
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState();
   const [selectedCategories, setSelectedCategories] = useState();
+  const [banners, setBanner] = useState([]);
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertType, setAlertType] = useState('success');
   const [titleAlert, setTitleAlert] = useState('');
 
   const [appliedFilters, setAppliedFilters] = useState(null);
+
+  const [selectedSlide, setSelectedSlide] = useState(null);
 
   const [refreshing, setRefreshing] = React.useState(false);
   const wsUrl = `${WS_URL}/ws`;
@@ -78,8 +81,26 @@ const HomeScreen = () => {
     });
   };
 
+
   const { client } = useWebSocket(wsUrl, handleProductUpdate);
 
+
+  const fetchContentSlides = async () => {
+    const apiUrl = `${BASE_URL}contentslides`;
+    try {
+      const response = await axios.get(apiUrl);
+      const slidesData = response.data.data;
+
+      // Lọc các phần tử có status === 1 và lưu vào saveContent
+      const saveContent = slidesData.find(slide => slide.status === "1");
+      setSelectedSlide(saveContent)
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  useEffect(() => {
+    fetchContentSlides();
+  }, []);
   const fetchData = async () => {
     try {
       const productsApiUrl = `${BASE_URL}products/filters?`;
@@ -96,9 +117,10 @@ const HomeScreen = () => {
       if (Array.isArray(selectedSizes) && selectedSizes.length > 0) {
         queryParams.append('sizeIds', selectedSizes.join(','));
       }
-      if (Array.isArray(selectedSupplier) && selectedSupplier.length > 0) {
-        queryParams.append('supplierIds', selectedSupplier.join(','));
-      }
+
+      if (selectedSupplier) {
+        queryParams.append("supplierIds", selectedSupplier);
+    }
       const finalProductsApiUrl = productsApiUrl + queryParams.toString();
       // console.log('Products API URL:', finalProductsApiUrl);
 
@@ -149,13 +171,32 @@ const HomeScreen = () => {
     setSelectedSizes([]);
     setSelectedSupplier();
   };
+  const fetchSlides = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}slideshows?content=${selectedSlide?.content}`);
 
+      const json = await response.json();
+      if (selectedSlide?.content) {
+        if (response.ok && json.status === 200) {
+          setBanner(json.data);
+        } else {
+          console.error('Error fetching slides:', json.message);
+        }
+      }
 
+    } catch (error) {
+      console.error('Error fetching slides:', error);
+    }
+  };
 
+  useEffect(() => {
+    fetchSlides()
+  }, [selectedSlide?.content]);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     setLoading(true);
     fetchData();
+    fetchContentSlides();
   }, []);
 
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -208,19 +249,6 @@ const HomeScreen = () => {
             {/* Line */}
             <View style={styles.line}></View>
             {/* Thanh tìm kiếm */}
-
-            {/* <View style={styles.searchBar}>
-              <TouchableOpacity onPress={() => navigation.navigate('StartSearchScreen')}>
-                <Text style={styles.searchInput}>Search Product Name</Text>
-                <Image
-                  source={require('../assets/iconSeach.png')}
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filter} onPress={toggleFilterModal}>
-                <Image source={require('../assets/filter.png')} style={styles.iconCenter} />
-              </TouchableOpacity>
-            </View> */}
             {renderSearchBar()}
 
             <Filter
@@ -269,7 +297,7 @@ const HomeScreen = () => {
                         style={{ width: windowWidth, height: 200 }}
                         key={banner.id}>
                         <ImageBackground
-                          source={banner.image}
+                          source={{ uri: banner.imagePath }}
                           style={styles.card}>
                         </ImageBackground>
                       </View>
@@ -331,7 +359,6 @@ const HomeScreen = () => {
           <View style={styles.greySection}>
             <View style={styles.sectionHeader}>
               <Text style={styles.textBold}>Tất cả sản phẩm</Text>
-              <Text style={styles.seeAll}>Xem Tất Cả</Text>
             </View>
             {productsState.length > 0 ? (
               // <View style={styles.gridContainer}>

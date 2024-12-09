@@ -1,0 +1,323 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    Animated,
+    Pressable,
+    FlatList,
+    Alert,
+    Modal,
+    ActivityIndicator,
+    useWindowDimensions,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import axios from 'axios';
+import { BASE_URL } from '../../api/config';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
+
+function DetailScreen({ route, navigation }) {
+    const { id, imageAlt, imageIndex, imagePath, imageUrl, content, existingSlide } = route.params;
+    const { width: windowWidth } = useWindowDimensions();
+
+    const [isOpen, setIsOpen] = useState(false);
+    const [animation] = useState(new Animated.Value(0));
+    const [rotation] = useState(new Animated.Value(0));
+    const [productsState, setProductsState] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const toggleMenu = () => {
+        const toValue = isOpen ? 0 : 1;
+
+        Animated.timing(animation, {
+            toValue,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+
+        setIsOpen(!isOpen);
+
+        Animated.timing(rotation, {
+            toValue: isOpen ? 0 : 1,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+
+        setIsOpen(!isOpen);
+    };
+
+    const position1 = animation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [30, 160],
+    });
+    const position2 = animation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [30, 100],
+    });
+    const rotateIcon = rotation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '90deg'],
+    });
+
+    const deleteProduct = async () => {
+        setIsLoading(true);
+        try {
+            const rep = await axios.delete(`${BASE_URL}slideshow/${id}`);
+
+            // Alert.alert("Success", "Xoá Thành Công");
+            navigation.replace('SlideList', {
+                alertVisible: true,
+                alertType: 'success',
+                title: 'Xóa Sản Phẩm Thành Công,'
+            });
+        } catch (error) {
+            console.error('Error deleting category:', error.response ? error.response.data : error.message);
+            Alert.alert("Error", "Failed to delete category.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <ScrollView>
+                <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
+                    <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Icon name="angle-left" size={35} color="#fff" />
+                    </Pressable>
+
+                    <Text style={styles.textHeader}>Chi Tiết Slide Show</Text>
+                </LinearGradient>
+
+                <View style={styles.productImgContainer}>
+                    <Image source={{ uri: imagePath }} style={styles.productImg} />
+
+                </View>
+
+                <View style={styles.productInfo}>
+                    <View>
+                        <Text style={styles.productName}>content: {content}</Text>
+                    </View>
+                    <View>
+                        <Text style={styles.productName}>Url: {imageUrl}</Text>
+                    </View>
+                    <View>
+                        <Text style={styles.originalPrice}>Thứ Tự {imageIndex}</Text>
+                    </View>
+                    <View>
+                        <Text style={styles.productName}>Alt: {imageAlt}</Text>
+                    </View>
+
+                </View>
+            </ScrollView>
+
+            <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
+                <Animated.View style={{ transform: [{ rotate: rotateIcon }] }}>
+                    <Icon name="cog" size={30} color="#fff" />
+                </Animated.View>
+            </TouchableOpacity>
+
+            <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() =>
+                        navigation.navigate('EditSlideScreen', { id: id, existingSlide: existingSlide })
+                    }
+                >
+                    <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.iconButtonGradient}>
+                        <Icon name="pencil" size={20} color="#fff" />
+                    </LinearGradient>
+                </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View style={[styles.subButton, { bottom: position1 }]}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => {
+                    Alert.alert(
+                        "Xác Nhận!!!",
+                        "Bạn có chắc muốn xoá không??",
+                        [
+                            {
+                                text: "Huỷ",
+                                style: "cancel"
+                            },
+                            { text: "Có", onPress: deleteProduct }
+                        ]
+                    );
+                }}>
+                    <LinearGradient colors={['#FF5252', '#FF1744']} style={styles.iconButtonGradient}>
+                        <Icon name="trash" size={20} color="#fff" />
+                    </LinearGradient>
+                </TouchableOpacity>
+            </Animated.View>
+            {isLoading && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator size="large" color="#3669c9" />
+                </View>
+            )}
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    header: {
+
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        marginBottom: 15,
+        borderRadius: 10,
+    },
+    textHeader: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        textAlign: 'center',
+        color: '#fff',
+        flex: 1,
+    },
+    backButton: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginRight: 10,
+    },
+    productInfo: {
+        flexDirection: 'column',
+        marginTop: 10,
+        marginBottom: 10,
+        paddingHorizontal: 20,
+    },
+    productName: {
+        textTransform: 'uppercase',
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    productPrice: {
+        color: '#FE3A30',
+        fontWeight: '500',
+        fontSize: 18,
+    },
+    productImg: {
+        width: '100%',
+        height: 300,
+        borderRadius: 10,
+        resizeMode: 'contain',
+    },
+    originalPrice: {
+        fontSize: 14,
+        color: '#888',
+        marginTop: 10,
+    },
+    SoldProductInfo: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    productStar: {
+        flexDirection: 'row',
+        gap: 5,
+    },
+    totalSellProduct: {
+        color: '#3A9B7A',
+    },
+    descriptionProductTitle: {
+        fontWeight: '800',
+        fontSize: 16,
+        paddingTop: 10,
+        paddingHorizontal: 20,
+    },
+    descriptionProductText: {
+        lineHeight: 24,
+        paddingBottom: 10,
+        paddingHorizontal: 20,
+    },
+    editButton: {
+        position: 'absolute',
+        bottom: 30,
+        right: 30,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#3669c9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 99,
+    },
+    editButtonText: {
+        fontSize: 40,
+        color: '#fff',
+        marginLeft: 10,
+        marginBottom: 10,
+    },
+    subButton: {
+        position: 'absolute',
+        right: 35,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    subButtonPen: {
+        position: 'absolute',
+        right: 35,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconButtonGradient: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 1,
+    },
+    closeText: {
+        color: '#fff',
+        fontSize: 24,
+    },
+    fullScreenImage: {
+        width: '100%',
+        height: '90%',
+    },
+});
+
+export default DetailScreen;

@@ -14,7 +14,7 @@ const RejectOrderConfirmationScreen = ({ route, navigation }) => {
         <Text style={styles.detailText}>Màu: {item.productSize}</Text>
         <Text style={styles.detailText}>Số Lượng: {item.productQuantity}</Text>
         <Text style={styles.detailText}>Giảm Giá Voucher: {item.productDiscountPrice || 0}</Text>
-        <Text style={styles.detailText}>Tổng Cộng: {item.productTotalPrice} ₫</Text>
+        <Text style={styles.detailText}>Tổng Cộng: {Number(item.productTotalPrice).toLocaleString('vi-VN')} ₫</Text>
       </View>
     </View>
   );
@@ -45,9 +45,9 @@ const RejectOrderConfirmationScreen = ({ route, navigation }) => {
           <Text style={styles.boldText}>Thời Gian Đặt Hàng: {orderDetails.orderDate}</Text>
           <Text style={styles.sectionHeader}>Thông Tin Người Dùng</Text>
           <View style={styles.infoContainer}>
-            <Text style={styles.boldText}>{orderDetails.userName}</Text>
-            <Text style={styles.label}>{orderDetails.userEmail}</Text>
-            <Text style={styles.label}>{orderDetails.userPhone}</Text>
+          <Text style={styles.boldText}>Tên: {orderDetails.userName}</Text>
+              <Text style={styles.label}>Email: {orderDetails.userEmail}</Text>
+              <Text style={styles.label}>Số Điện Thoại: {orderDetails.userPhone}</Text>
             <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
           </View>
           <Text style={styles.sectionHeader}>Sản Phẩm Đã Đặt</Text>
@@ -69,7 +69,7 @@ const RejectOrderConfirmationScreen = ({ route, navigation }) => {
           </View>
           <View style={[styles.summaryRow, styles.summaryTopBorder]}>
             <Text style={styles.label}>Tổng Cộng:</Text>
-            <Text style={styles.label}>{orderDetails.orderTotal} ₫</Text>
+            <Text style={styles.label}>{Number(orderDetails.orderTotal).toLocaleString('vi-VN')} ₫</Text>
           </View>
         </View>
       </ScrollView>

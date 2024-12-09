@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, TextInput, TouchableOpacity,Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-const CartItem_v2 = ({
+const CartItem = ({
     id,
     name,
     price,
@@ -16,13 +16,27 @@ const CartItem_v2 = ({
     size,
     image,
     total,
+    productSizeQuantity, // Thêm số lượng kho
     onDelete,
     onQuantityChange,
+    onInput,
+    setAlertType, setAlertVisible, setTitleAlert
 }) => {
-    const [quantity, setQuantity] = useState(initialQuantity); // Quản lý state số lượng
+    const [quantity, setQuantity] = useState(initialQuantity);
+
     const truncateName = (text) => {
         return text.length > 17 ? text.substring(0, 17) + '...' : text;
     };
+
+    const handleBlur = () => {
+        if (quantity < 1) {
+            setQuantity(1); // Đảm bảo số lượng không dưới 1
+            onInput(id, sizeId, initialQuantity, 1); // Reset số lượng về 1
+        } else if (quantity !== initialQuantity) {
+            onInput(id, sizeId, initialQuantity, quantity); // Cập nhật nếu thay đổi
+        }
+    };
+
     return (
         <View style={styles.modalContainer}>
             <View style={styles.row}>
@@ -31,14 +45,12 @@ const CartItem_v2 = ({
                 </View>
                 <View style={styles.detailsContainer}>
                     <View style={styles.productRow}>
-                        <Text
-                            style={styles.productName}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                        >
-                            {truncateName(name)}
-                        </Text>
-
+                        <View>
+                            <Text style={styles.productName} numberOfLines={1}>
+                                {truncateName(name)}
+                            </Text>
+                        </View>
+                       
                     </View>
                     <Text style={styles.productSize}>Màu: {size}</Text>
                     <View style={styles.infoContainer}>
@@ -47,18 +59,45 @@ const CartItem_v2 = ({
                             <Text style={styles.productOldPrice}>{oldPrice}</Text>
                         </View>
                         <View style={styles.quantitySelector}>
-                            <Text>Số Lượng:</Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (quantity > 1) {
+                                        const newQuantity = quantity - 1;
+                                        setQuantity(newQuantity);
+                                        onQuantityChange(id, true, sizeId);
+                                    }
+                                }}
+                                style={styles.quantityButtonLeft}
+                            >
+                                <Text style={styles.quantityText}>-</Text>
+                            </TouchableOpacity>
                             <TextInput
                                 style={styles.quantityInput}
                                 value={String(quantity)}
                                 onChangeText={(text) => {
                                     const validText = text.replace(/[^0-9]/g, '');
-                                    setQuantity(validText);
+                                    const newQuantity = validText ? parseInt(validText, 10) : 1;
+                                    setQuantity(newQuantity);
                                 }}
-                                editable={false}
+                                onBlur={handleBlur}
                                 keyboardType="numeric"
                             />
-
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (quantity + 1 > productSizeQuantity) {
+                                        setAlertType('error')
+                                        setAlertVisible(true)
+                                        setTitleAlert(`Số lượng tối đa là ${productSizeQuantity}`)
+                                        return;
+                                    }
+                                    const newQuantity = quantity + 1;
+                                    setQuantity(newQuantity);
+                                    onQuantityChange(id, false, sizeId);
+                                }}
+                                style={styles.quantityButtonRight}
+                            >
+                                <Text style={styles.quantityText}>+</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -66,6 +105,7 @@ const CartItem_v2 = ({
         </View>
     );
 };
+
 
 
 const styles = StyleSheet.create({
@@ -101,7 +141,6 @@ const styles = StyleSheet.create({
     },
     productRow: {
         flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 5,
     },
@@ -113,8 +152,8 @@ const styles = StyleSheet.create({
         marginRight: 10, // Khoảng cách với nút xóa
     },
     trashIcon: {
-        width: 20,
-        height: 20,
+        width: 30,
+        height: 35,
         tintColor: '#FE3A30',
     },
     productSize: {
@@ -168,7 +207,8 @@ const styles = StyleSheet.create({
     quantityInput: {
         width: 50,
         height: 30,
-
+        borderColor: '#ccc',
+        borderWidth: 1,
         textAlign: 'center',
         fontSize: 16,
         fontWeight: 'bold',
@@ -183,5 +223,4 @@ const styles = StyleSheet.create({
 });
 
 
-
-export default CartItem_v2;
+export default CartItem;

@@ -21,111 +21,65 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import AlertComponent from '../../../components/AlertComponent';
-import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LogBox } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AnimatedTouchableOpacity =
   Animated.createAnimatedComponent(TouchableOpacity);
 
 const HomeAdminScreen = ({ navigation, route }) => {
+  const [slides, setSlides] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [productsState, setProductsState] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [selectedSlide, setSelectedSlide] = useState(null);
 
   const { alertVisible, alertType, title } = route.params || {}; // Nhận params từ navigation
   const [isAlertVisible, setIsAlertVisible] = useState(alertVisible || false);
-
   useEffect(() => {
-    LogBox.ignoreAllLogs(); 
-  }, []);
-
-  const fetchProducts = async () => {
-    setIsLoading(true);
+    LogBox.ignoreAllLogs();
+  }, [])
+  // Lấy danh sách slide show từ API
+  const fetchContentSlides = async () => {
+    const apiUrl = `${BASE_URL}contentslides`;
     try {
-      const response = await axios.get(`${BASE_URL}products`);
-      setProductsState(response.data.data.content);
+      const response = await axios.get(apiUrl);
+      const slidesData = response.data.data;
+
+      // Lọc các phần tử có status === 1 và lưu vào saveContent
+      const saveContent = slidesData.find(slide => slide.status === "1");
+      setSelectedSlide(saveContent)
     } catch (error) {
       console.error('Error fetching data:', error);
-      Alert.alert('Lỗi', 'Không thể tải dữ liệu sản phẩm.');
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchProducts();
-    }, [])
-  );
-
-  const ProductItem = ({ item }) => {
-    const scale = useSharedValue(1);
-
-    const animatedStyles = useAnimatedStyle(() => {
-      return {
-        transform: [{ scale: scale.value }],
-      };
-    });
-
-    // const navigateToDetail = () => {
-    //     navigation.replace('DetailScreen', { id: item.productId });
-    // };
-
-    // const handlePress = () => {
-    //     scale.value = withTiming(0.95, { duration: 100 });
-    //     navigateToDetail();
-    //     setTimeout(() => {
-    //         scale.value = withTiming(1, { duration: 100 });
-    //     }, 100);
-    // };
-
-    return (
-      <AnimatedTouchableOpacity
-        style={[styles.productItem, animatedStyles]}
-        onPress={() =>
-          navigation.navigate('DetailScreen', { id: item.productId })
-        }
-      >
-        <Card containerStyle={styles.cardContainer}>
-          <Card.Image
-            source={{ uri: item.productImages[0].productImagePath }}
-            style={styles.productImage}
-            PlaceholderContent={
-              <ActivityIndicator size="large" color="#2196F3" />
-            }
-          />
-          <Card.Title style={styles.productTitle}>
-            {item.productName}
-          </Card.Title>
-          <Divider />
-          <View style={styles.productDetails}>
-            <View style={styles.priceContainer}>
-              <Text style={styles.priceLabel}>Giá:</Text>
-              <Text style={styles.productPrice}>{item.productPrice}</Text>
-            </View>
-            <View style={styles.quantityContainer}>
-              <Text style={styles.quantityLabel}>Số lượng:</Text>
-              <Text style={styles.productQuantity}>{item.productQuantity}</Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={styles.detailButton}
-            onPress={() =>
-              navigation.navigate('DetailScreen', { id: item.productId })
-            }
-          >
-            <Text style={styles.detailButtonText}>Xem chi tiết</Text>
-          </TouchableOpacity>
-        </Card>
-      </AnimatedTouchableOpacity>
-    );
+  const fetchSlides = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${BASE_URL}slideshows?content=${selectedSlide?.content}`);
+      const json = await response.json();
+      if (response.ok && json.status === 200) {
+        setSlides(json.data);
+      } else {
+        console.error('Error fetching slides:', json.message);
+      }
+    } catch (error) {
+      console.error('Error fetching slides:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const renderProduct = ({ item }) => {
-    return <ProductItem item={item} />;
+  // Làm mới danh sách slide
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchSlides();
+    setRefreshing(false);
+    fetchContentSlides();
+
   };
+
   const handleLogout = async () => {
     try {
       Alert.alert(
@@ -153,62 +107,109 @@ const HomeAdminScreen = ({ navigation, route }) => {
       Alert.alert('Thất bại', error);
     }
   };
-  const handleRefresh = () => {
-    fetchProducts();
-  };
-  // useEffect(() => {
-  //     if (isAlertVisible && alertType === 'success') {
-  //         fetchProducts();
-  //     }
-  // }, [isAlertVisible, alertType]);
+
+  // Render từng slide trong danh sách
+  const renderSlide = ({ item }) => (
+    <AnimatedTouchableOpacity
+      style={styles.productItem}
+      onPress={() =>
+        navigation.navigate('DetailSlideScreen', {
+          id: item.id, imageAlt: item.imageAlt, imageIndex: item.imageIndex, imagePath: item.imagePath,
+          imageUrl: item.imageUrl, content: item.content, existingSlide: item
+        })
+      }
+    >
+      <Card containerStyle={styles.cardContainer}>
+        <Card.Image
+          source={{ uri: item.imagePath }}
+          style={styles.slideImage}
+          PlaceholderContent={
+            <ActivityIndicator size="large" color="#2196F3" />
+          }
+        />
+        <Card.Title style={styles.productTitle}>{item.content}</Card.Title>
+        <Divider />
+        <View style={styles.productDetails}>
+          <Text style={styles.priceLabel}>Alt: {item.imageAlt}</Text>
+          <Text style={styles.priceLabel}>Url: {item.imageUrl}</Text>
+          <Text style={styles.priceLabel}>Thứ tự: {item.imageIndex}</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.detailButton}
+          onPress={() =>
+            navigation.navigate('DetailSlideScreen', {
+              id: item.id, imageAlt: item.imageAlt, imageIndex: item.imageIndex, imagePath: item.imagePath,
+              imageUrl: item.imageUrl, content: item.content, existingSlide: item
+            })
+          }
+        >
+          <Text style={styles.detailButtonText}>Xem chi tiết</Text>
+        </TouchableOpacity>
+      </Card>
+    </AnimatedTouchableOpacity>
+  );
+
+  // Hiệu ứng khi màn hình được tải
+  useEffect(() => {
+    fetchSlides();
+  }, [selectedSlide?.content]);
+  useEffect(() => {
+    fetchContentSlides();
+
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
-        <View style={styles.headerContent}>
-          <Image
-            source={{
-              uri: 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474119Xok/hinh-anh-cho-cute-chibi-dep-nhat_100649530.png',
-            }}
-            style={styles.avatar}
-          />
-          <Text style={styles.welcomeText}>Hi Admin!</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout}>
-          <Icon name="log-out-outline" size={30} color="#fff" />
-        </TouchableOpacity>
-      </LinearGradient>
-      <FlatList
-        data={productsState}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.productId.toString()}
-        style={styles.productList}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-        ListEmptyComponent={
-          !isLoading && (
-            <Text style={styles.emptyText}>Không có sản phẩm nào.</Text>
-          )
-        }
-      />
-
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate('AddProductScreen')}
-      >
-        <LinearGradient
-          colors={['#4CAF50', '#388E3C']}
-          style={styles.addButtonGradient}
-        >
-          <Icon name="add-circle" size={40} color="#fff" />
+    <>
+      <View style={styles.container}>
+        <LinearGradient colors={['#2196F3', '#1976D2']} style={styles.header}>
+          <View style={styles.headerContent}>
+            <Image
+              source={{
+                uri: 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474119Xok/hinh-anh-cho-cute-chibi-dep-nhat_100649530.png',
+              }}
+              style={styles.avatar}
+            />
+            <Text style={styles.welcomeText}>Hi Admin!</Text>
+          </View>
+          <TouchableOpacity onPress={handleLogout}>
+            <Icon name="log-out-outline" size={30} color="#fff" />
+          </TouchableOpacity>
         </LinearGradient>
-      </TouchableOpacity>
-      {/* {isLoading && (
-                <View style={styles.overlay}>
-                    <ActivityIndicator size="large" color="#2196F3" />
-                </View>
-            )} */}
+        <FlatList
+          data={slides}
+          renderItem={renderSlide}
+          keyExtractor={(item) => item.id.toString()}
+          style={styles.slideList}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          ListEmptyComponent={
+            !isLoading && (
+              <Text style={styles.emptyText}>Đề tài này ko có banner nào, {'\n'}Vui lòng chọn đề tài khác</Text>
+            )
+          }
+        />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate('AddSlideScreen')}
+        >
+          <LinearGradient
+            colors={['#4CAF50', '#388E3C']}
+            style={styles.addButtonGradient}
+          >
+            <Icon name="add-circle" size={40} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
+        {isAlertVisible && (
+          <AlertComponent
+            title={alertType === 'success' ? 'Success' : 'Error'}
+            description={alertTitle || 'Có lỗi xảy ra!'}
+            alertType={alertType}
+            visible={isAlertVisible}
+            onClose={() => setIsAlertVisible(false)}
+          />
+        )}
+      </View>
       {isAlertVisible && (
         <AlertComponent
           title={alertType === 'success' ? 'Success' : 'Error'}
@@ -220,7 +221,7 @@ const HomeAdminScreen = ({ navigation, route }) => {
           onClose={() => setIsAlertVisible(false)}
         />
       )}
-    </View>
+    </>
   );
 };
 
@@ -300,6 +301,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     fontWeight: '500',
+    marginVertical: 3,
   },
   productPrice: {
     fontSize: 20,
