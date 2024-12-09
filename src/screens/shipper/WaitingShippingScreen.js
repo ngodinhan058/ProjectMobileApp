@@ -246,6 +246,7 @@ function WaitingShippingScreen({ navigation }) {
                       </View>
                     ))
                   )}
+                  
                   <TouchableOpacity
                     style={[
                       styles.confirmButton,
@@ -257,6 +258,7 @@ function WaitingShippingScreen({ navigation }) {
                         "Xác nhận",
                         "Bạn có muốn cập nhật trạng thái đơn hàng không?",
                         [
+                        
                           {
                             text: "Hủy",
                             style: "cancel",
