@@ -95,7 +95,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       const userData = response.data.data.cartItem;
 
       setCartDataUser(userData);
-    
+
     } catch (error) {
       // console.log('Error fetching data:', error);
     }
@@ -148,9 +148,9 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
               <View style={styles.rate}>
                 <Text style={styles.rating}>
-                  <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
+                  <Text style={styles.star}>⭐</Text>
+                  {rating}
                 </Text>
-                <Text style={styles.review}>{review} Review</Text>
                 <TouchableOpacity onPress={DeleteOneWishListUser}>
                   <Text style={styles.heart}>
                     <Icon name="heart" size={18} color="#3669c9" />

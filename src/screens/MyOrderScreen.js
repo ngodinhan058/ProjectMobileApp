@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ScrollView, } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useWindowDimensions } from 'react-native';
@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
 import { WS_URL } from './api/configWS';
 import useWebSocket from './api/useWebSocket';
 
@@ -31,7 +32,7 @@ const MyOrderScreen = ({ route, navigation }) => {
           await fetchOrderDetails(userInfoData.userId);
         }
       } catch (error) {
-        console.error('Error fetching user info from AsyncStorage:', error);
+        console.log('Error fetching user info from AsyncStorage:', error);
       } finally {
         setLoading(false);
       }
@@ -87,7 +88,7 @@ const MyOrderScreen = ({ route, navigation }) => {
         Alert.alert('Error', 'Failed to create cart');
       }
     } catch (error) {
-      console.error('Error creating cart:', error);
+      console.log('Error creating cart:', error);
       Alert.alert('Error', 'Failed to create cart');
     }
     return userInfoData;
@@ -102,11 +103,15 @@ const MyOrderScreen = ({ route, navigation }) => {
         Alert.alert('Error', 'Failed to fetch order details');
       }
     } catch (error) {
-      console.error('Error fetching order details:', error);
+      console.log('Error fetching order details:', error);
     }
   };
 
-
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrderDetails();
+    }, [])
+  );
 
   const filterByStatus = (statuses) => {
     if (!orders) return [];
@@ -122,7 +127,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const PendingConfirmationRoute = () => (
     <FlatList
       data={filterByStatus([0])}
-      renderItem={({ item }) => <OrderItem order={item} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -134,7 +139,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const PreparingRoute = () => (
     <FlatList
       data={filterByStatus([1])}
-      renderItem={({ item }) => <OrderItem order={item} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -145,7 +150,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const PreparedRoute = () => (
     <FlatList
       data={filterByStatus([2])}
-      renderItem={({ item }) => <OrderItem order={item} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -157,7 +162,7 @@ const MyOrderScreen = ({ route, navigation }) => {
     return (
       <FlatList
         data={filterByStatus([3])}
-        renderItem={({ item }) => <OrderItem order={item} />}
+        renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
         keyExtractor={(item) => item.orderId.toString()}
         style={{ marginTop: 40 }}
         ListEmptyComponent={
@@ -170,7 +175,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const SuccessRoute = () => (
     <FlatList
       data={filterByStatus([4])}
-      renderItem={({ item }) => <OrderItem order={item} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -181,7 +186,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const CompleteRoute = () => (
     <FlatList
       data={filterByStatus([5])}
-      renderItem={({ item }) => <OrderItem order={item} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -272,12 +277,23 @@ const MyOrderScreen = ({ route, navigation }) => {
         )}
       />
 
-
+      {loading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flex: 1,
     padding: 20,

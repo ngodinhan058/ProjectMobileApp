@@ -1,44 +1,212 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, Image, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 import { Rating, AirbnbRating } from 'react-native-ratings';
+import * as ImagePicker from 'expo-image-picker';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const OrderItem = ({ order }) => { // Nhận order từ props
+
+const OrderItem = ({ order, setLoading }) => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
+  const [step, setStep] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [unreviewedProducts, setUnreviewedProducts] = useState([]);
+  const [isReviewButtonVisible, setReviewButtonVisible] = useState(true);
+  
+
+
+  useEffect(() => {
+    const fetchUnreviewedProducts = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        if (!userData) throw new Error('No user token found');
+        const { token } = JSON.parse(userData);
+
+        // Kiểm tra từng sản phẩm trong order
+        const unreviewed = await Promise.all(
+          order?.items?.[0]?.cartItem?.map(async (product) => {
+            const response = await axios.get(
+              `${BASE_URL}auth/reviews/exists?orderId=${order.orderId}&productId=${product.productId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            if (response.data === 0) {
+              return product; // Sản phẩm chưa được đánh giá
+            }
+            return null;
+          })
+        );
+
+        // Lọc và loại bỏ các sản phẩm null hoặc trùng lặp productId
+        const uniqueProducts = Array.from(
+          new Map(
+            unreviewed
+              .filter((product) => product !== null) // Loại bỏ null
+              .map((product) => [product.productId, product]) // Loại bỏ trùng lặp
+          ).values()
+        );
+
+        setUnreviewedProducts(uniqueProducts);
+
+        // Ẩn nút "Đánh Giá" nếu không còn sản phẩm chưa được đánh giá
+        setReviewButtonVisible(uniqueProducts.length > 0);
+      } catch (error) {
+        console.error('Error fetching unreviewed products:', error);
+      }
+    };
+
+    fetchUnreviewedProducts();
+  }, [order]);
+  useEffect(() => {
+    setReviewButtonVisible(unreviewedProducts.length > 0);
+  }, [unreviewedProducts]);
 
   const openModalRate = () => {
+    setStep(1);
     setModalVisible(true);
   };
-  const closeModalRate = () => setModalVisible(false);
+  const openImagePicker = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission required', 'You need to grant permission to access the gallery.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setUploadedImage(result.assets[0].uri); // Lưu đường dẫn ảnh đã chọn
+      }
+    } catch (error) {
+      console.error('Error picking an image:', error);
+    }
+  };
+  const handleProductSelect = (product) => {
+    console.log('Product ID:', product.productId);
+    setSelectedProduct(product);
+    setStep(2);
+  };
+
+  const closeModalRate = () => {
+    setModalVisible(false);
+    setStep(1);
+    setSelectedProduct(null);
+    setRating(0);
+    setComment('');
+    setUploadedImage(null);
+  };
   const handleRatingComplete = (ratingValue) => {
     setRating(ratingValue);
   };
+  const fetchAndStoreUserId = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (!userData) throw new Error('No user token found');
 
-  const handleSubmit = () => {
-    // Xử lý dữ liệu đánh giá ở đây
-    console.log('Rating:', rating);
-    console.log('Comment:', comment);
+      const { token } = JSON.parse(userData);
+      const response = await axios.get(`${BASE_URL}auth/users/myInfo`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    // Đóng modal
-    closeModalRate();
-    setRating(0);
-    setComment('');
+      const userId = response.data.data.userId;
+      await AsyncStorage.setItem('userId', userId); // Lưu userId vào AsyncStorage
+      return userId;
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      throw error;
+    }
   };
+  const handleSubmit = async () => {
+    try {
+      let userId = await AsyncStorage.getItem('userId');
+      if (!userId) {
+        userId = await fetchAndStoreUserId();
+      }
 
+      const userData = await AsyncStorage.getItem('userData');
+      if (!userData) throw new Error('No user token found');
 
+      const { token } = JSON.parse(userData);
+
+      const formData = new FormData();
+      if (uploadedImage) {
+        const imageFile = {
+          uri: uploadedImage,
+          type: 'image/jpeg',
+          name: 'review.jpg',
+        };
+        formData.append('image', imageFile);
+      }
+
+      const requestPayload = {
+        orderId: order.orderId,
+        userId,
+        productId: selectedProduct.productId,
+        comment,
+        rating,
+      };
+
+      formData.append('request', JSON.stringify(requestPayload));
+
+      const response = await axios.post(`${BASE_URL}auth/reviews/create`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Alert.alert('Success', 'Review submitted successfully!');
+
+      // Reload danh sách sản phẩm chưa được đánh giá
+      const updatedProducts = await Promise.all(
+        order?.items?.[0]?.cartItem?.map(async (product) => {
+          const response = await axios.get(
+            `${BASE_URL}auth/reviews/exists?orderId=${order.orderId}&productId=${product.productId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (response.data === 0) {
+            return product; // Sản phẩm chưa được đánh giá
+          }
+          return null;
+        })
+      );
+
+      setUnreviewedProducts(updatedProducts.filter((product) => product !== null));
+
+      closeModalRate(); // Đóng modal sau khi reload thành công
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      Alert.alert('Error', 'Failed to submit the review');
+    }
+  };
 
   const truncateName = (text) => {
     return text.length > 17 ? text.substring(0, 17) + '...' : text;
   };
   const handleCancelOrder = async () => {
-    setIsLoading(true)
+    setLoading(true)
     try {
       const requestBody = {
         status: 6,
@@ -47,6 +215,7 @@ const OrderItem = ({ order }) => { // Nhận order từ props
       const response = await axios.put(`${BASE_URL}order/change`, requestBody);
       if (response.status === 200) {
         Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
+        navigation.goBack();
       } else {
         Alert.alert('Error', 'Failed to cancel order');
       }
@@ -54,12 +223,13 @@ const OrderItem = ({ order }) => { // Nhận order từ props
       console.error('Error cancelling order:', error);
       Alert.alert('Error', 'Failed to cancel order');
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   };
 
   const handleConfirmOrder = async () => {
-    setIsLoading(true)
+    setLoading(true)
+
     try {
       const requestBody = {
         status: 1,
@@ -76,10 +246,12 @@ const OrderItem = ({ order }) => { // Nhận order từ props
       console.error('Error confirming order:', error);
       Alert.alert('Error', 'Failed to confirm order');
     } finally {
-      setIsLoading(false)
+      setLoading(false)
+
     }
   };
   const handleConfirmCompleteOrder = async () => {
+    setLoading(true)
     try {
       const requestBody = {
         status: 5,
@@ -95,6 +267,9 @@ const OrderItem = ({ order }) => { // Nhận order từ props
     } catch (error) {
       console.error('Error confirming order:', error);
       Alert.alert('Error', 'Failed to confirm order');
+    } finally {
+      setLoading(false)
+
     }
   };
 
@@ -124,7 +299,6 @@ const OrderItem = ({ order }) => { // Nhận order từ props
     <View style={styles.orderContainer}>
       <View style={styles.orderHeader}>
         <Text>{new Date(order.orderDate).toISOString().split('T')[0]}</Text>
-
         <Text style={styles.orderStatus}>{statusName}</Text>
       </View>
 
@@ -132,7 +306,6 @@ const OrderItem = ({ order }) => { // Nhận order từ props
       {order?.items?.[0]?.cartItem?.map((product, index) => (
         <View key={index} style={styles.productContainer}>
           <Image source={{ uri: product.productImage }} style={styles.productImage} />
-
           <View style={styles.productDetails}>
             <View style={styles.productInfoContainer}>
               <Text style={styles.productName}>{truncateName(product.productName)}</Text>
@@ -146,8 +319,8 @@ const OrderItem = ({ order }) => { // Nhận order từ props
             </View>
           </View>
         </View>
-
       ))}
+
 
       <View style={styles.totalContainer}>
         <Text>Tổng</Text>
@@ -210,12 +383,6 @@ const OrderItem = ({ order }) => { // Nhận order từ props
         ) : order.orderStatus === 4 ? (
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
-              {/* <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => navigation.navigate('')}
-              >
-                <Text style={styles.cancelText}>Trả Hàng</Text>
-              </TouchableOpacity> */}
             </View>
             <View style={styles.button}>
               <TouchableOpacity
@@ -226,17 +393,18 @@ const OrderItem = ({ order }) => { // Nhận order từ props
               </TouchableOpacity>
             </View>
           </View>
-        ) : order.orderStatus === 5 ? (
+        ) : order.orderStatus === 5 && isReviewButtonVisible ? (
           <View style={styles.buttonContainer}>
-
-            <View style={styles.button}>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={openModalRate}
-              >
-                <Text style={styles.confirmText}>Đánh Giá</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={openModalRate}
+            >
+              <Text style={styles.confirmText}>Đánh giá</Text>
+            </TouchableOpacity>
+          </View>
+        ) : order.orderStatus === 5 && !isReviewButtonVisible ? (
+          <View style={styles.noReviewContainer}>
+            <Text style={styles.noReviewText}></Text>
           </View>
         ) : null
       }
@@ -244,57 +412,94 @@ const OrderItem = ({ order }) => { // Nhận order từ props
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={closeModalRate}
       >
         <TouchableWithoutFeedback onPress={closeModalRate}>
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Đánh giá sản phẩm</Text>
+          {step === 1 ? (
+            <View>
+              <Text style={styles.modalTitle}>Chọn sản phẩm để đánh giá</Text>
+              <FlatList
+                data={unreviewedProducts}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', marginHorizontal: 20,}}
+                    onPress={() => handleProductSelect(item)}
+                  >
+                    <Image
+                      source={{ uri: item.productImage }}
+                      style={{
+                        width: 150,
+                        height: 150,
+                        borderRadius: 5,
+                        marginBottom: 10,
+                      }}
+                    />
+                    <View style={{ marginTop: 65, marginLeft: 10, }}>
+                      <Text style={{
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                      }}>{truncateName(item.productName)}</Text>
+                    </View>
 
-            {/* Rating */}
-            <Rating
-              type="star"
-              startingValue={0}
-              imageSize={30}
-              onFinishRating={handleRatingComplete}
-              style={{ marginVertical: 10, }}
-            />
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item, index) => index.toString()}
+                ListEmptyComponent={<Text style={styles.noReviewText}>Không có sản phẩm để đánh giá</Text>}
+              />
 
-            {/* Input comment */}
-            <TextInput
-              style={styles.commentInput}
-              placeholder="Nhập nhận xét của bạn..."
-              multiline={true}
-              value={comment}
-              onChangeText={setComment}
-            />
-
-            {/* Nút gửi */}
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>Gửi</Text>
-            </TouchableOpacity>
-          </View>
+            </View>
+          ) : (
+            <View>
+              <Text style={styles.modalTitle}>Đánh giá sản phẩm</Text>
+              {selectedProduct && (
+                <View style={styles.imageUploadContainer}>
+                  {!uploadedImage ? (
+                    <TouchableOpacity
+                      style={styles.iconContainer}
+                      onPress={openImagePicker}
+                    >
+                      <Icon name="camera" size={30} color="#3669C9" />
+                    </TouchableOpacity>
+                  ) : (
+                    <Image
+                      source={{ uri: uploadedImage }}
+                      style={styles.uploadedImage}
+                    />
+                  )}
+                </View>
+              )}
+              <Rating
+                type="star"
+                startingValue={0}
+                imageSize={30}
+                onFinishRating={handleRatingComplete}
+                style={{ marginVertical: 10 }}
+              />
+              <TextInput
+                style={styles.commentInput}
+                placeholder="Nhập nhận xét của bạn..."
+                multiline={true}
+                value={comment}
+                onChangeText={setComment}
+              />
+              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                <Text style={styles.buttonText}>Gửi</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </Modal>
-      {isLoading && (
-        <View style={styles.overlay}>
-          <ActivityIndicator size="large" color="#3669c9" />
-        </View>
-      )}
+
+
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
   loadingContainer: {
     marginTop: 150,
     flex: 1,
@@ -334,6 +539,7 @@ const styles = StyleSheet.create({
   productImage: {
     width: 80,
     height: 80,
+    borderRadius: 5,
   },
   productDetails: {
     flexDirection: 'row',
@@ -350,6 +556,7 @@ const styles = StyleSheet.create({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
+    color: '#000',
   },
   productInfo: {
     marginTop: 10,
@@ -429,16 +636,48 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 20,
     backgroundColor: '#FFF',
-    height: '50%',
+    height: '60%',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     bottom: 0,
   },
 
-  modalTitle: { fontSize: 18, fontWeight: 'bold' },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  imageUploadContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  productImageSmall: {
+    width: 50,
+    height: 50,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    width: 50, // Kích thước tương đương hình ảnh
+    height: 50,
+    backgroundColor: '#f0f0f0',
+  },
+  uploadedImage: {
+    width: 200,
+    height: 150,
+    borderRadius: 5,
+    resizeMode: 'contain'
+  },
   commentInput: {
     width: '100%',
-    height: 150,
+    height: 100,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
@@ -447,21 +686,25 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   submitButton: {
-    backgroundColor: '#3669c9',
+    backgroundColor: '#3669C9',
     padding: 10,
     borderRadius: 5,
-    width: '100%',
     alignItems: 'center',
-    marginVertical: 5,
-
+    marginTop: 10,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 18,
-
+    fontSize: 16,
   },
-
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginHorizontal: 20  // Căn đều các item trong hàng
+  },
+  noReviewText: {
+    textAlign: 'center',
+    color: '#888',
+  },
 });
 
 export default OrderItem;

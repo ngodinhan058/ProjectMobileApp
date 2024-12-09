@@ -198,8 +198,9 @@ import SuccessScreen from './src/screens/admin/SuccessScreen';
 
 import ModalConfirm from './src/screens/shipper/ModalConfirm';
 import HomeChatScreen from './src/screens/admin/chat/HomeScreen';
-import ChatScreen from './src/screens/shipper/ChatScreen';
-import ChatScreenAdmin from './src/screens/shipper/ChatScreenAdmin';
+import ChatScreen from './src/screens/chat/ChatScreen';
+import ChatScreenAdmin from './src/screens/chat/ChatScreenAdmin';
+import ChatBotScreen from './src/screens/chat/ChatBotScreen';
 
 import Header from './src/components/Header';
 import Footer from './src/components/Footer';
@@ -330,6 +331,14 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
       component: ChatScreenAdmin,
       options: {
         headerShown: false, // Ẩn header
+      },
+      showFooter: false, // Đây là một thuộc tính tùy chỉnh bạn có thể xử lý riêng trong logic của mình
+    },
+    {
+      name: 'ChatBotScreen',
+      component: ChatBotScreen,
+      options: {
+        headerShown: false, // Ẩn headerChatBotScreen
       },
       showFooter: false, // Đây là một thuộc tính tùy chỉnh bạn có thể xử lý riêng trong logic của mình
     },
@@ -679,30 +688,31 @@ function AdminDrawerNavigator() {
     <Drawer.Navigator>
       <Drawer.Screen name="Trang Chủ Admin" component={AdminHome} />
       {hasPermission('PERMISSION_PRODUCTS') && (
-        <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+        <>
+          <Drawer.Screen name="Chọn Đề Tài Slide" component={ContentAdmin} />
+          <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+          <Drawer.Screen name="Màu" component={SizeAdmin} />
+          <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
+          <Drawer.Screen name="Slide Show" component={SlideAdmin} />
+        </>
       )}
       {hasPermission('PERMISSION_CATEGORIES') && (
         <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       )}
       {hasPermission('PERMISSION_USERS') && (
-        <Drawer.Screen name="Người Dùng" component={UserAdmin} />
+        <>
+          <Drawer.Screen name="Người Dùng" component={UserAdmin} />
+          <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
+          <Drawer.Screen
+            name="Cho Phép Chức Năng"
+            component={PermissionAdmin}
+          />
+        </>
       )}
       {hasPermission('PERMISSION_SHIPMENT') && (
         <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
       )}
-      {hasPermission('PERMISSION_COLORS') && (
-        <Drawer.Screen name="Màu" component={SizeAdmin} />
-      )}
-      {hasPermission('PERMISSION_SUPPLIERS') && (
-        <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
-      )}
-      {hasPermission('PERMISSION_PERMISSIONS') && (
-        <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
-      )}
-      {hasPermission('PERMISSION_ROLES') && (
-        <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
-      )}
-      {hasPermission('PERMISSION_COUPONS') && (
+      {hasPermission('PERMISSION_COUPON') && (
         <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
       )}
       {hasPermission('PERMISSION_CHAT') && (
@@ -711,42 +721,12 @@ function AdminDrawerNavigator() {
       {hasPermission('PERMISSION_INVENTORY') && (
         <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
       )}
-      {hasPermission('PERMISSION_GETALL') && (
-        <>
-          <Drawer.Screen name="Chọn Đề Tài Slide" component={ContentAdmin} />
-          <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
-          <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
-          <Drawer.Screen name="Người Dùng" component={UserAdmin} />
-          <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
-          <Drawer.Screen name="Màu" component={SizeAdmin} />
-          <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
-          <Drawer.Screen
-            name="Cho Phép Chức Năng"
-            component={PermissionAdmin}
-          />
-          <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
-          <Drawer.Screen name="Mã Giảm Giá" component={CouponAdmin} />
-          <Drawer.Screen name="Chat" component={ChatAdmin} />
-          <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
-          <Drawer.Screen name="Slide Show" component={SlideAdmin} />
-          <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
-          <Drawer.Screen
-            name="Trang Chủ Shipper"
-            component={ShipperDrawerNavigator}
-            options={{ headerShown: false }}
-          />
-        </>
-      )}
-      {hasPermission('PERMISSION_USER') && (
-        <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
-      )}
-      {hasPermission('PERMISSION_SHIPPER') && (
-        <Drawer.Screen
-          name="Trang Chủ Shipper"
-          component={ShipperDrawerNavigator}
-          options={{ headerShown: false }}
-        />
-      )}
+      <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
+      <Drawer.Screen
+        name="Trang Chủ Shipper"
+        component={ShipperDrawerNavigator}
+        options={{ headerShown: false }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -1047,7 +1027,7 @@ export default function App() {
         }
       }
     } catch (error) {
-      console.error('Error loading cart from AsyncStorage:', error);
+      // console.error('Error loading cart from AsyncStorage:', error);
       // Check if guestId exists in AsyncStorage
       let storedUUID = await AsyncStorage.getItem('guestId');
       if (!storedUUID) {
@@ -1136,7 +1116,6 @@ export default function App() {
                 console.error('Error creating cart:', error);
               }
             }
-
             setUserData(userInfo); // Lưu thông tin người dùng vào state
 
             // Lưu thông tin người dùng vào AsyncStorage

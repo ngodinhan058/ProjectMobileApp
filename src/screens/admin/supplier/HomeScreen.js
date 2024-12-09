@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Pressable, ActivityIndicator,Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const HomeAdminScreen = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +73,7 @@ const HomeAdminScreen = ({ navigation }) => {
                     }}>{item.productSupplierName}</Text>
                 </View>
                 <Pressable>
-                    <Icon name="angle-right" size={25} color="#000" />
+                <Icon name="arrow-forward-circle-outline" size={25} color="#000" />
                 </Pressable>
             </TouchableOpacity>
         </View>
@@ -100,7 +101,12 @@ const HomeAdminScreen = ({ navigation }) => {
 
             {/* Add Button */}
             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddSupplierScreen')}>
-                <Text style={styles.addButtonText}>+</Text>
+            <LinearGradient
+          colors={['#4CAF50', '#388E3C']}
+          style={styles.addButtonGradient}
+        >
+          <Icon name="add-circle" size={40} color="#fff" />
+        </LinearGradient>
             </TouchableOpacity>
             {isLoading && (
                 <View style={styles.overlay}>
@@ -168,17 +174,27 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 30,
         right: 30,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#3669c9',
+        width: 65,
+        height: 65,
+        borderRadius: 32.5,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    addButtonText: {
-        fontSize: 40,
-        color: '#fff',
-    },
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+      },
+      addButtonGradient: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 32.5,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
 });
 
 export default HomeAdminScreen;

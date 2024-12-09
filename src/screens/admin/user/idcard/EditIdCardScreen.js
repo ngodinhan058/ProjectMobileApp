@@ -25,7 +25,7 @@ import axios from 'axios';
 const EditIdCardScreen = ({ route, navigation }) => {
   const cardInfo = route.params.iCard;
 
-  console.log('Äaaaa', cardInfo.imageFrontPath);
+  console.log('Äaaaa', cardInfo?.imageFrontPath);
 
   const onSuccess = (e) => {
     console.log(e.data); // Dữ liệu mã QR được quét
@@ -36,10 +36,10 @@ const EditIdCardScreen = ({ route, navigation }) => {
     cardInfo?.idCardNumber ? cardInfo?.idCardNumber : ''
   );
   const [selectedImageFront, setSelectedFront] = useState(
-    cardInfo.imageFrontPath
+    cardInfo?.imageFrontPath
   );
   const [selectedImageBack, setSelectedImageBack] = useState(
-    cardInfo.imageFrontPath
+    cardInfo?.imageFrontPath
   );
 
   const [dateOfBirth, setDateOfBirth] = useState(
