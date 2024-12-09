@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { BASE_URL } from '../../api/config';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function DetailScreen({ route, navigation }) {
     const { id, name, image } = route.params;
@@ -100,17 +101,32 @@ function DetailScreen({ route, navigation }) {
                     </View>
             </ScrollView>
 
-            {/* Add Button */}
             <TouchableOpacity style={styles.editButton} onPress={toggleMenu}>
-                <Animated.Text style={[styles.editButtonText, { transform: [{ rotate: rotateIcon }] }]}>
-                    ▶
-                </Animated.Text>
+                <Animated.View style={{ transform: [{ rotate: rotateIcon }] }}>
+                    <Icon name="cog" size={30} color="#fff" />
+                </Animated.View>
             </TouchableOpacity>
 
-            {/* Các nút con */}
             <Animated.View style={[styles.subButtonPen, { bottom: position2 }]}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('EditSupplierScreen', { id, name, image })}>
-                    <Icon name="pencil" size={20} color="#fff" />
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => {
+                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
+                        navigation.navigate('EditProductScreen', {
+                            product: productsState,
+                            postDTO: {
+                                postName,
+                                postContent,
+                                postImagePath,
+                                postType,
+                                postStatusId: postStatus?.postStatusId
+                            }
+                        });
+                    }}
+                >
+                    <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.iconButtonGradient}>
+                        <Icon name="pencil" size={20} color="#fff" />
+                    </LinearGradient>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -124,11 +140,13 @@ function DetailScreen({ route, navigation }) {
                                 text: "Huỷ",
                                 style: "cancel"
                             },
-                            { text: "Có", onPress: deleteSize }
+                            { text: "Có", onPress: deleteProduct }
                         ]
                     );
                 }}>
-                    <Icon name="trash" size={20} color="#fff" />
+                    <LinearGradient colors={['#FF5252', '#FF1744']} style={styles.iconButtonGradient}>
+                        <Icon name="trash" size={20} color="#fff" />
+                    </LinearGradient>
                 </TouchableOpacity>
             </Animated.View>
         </View>
@@ -246,16 +264,13 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginLeft: 10,
         marginBottom: 10,
-
     },
-
     subButton: {
         position: 'absolute',
         right: 35,
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#ff5757',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -265,13 +280,19 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#3669c9',
         justifyContent: 'center',
         alignItems: 'center',
     },
     iconButton: {
         width: 50,
         height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iconButtonGradient: {
+        width: '100%',
+        height: '100%',
         borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',

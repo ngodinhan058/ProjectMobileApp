@@ -84,7 +84,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       });
       return response.data.data; // Trả về dữ liệu sản phẩm
     } catch (error) {
-      console.error('Lỗi khi lấy dữ liệu sản phẩm:', error);
+      console.log('Lỗi khi lấy dữ liệu sản phẩm:', error);
       throw error; // Ném lỗi để xử lý ở nơi gọi
     }
   };
@@ -102,7 +102,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       });
       return response.data.data; // Trả về dữ liệu sản phẩm liên quan
     } catch (error) {
-      console.error('Lỗi khi lấy sản phẩm liên quan:', error);
+      console.log('Lỗi khi lấy sản phẩm liên quan:', error);
       throw error; // Ném lỗi để xử lý ở nơi gọi
     }
   };
@@ -194,7 +194,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         setUserInfo(userInfoData); // Lưu vào state
       }
     } catch (error) {
-      console.error('Error fetching user info from AsyncStorage:', error);
+      console.log('Error fetching user info from AsyncStorage:', error);
     }
   };
 
@@ -252,7 +252,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
         setUUID(storedUUID); // Lưu giá trị thực vào state
       } catch (error) {
-        console.error("Error retrieving guestId:", error);
+        console.log("Error retrieving guestId:", error);
       }
     };
 
@@ -269,7 +269,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
         }
       } catch (error) {
-        console.error("Error retrieving guestId:", error);
+        console.log("Error retrieving guestId:", error);
       }
     };
 
@@ -366,7 +366,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           alertType: 'success',
         })
       } else {
-        console.error("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
+        console.log("Không thể thêm sản phẩm vào giỏ hàng:", response.data.message);
       }
     }
   };
@@ -463,7 +463,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             }
           }
         } catch (innerError) {
-          console.error('Error in inner async call:', innerError);
+          console.log('Error in inner async call:', innerError);
         } finally {
           closeModalBuy();
           navigation.navigate('BuyNow', {
@@ -702,12 +702,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         }
       } catch (error) {
         if (error.response) {
-          console.error(
+          console.log(
             "Không thể thêm sản phẩm vào giỏ hàng:",
             error.response.data.message || "Lỗi không xác định"
           );
         } else {
-          console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
+          console.log("Lỗi mạng hoặc lỗi không xác định:", error.message);
         }
       }
     }
@@ -743,13 +743,13 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
           closeModalUnLike();
         } else {
-          // console.error("Không thể xoá:", response.data.message || "Lỗi không xác định");
+          // console.log("Không thể xoá:", response.data.message || "Lỗi không xác định");
           setAlertTypeLike('error')
           setAlertVisibleLike(true)
           setTitleAlert('Không thể thêm sản phẩm vào giỏ hàng')
         }
       } catch (error) {
-        // console.error("Lỗi mạng hoặc lỗi không xác định:", error.message);
+        // console.log("Lỗi mạng hoặc lỗi không xác định:", error.message);
         setAlertTypeLike('error')
         setAlertVisibleLike(true)
         setTitleAlert('Không thể thêm sản phẩm vào giỏ hàng')
@@ -793,7 +793,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       const response = await axios.get(reviewsApiUrl);
       setReviews(response.data);
     } catch (error) {
-      // console.error('Lỗi khi lấy review sản phẩm:', error);
+      // console.log('Lỗi khi lấy review sản phẩm:', error);
     }
   };
 
@@ -848,7 +848,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       });
       setReviews(updatedReviews);
     } catch (error) {
-      console.error("Failed to toggle like:", error);
+      console.log("Failed to toggle like:", error);
       Alert.alert("Lỗi", "Không thể cập nhật trạng thái thích.");
     }
   };
@@ -872,7 +872,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         }
       }
     } catch (error) {
-      console.error("Lỗi khi lọc đánh giá theo sao:", error);
+      console.log("Lỗi khi lọc đánh giá theo sao:", error);
       Alert.alert("Lỗi", "Không thể lọc đánh giá.");
     } finally {
       setLoading(false);
@@ -917,7 +917,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setUploadedImage(null);
       fetchProductReviews(id);
     } catch (error) {
-      console.error('Lỗi gửi phản hồi:', error);
+      console.log('Lỗi gửi phản hồi:', error);
       Alert.alert('Lỗi', 'Không thể gửi phản hồi.');
     }
   };
@@ -945,7 +945,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         console.log('Image selection was canceled');
       }
     } catch (error) {
-      console.error('Error picking an image:', error);
+      console.log('Error picking an image:', error);
     }
   };
 
@@ -1147,7 +1147,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   {/* <Text style={styles.reviewProductTitle}>({review})</Text> */}
                 </View>
                 <View style={styles.productStar}>
-                  <Image source={require('../assets/star.png')} />
+                  <Text style={styles.star}>⭐</Text>
                   <Text>{productsState.productRating}</Text>
                 </View>
               </View>
@@ -1193,6 +1193,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                       createdAt={item?.createdAt}
                       isLikedByCurrentUser={item?.isLikedByCurrentUser}
                       children={item?.children}
+                      // userId={item?.userId}
 
                     />
                   );

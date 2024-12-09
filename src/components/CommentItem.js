@@ -5,31 +5,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '../screens/api/config';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
 
-const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, createdAt, isLikedByCurrentUser, children }) => {
+const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, createdAt, isLikedByCurrentUser, children, userId }) => {
   const [userData, setUserData] = useState({});
+  const [user, setUser] = useState({});
   const [replyModalVisible, setReplyModalVisible] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [commentAdmin, setComment] = useState('');
+  const [selectedReview, setSelectedReview] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await AsyncStorage.getItem('userData');
+        const userInfo = await AsyncStorage.getItem('userInfo');
+        console.log(userInfo);
+
         if (!userData) throw new Error('No user token found');
 
         const { token, role } = JSON.parse(userData);
         setUserData(role)
-        const response = await axios.get(`${BASE_URL}auth/users/myInfo`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        // const userInfo = response.data.data;
-
-        // setUser({
-        //   id: userInfo.userId,
-        //   name: `${userInfo.userLastName} ${userInfo.userFirstName}`,
-        // });
+        setUser(userInfo)
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       }
@@ -78,8 +75,8 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
         });
       }
       formData.append('request', JSON.stringify({
-        parentId: selectedReview?.reviewId,
-        userId: user.id,
+        parentId: selectedReview,
+        userId: user.userId,
         commentAdmin,
       }));
 
@@ -127,7 +124,7 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
       console.error('Error picking an image:', error);
     }
   };
-  const isReviewOwner = (reviewUserId) => reviewUserId === user.id;
+  const isReviewOwner = (reviewUserId) => reviewUserId === user.userId;
   return (
     <>
       <View style={styles.card}>
@@ -141,11 +138,8 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
           <View style={styles.ratingContainer}>
             <Text style={styles.ratingText}>Lượt đánh giá: </Text>
             {Array.from({ length: Math.round(rating) }).map((_, index) => (
-              <Image
-                key={index}
-                style={styles.starIcon}
-                source={require('../assets/star.png')}
-              />
+              <Text key={index} style={styles.star}>⭐</Text>
+
             ))}
           </View>
           <Text style={styles.reviewComment}>Nội dung: {comment}</Text>
@@ -164,14 +158,14 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
             </TouchableOpacity> */}
             {hasRole("ROLE_ADMIN") ? (<TouchableOpacity
               onPress={() => {
-                // setSelectedReview(item);
-                // setModalVisible(true);
+                setSelectedReview(reviewId);
+                setReplyModalVisible(true);
               }}
               style={styles.replyButton}
             >
               <Text style={styles.replyButtonText}>Phản hồi</Text>
             </TouchableOpacity>) : (<TouchableOpacity></TouchableOpacity>)}
-            
+
             {isLikedByCurrentUser ? <TouchableOpacity
               style={{
                 borderColor: '#ccc',
@@ -235,7 +229,7 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
 
 
           </View>
-          {/* {isReviewOwner(item.userId) && (
+          {/* {isReviewOwner(userId) && (
             <View style={styles.actionButtons}>
               <TouchableOpacity
                 style={styles.deleteButton}

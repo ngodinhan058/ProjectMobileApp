@@ -9,7 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 
-const OrderItem = ({ order }) => {
+const OrderItem = ({ order, setLoading }) => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [step, setStep] = useState(1);
@@ -206,6 +206,7 @@ const OrderItem = ({ order }) => {
     return text.length > 17 ? text.substring(0, 17) + '...' : text;
   };
   const handleCancelOrder = async () => {
+    setLoading(true)
     try {
       const requestBody = {
         status: 6,
@@ -221,10 +222,14 @@ const OrderItem = ({ order }) => {
     } catch (error) {
       console.error('Error cancelling order:', error);
       Alert.alert('Error', 'Failed to cancel order');
+    } finally {
+      setLoading(false)
     }
   };
 
   const handleConfirmOrder = async () => {
+    setLoading(true)
+
     try {
       const requestBody = {
         status: 1,
@@ -240,9 +245,13 @@ const OrderItem = ({ order }) => {
     } catch (error) {
       console.error('Error confirming order:', error);
       Alert.alert('Error', 'Failed to confirm order');
+    } finally {
+      setLoading(false)
+
     }
   };
   const handleConfirmCompleteOrder = async () => {
+    setLoading(true)
     try {
       const requestBody = {
         status: 5,
@@ -258,6 +267,9 @@ const OrderItem = ({ order }) => {
     } catch (error) {
       console.error('Error confirming order:', error);
       Alert.alert('Error', 'Failed to confirm order');
+    } finally {
+      setLoading(false)
+
     }
   };
 

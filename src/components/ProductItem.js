@@ -345,9 +345,9 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
               <View style={styles.rate}>
                 <Text style={styles.rating}>
-                  <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
+                <Text style={styles.star}>⭐</Text>
+                {rating}
                 </Text>
-                <Text style={styles.review}>{review} Review</Text>
                 {liked ?
                   Array.isArray(size) ? (
                     (<TouchableOpacity onPress={openModalUnLike}>

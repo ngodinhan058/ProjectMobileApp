@@ -66,7 +66,7 @@ const CompareModal = ({ visible, products, onClose, onApply }) => {
 
 
     return (
-        <Modal visible={visible} animationType="slide" transparent={true}>
+        <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                     <Text style={styles.title}>Chọn sản phẩm để so sánh</Text>

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import useWebSocket from '../api/useWebSocket';
 import { BASE_URL } from '../api/config';
+import { SOCKET_URL } from '../api/config_onlyURL';
 import { url } from '../api/url';
 
 
@@ -36,7 +37,7 @@ const ChatScreen = ({ navigation, route }) => {
 
   // Kết nối WebSocket
   useEffect(() => {
-    const socketUrl = `http://${url}/ws`;
+    const socketUrl = `${SOCKET_URL}/ws`;
     // const socketUrl = `https://${url}/ws`;
     const webSocketClient = useWebSocket(socketUrl, handleNewMessage);
     webSocketClientRef.current = webSocketClient;

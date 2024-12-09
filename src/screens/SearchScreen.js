@@ -45,63 +45,73 @@ const SearchScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     const initializeData = async () => {
-      const savedData = await loadData(SEARCH_KEY);
-      setRecentSearches(savedData);
+      try {
+        const savedData = await loadData(SEARCH_KEY); // Tải dữ liệu từ AsyncStorage
+        if (savedData) {
+          setRecentSearches(JSON.parse(savedData)); // Parse chuỗi JSON để lấy mảng
+        } else {
+          setRecentSearches([]); // Đặt giá trị mặc định nếu không có dữ liệu
+        }
+      } catch (error) {
+        console.log('Error loading recent searches:', error);
+      }
     };
-
-    initializeData(); // Call the combined function
-  }, [searchQuery]);
+  
+    initializeData(); // Gọi hàm khởi tạo
+  }, []);
 
   const handleMemory = async () => {
-    if (recentSearches.includes(searchQuery) || searchQuery.length === 0) {
-      return; // Early return if term already exists
+    if (!searchQuery || searchQuery.length === 0 || recentSearches.includes(searchQuery)) {
+      return; // Không làm gì nếu từ khóa đã tồn tại hoặc chuỗi trống
     }
-
-    // Update the state with the new term
+  
     const updatedSearches = [...recentSearches, searchQuery];
-    g;
     try {
-      // Save the updated searches to AsyncStorage
-      await saveData(SEARCH_KEY, JSON.stringify(updatedSearches));
-
-      // Update the state after saving
-      setRecentSearches(updatedSearches);
-
-      // Update the search query
-      setSearchQuery(term);
+      await saveData(SEARCH_KEY, JSON.stringify(updatedSearches)); // Lưu vào AsyncStorage
+      setRecentSearches(updatedSearches); // Cập nhật state
     } catch (error) {
       console.log('Error saving recent searches:', error);
     }
-    // Navigate to the search screen with the current query
   };
-  console.log('äsâsas', recentSearches);
 
   const handleSearch = () => {
-    handleMemory();
-    setToggleItem(true);
+    handleMemory(); // Lưu từ khóa mới vào bộ nhớ
+    setToggleItem(true); // Hiển thị giao diện tìm kiếm
   };
 
   const toggleFilterModal = () => {
     setIsFilterModalVisible(!isFilterModalVisible);
   };
 
+  // const fetchData = async (url) => {
+  //   setLoading(true);
+  //   try {
+  //     const productsResponse = await axios.get(url);
+
+  //     const productsData = productsResponse.data.data.content;
+
+  //     setSuggestion(productsData);
+  //   } catch (error) {
+  //     console.log('Error fetching data:', error);
+  //   } finally {
+  //     setTimeout(() => {
+  //       setLoading(false);
+  //     }, 1000);
+  //   }
+
+  //   setLoading(false);
+  // };
   const fetchData = async (url) => {
     setLoading(true);
     try {
       const productsResponse = await axios.get(url);
-
       const productsData = productsResponse.data.data.content;
-
-      setSuggestion(productsData);
+      setSuggestion(productsData); // Cập nhật gợi ý
     } catch (error) {
       console.log('Error fetching data:', error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 1000);
+      setLoading(false); // Dừng trạng thái loading
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -162,25 +172,28 @@ const SearchScreen = ({ navigation, route }) => {
     setIsFilterModalVisibleMemory(!isFilterModalVisibleMemory);
   };
 
-  const handleRecentSearchClick = (term) => {
-    // Prevent duplicate entries
+  const handleRecentSearchClick = async (item) => {
+    setSearchQuery(item);
     setToggleItem(true);
-    setSearchQuery(term);
+      if (!recentSearches.includes(item)) {
+      const updatedSearches = [...recentSearches, item];
+      try {
+        await saveData(SEARCH_KEY, JSON.stringify(updatedSearches)); // Lưu vào AsyncStorage
+        setRecentSearches(updatedSearches); // Cập nhật state
+      } catch (error) {
+        console.log('Error saving recent search:', error);
+      }
+    }
   };
+  
 
-  const removeSearchTerm = async (term) => {
-    const updatedSearches = recentSearches.filter((item) => item !== term);
+  const removeSearchTerm = async (item) => {
+    const updatedSearches = recentSearches.filter((term) => term !== item);
     try {
-      // Save the updated searches to AsyncStorage
-      await saveData(SEARCH_KEY, JSON.stringify(updatedSearches));
-
-      // Update the state after saving
-      setRecentSearches(updatedSearches);
-
-      // Uncomment to navigate to SearchScreen if needed
-      //navigation.replace('SearchScreen', { query: term });
+      await saveData(SEARCH_KEY, JSON.stringify(updatedSearches)); // Cập nhật AsyncStorage
+      setRecentSearches(updatedSearches); // Cập nhật state
     } catch (error) {
-      console.log('Error saving recent searches:', error);
+      console.log('Error removing search term:', error);
     }
   };
 
@@ -220,13 +233,13 @@ const SearchScreen = ({ navigation, route }) => {
   );
   const searchInputRef = useRef(null);
   useEffect(() => {
-    // Delay to ensure the screen is fully rendered before focusing
     setTimeout(() => {
       if (searchInputRef.current) {
-        searchInputRef.current.focus();
+        searchInputRef.current.focus(); // Focus vào ô nhập liệu sau khi render
       }
-    }, 100); // Delay of 100ms
+    }, 100);
   }, []);
+  
   const handleSearchQuery = (e) => {
     setToggleItem(false);
     setSearchQuery(e);
@@ -322,7 +335,7 @@ const SearchScreen = ({ navigation, route }) => {
       {!toggleItem && !searchQuery && (
         // Show Recent Searches if toggleItem is false
         <View style={styles.recentSearchesContainer}>
-          <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
+          <Text style={styles.recentSearchesTitle}>Đã Tìm Kiếm</Text>
 
           <ScrollView contentContainerStyle={styles.listContent}>
             {recentSearchesShow.map((item, index) => (
@@ -355,7 +368,7 @@ const SearchScreen = ({ navigation, route }) => {
             }}
           >
             <Text style={{ color: '#C4C5C4', textAlign: 'center' }}>
-              {isFilterModalVisibleMemory ? 'Collapse' : 'Show More'}
+              {isFilterModalVisibleMemory ? 'Ẩn Bớt' : 'Hiện Thêm'}
             </Text>
           </TouchableOpacity>
         </View>

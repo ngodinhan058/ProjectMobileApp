@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Image,
   StyleSheet,
 } from 'react-native';
-import { chatDiscussion } from '../api/GeminiService'; // API được xây dựng trước đó
+import { chatDiscussion, generateContent } from '../api/GeminiService'; // API được xây dựng trước đó
 import CompareModal from "../../components/CompareModal";
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
@@ -17,14 +17,6 @@ import { BASE_URL } from '../api/config';
 const ChatScreen = ({ route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProductsState] = useState([]);
-  // const products = [
-  //   { id: "1", name: "Sản phẩm A" },
-  //   { id: "2", name: "Sản phẩm B" },
-  //   { id: "3", name: "Sản phẩm C" },
-  //   { id: "4", name: "Sản phẩm D" },
-  // ];
-
-
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
@@ -43,51 +35,46 @@ const ChatScreen = ({ route }) => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
-  const handleCompare = (id1, id2) => {
+  const handleCompare = useCallback((id1, id2) => {
     setSelectedProducts([id1, id2]);
-    sendMessageCompa(`Hãy so sánh 2 sản phẩm ${id1} và ${id2}`, true);
-    setSelectedProducts([])
-  };
-
+    sendMessageCompa('Hãy so sánh 2 sản phẩm', [id1, id2], true);
+  }, []);
+  
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
 
-  const sendMessageCompa = async (message, isComparing = false) => {
-    if (isComparing) {
-      const comparingMessage = {
-        id: Date.now().toString(),
-        text: 'Hãy so sánh 2 sản phẩm trên',
-        isSender: true,
+  // Hàm gửi tin nhắn so sánh sản phẩm
+  const sendMessageCompa = async (message, productId) => {
+    const comparingMessage = {
+      id: Date.now().toString(),
+      text: 'Hãy so sánh 2 sản phẩm trên',
+      isSender: true,
+    };
+    setMessages((prevMessages) => [...prevMessages, comparingMessage]);
+    try {
+      const responseText = await generateContent(message, productId[0], productId[1]);
+      const botMessage = {
+        id: (Date.now() + 1).toString(),
+        text: responseText,
+        isSender: false,
       };
-      setMessages((prevMessages) => [...prevMessages, comparingMessage]);
-      try {
-        const responseText = await chatDiscussion(message.trim()); // Gửi đến API
-        const botMessage = {
-          id: (Date.now() + 1).toString(),
-          text: responseText,
-          isSender: false,
-        };
-        setMessages((prevMessages) => [...prevMessages, botMessage]);
-      } catch (error) {
-        console.error('Error sending message:', error);
-        const errorMessage = {
-          id: (Date.now() + 2).toString(),
-          text: 'Lỗi khi gửi tin nhắn. Vui lòng thử lại.',
-          isSender: false,
-        };
-        setMessages((prevMessages) => [...prevMessages, errorMessage]);
-      }
-
-      setInputText('');
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage = {
+        id: (Date.now() + 2).toString(),
+        text: 'Lỗi khi gửi tin nhắn. Vui lòng thử lại.',
+        isSender: false,
+      };
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
     }
-
-
   };
+
+  // Hàm gửi tin nhắn thông thường
   const sendMessage = async () => {
     if (inputText.trim()) {
-      // Hiển thị tin nhắn của người dùng
       const userMessage = {
         id: Date.now().toString(),
         text: inputText.trim(),
@@ -96,7 +83,7 @@ const ChatScreen = ({ route }) => {
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
       try {
-        const responseText = await chatDiscussion(inputText.trim()); // Gửi đến API Gemini
+        const responseText = await chatDiscussion(inputText.trim());
         const botMessage = {
           id: (Date.now() + 1).toString(),
           text: responseText,
@@ -112,38 +99,65 @@ const ChatScreen = ({ route }) => {
         };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
       }
-
       setInputText('');
     }
   };
 
+  // Hiển thị từng chữ cho tin nhắn của chatbot
+  const TypingMessage = React.memo(({ text }) => {
+    const [displayedText, setDisplayedText] = useState('');
+    const typingSpeed = 10;
 
-  const renderMessage = ({ item }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.isSender ? styles.sender : styles.receiver,
-      ]}
-    >
-      <Text style={item.isSender ? styles.messageTextSender : styles.messageText}>
-        {item.text}
-      </Text>
-      {selectedProducts.length === 2 && (
-        <View>
-          {messages.some((msg) => msg.text === 'Hãy so sánh 2 sản phẩm trên') && (
-            <Text style={styles.comparingText}>Hãy so sánh 2 sản phẩm trên</Text>
-          )}
-        </View>
-      )}
-    </View>
-  );
+    useEffect(() => {
+      let index = 0;
+      setDisplayedText(''); // Reset text mỗi khi nhận được text mới
+      const interval = setInterval(() => {
+        if (index < text.length) {
+          setDisplayedText((prev) => prev + text[index]);
+          index++;
+        } else {
+          clearInterval(interval);
+        }
+      }, typingSpeed);
+
+      return () => clearInterval(interval); // Cleanup interval khi component unmount
+    }, [text]);
+
+    return <Text>{displayedText}</Text>;
+  });
+
+
+  // Render từng tin nhắn
+
+  const renderMessage = useCallback(({ item, index }) => {
+    const isLastMessage = index === messages.length - 1;
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          item.isSender ? styles.sender : styles.receiver,
+        ]}
+      >
+        {item.isSender ? (
+          <Text style={styles.messageTextSender}>{item.text}</Text>
+        ) : (
+          isLastMessage ? (
+            <TypingMessage text={item.text} />
+          ) : (
+            <Text style={styles.messageText}>{item.text}</Text>
+          )
+        )}
+      </View>
+    );
+  }, [messages]);
+  
+
 
   useEffect(() => {
     if (messages.length > 0) {
       flatListRef.current?.scrollToEnd({ animated: true });
     }
   }, [messages]);
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -185,17 +199,20 @@ const ChatScreen = ({ route }) => {
           />
         </TouchableOpacity>
       </View>
-      <CompareModal
-        visible={isModalVisible}
-        products={products}
-        onClose={() => setIsModalVisible(false)}
-        onApply={handleCompare}
-      />
-      {selectedProducts.length === 2 && (
+      {isModalVisible && (
+        <CompareModal
+          visible={isModalVisible}
+          products={products}
+          onClose={() => setIsModalVisible(false)}
+          onApply={handleCompare}
+        />
+      )}
+
+      {/* {selectedProducts.length === 2 && (
         <Text>
           Bạn đã chọn: {selectedProducts[0]} và {selectedProducts[1]}
         </Text>
-      )}
+      )} */}
     </View>
   );
 };

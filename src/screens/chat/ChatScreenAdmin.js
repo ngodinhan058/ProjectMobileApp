@@ -8,22 +8,43 @@ import {
   Image,
   StyleSheet,
 } from 'react-native';
-import { Client as StompClient } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import useWebSocket from '../api/useWebSocket';
 import { BASE_URL } from '../api/config';
-import { SOCKET_URL} from '../api/config_onlyURL'
+import { SOCKET_URL } from '../api/config_onlyURL';
 
 const ChatScreen = ({ navigation, route }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
-  const stompClientRef = useRef(null);
+  const webSocketClientRef = useRef(null); // Ref để lưu WebSocket client
 
-  const { email, userFirstName, userLastName } = route.params;
-  console.log("idádasd",email);
-  
-  // Lấy tin nhắn từ cơ sở dữ liệu
+  const { email } = route.params;
+
+  // Hàm nhận tin nhắn từ WebSocket
+  const handleNewMessage = (message) => {
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      {
+        id: Date.now().toString(),
+        text: message.content,
+        isSender: message.sender === email,
+      },
+    ]);
+  };
+
+  // Kết nối WebSocket
+  useEffect(() => {
+    const socketUrl = `${SOCKET_URL}/ws`;
+
+    const webSocketClient = useWebSocket(socketUrl, handleNewMessage);
+    webSocketClientRef.current = webSocketClient; // Lưu WebSocket client vào ref
+
+    return () => {
+      webSocketClient.deactivate(); // Đóng kết nối khi component unmount
+    };
+  }, []);
+
+  // Lấy tin nhắn từ cơ sở dữ liệu khi mở màn hình
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -43,50 +64,11 @@ const ChatScreen = ({ navigation, route }) => {
     };
 
     fetchMessages();
-  }, []);
+  }, [email]);
 
-  // Kết nối WebSocket
-  useEffect(() => {
-    const socketUrl = `${SOCKET_URL}/ws/chat`;
-    const stompClient = new StompClient({
-      brokerURL: socketUrl,
-      connectHeaders: {},
-      debug: (str) => console.log(str),
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      webSocketFactory: () => new SockJS(socketUrl),
-    });
-
-    stompClient.onConnect = () => {
-      console.log('Connected to WebSocket');
-      stompClient.subscribe('/topic/messages', (messageOutput) => {
-        const message = JSON.parse(messageOutput.body);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: Date.now().toString(),
-            text: message.content,
-            isSender: message.sender === 'admin@gmail.com',
-          },
-        ]);
-      });
-    };
-
-    stompClient.onStompError = (error) => {
-      console.error('STOMP Error:', error);
-    };
-
-    stompClient.activate();
-    stompClientRef.current = stompClient;
-
-    return () => {
-      stompClient.deactivate();
-    };
-  }, []);
-
+  // Gửi tin nhắn
   const sendMessage = () => {
-    if (inputText.trim()) {
+    if (inputText.trim() && webSocketClientRef.current.connected) {
       const message = {
         sender: 'admin@gmail.com',
         receiver: email,
@@ -94,15 +76,22 @@ const ChatScreen = ({ navigation, route }) => {
         timestamp: new Date().toISOString(),
       };
 
-      if (stompClientRef.current && stompClientRef.current.connected) {
-        stompClientRef.current.publish({
-          destination: '/app/chat',
-          body: JSON.stringify(message),
-        });
-        setInputText('');
-      } else {
-        console.error('STOMP client is not connected');
-      }
+      webSocketClientRef.current.publish({
+        destination: '/app/chat',
+        body: JSON.stringify(message),
+      });
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now().toString(),
+          text: inputText.trim(),
+          isSender: true,
+        },
+      ]);
+      setInputText('');
+    } else {
+      console.error('STOMP client is not connected or input is empty');
     }
   };
 
@@ -129,24 +118,6 @@ const ChatScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="angle-left" size={30} color="#000" />
-        </TouchableOpacity>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>{email}</Text>
-          <View style={styles.onlineStatusContainer}>
-            <View style={styles.onlineDot} />
-            <Text style={styles.onlineText}>Online</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Messages */}
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -155,11 +126,10 @@ const ChatScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Input */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Nhập Tin Nhắn Của Bạn"
+          placeholder="Nhập tin nhắn"
           value={inputText}
           onChangeText={setInputText}
         />
@@ -178,45 +148,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingHorizontal: 10,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f1f1',
-    backgroundColor: '#fff',
-    marginBottom: 10,
-  },
-  backButton: {
-    paddingRight: 10,
-  },
-  headerTextContainer: {
-    flexDirection: 'column',
-    marginLeft: 10,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#3669c9',
-  },
-  onlineStatusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'green',
-    marginRight: 5,
-  },
-  onlineText: {
-    color: 'green',
+    padding: 10,
   },
   messageContainer: {
     padding: 15,
@@ -233,38 +165,25 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   messageText: {
-    color: '#000',
     fontSize: 16,
   },
   messageTextSender: {
-    color: '#fff',
     fontSize: 16,
+    color: '#fff',
   },
   inputContainer: {
-    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
   },
   input: {
     flex: 1,
-    borderRadius: 50,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 4,
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#f1f1f1',
   },
   sendButton: {
-    position: 'absolute',
-    right: '6%',
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    marginLeft: 10,
   },
 });
 
