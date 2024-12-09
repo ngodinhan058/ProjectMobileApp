@@ -803,7 +803,7 @@ function ShipperDrawerNavigator() {
     >
       <Drawer.Screen
         name="Trang Chủ"
-        component={Map}
+        component={ShipperHome}
         options={{
           drawerIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />
