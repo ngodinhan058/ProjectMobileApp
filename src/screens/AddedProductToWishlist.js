@@ -24,7 +24,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from './api/config';
 import AlertComponent from '../components/AlertComponent';
+import CommentItem from '../components/CommentItem';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 function AddedProductToWishlist({ route, navigation, onScroll }) {
   const scrollRef = React.useRef();
@@ -44,6 +47,15 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [alertVisibleLike, setAlertVisibleLike] = useState(false);
   const [alertTypeLike, setAlertTypeLike] = useState('success');
   const [titleAlert, setTitleAlert] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const [ratings, setRatings] = useState({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [selectedRating, setSelectedRating] = useState(null);
+  const [comment, setComment] = useState('');
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [replyModalVisible, setReplyModalVisible] = useState(false);
 
   useEffect(() => {
     if (alertVisible) {
@@ -164,25 +176,29 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setSelectedSize(sizeName);
     }
   };
+  const handleSelectSizeQuantity = (quantity) => {
+    // Nếu kích thước đã được chọn, nhấn lần nữa sẽ hủy chọn
+    setSelectedSizesQuantity(quantity);
+
+  };
 
   const [userInfo, setUserInfo] = useState(null);
+  const fetchUserInfo = async () => {
+    try {
+      // Lấy dữ liệu từ AsyncStorage
+      const userInfoString = await AsyncStorage.getItem('userInfo');
+
+      // Nếu có dữ liệu thì parse nó thành JSON
+      if (userInfoString) {
+        const userInfoData = JSON.parse(userInfoString);
+        setUserInfo(userInfoData); // Lưu vào state
+      }
+    } catch (error) {
+      console.error('Error fetching user info from AsyncStorage:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        // Lấy dữ liệu từ AsyncStorage
-        const userInfoString = await AsyncStorage.getItem('userInfo');
-
-        // Nếu có dữ liệu thì parse nó thành JSON
-        if (userInfoString) {
-          const userInfoData = JSON.parse(userInfoString);
-          setUserInfo(userInfoData); // Lưu vào state
-        }
-      } catch (error) {
-        console.error('Error fetching user info from AsyncStorage:', error);
-      }
-    };
-
     fetchUserInfo();
   }, []);
   // console.log(userInfo);
@@ -190,7 +206,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   //Cart
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState('');
   const [cartData, setCartData] = useState([]);
   const [idCart, setIdCart] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -226,10 +242,14 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   }, [selectedSize]);
 
   const [uuid, setUUID] = useState("");
+  const [user, setUser] = useState("");
   useEffect(() => {
     const fetchUUID = async () => {
       try {
         const storedUUID = await AsyncStorage.getItem("guestId");
+        const cartGuestId = await AsyncStorage.getItem('cartGuestId');
+        console.log("cartGuestId", cartGuestId);
+
         setUUID(storedUUID); // Lưu giá trị thực vào state
       } catch (error) {
         console.error("Error retrieving guestId:", error);
@@ -238,10 +258,29 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     fetchUUID();
   }, []);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const savedCart = await AsyncStorage.getItem("userData");
 
-  console.log(uuid); 
+        if (savedCart) {
+          const { username, token } = JSON.parse(savedCart);
+          setUser({ username, token });
+
+        }
+      } catch (error) {
+        console.error("Error retrieving guestId:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+
 
   const handleAddToCartUser = async () => {
+    console.log("selectedSizesQuantity", selectedSizesQuantity);
+
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -257,6 +296,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setAlertType('error');
       setAlertVisible(true);
       setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+    if (quantity > selectedSizesQuantity) {
+      setError(`Sản phẩm hiện chỉ còn: ${'\n'}Số Lượng: ${selectedSizesQuantity}, Màu: ${selectedSize}`);
+      setAlertType('error');
+      setAlertVisible(true);
       return;
     }
 
@@ -303,7 +348,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             {
               text: 'Xem Chi Tiết',
               onPress: async () => {
-                navigation.navigate('OrderConfirmationScreen', { order: response.data.order });
+                navigation.navigate('OrderConfirmationScreen', { orderId: userInfo.cartId });
               },
             },
           ],
@@ -315,7 +360,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       // console.log(response);
 
       if (response.status === 200) {
-        console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+        // console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
         closeModalBuy();
         navigation.navigate('AddToCartScreen', {
           alertVisible: true,
@@ -326,8 +371,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       }
     }
   };
-
   const handleBuyNowUser = async () => {
+    const selectedProductSize = productsState.productSizes.find(
+      (size) => size.productSizeName === selectedSize
+    );
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -345,7 +392,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setTimeout(() => setErrorCheck(true), 0);
       return;
     }
-
+    if (quantity > selectedSizesQuantity) {
+      setError(`Sản phẩm hiện chỉ còn: ${'\n'}Số Lượng: ${selectedSizesQuantity}, Màu: ${selectedSize}`);
+      setAlertType('error');
+      setAlertVisible(true);
+      return;
+    }
 
     if (quantity > 20) {
       setError(`Số lượng yêu cầu là 20 (sản phẩm)`);
@@ -359,18 +411,75 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
     setError('');
     setErrorCheck(false);
-    // Chuẩn bị dữ liệu để gửi đến API
-    navigation.navigate('BuyNow', {
-      product: productsState, alertVisible: true, alertType: 'success',
-      size: selectedSize,
-      quantity: quantity,
-      total: total,
-    })
 
+    const cartItemDataUUID = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId,
+      },
+      userId: userInfo?.userId,
+    };
+    try {
+
+      const response = await axios.get(`${BASE_URL}order/cart/${userInfo.cartBuyNowId}`);
+      if (response.status === 200 && response?.data?.data?.orderStatus === 0) {
+        Alert.alert(
+          'Xác nhận lại đơn hàng',
+          'Vui lòng xác nhận trước khi mua sản phẩm mới',
+          [
+            {
+              text: 'Xem Chi Tiết',
+              onPress: async () => {
+                navigation.navigate('OrderConfirmationScreen', { orderId: userInfo.cartBuyNowId });
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      }
+    } catch (error) {
+      // Không cần đợi xử lý ngay lập tức, thực hiện ngoài luồng
+      (async () => {
+        try {
+          const createCartResponse = await axios.post(`${BASE_URL}cart/user/buynow`, cartItemDataUUID);
+          if (createCartResponse.status === 200 || createCartResponse.status === 201) {
+            const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${user.token}`,
+              },
+            });
+            if (response.status === 200 || response.status === 201) {
+              const result = await response.json();
+              if (result) {
+                let userInfo = result.data;
+                // Lưu thông tin vào AsyncStorage
+                await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+                console.log('User info saved to AsyncStorage');
+              } else {
+                console.log('No data in API response');
+              }
+            }
+          }
+        } catch (innerError) {
+          console.error('Error in inner async call:', innerError);
+        } finally {
+          closeModalBuy();
+          navigation.navigate('BuyNow', {
+            alertVisible: true,
+            alertType: 'success',
+          });
+        }
+      })();
+    }
 
   };
 
   const handleAddToCartGuest = async () => {
+    closeModalBuy();
+    setLoading(true)
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -386,6 +495,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setAlertType('error');
       setAlertVisible(true);
       setTimeout(() => setErrorCheck(true), 0);
+      return;
+    }
+    if (quantity > selectedSizesQuantity) {
+      setError(`Sản phẩm hiện chỉ còn: ${'\n'}Số Lượng: ${selectedSizesQuantity}, Màu: ${selectedSize}`);
+      setAlertType('error');
+      setAlertVisible(true);
       return;
     }
     // Lấy thông tin kích thước đã chọn từ productSizes
@@ -415,7 +530,13 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     // Nếu vượt qua các kiểm tra, tiến hành thêm sản phẩm vào giỏ hàng
     setError('');
     setErrorCheck(false);
-
+    const cartItemData = {
+      cartItem: {
+        productQuantity: quantity,
+        productId: id,
+        sizeId: selectedProductSize.productSizeId,
+      },
+    };
 
     const cartItemDataUUID = {
       cartItem: {
@@ -425,61 +546,28 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       },
       guestId: uuid,
     };
-    const cartItemData = {
-      cartItem: {
-        productQuantity: quantity,
-        productId: id,
-        sizeId: selectedProductSize.productSizeId,
-      },
-    };
-
     try {
-      const cartResponse = await axios.get(`${BASE_URL}carts/guest/${uuid}`);
-      if (cartResponse.status === 200) {
-        const cartId = cartResponse.data.data.cartId;
-        if (cartId) {
-          await axios.put(`${BASE_URL}cart/${cartId}`, cartItemData);
-          console.log('Sản phẩm đã được thêm vào giỏ hàng');
-          closeModalBuy();
-          navigation.navigate('AddToCartScreen', {
-            alertVisible: true,
-            alertType: 'success',
-          })
-        } else {
-          console.log('Cart ID không tồn tại trong phản hồi.');
-        }
-      } else {
-        console.log('Unexpected response status:', cartResponse.status, cartResponse);
-      }
-    } catch (error) {
-      try {
-        
-        const createCartResponse = await axios.post(`${BASE_URL}cart/create_guest`, cartItemDataUUID);
+      const createCartResponse = await axios.post(`${BASE_URL}cart/create_guest`, cartItemDataUUID);
 
-        if (createCartResponse.status === 201 || createCartResponse.status === 200) {
-          const newCartId = createCartResponse.data.data.cartId;
-          await axios.put(`${BASE_URL}cart/${newCartId}`, cartItemDataUUID);
-          closeModalBuy();
-          navigation.navigate('AddToCartScreen', {
-            alertVisible: true,
-            alertType: 'success',
-          })
-        }
-      } catch (createError) {
-        // console.error('Lỗi khi tạo giỏ hàng:', createError);
+      if (createCartResponse.status === 201 || createCartResponse.status === 200) {
+        const newCartId = createCartResponse.data.data.cartId;
+        console.log('Giỏ hàng được tạo thành công:', newCartId);
+        closeModalBuy();
+        navigation.navigate('AddToCartScreen', {
+          alertVisible: true,
+          alertType: 'success',
+        })
+        // await axios.put(`${BASE_URL}cart/${newCartId}`, cartItemDataUUID);
+        console.log('Sản phẩm đã được thêm vào giỏ hàng');
       }
+    } catch (createError) {
+      closeModalBuy();
+      navigation.navigate('AddToCartScreen', {
+        alertVisible: true,
+        alertType: 'success',
+      })
     }
   };
-
-
-
-
-
-
-
-
-
-
 
   const handleQuantityChange = (amount) => {
     setQuantity(Math.max(1, quantity + amount));
@@ -521,6 +609,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const [liked, setLiked] = useState();
   const [cartDataUser, setCartDataUser] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]); // Lưu danh sách các size đã chọn
+  const [selectedSizesQuantity, setSelectedSizesQuantity] = useState([]); // Lưu danh sách các size đã chọn
 
   const [isUnLikeModalVisible, setIsUnLikeModalVisible] = useState(false);
   const [isLikeModalVisible, setIsLikeModalVisible] = useState(false);
@@ -571,7 +660,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const closeModalUnLike = () => setIsUnLikeModalVisible(false);
 
   const handleWishListUser = async () => {
-    console.log(size);
+    // console.log(size);
 
     const selectedProductSizes = size.filter((size) =>
       selectedSizes.includes(size.productSizeName)
@@ -603,7 +692,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         );
 
         if (response.status === 200) {
-          console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
+          // console.log("Sản phẩm đã được thêm vào giỏ hàng:", response.data);
           setAlertTypeLike('success')
           setAlertVisibleLike(true)
           setTitleAlert('Sản phẩm đã được thêm vào danh sách yêu thích')
@@ -679,10 +768,212 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     setAlertVisibleLike(true);
     setTitleAlert('Xoá Yêu Thích Thành Công');
   };
-
   // Kết Thúc WishList
 
-  // console.log(userInfo);
+
+  // Review
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    if (reviews.length > 0) {
+      const ratingsCount = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      reviews.forEach((review) => {
+        const roundedRating = Math.round(review.rating);
+        ratingsCount[roundedRating] = (ratingsCount[roundedRating] || 0) + 1;
+      });
+      setRatings(ratingsCount);
+      setTotalReviews(reviews.length);
+    }
+  }, [reviews]);
+
+  const fetchProductReviews = async () => {
+
+    const reviewsApiUrl = `${BASE_URL}auth/reviews/product/${id}`;
+    console.log(reviewsApiUrl);
+    
+    try {
+      const response = await axios.get(reviewsApiUrl);
+      setReviews(response.data);
+    } catch (error) {
+      console.error('Lỗi khi lấy review sản phẩm:', error);
+      throw error;
+    }
+  };
+
+
+  useEffect(() => {
+    fetchProductReviews();
+  }, [id]);
+
+  const handleLikeToggle = async (reviewId, isCurrentlyLiked) => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
+
+      const { token } = JSON.parse(userData);
+
+      const apiUrl = `${BASE_URL}auth/review-like`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      if (isCurrentlyLiked) {
+        // Gửi request DELETE để bỏ thích
+        await axios.delete(apiUrl, {
+          headers,
+          params: {
+            reviewId,
+            userId: user.id, // Giả sử bạn đã lưu userId trong state user
+          },
+        });
+      } else {
+        // Gửi request POST để thích
+        await axios.post(
+          apiUrl,
+          {
+            reviewId,
+            userId: user.id, // Giả sử bạn đã lưu userId trong state user
+          },
+          { headers }
+        );
+      }
+      const updatedReviews = reviews.map((review) => {
+        if (review.reviewId === reviewId) {
+          return {
+            ...review,
+            isLikedByCurrentUser: !isCurrentlyLiked,
+            totalLike: isCurrentlyLiked
+              ? review.totalLike - 1
+              : review.totalLike + 1,
+          };
+        }
+        return review;
+      });
+      setReviews(updatedReviews);
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
+      Alert.alert("Lỗi", "Không thể cập nhật trạng thái thích.");
+    }
+  };
+  const handleFilterByRating = async (rating) => {
+    try {
+      setLoading(true);
+
+      if (selectedRating === rating) {
+        setSelectedRating(null);
+        const response = await axios.get(`${BASE_URL}auth/reviews/product/${id}`);
+        setReviews(response.data);
+      } else {
+        setSelectedRating(rating);
+        const response = await axios.get(`${BASE_URL}auth/reviews/${id}/rating?rating=${rating}`);
+
+        if (!response.data?.data) {
+          Alert.alert("Thông báo", `Không tìm thấy đánh giá nào với mức sao ${rating}`);
+          setReviews([]);
+        } else {
+          setReviews(response.data?.data || []);
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi lọc đánh giá theo sao:", error);
+      Alert.alert("Lỗi", "Không thể lọc đánh giá.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleReply = async () => {
+    if (!comment.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập nội dung phản hồi.");
+      return;
+    }
+
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (!userData) throw new Error('No user token found');
+      const { token } = JSON.parse(userData);
+
+      const formData = new FormData();
+      if (uploadedImage) {
+        formData.append('image', {
+          uri: uploadedImage,
+          type: 'image/jpeg',
+          name: 'reply.jpg',
+        });
+      }
+      formData.append('request', JSON.stringify({
+        parentId: selectedReview?.reviewId,
+        userId: user.id,
+        comment,
+      }));
+
+      await axios.post(`${BASE_URL}auth/reviews/reply`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Alert.alert('Thành công', 'Phản hồi đã được gửi!');
+      setReplyModalVisible(false);
+      setComment('');
+      setUploadedImage(null);
+      fetchProductReviews(id);
+    } catch (error) {
+      console.error('Lỗi gửi phản hồi:', error);
+      Alert.alert('Lỗi', 'Không thể gửi phản hồi.');
+    }
+  };
+
+  const handleImagePicker = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission required', 'You need to grant permission to access the gallery.');
+        return;
+      }
+
+      // Mở thư viện ảnh
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Chỉ chọn ảnh
+        allowsEditing: true, // Cho phép chỉnh sửa
+        quality: 1, // Chất lượng ảnh cao
+      });
+
+      console.log('ImagePicker Result:', result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setUploadedImage(result.assets[0].uri); // Lưu đường dẫn ảnh
+      } else {
+        console.log('Image selection was canceled');
+      }
+    } catch (error) {
+      console.error('Error picking an image:', error);
+    }
+  };
+
+  const isReviewOwner = (reviewUserId) => reviewUserId === user.id;
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
+
+      const { token } = JSON.parse(userData);
+      const deleteUrl = `${BASE_URL}auth/reviews/delete/${reviewId}`;
+      await axios.delete(deleteUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setReviews((prevReviews) => prevReviews.filter((review) => review.reviewId !== reviewId));
+
+      Alert.alert("Thành công", "Bài đánh giá đã được xóa.");
+    } catch (error) {
+      console.error("Lỗi khi xóa bài đánh giá:", error);
+      Alert.alert("Lỗi", "Không thể xóa bài đánh giá.");
+    }
+  };
+
   //Kết thúc
   return (
     <View>
@@ -693,9 +984,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               <Icon name="angle-left" size={35} color="#000" />
             </Pressable>
             <Text style={styles.textHeader}>Chi Tiết Sản Phẩm</Text>
-            {/* <Pressable style={styles.shareButton} onPress={() => navigation.goBack()}>
-              <Icon name="share" size={25} color="#000" />
-            </Pressable> */}
           </View>
 
           <View>
@@ -789,7 +1077,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     padding: 10,
                     borderRadius: 10,
                   }}
-                  onPress={openModalLike}>
+                  onPress={userInfo != null ? openModalLike : openModalLogin}>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -850,9 +1138,26 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             <Text style={styles.descriptionProductTitle}>
               {productsState.post?.postName}
             </Text>
-            <Text style={styles.descriptionProductText}>
-              {productsState.post?.postContent}
-            </Text>
+            <View style={!isExpanded && { maxHeight: 300, overflow: 'hidden' }}>
+              <Text style={styles.descriptionProductText}>{productsState.post?.postContent}</Text>
+              {!isExpanded && (
+                <LinearGradient
+                  colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 200,
+                  }}
+                />
+              )}
+            </View>
+            <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+              <Text style={styles.showMoreText}>
+                {isExpanded ? 'Ẩn bớt' : 'Hiển thị thêm'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* Review Product */}
@@ -868,120 +1173,56 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               </View>
             </View>
 
-            <View style={{}}>
-              <View style={styles.sectionReviewerContainer}>
-                <View style={{ flex: 1 }}>
-                  <Image
-                    style={styles.reviewerImage}
-                    source={require('../assets/new3.png')}
-                  />
-                </View>
-                <View style={{ flex: 6 }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <View>
-                      <Text>Yelena Belova</Text>
-                      <View style={{ flexDirection: 'row' }}>
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                      </View>
-                    </View>
-                    <View>
-                      <Text>2 Minggu yang lalu</Text>
-                    </View>
-                  </View>
-                  <View style={{ paddingTop: 10 }}>
-                    <Text>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                      do eiusmod tempor incididunt ut labore et dolore magna
-                      aliqua.
-                    </Text>
-                  </View>
-                </View>
-              </View>
 
-              <View style={styles.sectionReviewerContainer}>
-                <View style={{ flex: 1 }}>
-                  <Image
-                    style={styles.reviewerImage}
-                    source={require('../assets/new3.png')}
-                  />
-                </View>
-                <View style={{ flex: 6 }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
+            <View style={styles.reviewContainer}>
+              <Text style={styles.reviewTitle}>Đánh Giá Sản Phẩm</Text>
+              {/* Bộ lọc đánh giá theo mức sao */}
+              <View style={styles.ratingStats}>
+                {[5, 4, 3, 2, 1].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => handleFilterByRating(star)}
+                    style={[
+                      styles.ratingRow,
+                      selectedRating === star && styles.selectedRatingRow,
+                    ]}
                   >
-                    <View>
-                      <Text>Yelena Belova</Text>
-                      <View style={{ flexDirection: 'row' }}>
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                      </View>
+                    <View style={styles.starRow}>
+                      {[...Array(star)].map((_, index) => (
+                        <Text key={index} style={styles.star}>⭐</Text>
+                      ))}
                     </View>
-                    <View>
-                      <Text>2 Minggu yang lalu</Text>
+                    <View style={styles.progressBar}>
+                      <View
+                        style={{
+                          ...styles.progress,
+                          width: `${(ratings[star] / (totalReviews || 1)) * 100}%`, // Tránh chia cho 0
+                        }}
+                      />
                     </View>
-                  </View>
-                  <View style={{ paddingTop: 10 }}>
-                    <Text>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                      do eiusmod tempor incididunt ut labore et dolore magna
-                      aliqua.
-                    </Text>
-                  </View>
-                </View>
-              </View>
 
-              <View style={styles.sectionReviewerContainer}>
-                <View style={{ flex: 1 }}>
-                  <Image
-                    style={styles.reviewerImage}
-                    source={require('../assets/new3.png')}
-                  />
-                </View>
-                <View style={{ flex: 6 }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <View>
-                      <Text>Yelena Belova</Text>
-                      <View style={{ flexDirection: 'row' }}>
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                        <Image source={require('../assets/star.png')} />
-                      </View>
-                    </View>
-                    <View>
-                      <Text>2 Minggu yang lalu</Text>
-                    </View>
-                  </View>
-                  <View style={{ paddingTop: 10 }}>
-                    <Text>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                      do eiusmod tempor incididunt ut labore et dolore magna
-                      aliqua.
-                    </Text>
-                  </View>
-                </View>
+                    <Text style={styles.ratingCount}>{ratings[star]?.toString() || '0'}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
+              {reviews.length > 0 ? (
+                reviews?.map((item) => {
+                  return (
+                    <CommentItem
+                      key={item?.reviewId}
+                      reviewId={item?.reviewId}
+                      comment={item?.comment}
+                      rating={item?.rating}
+                      totalLike={item?.totalLike}
+                      userFullName={item?.userFullName}
+                      createdAt={item?.createdAt}
+                      isLikedByCurrentUser={item?.isLikedByCurrentUser}
+                      children={item?.children}
+                      
+                    />
+                  );
+                })
+              ) : <Text>ádsadsadsa</Text>}
             </View>
           </View>
 
@@ -1046,30 +1287,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       }}>
         {!userInfo?.userId ?
           (<>
-
-            <View style={{ flex: 1, position: 'relative', }}>
-              {/* Số lượng */}
-              <TouchableOpacity
-                style={{
-                  borderColor: '#3669C9',
-                  borderWidth: 1,
-                  paddingHorizontal: 20,
-                  paddingVertical: 20,
-                  borderRadius: 10,
-                }}
-                onPress={openModalBuy}
-              >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    color: '#3669C9',
-                  }}
-                >
-                  Thêm vào giỏ hàng
-                </Text>
-              </TouchableOpacity>
-            </View>
             <View style={{ flex: 1, position: 'relative', }}>
               {/* Số lượng */}
               <TouchableOpacity
@@ -1080,7 +1297,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   padding: 20,
                   borderRadius: 10,
                 }}
-                onPress={openModalBuyNow}
+                onPress={openModalBuy}
               >
                 <Text
                   style={{
@@ -1089,7 +1306,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     color: '#fff',
                   }}
                 >
-                  Mua Ngay
+                  Thêm vào giỏ hàng
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1250,7 +1467,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
             <View style={styles.line}></View>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Màu: </Text>
+              <Text style={styles.modalTitle}>Màu: {selectedSize}</Text>
+              <Text style={styles.modalTitle}>Số Lượng: {selectedSizesQuantity || 0} </Text>
             </View>
             <View style={styles.productOptions}>
               {loading ? (
@@ -1266,7 +1484,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                         size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
                         errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
                       ]}
-                      onPress={() => handleSelectSize(size.productSizeName)}
+                      onPress={() => {
+                        handleSelectSize(size.productSizeName),
+                          handleSelectSizeQuantity(size.productSizeQuantity?.productSizeQuantity)
+                      }}
                       disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
                     >
                       <Text
@@ -1291,17 +1512,14 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               <Text style={{ color: '#000', fontSize: 18, }}>Tổng: </Text>
               <Text style={{ fontSize: 20, color: '#3669c9', fontWeight: 'bold' }}>{total.toLocaleString() + " ₫"}</Text>
             </View>
-            { !userInfo?.userId ? 
-            ( <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartGuest}>
-              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity>) : 
-            ( <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
-              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity>) }
-            {/* <TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
-              <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
-            </TouchableOpacity> */}
-   
+            {!userInfo?.userId ?
+              (<TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartGuest}>
+                <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
+              </TouchableOpacity>) :
+              (<TouchableOpacity style={styles.confirmButton} onPress={handleAddToCartUser}>
+                <Text style={styles.confirmButtonText}>Thêm giỏ hàng</Text>
+              </TouchableOpacity>)}
+
           </View>
         </View>
         <AlertComponent
@@ -1403,7 +1621,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             </View>
             <View style={styles.line}></View>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Màu: </Text>
+              <Text style={styles.modalTitle}>Màu: {selectedSize}</Text>
+              <Text style={styles.modalTitle}>Số Lượng: {selectedSizesQuantity || 0} </Text>
             </View>
             <View style={styles.productOptions}>
               {loading ? (
@@ -1419,7 +1638,10 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                         size.productSizeQuantity.productSizeQuantity === 0 && styles.disabled,
                         errorCheck && size.productSizeQuantity.productSizeQuantity > 0 && styles.flashBorder
                       ]}
-                      onPress={() => handleSelectSize(size.productSizeName)}
+                      onPress={() => {
+                        handleSelectSize(size.productSizeName),
+                          handleSelectSizeQuantity(size.productSizeQuantity?.productSizeQuantity)
+                      }}
                       disabled={size.productSizeQuantity.productSizeQuantity === 0} // Disable if quantity is 0
                     >
                       <Text
@@ -1462,7 +1684,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
         />
       </Modal>
       {/* No Login */}
-      {/* <Modal visible={isLoginModalVisible} animationType="slide"
+      <Modal visible={isLoginModalVisible} animationType="slide"
         transparent={true}
         onRequestClose={closeModalLogin}>
         <TouchableWithoutFeedback onPress={closeModalLogin}>
@@ -1480,12 +1702,12 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             <Text style={styles.subMessage}>
               Có vẻ nhưng bạn chưa đăng nhập? Hãy đăng nhập hoặc đăng ký để có thể nhận thông báo về cái ưa đãi khủng
             </Text>
-            <TouchableOpacity style={styles.loginButton} onPress={closeModalLogin}>
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Đăng Nhập')}>
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </Modal> */}
+      </Modal>
       {/* Add WishList */}
       <Modal
         visible={isLikeModalVisible}
@@ -1777,7 +1999,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   confirmButtonText: { color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: 'bold' },
-
+  showMoreText: {
+    marginTop: 8,
+    color: '#3669c9',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   productDetailContainer: {
     flex: 1,
     backgroundColor: '#FFF',
@@ -2007,6 +2234,285 @@ const styles = StyleSheet.create({
   flashBorder: {
     borderColor: 'red',
     borderWidth: 2,
+  },
+
+  reviewContainer: {
+    padding: 10,
+    backgroundColor: '#f8f8f8',
+    marginTop: 20,
+  },
+  reviewTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 10,
+    elevation: 5, // Hiệu ứng bóng trên Android
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  reviewerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  reviewDate: {
+    fontSize: 14,
+    color: '#888',
+  },
+  cardContent: {
+    marginTop: 10,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  ratingText: {
+    fontSize: 14,
+    marginRight: 5,
+    color: '#666',
+  },
+  starIcon: {
+    width: 20,
+    height: 20,
+    marginHorizontal: 2,
+  },
+  reviewComment: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 10,
+  },
+  likesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  likeButton: {
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  liked: {
+    backgroundColor: '#FE3A30',
+  },
+  unliked: {
+    backgroundColor: '#ddd',
+  },
+  likeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  likeCount: {
+    fontSize: 14,
+    color: '#555',
+  },
+  likeText: {
+    fontSize: 16,
+    marginLeft: 5,
+  },
+  liked: {
+    color: "red",
+  },
+  unliked: {
+    color: "black",
+  },
+  repliesContainer: {
+    marginTop: 10,
+    paddingLeft: 20,
+    borderLeftWidth: 2,
+    borderLeftColor: '#ccc',
+  },
+  replyCard: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  replyUser: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  replyContent: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 5,
+  },
+  replyDate: {
+    fontSize: 12,
+    color: '#888',
+    textAlign: 'right',
+  },
+  toggleButtonText: {
+    color: '#3669C9',
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  reviewContainer: {
+    padding: 10,
+    backgroundColor: '#f8f8f8',
+    flex: 1,
+  },
+  reviewTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  // Khu vực bộ lọc rating
+  ratingStats: {
+    marginVertical: 16,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  selectedRatingRow: {
+    backgroundColor: '#e6f7ff',
+    borderRadius: 8,
+  },
+  starRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    width: 80,
+  },
+  star: {
+    color: '#FFD700',
+    fontSize: 12,
+    marginHorizontal: 2,
+  },
+  progressBar: {
+    flex: 1,
+    height: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginHorizontal: 18,
+  },
+  progress: {
+    height: '100%',
+    backgroundColor: '#3669C9',
+    borderRadius: 5,
+  },
+  ratingCount: {
+    width: 40,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  replyButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+    marginTop: 5,
+  },
+  replyButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  textInput: {
+    width: '100%',
+    height: 100,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 20,
+  },
+  uploadButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  uploadButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  cancelButton: {
+    backgroundColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 5,
+  },
+  cancelButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+  },
+  sendButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginLeft: 5,
+  },
+  sendButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+  },
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+  },
+  deleteButton: {
+    padding: 10,
+    marginLeft: 10,
   },
 });
 export default AddedProductToWishlist;

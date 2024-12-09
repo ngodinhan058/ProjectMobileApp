@@ -24,16 +24,16 @@ import { BASE_URL } from '../../../api/config';
 const EditIdCardScreen = ({ route, navigation }) => {
   const cardInfo = route.params.iCard;
 
-  console.log('Äaaaa', cardInfo.imageFrontPath);
+  console.log('Äaaaa', cardInfo?.imageFrontPath);
 
   const [CCCDNumber, setCCCDNumber] = useState(
     cardInfo?.idCardNumber ? cardInfo?.idCardNumber : ''
   );
   const [selectedImageFront, setSelectedFront] = useState(
-    cardInfo.imageFrontPath
+    cardInfo?.imageFrontPath
   );
   const [selectedImageBack, setSelectedImageBack] = useState(
-    cardInfo.imageFrontPath
+    cardInfo?.imageFrontPath
   );
 
   const [dateOfBirth, setDateOfBirth] = useState(

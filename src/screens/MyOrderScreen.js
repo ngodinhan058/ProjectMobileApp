@@ -44,25 +44,26 @@ const MyOrderScreen = ({ route, navigation }) => {
 
   const handleOrderUpdate = (updatedOrder) => {
     setOrders((prevOrders) => {
-        if (updatedOrder.orderId) {
-          // Check if the order already exists
-          const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
-    
-          if (orderIndex !== -1) {
-            // Update the existing order
-            const newOrders = [...prevOrders];
-            newOrders[orderIndex] = updatedOrder;
-            return newOrders;
-          } else {
-            // Add the new order
-            return [...prevOrders, updatedOrder];
-          }
+      if (updatedOrder.orderId) {
+        // Check if the order already exists
+        const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
+
+        if (orderIndex !== -1) {
+          // Update the existing order
+          const newOrders = [...prevOrders];
+          newOrders[orderIndex] = updatedOrder;
+          return newOrders;
         } else {
-          // Handle order deletion by `orderId`
-          return prevOrders.filter(order => order.orderId !== updatedOrder);
+          // Add the new order
+          return [...prevOrders, updatedOrder];
         }
-      });
-    };
+      } else {
+        console.log(updatedOrder);
+        // Handle order deletion by `orderId`
+        return prevOrders.filter(order => order.orderId !== updatedOrder);
+      }
+    });
+  };
 
 
   const { client } = useWebSocket(wsUrl, handleOrderUpdate);
@@ -188,8 +189,8 @@ const MyOrderScreen = ({ route, navigation }) => {
       }
     />
   );
-  
- 
+
+
 
   // State để quản lý tab hiện tại
   const [index, setIndex] = useState(0);

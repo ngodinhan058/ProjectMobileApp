@@ -18,25 +18,21 @@ import { Picker } from '@react-native-picker/picker';
 import { BASE_URL } from './api/config';
 import axios from 'axios';
 import AlertComponent from '../components/AlertComponent';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PasswordScreen = ({ route, navigation }) => {
-  const [firstName, setFirstname] = useState('');
-  const [lastName, setLastname] = useState('');
-  const [sdt, setSdt] = useState('');
+const InformationScreen = ({ route, navigation }) => {
+  const { guestInfo } = route?.params
+  const [email, setEmail] = useState(guestInfo?.userEmail|| '');
+  const [firstName, setFirstname] = useState(guestInfo?.userName.split(' ')[0] || '');
+  const [lastName, setLastname] = useState(guestInfo?.userName.split(' ')[1] || '');
+  const [sdt, setSdt] = useState(guestInfo?.userPhone || '');
   const [address, setAdrress] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordAgain, setPasswordAgain] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordAgain, setShowPasswordAgain] = useState(false);
-  const [isButtonEnabled, setIsButtonEnabled] = useState(true);
-  const [passwordWarning, setPasswordWarning] = useState('');
+  const [isValidEmail, setIsValidEmail] = useState(true);
   const [isValidLastname, setIsValidLastname] = useState(true);
   const [isValidFirstname, setIsValidFistame] = useState(true);
   const [isValidSdt, setIsValidSdt] = useState(true);
-  const [isPasswordValid, setIsPasswordValid] = useState(true);
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [dateOfBirth, setDateOfBirth] = useState(new Date(guestInfo?.userBirthday || null));
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [date, setDate] = useState(new Date());
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
@@ -53,6 +49,57 @@ const PasswordScreen = ({ route, navigation }) => {
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertType, setAlertType] = useState('success');
+
+  const [addressInfo, setAddressInfo] = useState(guestInfo?.address || {});
+  const [location, setLocation] = useState({
+    provinces: [],
+    districts: [],
+    wards: [],
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDataSequentially = async () => {
+      try {
+        // Fetch provinces data first
+        const provincesResponse = await axios.get(
+          'https://provinces.open-api.vn/api/p/'
+        );
+        setLocation((prevLocation) => ({
+          ...prevLocation,
+          provinces: provincesResponse.data,
+        }));
+
+        // After provinces data is fetched, fetch districts
+        const districtsResponse = await axios.get(
+          'https://provinces.open-api.vn/api/d/'
+        );
+        setLocation((prevLocation) => ({
+          ...prevLocation,
+          districts: districtsResponse.data,
+        }));
+
+        // After districts data is fetched, fetch wards
+        const wardsResponse = await axios.get(
+          'https://provinces.open-api.vn/api/w/'
+        );
+        setLocation((prevLocation) => ({
+          ...prevLocation,
+          wards: wardsResponse.data,
+        }));
+
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000); // Delay of 2000ms (2 seconds)
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Optionally set loading to false if you want to stop showing loading even on error
+        setLoading(false);
+      }
+    };
+
+    fetchDataSequentially(); // Call the function to fetch data
+  }, []); // Only run once when component mounts
 
   useEffect(() => {
     axios
@@ -100,6 +147,22 @@ const PasswordScreen = ({ route, navigation }) => {
     setModalVisible({ type, visible: true });
   };
   const closeModal = () => setModalVisible({ type: '', visible: false });
+
+
+
+  useEffect(() => {
+    setSelectedProvince(
+      location.provinces.find((p) => p.name === addressInfo.city)?.code
+    );
+    setSelectedDistrict(
+      location.districts.find((p) => p.name === addressInfo.district)?.code
+    );
+    setSelectedWard(
+      location.wards.find((p) => p.name === addressInfo.ward)?.code
+    );
+    setDetailedAddress(addressInfo?.userAddress);
+  }, [location, addressInfo]);
+
 
   const handleSelect = (type, value) => {
     if (type === 'province') {
@@ -189,8 +252,6 @@ const PasswordScreen = ({ route, navigation }) => {
     );
   };
 
-  const { userEmail } = route.params;
-
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || dateOfBirth;
     setShowDatePicker(false);
@@ -198,64 +259,13 @@ const PasswordScreen = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;"',.<>?])[A-Za-z\d!@#$%^&*()_+{}\[\]:;"',.<>?]{8,}$/;
     const phoneNumberRegex = /^\d{10}$/;
-
     if (sdt.length !== 0) {
       setIsValidSdt(phoneNumberRegex.test(sdt));
     }
 
-    if (password.length !== 0) {
-      setIsPasswordValid(passwordRegex.test(password));
-    }
+  }, [sdt]);
 
-    const validateInputs = () => {
-      // Set warning message for password if invalid
-      if (password.length !== 0 && !isPasswordValid) {
-        setPasswordWarning(
-          'Mật khẩu phải chứa ít nhất 8 ký tự bao gồm chữ hoa, thường, số và ký tự đặc biệt'
-        );
-      } else {
-        setPasswordWarning('');
-      }
-    };
-
-    const timeoutId = setTimeout(() => {
-      validateInputs();
-    }, 2000); // Wait for 2000 milliseconds (2 seconds)
-
-    // Cleanup function to clear timeout if values change
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [password, sdt]);
-
-  const register = async (body) => {
-    console.log(body);
-
-    try {
-      const response = await axios.post(
-        `${BASE_URL}auth/register?userEmail=${userEmail}`,
-        body,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      console.log(response);
-
-      Alert.alert('Thành công', 'Đăng ký thành công!');
-
-      //await AsyncStorage.setItem('userData', JSON.stringify(userData)); // Lưu thông tin người dùng
-    } catch (error) {
-      console.log(error);
-
-      //Alert.alert('Thất bại', 'Quá trình đăng ký có lỗi.');
-      throw error; // Ném lỗi để có thể hiển thị thông báo
-    }
-  };
 
   const formatDateToString = (date) => {
     const year = date.getFullYear();
@@ -267,264 +277,211 @@ const PasswordScreen = ({ route, navigation }) => {
   // Hàm giả lập đăng nhập
   const handleLogin = async () => {
     if (
-      isPasswordValid &&
+      isValidEmail &&
       isValidFirstname &&
       isValidLastname &&
-      isValidSdt &&
-      isPasswordValid &&
-      password === passwordAgain
+      isValidSdt
     ) {
       try {
-        // await register({
-        //   userPassword: password,
-        //   userPhone: sdt,
-        //   userLastName: lastName,
-        //   userFirstName: firstName,
-        //   userBirthday: formatDateToString(dateOfBirth),
-        // });
-        await register({
-          userPassword: password,
+        // Gửi dữ liệu đăng ký
+        const userData = {
+          userEmail: email,
           userPhone: sdt,
           userBirthday: formatDateToString(dateOfBirth),
-          userLastName: lastName,
-          userFirstName: firstName,
+          userName: firstName + ' ' + lastName,
           address: {
             userAddress: detailedAddress,
             ward: wards.find((item) => item.code === selectedWard)?.name,
-            district: districts.find((item) => item.code === selectedDistrict)
-              ?.name,
-            city: provinces.find((item) => item.code === selectedProvince)
-              ?.name,
+            district: districts.find((item) => item.code === selectedDistrict)?.name,
+            city: provinces.find((item) => item.code === selectedProvince)?.name,
           },
-        });
-        navigation.navigate('LoginScreen'); // Điều hướng sau khi đăng nhập
-      } catch (error) {
-        throw error;
-        //Alert.alert('Thất bại', 'Đăng ký thất bại');
-      }
-    }
+        };
+        // Lưu thông tin vào AsyncStorage
+        await AsyncStorage.setItem('guestInfo', JSON.stringify(userData));
 
-    setIsValidFistame(firstName.length !== 0);
-    setIsValidLastname(lastName.length !== 0);
-    setIsValidSdt(sdt.length !== 0 ? isValidSdt : false);
-    setIsPasswordValid(password.length !== 0);
+        Alert.alert('Thành công', 'Nhập Thông Tin Thành Công');
+        navigation.replace('AddToCartScreen')
+      } catch (error) {
+        Alert.alert('Thất bại', 'Nhập Thông Tin thất bại');
+        console.error(error);
+      }
+    } else {
+      // Cập nhật trạng thái lỗi nếu không hợp lệ
+      setIsValidFistame(firstName.length !== 0);
+      setIsValidLastname(lastName.length !== 0);
+      setIsValidEmail(email.length != 0);
+      setIsValidSdt(sdt.length !== 0 ? isValidSdt : false);
+    }
   };
 
-  const formattedDate = `${dateOfBirth.getDate()}/${
-    dateOfBirth.getMonth() + 1
-  }/${dateOfBirth.getFullYear()}`;
+
+  const formattedDate = `${dateOfBirth.getDate()}/${dateOfBirth.getMonth() + 1
+    }/${dateOfBirth.getFullYear()}`;
   console.log(wards.find((item) => item.code === selectedWard)?.name);
 
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={styles.container}
-      enableOnAndroid={true} // Kích hoạt hỗ trợ trên Android
-      extraHeight={150} // Điều chỉnh khoảng cách bàn phím với nội dung
-      extraScrollHeight={-200} // Tùy chỉnh thêm khoảng cách cuộn
-      keyboardShouldPersistTaps="handled" // Xử lý khi nhấn ngoài input
-    >
-      <View style={{ flex: 1 }}>
-        {/* Nút quay lại */}
-        <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-left" size={20} color="#000" />
-        </Pressable>
-        {/* Tiêu đề */}
-        <Text style={styles.title}>Thông Tin & Mật Khẩu</Text>
-        <Text style={styles.subtitle}>
-          Hoàn thành dữ liệu cuối cùng sau đây để vào ứng dụng Mega Mall
-        </Text>
-        {/* Input Fullname*/}
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập Tên Đầy Đủ"
-          placeholderTextColor="#C4C4C4"
-          value={userEmail}
-          editable={false}
-        />
-        <Text style={styles.label}>Họ</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập họ"
-          placeholderTextColor="#C4C4C4"
-          value={firstName}
-          onChangeText={setFirstname}
-        />
-        {!isValidFirstname && (
-          <Text style={{ color: 'red' }}>
-            <Icon name="exclamation-triangle" size={15} color="red" />
-            Họ không được để trống
-          </Text>
-        )}
-        <Text style={styles.label}>Tên đệm và tên</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập tên đệm và tên"
-          placeholderTextColor="#C4C4C4"
-          value={lastName}
-          onChangeText={(e) => setLastname(e)}
-        />
-        {!isValidLastname && (
-          <Text style={{ color: 'red' }}>
-            <Icon name="exclamation-triangle" size={15} color="red" />
-            Tên đệm và tên không được để trống
-          </Text>
-        )}
-        <Text style={styles.label}>Số điện thoại</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập số điện thoại"
-          placeholderTextColor="#C4C4C4"
-          value={sdt}
-          onChangeText={setSdt}
-          keyboardType="numeric"
-        />
-        {!isValidSdt && (
-          <Text style={{ color: 'red' }}>
-            <Icon name="exclamation-triangle" size={15} color="red" /> số điện
-            thoại gồm 10 ký tự
-          </Text>
-        )}
-        {/* Date of Birth Selection */}
-        <Text style={styles.label}>Ngày/Tháng/Năm sinh </Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setShowDatePicker(true)}
-        >
-          <Text>
-            {dateOfBirth ? formattedDate : 'What is your date of birth?'}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Day Picker */}
-        {showDatePicker && (
-          <DateTimePicker
-            value={dateOfBirth}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-          />
-        )}
-        {/* Input Address*/}
-        <Text style={styles.label}>Địa Chỉ</Text>
-        <Text style={styles.textTitle}>Tỉnh/Thành phố: </Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => openModal('province')}
-        >
-          <Text>
-            {provinces.find((item) => item.code === selectedProvince)?.name ||
-              'Chọn Tỉnh/Thành phố'}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.textTitle}>Quận/Huyện: </Text>
-
-        <TouchableOpacity style={styles.input} onPress={handleDistrictPress}>
-          <Text>
-            {districts.find((item) => item.code === selectedDistrict)?.name ||
-              'Chọn Quận/Huyện'}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.textTitle}>Phường/Xã: </Text>
-
-        <TouchableOpacity style={styles.input} onPress={handleWardPress}>
-          <Text>
-            {wards.find((item) => item.code === selectedWard)?.name ||
-              'Chọn Phường/Xã'}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.textTitle}>Địa Chỉ : </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nhập địa chỉ chi tiết"
-          value={detailedAddress}
-          onChangeText={(text) => setDetailedAddress(text)}
-        />
-        {/* Input Password */}
-        <Text style={styles.label}>Mật Khẩu</Text>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            style={styles.inputPassword}
-            placeholder="Mật Khẩu"
-            placeholderTextColor="#C4C4C4"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
+    <>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        enableOnAndroid={true} // Kích hoạt hỗ trợ trên Android
+        extraHeight={150} // Điều chỉnh khoảng cách bàn phím với nội dung
+        extraScrollHeight={-200} // Tùy chỉnh thêm khoảng cách cuộn
+        keyboardShouldPersistTaps="handled" // Xử lý khi nhấn ngoài input
+      >
+        <View style={{ flex: 1 }}>
+          {/* Nút quay lại */}
           <Pressable
-            style={styles.eyeButton}
-            onPress={() => setShowPassword(!showPassword)}
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
           >
-            <Icon
-              name={showPassword ? 'eye' : 'eye-slash'}
-              size={20}
-              color="#C4C4C4"
-            />
+            <Icon name="arrow-left" size={20} color="#000" />
           </Pressable>
-        </View>
-        {!isPasswordValid && (
-          <Text style={{ color: 'red' }}>
-            <Icon name="exclamation-triangle" size={15} color="red" /> Mật khẩu
-            phải chứa ít nhất 8 ký tự bao gồm chữ hoa, thường, số và ký tự đặc
-            biệt
+          {/* Tiêu đề */}
+          <Text style={styles.title}>Thông Tin & Mật Khẩu</Text>
+          <Text style={styles.subtitle}>
+            Hoàn thành dữ liệu cuối cùng sau đây để vào ứng dụng Mega Mall
           </Text>
-        )}
-        {/* Input Again Password */}
-        <Text style={styles.label}>Nhập Lại Mật Khẩu</Text>
-        <View style={styles.passwordContainer}>
+          <Text style={styles.textTitle}>Email</Text>
           <TextInput
-            style={styles.inputPassword}
-            placeholder="Mật Khẩu"
+            style={styles.input}
+            placeholder="Nhập Email"
             placeholderTextColor="#C4C4C4"
-            secureTextEntry={!showPasswordAgain}
-            value={passwordAgain}
-            onChangeText={setPasswordAgain}
+            value={email}
+            onChangeText={setEmail}
           />
-          <Pressable
-            style={styles.eyeButton}
-            onPress={() => setShowPasswordAgain(!showPasswordAgain)}
-          >
-            <Icon
-              name={showPasswordAgain ? 'eye' : 'eye-slash'}
-              size={20}
-              color="#C4C4C4"
-            />
-          </Pressable>
-        </View>
-        {passwordAgain.length !== 0 && password !== passwordAgain && (
-          <Text style={{ color: 'red' }}>
-            <Icon name="exclamation-triangle" size={15} color="red" /> Mật khẩu
-            không giống nhau
-          </Text>
-        )}
-        {/* Nút Sign In và Cancel */}
-        <View style={styles.buttonContainer}>
+          {!isValidEmail && (
+            <Text style={{ color: 'red' }}>
+              <Icon name="exclamation-triangle" size={15} color="red" />
+              Email không được để trống
+            </Text>
+          )}
+          <Text style={styles.textTitle}>Họ</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập họ"
+            placeholderTextColor="#C4C4C4"
+            value={firstName}
+            onChangeText={setFirstname}
+          />
+          {!isValidFirstname && (
+            <Text style={{ color: 'red' }}>
+              <Icon name="exclamation-triangle" size={15} color="red" />
+              Họ không được để trống
+            </Text>
+          )}
+          <Text style={styles.textTitle}>Tên đệm và tên</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập tên đệm và tên"
+            placeholderTextColor="#C4C4C4"
+            value={lastName}
+            onChangeText={(e) => setLastname(e)}
+          />
+          {!isValidLastname && (
+            <Text style={{ color: 'red' }}>
+              <Icon name="exclamation-triangle" size={15} color="red" />
+              Tên đệm và tên không được để trống
+            </Text>
+          )}
+          <Text style={styles.textTitle}>Số điện thoại</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập số điện thoại"
+            placeholderTextColor="#C4C4C4"
+            value={sdt}
+            onChangeText={setSdt}
+            keyboardType="numeric"
+          />
+          {!isValidSdt && (
+            <Text style={{ color: 'red' }}>
+              <Icon name="exclamation-triangle" size={15} color="red" /> số điện
+              thoại gồm 10 ký tự
+            </Text>
+          )}
+          {/* Date of Birth Selection */}
+          <Text style={styles.textTitle}>Ngày/Tháng/Năm sinh </Text>
           <TouchableOpacity
-            style={[styles.signInButton, { backgroundColor: '#3669c9' }]}
-            onPress={handleLogin} // Gọi hàm đăng nhập khi nhấn nút
+            style={styles.input}
+            onPress={() => setShowDatePicker(true)}
           >
-            <Text style={styles.signInText}>Đăng ký</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton}>
-            <Text style={styles.cancelText} onPress={() => navigation.goBack()}>
-              Cancel
+            <Text>
+              {dateOfBirth ? formattedDate : 'What is your date of birth?'}
             </Text>
           </TouchableOpacity>
+
+          {/* Day Picker */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={dateOfBirth}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+            />
+          )}
+          {/* Input Address*/}
+          <Text style={styles.textTitle}>Địa Chỉ</Text>
+          <Text style={styles.textTitle}>Tỉnh/Thành phố: </Text>
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => openModal('province')}
+          >
+            <Text>
+              {provinces.find((item) => item.code === selectedProvince)?.name ||
+                'Chọn Tỉnh/Thành phố'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.textTitle}>Quận/Huyện: </Text>
+
+          <TouchableOpacity style={styles.input} onPress={handleDistrictPress}>
+            <Text>
+              {districts.find((item) => item.code === selectedDistrict)?.name ||
+                'Chọn Quận/Huyện'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.textTitle}>Phường/Xã: </Text>
+
+          <TouchableOpacity style={styles.input} onPress={handleWardPress}>
+            <Text>
+              {wards.find((item) => item.code === selectedWard)?.name ||
+                'Chọn Phường/Xã'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.textTitle}>Địa Chỉ : </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập địa chỉ chi tiết"
+            value={detailedAddress}
+            onChangeText={(text) => setDetailedAddress(text)}
+          />
+
+
+          {/* Nút Sign In và Cancel */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.signInButton, { backgroundColor: '#3669c9' }]}
+              onPress={handleLogin} // Gọi hàm đăng nhập khi nhấn nút
+            >
+              <Text style={styles.signInText}>Lưu Thông Tin</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton}>
+              <Text style={styles.cancelText} onPress={() => navigation.goBack()}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <Modal
-        visible={modalVisible.visible}
-        animationType="slide"
-        transparent={true}
-      >
-        <TouchableWithoutFeedback onPress={closeModal}>
-          <View style={styles.modalOverlay} />
-        </TouchableWithoutFeedback>
-        <View style={styles.modalContainer}>{renderModalContent()}</View>
-      </Modal>
+        <Modal
+          visible={modalVisible.visible}
+          animationType="slide"
+          transparent={true}
+        >
+          <TouchableWithoutFeedback onPress={closeModal}>
+            <View style={styles.modalOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.modalContainer}>{renderModalContent()}</View>
+        </Modal>
+
+      </KeyboardAwareScrollView>
       <AlertComponent
         title={alertType === 'success' ? 'Success' : 'Error'}
         description={alertType === 'success' ? null : titleAleft}
@@ -532,7 +489,7 @@ const PasswordScreen = ({ route, navigation }) => {
         visible={alertVisible}
         onClose={() => setAlertVisible(false)}
       />
-    </KeyboardAwareScrollView>
+    </>
   );
 };
 
@@ -604,8 +561,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 20,
+    gap: 10,
   },
   signInButton: {
+    flex: 1,
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 10,
@@ -613,8 +572,10 @@ const styles = StyleSheet.create({
   signInText: {
     fontSize: 14,
     color: '#FFF',
+    textAlign: 'center'
   },
   cancelButton: {
+    flex: 1,
     backgroundColor: '#3669c9',
     paddingVertical: 15,
     paddingHorizontal: 40,
@@ -623,6 +584,7 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 14,
     color: '#FFF',
+    textAlign: 'center',
   },
   footerContainer: {
     flexDirection: 'row',
@@ -775,4 +737,4 @@ const styles = StyleSheet.create({
   },
   emptyText: { textAlign: 'center', color: 'gray', marginTop: 10 },
 });
-export default PasswordScreen;
+export default InformationScreen;

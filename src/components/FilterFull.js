@@ -130,9 +130,7 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
 
     // Lắng nghe thay đổi selectedCategories và gọi API
     useEffect(() => {
-        if (selectedCategories) {
-            fetchData();
-        }
+        fetchData();
     }, [selectedCategories]);
     // Hiển thị 4 mục đầu tiên hoặc tất cả tùy thuộc vào trạng thái
     const SizesToShow = isExpanded ? Sizes : Sizes.slice(0, 5);
@@ -197,7 +195,8 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
                                                     {categoriesToShow[index].categoryName.charAt(0).toUpperCase() +
                                                         categoriesToShow[index].categoryName.slice(1)}
                                                 </Text>
-                                                {selectedCategories.includes(categoriesToShow[index].categoryId) && (
+                                                {/* selectedCategories.includes(categoriesToShow[index].categoryId) */}
+                                                {selectedCategories === categoriesToShow[index].categoryId && (
                                                     <View style={styles.checkedBox}>
                                                         <Text style={styles.tickCheckedBox}>✔</Text>
                                                     </View>
@@ -215,8 +214,9 @@ const FilterScreen = ({ isVisible, id, onClose, onApply, onReset }) => {
                                                     <Text style={styles.checkboxText}>
                                                         {categoriesToShow[index + 1].categoryName.charAt(0).toUpperCase() +
                                                             categoriesToShow[index + 1].categoryName.slice(1)}
-                                                    </Text>
-                                                    {selectedCategories.includes(categoriesToShow[index + 1].categoryId) && (
+                                                    </Text> 
+                                                    {/* selectedSupplier === SupplierToShow[index].productSupplierSd */}
+                                                    {selectedCategories === categoriesToShow[index + 1].categoryId && (
                                                         <View style={styles.checkedBox}>
                                                             <Text style={styles.tickCheckedBox}>✔</Text>
                                                         </View>

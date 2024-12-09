@@ -13,6 +13,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
   const [liked, setLiked] = useState();
   const [isBuyModalVisible, setIsBuyModalVisible] = useState(false);
   const [isUnLikeModalVisible, setIsUnLikeModalVisible] = useState(false);
+  const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
   const [selectedSize, setSelectedSize] = useState(); // Đặt size mặc định
   const [selectedSizes, setSelectedSizes] = useState([]); // Lưu danh sách các size đã chọn
   const [errorCheck, setErrorCheck] = useState(false);
@@ -44,6 +45,10 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
       ? { uri: image }
       : isLoading == true; // Default placeholder image
   };
+  const openModalLogin = () => {
+    setIsLoginModalVisible(true);
+  };
+  const closeModalLogin = () => setIsLoginModalVisible(false);
   const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
@@ -311,7 +316,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                         <Icon name="heart" size={18} color="#3669c9" />
                       </Text>
                     </TouchableOpacity>)
-                  : (<TouchableOpacity onPress={openModalBuy}>
+                  : (<TouchableOpacity onPress={ userInfo != null ? openModalBuy : openModalLogin}>
                     <Text style={styles.heart}>
                       <Icon name="heart-outline" size={18} color="#3669c9" />
                     </Text>
@@ -356,7 +361,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                         <Icon name="heart" size={18} color="#3669c9" />
                       </Text>
                     </TouchableOpacity>)
-                  : (<TouchableOpacity onPress={openModalBuy}>
+                  : (<TouchableOpacity onPress={userInfo != null ? openModalBuy : openModalLogin}>
                     <Text style={styles.heart}>
                       <Icon name="heart-outline" size={18} color="#3669c9" />
                     </Text>
@@ -523,6 +528,31 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
           </View>
         </View>
       </Modal>
+       {/* No Login */}
+       <Modal visible={isLoginModalVisible} animationType="slide"
+        transparent={true}
+        onRequestClose={closeModalLogin}>
+        <TouchableWithoutFeedback onPress={closeModalLogin}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalContainerLogin}>
+          <View style={styles.content}>
+            <Text style={styles.title}>Đăng Nhập tài Khoản</Text>
+            <View style={styles.line}></View>
+
+            <Image source={require("../assets/hello.png")} style={{ width: 50, height: 50, marginVertical: 5 }} />
+            <Text style={styles.message}>
+              Chào Mừng Bạn Mới
+            </Text>
+            <Text style={styles.subMessage}>
+              Có vẻ nhưng bạn chưa đăng nhập? Hãy đăng nhập hoặc đăng ký để có thể nhận thông báo về cái ưa đãi khủng
+            </Text>
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Đăng Nhập')}>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -641,11 +671,58 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     bottom: 0,
   },
+  modalContainerLogin: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '45%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   modalTitle: { fontSize: 18, fontWeight: 'bold' },
+  content: {
+    padding: 20,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  emoji: {
+    fontSize: 40,
+    marginBottom: 15,
+  },
+  message: {
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  subMessage: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#888",
+    marginBottom: 20,
+  },
+  loginButton: {
+    width: "100%",
+    backgroundColor: "#3669C9",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   productImage: { width: 120, height: 120, resizeMode: 'contain', borderWidth: 1, borderColor: '#CCC', borderRadius: 15, marginRight: 20, },
   productOptions: {
     marginVertical: 10,

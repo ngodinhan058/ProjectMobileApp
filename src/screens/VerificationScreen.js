@@ -16,6 +16,8 @@ const VerificationScreen = ({ route, navigation }) => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const timerRef = useRef(null);
 
   const inputRefs = useRef([]);
 
@@ -27,6 +29,15 @@ const VerificationScreen = ({ route, navigation }) => {
     const allFilled = code.every((digit) => digit !== '');
     setIsButtonEnabled(allFilled);
   }, [code]);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      timerRef.current = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+      return () => clearTimeout(timerRef.current);
+    }
+  }, [timeLeft]);
 
   const handleInputChange = (text, index) => {
     let newCode = [...code];
@@ -124,7 +135,11 @@ const VerificationScreen = ({ route, navigation }) => {
   const handleNextVerifyOTP = () => {
     handleVerifyOTP(code.join(''));
   };
-
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
@@ -137,8 +152,7 @@ const VerificationScreen = ({ route, navigation }) => {
         {/* Tiêu đề */}
         <Text style={styles.title}>Xác Thực</Text>
         <Text style={styles.subtitle}>
-          Chúng tôi đã gửi mã xác minh tới ****
-          <Text style={styles.changeNumber}> Thay đổi?</Text>
+          Chúng tôi đã gửi mã xác minh tới {'\n'}{email}
         </Text>
 
         {/* Input Mã xác nhận */}
@@ -156,10 +170,11 @@ const VerificationScreen = ({ route, navigation }) => {
             />
           ))}
         </View>
+        {timeLeft > 0 ? <Text style={styles.resendCode}>({formatTime(timeLeft)})</Text>
+          : <TouchableOpacity onPress={{}}>
+            <Text style={styles.resendCode}>Gửi Lại Mã</Text>
+          </TouchableOpacity>}
 
-        <TouchableOpacity>
-          <Text style={styles.resendCode}>Gửi Lại Mã</Text>
-        </TouchableOpacity>
 
         {/* Nút Continue và Cancel */}
         <View style={styles.buttonContainer}>
@@ -178,7 +193,7 @@ const VerificationScreen = ({ route, navigation }) => {
             style={styles.cancelButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.cancelText}>Huỷ</Text>
+            <Text style={styles.cancelText}>Thay Đổi</Text>
           </TouchableOpacity>
         </View>
       </View>
