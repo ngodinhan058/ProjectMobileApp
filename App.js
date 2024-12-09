@@ -1077,7 +1077,7 @@ export default function App() {
   const hasRole = (role) => user?.role?.includes(role);
   return (
     <NavigationContainer onStateChange={handleStateChange}>
-      {/* {Object.keys(user).length === 0 && <NoLoginHome />}
+      {Object.keys(user).length === 0 && <NoLoginHome />}
       {Object.keys(user).length !== 0 && hasRole('ROLE_USER') && (
         <HaveLoginHome />
       )}
@@ -1086,11 +1086,11 @@ export default function App() {
       )}
       {Object.keys(user).length !== 0 && hasRole('ROLE_SHIPPER') && (
         <ShipperDrawerNavigator />
-      )} */}
+      )}
       {/* <HaveLoginHome /> */}
       {/* <AdminDrawerNavigator />  */}
       {/* <HaveLoginHome /> */}
-      <NoLoginHome />
+      {/* <NoLoginHome /> */}
       {/* <InventoryDrawerNavigator /> */}
 
       {/* <Accouting /> */}
