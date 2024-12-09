@@ -28,8 +28,6 @@ function WaitingShippingScreen({ navigation }) {
   const cancelReasons = ["Khách hàng không nhận", "Giao hàng thất bại", "Khác"];
 
 
-
-
   // Fetch orders based on status
   const fetchOrders = async (status) => {
     try {
