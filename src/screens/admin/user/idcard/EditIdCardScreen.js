@@ -19,12 +19,18 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import UploadImage from '../../../../components/Up_Image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../../../api/config';
+import { BASE_URL, CLOUD_VISION_API_URl } from '../../../api/config';
+import axios from 'axios';
 
 const EditIdCardScreen = ({ route, navigation }) => {
   const cardInfo = route.params.iCard;
 
   console.log('Äaaaa', cardInfo.imageFrontPath);
+
+  const onSuccess = (e) => {
+    console.log(e.data); // Dữ liệu mã QR được quét
+    // Xử lý dữ liệu ở đây (parse và hiển thị thông tin từ CCCD)
+  };
 
   const [CCCDNumber, setCCCDNumber] = useState(
     cardInfo?.idCardNumber ? cardInfo?.idCardNumber : ''
@@ -43,11 +49,135 @@ const EditIdCardScreen = ({ route, navigation }) => {
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(true);
 
+  const [base64StringFront, setBase64StringFront] = useState('');
+  const [base64StringBack, setBase64StringBack] = useState('');
+
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || dateOfBirth;
     setShowDatePicker(false);
     setDateOfBirth(currentDate);
   };
+
+  const convertImageToBase64 = (uri, isFront) => {
+    fetch(uri)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result.split(',')[1]; // Extract Base64 part
+          if (isFront) {
+            setBase64StringFront(base64); // Save Base64 string for front image
+          } else {
+            setBase64StringBack(base64); // Save Base64 string for back image
+          }
+        };
+        reader.readAsDataURL(blob); // Read Blob as Data URL
+      })
+      .catch((error) => {
+        console.error('Error converting image to Base64:', error);
+      });
+  };
+
+  // Function to call Cloud Vision API and extract CCCD number
+  const getNumberCCCD = async (uri) => {
+    const data = {
+      requests: [
+        {
+          image: { content: uri },
+          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
+        },
+      ],
+    };
+    try {
+      const response = await axios.post(`${CLOUD_VISION_API_URl}`, data);
+      const regex = /No\.\s*:\s*(\d{12,})/;
+      const match =
+        response.data.responses[0].textAnnotations[0].description.match(regex);
+
+      if (match && match[1]) {
+        setCCCDNumber(match[1]);
+      } else {
+        console.log('Không tìm thấy số No.');
+      }
+    } catch (error) {
+      console.error('Error fetching CCCD number:', error);
+    }
+  };
+
+  function convertDateFormat(dateString) {
+    // Tách ngày, tháng, năm từ chuỗi
+    const [day, month, year] = dateString.split('/');
+
+    // Trả về đối tượng Date
+    const dateObject = new Date(`${year}-${month}-${day}`);
+
+    // Kiểm tra xem đối tượng Date có hợp lệ không
+    if (isNaN(dateObject.getTime())) {
+      console.error('Invalid Date format');
+      return null;
+    }
+
+    return dateObject;
+  }
+
+  // Function to get date of birth
+  const getDate = async (uri) => {
+    const data = {
+      requests: [
+        {
+          image: { content: uri },
+          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
+        },
+      ],
+    };
+    try {
+      const response = await axios.post(`${CLOUD_VISION_API_URl}`, data);
+      const regexDate = /\d{2}\/\d{2}\/\d{4}/;
+
+      const matchDate =
+        response.data.responses[0].textAnnotations[0].description.match(
+          regexDate
+        );
+
+      console.log('Matched Date:', matchDate);
+
+      if (matchDate && matchDate[0]) {
+        setDateOfBirth(convertDateFormat(matchDate[0]));
+      } else {
+        console.log('Không tìm thấy ngày.');
+      }
+    } catch (error) {
+      console.error('Error fetching date of birth:', error);
+    }
+  };
+
+  // Watch for changes in selectedImageFront, convert to Base64 and get CCCD
+  useEffect(() => {
+    if (selectedImageFront) {
+      convertImageToBase64(selectedImageFront, true); // Convert front image to Base64
+    }
+  }, [selectedImageFront]);
+
+  // Watch for changes in selectedImageBack, convert to Base64 and get Date
+  useEffect(() => {
+    if (selectedImageBack) {
+      convertImageToBase64(selectedImageBack, false); // Convert back image to Base64
+    }
+  }, [selectedImageBack]);
+
+  // Watch the base64StringFront for the front image and call getNumberCCCD
+  useEffect(() => {
+    if (base64StringFront) {
+      getNumberCCCD(base64StringFront); // Call getNumberCCCD when Base64 string is ready
+    }
+  }, [base64StringFront]);
+
+  // Watch the base64StringBack for the back image and call getDate
+  useEffect(() => {
+    if (base64StringBack) {
+      getDate(base64StringBack); // Call getDate when Base64 string is ready for back image
+    }
+  }, [base64StringBack]);
 
   const getItem = async () => {
     try {

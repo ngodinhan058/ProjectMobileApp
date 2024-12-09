@@ -1,1 +1,2 @@
-export const url = '2d27-2405-4802-9154-3a80-2dba-3cca-ca2-3667.ngrok-free.app';
+export const url =
+  '7d6c-2405-4802-9154-3a80-98cc-3d7a-faa8-57e7.ngrok-free.app';

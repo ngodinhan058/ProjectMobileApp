@@ -152,6 +152,28 @@ function WaitingShippingScreen({ navigation }) {
               <Text style={styles.shipmentRoute}>
                 Địa chỉ: {order.orderAddress}
               </Text>
+
+              {currentStatus === 4 && (
+                <TouchableOpacity
+                  style={styles.mapButton}
+                  onPress={() =>
+                    handleUpdateOrderStatus(
+                      order.orderId,
+                      5,
+                      order.orderAddress
+                    )
+                  }
+                >
+                  <Icon
+                    name="map"
+                    size={20}
+                    color="#fff"
+                    style={styles.mapIcon}
+                  />
+                  <Text style={styles.mapButtonText}>Chỉ đường</Text>
+                </TouchableOpacity>
+              )}
+
               {currentStatus === 4 ? (
                 <View
                   style={{
@@ -206,6 +228,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  mapButton: {
+    flexDirection: 'row', // Align icon and text horizontally
+    alignItems: 'center', // Vertically center the icon and text
+    backgroundColor: '#3669c9', // Background color
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginTop: 20,
+    justifyContent: 'center',
+  },
+  mapIcon: {
+    marginRight: 10, // Space between icon and text
+  },
+  mapButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   header: {
     backgroundColor: '#3669C9',

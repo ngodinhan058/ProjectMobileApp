@@ -66,7 +66,7 @@ const ProfileScreen = ({ navigation, route }) => {
             setUser(result.data); // Lưu thông tin người dùng vào state
             setUserImg(
               result.data.userImagePath ||
-              'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg'
+                'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg'
             );
             // Lưu thông tin người dùng vào AsyncStorage
             await AsyncStorage.setItem('userInfo', JSON.stringify(result.data));
@@ -104,8 +104,7 @@ const ProfileScreen = ({ navigation, route }) => {
   //   getItem();
   // }, []);
 
-  console.log("User roles:123213", userInfo?.role);
-
+  console.log('User roles:123213', userInfo?.role);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -116,6 +115,9 @@ const ProfileScreen = ({ navigation, route }) => {
     }, [userInfo?.token]) // Empty dependency array means this runs on every focus
   );
   const hasPermission = (role) => userInfo?.role?.includes(role);
+
+  console.log(userInfo?.role);
+
   const handleLogout = async () => {
     try {
       Alert.alert(
@@ -133,16 +135,16 @@ const ProfileScreen = ({ navigation, route }) => {
               await AsyncStorage.removeItem('userInfo');
               Alert.alert('Đăng xuất thành công', 'Bạn đã đăng xuất.');
               {
-                hasPermission("PERMISSION_ADMIN") && (
-                  navigation.navigate('Trang Chủ Admin')
-                )
+                hasPermission('PERMISSION_ADMIN') &&
+                  navigation.navigate('Trang Chủ Admin');
               }
               {
-                hasPermission("ROLE_USER") && (
-                  navigation.navigate('Mega Mall')
-                )
+                hasPermission('ROLE_USER') && navigation.navigate('Mega Mall');
               }
-
+              {
+                hasPermission('ROLE_SHIPPER') &&
+                  navigation.navigate('Trang Chủ');
+              }
             },
           },
         ],
@@ -157,16 +159,17 @@ const ProfileScreen = ({ navigation, route }) => {
   return (
     <>
       <ScrollView style={styles.container}>
-        <View style={styles.iconHeader}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Icon name="angle-left" size={35} color="#000" />
-          </Pressable>
-          <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
-        </View>
-
+        {!hasPermission('ROLE_SHIPPER') && (
+          <View style={styles.iconHeader}>
+            <Pressable
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Icon name="angle-left" size={35} color="#000" />
+            </Pressable>
+            <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
+          </View>
+        )}
         {/* Header thông tin cá nhân */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
@@ -204,16 +207,19 @@ const ProfileScreen = ({ navigation, route }) => {
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => navigation.navigate('MyOrderScreen')}
-          >
-            <View style={styles.row}>
-              <IconI name="clipboard-outline" size={22} color="#000" />
-              <Text style={styles.textPro}>Đơn Hàng Của Tôi</Text>
-            </View>
-            <Icon name="angle-right" size={32} color="#000" />
-          </TouchableOpacity>
+
+          {!hasPermission('ROLE_SHIPPER') && (
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => navigation.navigate('MyOrderScreen')}
+            >
+              <View style={styles.row}>
+                <IconI name="clipboard-outline" size={22} color="#000" />
+                <Text style={styles.textPro}>Đơn Hàng Của Tôi</Text>
+              </View>
+              <Icon name="angle-right" size={32} color="#000" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.row}
             onPress={() => navigation.navigate('CreateAddressScreen')}
