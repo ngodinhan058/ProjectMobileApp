@@ -1,14 +1,135 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, Easing, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from '../screens/api/config';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
 
-const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, createdAt, isLikedByCurrentUser, children  }) => {
-  // const isReviewOwner = (reviewUserId) => reviewUserId === user.id;
+const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, createdAt, isLikedByCurrentUser, children, userId }) => {
+  const [userData, setUserData] = useState({});
+  const [user, setUser] = useState({});
+  const [replyModalVisible, setReplyModalVisible] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [commentAdmin, setComment] = useState('');
+  const [selectedReview, setSelectedReview] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        const userInfo = await AsyncStorage.getItem('userInfo');
+        console.log(userInfo);
+
+        if (!userData) throw new Error('No user token found');
+
+        const { token, role } = JSON.parse(userData);
+        setUserData(role)
+        setUser(userInfo)
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+  const hasRole = (role) => Object.keys(userData).length !== 0 ? userData?.includes(role) : null
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (!userData) throw new Error("No user token found");
+
+      const { token } = JSON.parse(userData);
+      const deleteUrl = `${BASE_URL}auth/reviews/delete/${reviewId}`;
+      await axios.delete(deleteUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setReviews((prevReviews) => prevReviews.filter((review) => review.reviewId !== reviewId));
+
+      Alert.alert("Thành công", "Bài đánh giá đã được xóa.");
+    } catch (error) {
+      console.error("Lỗi khi xóa bài đánh giá:", error);
+      Alert.alert("Lỗi", "Không thể xóa bài đánh giá.");
+    }
+  };
+  const handleReply = async () => {
+    if (!commentAdmin.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập nội dung phản hồi.");
+      return;
+    }
+
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (!userData) throw new Error('No user token found');
+      const { token } = JSON.parse(userData);
+
+      const formData = new FormData();
+      if (uploadedImage) {
+        formData.append('image', {
+          uri: uploadedImage,
+          type: 'image/jpeg',
+          name: 'reply.jpg',
+        });
+      }
+      formData.append('request', JSON.stringify({
+        parentId: selectedReview,
+        userId: user.userId,
+        commentAdmin,
+      }));
+
+      await axios.post(`${BASE_URL}auth/reviews/reply`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Alert.alert('Thành công', 'Phản hồi đã được gửi!');
+      setReplyModalVisible(false);
+      setComment('');
+      setUploadedImage(null);
+      fetchProductReviews(id);
+    } catch (error) {
+      console.error('Lỗi gửi phản hồi:', error);
+      Alert.alert('Lỗi', 'Không thể gửi phản hồi.');
+    }
+  };
+
+  const handleImagePicker = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission required', 'You need to grant permission to access the gallery.');
+        return;
+      }
+
+      // Mở thư viện ảnh
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Chỉ chọn ảnh
+        allowsEditing: true, // Cho phép chỉnh sửa
+        quality: 1, // Chất lượng ảnh cao
+      });
+
+      console.log('ImagePicker Result:', result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setUploadedImage(result.assets[0].uri); // Lưu đường dẫn ảnh
+      } else {
+        console.log('Image selection was canceled');
+      }
+    } catch (error) {
+      console.error('Error picking an image:', error);
+    }
+  };
+  const isReviewOwner = (reviewUserId) => reviewUserId === user.userId;
   return (
     <>
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Text style={styles.reviewerName}>Name: {userFullName}</Text>
+          <Text style={styles.reviewerName}>{userFullName}</Text>
           <Text style={styles.reviewDate}>
             Thời gian: {new Date(createdAt).toLocaleDateString('vi-VN')}
           </Text>
@@ -17,16 +138,13 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
           <View style={styles.ratingContainer}>
             <Text style={styles.ratingText}>Lượt đánh giá: </Text>
             {Array.from({ length: Math.round(rating) }).map((_, index) => (
-              <Image
-                key={index}
-                style={styles.starIcon}
-                source={require('../assets/star.png')}
-              />
+              <Text key={index} style={styles.star}>⭐</Text>
+
             ))}
           </View>
           <Text style={styles.reviewComment}>Nội dung: {comment}</Text>
           <View style={styles.likesContainer}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => handleLikeToggle(reviewId, isLikedByCurrentUser)}
             >
               <Text
@@ -37,18 +155,81 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
               >
                 Thích: {totalLike}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.replyButton}
+            </TouchableOpacity> */}
+            {hasRole("ROLE_ADMIN") ? (<TouchableOpacity
               onPress={() => {
-                setSelectedReview(item); // Lưu lại thông tin review được chọn
+                setSelectedReview(reviewId);
                 setReplyModalVisible(true);
               }}
+              style={styles.replyButton}
             >
               <Text style={styles.replyButtonText}>Phản hồi</Text>
+            </TouchableOpacity>) : (<TouchableOpacity></TouchableOpacity>)}
+
+            {isLikedByCurrentUser ? <TouchableOpacity
+              style={{
+                borderColor: '#ccc',
+                borderWidth: 1,
+                padding: 10,
+                borderRadius: 10,
+                backgroundColor: '#FE3A30',
+              }}
+              onPress={() => handleLikeToggle(reviewId, isLikedByCurrentUser)}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    color: '#FFF',
+                  }}
+                >
+                </Text>
+                <Image
+                  style={{ width: 20, height: 20, tintColor: '#fff' }}
+                  source={require('../assets/heart.png')}
+                />
+              </View>
             </TouchableOpacity>
+              : <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  padding: 10,
+                  borderRadius: 10,
+                }}
+                onPress={() => handleLikeToggle(reviewId, isLikedByCurrentUser)}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontWeight: '600',
+                      color: '#FFF',
+                    }}
+                  >
+
+                  </Text>
+                  <Image
+                    style={{ width: 20, height: 20, tintColor: '#3669c9' }}
+                    source={require('../assets/heart.png')}
+                  />
+                  <Text>{totalLike}</Text>
+                </View>
+              </TouchableOpacity>}
+
+
           </View>
-          {/* {isReviewOwner(item.userId) && (
+          {/* {isReviewOwner(userId) && (
             <View style={styles.actionButtons}>
               <TouchableOpacity
                 style={styles.deleteButton}
@@ -118,6 +299,52 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
           </View>
         )}
       </View>
+      <Modal
+        visible={replyModalVisible} // Hiển thị modal dựa trên trạng thái
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setReplyModalVisible(false)} // Đóng modal khi nhấn nút back
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Phản hồi đánh giá</Text>
+
+            {/* Trường nhập nội dung */}
+            <TextInput
+              style={styles.textInput}
+              placeholder="Nhập nội dung phản hồi..."
+              value={commentAdmin}
+              onChangeText={setComment}
+              multiline
+            />
+
+            {/* Nút chọn ảnh */}
+            <TouchableOpacity style={styles.uploadButton}
+              onPress={handleImagePicker}>
+              <Text style={styles.uploadButtonText}>
+                {uploadedImage ? 'Đã chọn ảnh' : 'Chọn ảnh'}
+              </Text>
+            </TouchableOpacity>
+
+
+            {/* Nút gửi phản hồi */}
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setReplyModalVisible(false)} // Đóng modal
+              >
+                <Text style={styles.cancelButtonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={handleReply} // Gửi phản hồi
+              >
+                <Text style={styles.sendButtonText}>Gửi phản hồi</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };

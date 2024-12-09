@@ -19,7 +19,7 @@ import { BASE_URL } from '../../api/config';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const EditProductScreen = ({ route, navigation }) => {
-    const { id, name } = route.params; // categoryId truyền từ màn hình trước
+    const { id, name, permissions } = route.params; // categoryId truyền từ màn hình trước
     const [PermissionName, setPermissionName] = useState(name);
     const [isLoading, setIsLoading] = useState(false);
 
