@@ -46,9 +46,6 @@ const Header = () => {
         <TouchableOpacity onPress={() => navigation.navigate('AddToCartScreen')}>
           <Image source={require('../assets/cart.png')} style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('ChatBotScreen')}>
-          <Image source={require('../assets/cart.png')} style={styles.icon} />
-        </TouchableOpacity>
       </View>
     </View>
   );
