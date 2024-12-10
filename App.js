@@ -451,13 +451,14 @@ function HaveLoginHome() {
 }
 function HaveLoginStack({ onScroll, setIsFooterVisible }) {
   const screens = [
-    // { name: "CompletedOrderConfirmationScreen" ,component : CompletedOrderConfirmationScreen},
-    // { name: "RejectOrderConfirmationScreen" ,component : RejectOrderConfirmationScreen},
-    // { name: "OrderConfirmationScreen" ,component : OrderConfirmationScreen},
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
     { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
-    
+    {
+      name: 'EditIdCardScreen',
+      component: EditIdCardScreen,
+      showFooter: false,
+    },
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -650,7 +651,10 @@ function ContentAdmin() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ContentList" component={HomeContentScreen} />
       <Stack.Screen name="AddContentShipment" component={AddContentScreen} />
-      <Stack.Screen name="DetailContentScreen" component={DetailContentScreen} />
+      <Stack.Screen
+        name="DetailContentScreen"
+        component={DetailContentScreen}
+      />
       <Stack.Screen name="AddContentScreen" component={AddContentScreen} />
       <Stack.Screen name="EditContentScreen" component={EditContentScreen} />
     </Stack.Navigator>
@@ -780,7 +784,7 @@ function ShipperDrawerNavigator() {
     >
       <Drawer.Screen
         name="Trang Chủ"
-        component={Map}
+        component={ShipperHome}
         options={{
           drawerIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />

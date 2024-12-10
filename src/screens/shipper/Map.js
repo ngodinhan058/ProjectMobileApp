@@ -18,7 +18,9 @@ import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
-const Map = () => {
+const Map = ({ navigation, route: router }) => {
+  const { orderAddress } = router?.params;
+
   const [route, setRoute] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,7 +31,7 @@ const Map = () => {
     latitude: 21.046666732000062,
     longitude: 105.79016956900006,
   });
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(orderAddress ? orderAddress : '');
   const [mapRegion, setMapRegion] = useState({
     latitude: 21.046666732000062,
     longitude: 105.79016956900006,
@@ -184,8 +186,15 @@ const Map = () => {
     }
   };
 
+  useEffect(() => {
+    handleSearchAddress();
+  }, []);
   const toggleDirections = () => {
     setShowDirections((prev) => !prev);
+  };
+
+  const closeMap = () => {
+    navigation.navigate('Đang Chờ Giao');
   };
 
   useEffect(() => {
@@ -292,6 +301,17 @@ const Map = () => {
         </TouchableOpacity>
       )}
 
+      {!loading && !error && directions.length > 0 && (
+        <TouchableOpacity style={styles.toggleButtonLeft} onPress={closeMap}>
+          <Icon
+            name="close" // Use the FontAwesome motorcycle icon
+            type="font-awesome" // Specify the icon type (FontAwesome)
+            color="#fff" // Icon color (white for contrast)
+            size={20} // Size of the icon
+          />
+        </TouchableOpacity>
+      )}
+
       {showDirections && (
         <View style={styles.timelineOverlay}>
           <Timeline
@@ -360,6 +380,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: '#283cff',
     borderRadius: 30,
+    zIndex: 1000,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+  toggleButtonLeft: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#283cff',
+    borderRadius: 40,
     zIndex: 1000,
     elevation: 5,
     shadowColor: '#000',
