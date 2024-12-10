@@ -159,7 +159,7 @@ const ProfileScreen = ({ navigation, route }) => {
   return (
     <>
       <ScrollView style={styles.container}>
-        {!hasPermission('ROLE_SHIPPER') && (
+        {!hasPermission('ROLE_SHIPPER') ? (
           <View style={styles.iconHeader}>
             <Pressable
               style={styles.backButton}
@@ -169,6 +169,8 @@ const ProfileScreen = ({ navigation, route }) => {
             </Pressable>
             <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
           </View>
+        ) : (
+          <View style={{ paddingTop: 20 }}></View>
         )}
         {/* Header thông tin cá nhân */}
         <View style={styles.header}>
