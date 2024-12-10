@@ -792,7 +792,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   }, [reviews]);
 
   const fetchProductReviews = async () => {
-    console.log("23123123");
 
     const reviewsApiUrl = `${BASE_URL}auth/reviews/product/${id}`;
     try {
@@ -841,7 +840,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               },
             }
           );
-          const reviewsData = response.data.data;
+          const reviewsData = response.slice(0,2);
 
           // Thêm trạng thái "like" vào từng đánh giá
           const updatedReviews = await Promise.all(
@@ -867,7 +866,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             }
           );
 
-          const reviewsData = response.data?.data || [];
+          const reviewsData = response.slice(0,2) || [];
           if (!Array.isArray(reviewsData)) {
             throw new Error('Dữ liệu đánh giá không hợp lệ');
           }
