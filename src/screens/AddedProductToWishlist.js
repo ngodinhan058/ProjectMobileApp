@@ -134,6 +134,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   useEffect(() => {
     scrollRef.current.scrollTo({ y: 0, animated: true });
     fetchData(); // Lấy dữ liệu khi component lần đầu render
+    fetchProductReviews();
   }, [id]);
 
 
@@ -606,6 +607,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
   }, [quantity, productPriceSale]);
 
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const [liked, setLiked] = useState();
   const [cartDataUser, setCartDataUser] = useState([]);
@@ -784,46 +786,45 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       });
       setRatings(ratingsCount);
       setTotalReviews(reviews.length);
+    } else {
+      setRatings({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
     }
   }, [reviews]);
 
   const fetchProductReviews = async () => {
+    console.log("23123123");
+
     const reviewsApiUrl = `${BASE_URL}auth/reviews/product/${id}`;
     try {
-      // Thêm token nếu có
-
-        // const { token } = JSON.parse(userData);
-        if (userInfo) {
-          const response = await axios.get(reviewsApiUrl, {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user.token}`,
-            },
-          });
+      if (userInfo) {
+        const response = await axios.get(reviewsApiUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+        if (response.status == 200 || response.status == 201) {
           setReviews(response.data.data)
-
         } else {
-          const response = await axios.get(reviewsApiUrl);
-          setReviews(response.data.data)
-
+          setReviews([])
         }
-      
+      } else {
+        const response = await axios.get(reviewsApiUrl);
+        if (response.status == 200 || response.status == 201) {
+          setReviews(response.data.data)
+        } else {
+          setReviews([])
+        }
 
-      // return response.data.data;
+      }
     } catch (error) {
       console.log('Lỗi khi lấy review sản phẩm:', error);
-      throw error;
+      setReviews([])
+      setSelectedRating(null)
     } finally {
       setRefreshing(false);
     }
   };
-
-
-
-  useEffect(() => {
-    fetchProductReviews();
-  }, [id]);
-
   const handleFilterByRating = async (rating) => {
     try {
       setLoading(true);
@@ -936,10 +937,13 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     }
   };
 
-  const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     setLoading(true);
+    fetchData();
+    fetchProductReviews();
+  }, []);
+  const onRefreshData = React.useCallback(() => {
     fetchData();
     fetchProductReviews();
   }, []);
@@ -1195,7 +1199,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                     />
                   );
                 })
-              ) : null}
+              ) : <Text style={styles.emptyText}>Chưa có đánh giá nào.</Text>}
             </View>
           </View>
 
@@ -1242,8 +1246,8 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   image={item.productImages?.[0]?.productImagePath}  // Truyền URL của ảnh đầu tiên vào prop images
                   rating={item['productRating']}
                   sale={item['productSale']}
+                  size={item.productSizes}
                   isLoading={false}  // Set isLoading to false when not loading
-
                 />
               );
             }}
@@ -1989,6 +1993,13 @@ const styles = StyleSheet.create({
   greySection: {
     flex: 1,
     padding: 20,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#666',
+    marginTop: 30,
+    fontStyle: 'italic',
   },
   iconHeader: {
     flexDirection: 'row',
