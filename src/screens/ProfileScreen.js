@@ -9,6 +9,9 @@ import {
   Pressable,
   FlatList,
   Alert,
+  Modal,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import IconI from 'react-native-vector-icons/Ionicons';
@@ -27,6 +30,13 @@ const ProfileScreen = ({ navigation, route }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [user, setUser] = useState({});
   const [userImg, setUserImg] = useState();
+  const [loading, setLoading] = useState(false);
+
+  // Modal states
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const getItem = async () => {
     try {
@@ -156,6 +166,57 @@ const ProfileScreen = ({ navigation, route }) => {
   };
   // Logout function
 
+  const handlePasswordUpdate = async () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Lỗi', 'Mật khẩu mới không khớp.');
+      return;
+    }
+
+    if (!userInfo.token) {
+      Alert.alert('Lỗi', 'Vui lòng đăng nhập lại.');
+
+      return;
+    }
+    try {
+      setLoading(true);
+      console.log(1111111, userInfo?.token);
+
+      const response = await fetch(`${BASE_URL}auth/myInfo/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+        body: JSON.stringify({
+          oldPassword: oldPassword,
+          userPassword: newPassword,
+        }),
+      });
+
+      console.log(response);
+
+      if (response.ok) {
+        Alert.alert('Thành công', 'Mật khẩu đã được cập nhật.');
+        setModalVisible(false); // Close the modal
+        // Reset the input fields
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        const result = await response.json();
+        Alert.alert(
+          'Lỗi',
+          result.message || 'Có lỗi xảy ra. Vui lòng thử lại.'
+        );
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      Alert.alert('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <ScrollView style={styles.container}>
@@ -232,13 +293,80 @@ const ProfileScreen = ({ navigation, route }) => {
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.row}>
+
+          {/* Menu items */}
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => setModalVisible(true)} // Show the modal
+          >
             <View style={styles.row}>
               <IconI name="lock-closed-outline" size={22} color="#000" />
               <Text style={styles.textPro}>Thay Đổi Mật Khẩu</Text>
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
+          {/* Other menu items */}
+
+          {/* Password Update Modal */}
+          <Modal
+            visible={isModalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Thay Đổi Mật Khẩu</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Mật khẩu cũ"
+                  secureTextEntry
+                  value={oldPassword}
+                  onChangeText={setOldPassword}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Mật khẩu mới"
+                  secureTextEntry
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Xác nhận mật khẩu mới"
+                  secureTextEntry
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    alignItems: 'center',
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={handlePasswordUpdate}
+                  >
+                    <Text style={styles.buttonText}>Cập Nhật</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.cancelButton]}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>Hủy</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            {loading && (
+              <View style={styles.overlay}>
+                <ActivityIndicator size="large" color="#3669c9" />
+              </View>
+            )}
+          </Modal>
 
           <TouchableOpacity
             style={styles.row}
@@ -422,6 +550,57 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 50,
     backgroundColor: '#d9534f', // Change to your desired color
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    width: 300,
+    borderRadius: 10,
+    alignItems: 'center',
+    zIndex: 500,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+    paddingLeft: 10,
+  },
+  button: {
+    backgroundColor: '#1565C0',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    maxWidth: 120,
+    width: '48%',
+  },
+  cancelButton: {
+    backgroundColor: '#f44336',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
   },
 });
 
