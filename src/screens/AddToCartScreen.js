@@ -72,8 +72,7 @@ function AddToCartScreen({ route, navigation }) {
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
     { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
-    { label: 'ZaloPay', icon: require('../assets/star.png'), use: true, value: 2 },
-    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 3 },
+
   ];
 
   const toggleModal = () => {
@@ -615,8 +614,6 @@ function AddToCartScreen({ route, navigation }) {
       totalPrice: finalTotal,
     };
 
-    console.log(orderData);
-
     if (selectedPaymentMethod === 0) {
       try {
         const paymentResponse = await axios.get(apiPaymentUrl);
@@ -629,7 +626,7 @@ function AddToCartScreen({ route, navigation }) {
         const paymentUrl = paymentResponse.data.data.paymentUrl;
 
         // Điều hướng đến màn hình thanh toán
-        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart });
+        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart, payment: 'AddToCart' });
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');

@@ -71,7 +71,6 @@ function BuyNow({ route, navigation }) {
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
     { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
-    { label: 'Ví MoMo (Đang cập nhập)', icon: require('../assets/star.png'), use: false, value: 2 },
   ];
   const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
@@ -545,8 +544,6 @@ function BuyNow({ route, navigation }) {
       totalPrice: finalTotal,
     };
 
-    // console.log(orderData);
-
     if (selectedPaymentMethod === 0) {
       try {
         const paymentResponse = await axios.get(apiPaymentUrl);
@@ -559,7 +556,7 @@ function BuyNow({ route, navigation }) {
         const paymentUrl = paymentResponse.data.data.paymentUrl;
 
         // Điều hướng đến màn hình thanh toá
-        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart });
+        navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart, payment: 'BuyNow' });
       } catch (error) {
         console.error('Error:', error);
         Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
@@ -789,7 +786,7 @@ function BuyNow({ route, navigation }) {
                   <TouchableOpacity
                     key={index}
                     style={styles.option}
-                    onPress={() => handleSelectPayment(option.label, option.icon, option.use)}
+                    onPress={() => handleSelectPayment(option.label, option.icon, option.use, option.value)}
                   >
                     <Image source={option.icon} style={styles.optionIcon} />
                     <Text style={styles.optionLabel}>{option.label}</Text>

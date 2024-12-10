@@ -106,9 +106,8 @@ const FilterScreen = ({ isVisible, onClose, onApply, onReset }) => {
                     {/* Predefined price range buttons (using map) */}
                     <View style={styles.priceRangeButtons}>
                         {priceRanges.map((range, index) => (
-                            <View style={styles.checkboxColumn}>
+                            <View  key={index} style={styles.checkboxColumn}>
                                 <TouchableOpacity
-                                    key={index}
                                     style={styles.checkbox}
                                     onPress={() => handleQuickPriceSelect(range.min, range.max)}
                                 >

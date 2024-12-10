@@ -41,7 +41,14 @@ const ChatScreen = ({ route }) => {
   }, []);
   
 
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      id: '1',
+      text: 'Xin Chào',
+      isSender: false,
+    },
+    { id: '2', text: 'Hãy cho tôi 2 sản phẩm và tôi sẽ so sánh giúp bạn', isSender: false },
+  ]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
 
