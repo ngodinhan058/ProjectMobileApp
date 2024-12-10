@@ -15,6 +15,7 @@ import {
   useAnimatedValue,
   Alert,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import ProductItem from '../components/ProductItem';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -122,6 +123,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       setSize(size);
       setProductPriceSale(productPriceSale)
       setLoading(false);
+      setRefreshing(false);
 
     } catch (error) {
       console.log('Lỗi khi lấy dữ liệu:', error); // Log lỗi nếu có
@@ -786,176 +788,168 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   }, [reviews]);
 
   const fetchProductReviews = async () => {
-
     const reviewsApiUrl = `${BASE_URL}auth/reviews/product/${id}`;
-
     try {
-      const response = await axios.get(reviewsApiUrl);
-      setReviews(response.data);
+      // Thêm token nếu có
+
+        // const { token } = JSON.parse(userData);
+        if (userInfo) {
+          const response = await axios.get(reviewsApiUrl, {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${user.token}`,
+            },
+          });
+          setReviews(response.data.data)
+
+        } else {
+          const response = await axios.get(reviewsApiUrl);
+          setReviews(response.data.data)
+
+        }
+      
+
+      // return response.data.data;
     } catch (error) {
-      // console.log('Lỗi khi lấy review sản phẩm:', error);
+      console.log('Lỗi khi lấy review sản phẩm:', error);
+      throw error;
+    } finally {
+      setRefreshing(false);
     }
   };
+
 
 
   useEffect(() => {
     fetchProductReviews();
   }, [id]);
 
-  const handleLikeToggle = async (reviewId, isCurrentlyLiked) => {
-    try {
-      const userData = await AsyncStorage.getItem("userData");
-      if (!userData) throw new Error("No user token found");
-
-      const { token } = JSON.parse(userData);
-
-      const apiUrl = `${BASE_URL}auth/review-like`;
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      if (isCurrentlyLiked) {
-        // Gửi request DELETE để bỏ thích
-        await axios.delete(apiUrl, {
-          headers,
-          params: {
-            reviewId,
-            userId: user.id, // Giả sử bạn đã lưu userId trong state user
-          },
-        });
-      } else {
-        // Gửi request POST để thích
-        await axios.post(
-          apiUrl,
-          {
-            reviewId,
-            userId: user.id, // Giả sử bạn đã lưu userId trong state user
-          },
-          { headers }
-        );
-      }
-      const updatedReviews = reviews.map((review) => {
-        if (review.reviewId === reviewId) {
-          return {
-            ...review,
-            isLikedByCurrentUser: !isCurrentlyLiked,
-            totalLike: isCurrentlyLiked
-              ? review.totalLike - 1
-              : review.totalLike + 1,
-          };
-        }
-        return review;
-      });
-      setReviews(updatedReviews);
-    } catch (error) {
-      console.log("Failed to toggle like:", error);
-      Alert.alert("Lỗi", "Không thể cập nhật trạng thái thích.");
-    }
-  };
   const handleFilterByRating = async (rating) => {
     try {
       setLoading(true);
+      if (userInfo) {
+        if (selectedRating === rating) {
+          // Xóa bộ lọc nếu nhấn lại vào cùng một sao
+          setSelectedRating(null);
 
-      if (selectedRating === rating) {
-        setSelectedRating(null);
-        const response = await axios.get(`${BASE_URL}auth/reviews/product/${id}`);
-        setReviews(response.data);
-      } else {
-        setSelectedRating(rating);
-        const response = await axios.get(`${BASE_URL}auth/reviews/${id}/rating?rating=${rating}`);
+          const response = await axios.get(
+            `${BASE_URL}auth/reviews/product/${id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${user.token}`, // Gắn token vào header
+              },
+            }
+          );
+          const reviewsData = response.data.data;
 
-        if (!response.data?.data) {
-          Alert.alert("Thông báo", `Không tìm thấy đánh giá nào với mức sao ${rating}`);
-          setReviews([]);
-        } else {
-          setReviews(response.data?.data || []);
+          // Thêm trạng thái "like" vào từng đánh giá
+          const updatedReviews = await Promise.all(
+            reviewsData.map(async (review) => {
+              const storedData = await AsyncStorage.getItem(`review_like_${review.reviewId}`);
+              const isLiked = storedData ? JSON.parse(storedData).isLiked : false;
+              return { ...review, isLiked };
+            })
+          );
+
+          setReviews(updatedReviews); // Hiển thị tất cả đánh giá
+        }
+        else {
+          // Lưu bộ lọc mức sao được chọn
+          setSelectedRating(rating);
+
+          const response = await axios.get(
+            `${BASE_URL}auth/reviews/${id}/rating?rating=${rating}`,
+            {
+              headers: {
+                Authorization: `Bearer ${user.token}`, // Gắn token vào header
+              },
+            }
+          );
+
+          const reviewsData = response.data?.data || [];
+          if (!Array.isArray(reviewsData)) {
+            throw new Error('Dữ liệu đánh giá không hợp lệ');
+          }
+
+          // Thêm trạng thái "like" vào dữ liệu đã lọc
+          const filteredReviews = await Promise.all(
+            reviewsData.map(async (review) => {
+              const storedData = await AsyncStorage.getItem(`review_like_${review.reviewId}`);
+              const isLiked = storedData ? JSON.parse(storedData).isLiked : false;
+              return { ...review, isLiked };
+            })
+          );
+
+          setReviews(filteredReviews); // Hiển thị đánh giá đã lọc
         }
       }
+      else {
+        if (selectedRating === rating) {
+          // Xóa bộ lọc nếu nhấn lại vào cùng một sao
+          setSelectedRating(null);
+
+          const response = await axios.get(
+            `${BASE_URL}auth/reviews/product/${id}`);
+          const reviewsData = response.data.data;
+
+          // Thêm trạng thái "like" vào từng đánh giá
+          const updatedReviews = await Promise.all(
+            reviewsData.map(async (review) => {
+              const storedData = await AsyncStorage.getItem(`review_like_${review.reviewId}`);
+              const isLiked = storedData ? JSON.parse(storedData).isLiked : false;
+              return { ...review, isLiked };
+            })
+          );
+
+          setReviews(updatedReviews); // Hiển thị tất cả đánh giá
+        }
+        else {
+          // Lưu bộ lọc mức sao được chọn
+          setSelectedRating(rating);
+
+          const response = await axios.get(
+            `${BASE_URL}auth/reviews/${id}/rating?rating=${rating}`);
+
+          const reviewsData = response.data?.data || [];
+          if (!Array.isArray(reviewsData)) {
+            throw new Error('Dữ liệu đánh giá không hợp lệ');
+          }
+
+          // Thêm trạng thái "like" vào dữ liệu đã lọc
+          const filteredReviews = await Promise.all(
+            reviewsData.map(async (review) => {
+              const storedData = await AsyncStorage.getItem(`review_like_${review.reviewId}`);
+              const isLiked = storedData ? JSON.parse(storedData).isLiked : false;
+              return { ...review, isLiked };
+            })
+          );
+
+          setReviews(filteredReviews); // Hiển thị đánh giá đã lọc
+        }
+      }
+
     } catch (error) {
-      console.log("Lỗi khi lọc đánh giá theo sao:", error);
-      Alert.alert("Lỗi", "Không thể lọc đánh giá.");
+      console.error('Lỗi khi lọc đánh giá theo sao:', error);
+      Alert.alert('Lỗi', 'Không thể lọc đánh giá.');
     } finally {
-      setLoading(false);
+      setLoading(false); // Đảm bảo trạng thái loading luôn tắt
     }
   };
 
-  const handleReply = async () => {
-    if (!comment.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập nội dung phản hồi.");
-      return;
-    }
-
-    try {
-      const userData = await AsyncStorage.getItem('userData');
-      if (!userData) throw new Error('No user token found');
-      const { token } = JSON.parse(userData);
-
-      const formData = new FormData();
-      if (uploadedImage) {
-        formData.append('image', {
-          uri: uploadedImage,
-          type: 'image/jpeg',
-          name: 'reply.jpg',
-        });
-      }
-      formData.append('request', JSON.stringify({
-        parentId: selectedReview?.reviewId,
-        userId: user.id,
-        comment,
-      }));
-
-      await axios.post(`${BASE_URL}auth/reviews/reply`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      Alert.alert('Thành công', 'Phản hồi đã được gửi!');
-      setReplyModalVisible(false);
-      setComment('');
-      setUploadedImage(null);
-      fetchProductReviews(id);
-    } catch (error) {
-      console.log('Lỗi gửi phản hồi:', error);
-      Alert.alert('Lỗi', 'Không thể gửi phản hồi.');
-    }
-  };
-
-  const handleImagePicker = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        Alert.alert('Permission required', 'You need to grant permission to access the gallery.');
-        return;
-      }
-
-      // Mở thư viện ảnh
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Chỉ chọn ảnh
-        allowsEditing: true, // Cho phép chỉnh sửa
-        quality: 1, // Chất lượng ảnh cao
-      });
-
-      console.log('ImagePicker Result:', result);
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        setUploadedImage(result.assets[0].uri); // Lưu đường dẫn ảnh
-      } else {
-        console.log('Image selection was canceled');
-      }
-    } catch (error) {
-      console.log('Error picking an image:', error);
-    }
-  };
-
-  const isReviewOwner = (reviewUserId) => reviewUserId === user.id;
-
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setLoading(true);
+    fetchData();
+    fetchProductReviews();
+  }, []);
 
   //Kết thúc
   return (
     <View>
-      <ScrollView ref={scrollRef}>
+      <ScrollView ref={scrollRef} refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']} />
+      }>
         <View style={styles.productDetailContainer}>
           <View style={styles.iconHeader}>
             <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -1190,11 +1184,14 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                       rating={item?.rating}
                       totalLike={item?.totalLike}
                       userFullName={item?.userFullName}
+                      reviewImg={item?.reviewImg}
                       createdAt={item?.createdAt}
                       isLikedByCurrentUser={item?.isLikedByCurrentUser}
                       children={item?.children}
-                      // userId={item?.userId}
-
+                      userId={item?.userId}
+                      review={reviews}
+                      onActionComplete={() => fetchProductReviews()}
+                      openLogin={openModalLogin}
                     />
                   );
                 })
@@ -1213,7 +1210,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                 marginVertical: 20,
                 borderRadius: 10,
               }}
-              onPress={() => navigation.navigate('ReviewProductScreen', { productId: id })}
+              onPress={() => navigation.navigate('ReviewProductScreen', { productId: id, userInfo: userInfo })}
             >
               <Text style={{ textAlign: 'center', fontWeight: '600' }}>
                 Xem Tất Cả Đánh Giá
@@ -1857,7 +1854,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       />
       {loading && (
         <View style={styles.overlay}>
-          <ActivityIndicator size="large" color="#3669c9" />
+          <ActivityIndicator size="large" color="#3669c9" style={{ top: '35%' }} />
         </View>
       )}
     </View>
@@ -1868,7 +1865,6 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
   },

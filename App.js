@@ -381,6 +381,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
         headerShown: false,
       },
     },
+    {
+      name: 'CreateAddressScreen',
+      component: CreateAddressScreen,
+      showFooter: false,
+    },
   ];
 
   return (
@@ -452,11 +457,7 @@ function HaveLoginStack({ onScroll, setIsFooterVisible }) {
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
     { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
-    {
-      name: 'CreateAddressScreen',
-      component: CreateAddressScreen,
-      showFooter: false,
-    },
+    
   ];
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

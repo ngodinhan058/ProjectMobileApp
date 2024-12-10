@@ -104,7 +104,7 @@ const OrderItem = ({ order, setLoading }) => {
   };
 
   const closeModalRate = () => {
-    setModalVisible(false);
+    // setModalVisible(false);
     setStep(1);
     setSelectedProduct(null);
     setRating(0);
