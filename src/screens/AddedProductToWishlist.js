@@ -792,38 +792,36 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   }, [reviews]);
 
   const fetchProductReviews = async () => {
-
     const reviewsApiUrl = `${BASE_URL}auth/reviews/product/${id}`;
     try {
+      let response;
       if (userInfo) {
-        const response = await axios.get(reviewsApiUrl, {
+        response = await axios.get(reviewsApiUrl, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user.token}`,
           },
         });
-        if (response.status == 200 || response.status == 201) {
-          setReviews(response.data.data)
-        } else {
-          setReviews([])
-        }
       } else {
-        const response = await axios.get(reviewsApiUrl);
-        if (response.status == 200 || response.status == 201) {
-          setReviews(response.data.data)
-        } else {
-          setReviews([])
-        }
-
+        response = await axios.get(reviewsApiUrl);
+      }
+  
+      if (response.status === 200 || response.status === 201) {
+        // Chỉ lấy 2 dữ liệu đầu tiên
+        const limitedReviews = response.data.data.slice(0, 2);
+        setReviews(limitedReviews);
+      } else {
+        setReviews([]);
       }
     } catch (error) {
       console.log('Lỗi khi lấy review sản phẩm:', error);
-      setReviews([])
-      setSelectedRating(null)
+      setReviews([]);
+      setSelectedRating(null);
     } finally {
       setRefreshing(false);
     }
   };
+  
   const handleFilterByRating = async (rating) => {
     try {
       setLoading(true);
