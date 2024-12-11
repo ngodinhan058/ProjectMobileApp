@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     quantityButtonLeft: {
-        width: 30,
-        height: 30,
+        width: 40,
+        height: 40,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
@@ -194,8 +194,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f2f2f2',
     },
     quantityButtonRight: {
-        width: 30,
-        height: 30,
+        width: 40,
+        height: 40,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
