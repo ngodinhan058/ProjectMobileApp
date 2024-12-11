@@ -7,11 +7,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
-  FlatList,
+  ActivityIndicator,
   Alert,
   Modal,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import IconI from 'react-native-vector-icons/Ionicons';
@@ -30,8 +29,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [user, setUser] = useState({});
   const [userImg, setUserImg] = useState();
-  const [loading, setLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   // Modal states
   const [isModalVisible, setModalVisible] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
@@ -57,6 +55,7 @@ const ProfileScreen = ({ navigation, route }) => {
   }, []);
 
   const loadUserInfo = async () => {
+    setIsLoading(true)
     if (user) {
       try {
         const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
@@ -89,6 +88,8 @@ const ProfileScreen = ({ navigation, route }) => {
         }
       } catch (error) {
         // console.error('Error fetching user info:', error);
+      } finally {
+        setIsLoading(false)
       }
     }
   };
@@ -178,7 +179,7 @@ const ProfileScreen = ({ navigation, route }) => {
       return;
     }
     try {
-      setLoading(true);
+      setIsLoading(true);
       console.log(1111111, userInfo?.token);
 
       const response = await fetch(`${BASE_URL}auth/myInfo/change-password`, {
@@ -213,7 +214,7 @@ const ProfileScreen = ({ navigation, route }) => {
       console.error('Error updating password:', error);
       Alert.alert('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -364,7 +365,7 @@ const ProfileScreen = ({ navigation, route }) => {
                 </View>
               </View>
             </View>
-            {loading && (
+            {isLoading && (
               <View style={styles.overlay}>
                 <ActivityIndicator size="large" color="#3669c9" />
               </View>
@@ -413,11 +414,23 @@ const ProfileScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

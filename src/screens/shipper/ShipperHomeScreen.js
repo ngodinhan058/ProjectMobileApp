@@ -13,6 +13,8 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { BASE_URL } from "../api/config";
+import { WS_URL } from '../api/configWS';
+import useWebSocket from '../api/useWebSocket';
 
 
 function ShipperHomeScreen({ navigation }) {
@@ -65,6 +67,33 @@ function ShipperHomeScreen({ navigation }) {
 
     fetchData();
   }, []);
+  const wsUrl = `${WS_URL}/ws`;
+
+  const handleOrderUpdate = (updatedOrder) => {
+    setOrders((prevOrders) => {
+      if (updatedOrder.orderId) {
+        // Check if the order already exists
+        const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
+        if (updatedOrder.orderStatus == 3) {
+          return prevOrders.filter(order => order.orderId !== updatedOrder.orderId);
+        } else {
+          if (orderIndex !== -1) {
+            // Update the existing order
+            const newOrders = [...prevOrders];
+            newOrders[orderIndex] = updatedOrder;
+            return newOrders;
+          } else {
+            return [...prevOrders, updatedOrder]
+          }
+        }
+      } else {
+        // Handle order deletion by `orderId`
+        return prevOrders.filter(order => order.orderId !== updatedOrder.orderId);
+      }
+    });
+
+  };
+  const { client } = useWebSocket(wsUrl, handleOrderUpdate);
 
   const handleAcceptOrder = async (orderId) => {
     try {
@@ -164,34 +193,34 @@ function ShipperHomeScreen({ navigation }) {
         </View>
       </View>
       <ScrollView style={styles.shipments}>
-      {/* Đơn hàng hôm nay */}
-      <View>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Đơn hàng hôm nay</Text>
-        </View>
-        {orders.length > 0 ? (
-          orders.map((order) => (
-            <View key={order.orderId} style={styles.shipmentCard}>
-              <Text style={styles.shipmentId}>Mã đơn: {order.orderId}</Text>
-              <Text style={styles.shipmentAddress}>
-                Địa chỉ: {order.orderAddress}
-              </Text>
-              <Text style={styles.shipmentPrice}>Giá: {order.orderTotal} VND</Text>
-              <TouchableOpacity
-                style={styles.acceptButton}
-                onPress={() => handleAcceptOrder(order.orderId)}
-              >
-                <Text style={styles.acceptButtonText}>Nhận đơn</Text>
-              </TouchableOpacity>
-            </View>
-          ))
-        ) : (
-          <View style={styles.noOrderContainer}>
-            <Text style={styles.noOrderText}>Không có đơn hàng</Text>
+        {/* Đơn hàng hôm nay */}
+        <View>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Đơn hàng hôm nay</Text>
           </View>
-        )}
-      </View>
-    </ScrollView>
+          {orders.length > 0 ? (
+            orders.map((order) => (
+              <View key={order.orderId} style={styles.shipmentCard}>
+                <Text style={styles.shipmentId}>Mã đơn: {order.orderId}</Text>
+                <Text style={styles.shipmentAddress}>
+                  Địa chỉ: {order.orderAddress}
+                </Text>
+                <Text style={styles.shipmentPrice}>Giá: {order.orderTotal} VND</Text>
+                <TouchableOpacity
+                  style={styles.acceptButton}
+                  onPress={() => handleAcceptOrder(order.orderId)}
+                >
+                  <Text style={styles.acceptButtonText}>Nhận đơn</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <View style={styles.noOrderContainer}>
+              <Text style={styles.noOrderText}>Không có đơn hàng</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
 
     </View>
   );
@@ -250,13 +279,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#fff",
   },
-  
+
   notificationIcon: {
     width: 20,
     height: 20,
     tintColor: "#3669C9",
   },
-  
+
   notificationBadge: {
     position: "absolute",
     top: -5,
@@ -290,7 +319,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 15,
   },
-  
+
   quickNavContainer: {
     marginTop: -40,
     paddingHorizontal: 20,
@@ -348,13 +377,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  
+
   shipmentId: {
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 5,
   },
-  
+
   shipmentAddress: {
     color: "#666",
     fontSize: 14,
@@ -377,7 +406,7 @@ const styles = StyleSheet.create({
     color: "#888",
     fontWeight: "bold",
   },
-  
+
   acceptButton: {
     marginTop: 10,
     backgroundColor: "#3669C9",
@@ -385,13 +414,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  
+
   acceptButtonText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
   },
-  
+
   shipmentRoute: {
     marginTop: 5,
     fontSize: 12,
@@ -421,7 +450,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
-  
+
 });
 
 export default ShipperHomeScreen;

@@ -129,7 +129,9 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
       console.log('Lỗi khi lấy dữ liệu:', error); // Log lỗi nếu có
     }
   };
-
+  useEffect(() => {
+    fetchProductReviews();
+  }, []);
 
   useEffect(() => {
     scrollRef.current.scrollTo({ y: 0, animated: true });
@@ -281,8 +283,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
 
 
   const handleAddToCartUser = async () => {
-    console.log("selectedSizesQuantity", selectedSizesQuantity);
-
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -480,8 +480,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   };
 
   const handleAddToCartGuest = async () => {
-    closeModalBuy();
-    setLoading(true)
     if (!selectedSize) {
       setError('Vui Lòng Chọn Màu Sản Phẩm');
       setErrorCheck(false);
@@ -550,7 +548,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
     };
     try {
       const createCartResponse = await axios.post(`${BASE_URL}cart/create_guest`, cartItemDataUUID);
-
       if (createCartResponse.status === 201 || createCartResponse.status === 200) {
         const newCartId = createCartResponse.data.data.cartId;
         console.log('Giỏ hàng được tạo thành công:', newCartId);
@@ -639,6 +636,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   };
   useEffect(() => {
     fetchWishList();
+    fetchProductReviews();
   }, [userInfo?.userId]);
 
   const handleSelectSizes = (sizeName) => {
@@ -838,7 +836,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
               },
             }
           );
-          const reviewsData = response.slice(0,2);
+          const reviewsData = response.data.data;
 
           // Thêm trạng thái "like" vào từng đánh giá
           const updatedReviews = await Promise.all(
@@ -864,7 +862,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
             }
           );
 
-          const reviewsData = response.slice(0,2) || [];
+          const reviewsData = response.data?.data || [];
           if (!Array.isArray(reviewsData)) {
             throw new Error('Dữ liệu đánh giá không hợp lệ');
           }
@@ -881,6 +879,9 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
           setReviews(filteredReviews); // Hiển thị đánh giá đã lọc
         }
       }
+
+
+
       else {
         if (selectedRating === rating) {
           // Xóa bộ lọc nếu nhấn lại vào cùng một sao
@@ -937,10 +938,6 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     setLoading(true);
-    fetchData();
-    fetchProductReviews();
-  }, []);
-  const onRefreshData = React.useCallback(() => {
     fetchData();
     fetchProductReviews();
   }, []);
@@ -1414,7 +1411,7 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   <TextInput
                     style={{
                       width: 50,
-                      height: 30,
+                      height: 40,
                       borderColor: errorCheckQuantity ? 'red' : '#ccc',
                       borderWidth: 1,
                       textAlign: 'center',
@@ -1567,11 +1564,11 @@ function AddedProductToWishlist({ route, navigation, onScroll }) {
                   <TextInput
                     style={{
                       width: 50,
-                      height: 30,
+                      height: 40,
                       borderColor: errorCheckQuantity ? 'red' : '#ccc',
                       borderWidth: 1,
                       textAlign: 'center',
-                      fontSize: 16,
+                     
                       fontWeight: 'bold',
                       color: '#3669c9',
                       backgroundColor: '#fff',
@@ -1945,8 +1942,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   quantityButtonLeft: {
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     borderLeftWidth: 1,
@@ -1957,8 +1954,8 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 5,
   },
   quantityButtonRight: {
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     borderRightWidth: 1,

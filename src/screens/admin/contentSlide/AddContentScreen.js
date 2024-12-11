@@ -19,7 +19,6 @@ import { BASE_URL } from '../../api/config';
 
 
 const AddSizeScreen = ({ navigation }) => {
-    const [SizeCode, setSizeCode] = useState('#');    
     const [SizeName, setSizeName] = useState('');
 
 
@@ -51,7 +50,7 @@ const AddSizeScreen = ({ navigation }) => {
                     <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="angle-left" size={35} color="#000" />
                     </Pressable>
-                    <Text style={styles.textHeader}>Thêm Thông Tin Màu</Text>
+                    <Text style={styles.textHeader}>Thêm Thông Tin Content</Text>
                 </View>
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Thêm Content:</Text>

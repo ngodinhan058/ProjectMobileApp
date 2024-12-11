@@ -9,7 +9,7 @@ import { BASE_URL } from '../screens/api/config';
 import AlertComponent from '../components/AlertComponent';
 import { useFocusEffect } from '@react-navigation/native';
 
-const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, sizeName, isLoading, setAlertType, setAlertVisible, setTitleAlert, onActionComplete}) => {
+const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, size, sizeName, isLoading, setAlertType, setAlertVisible, setTitleAlert, onActionComplete }) => {
   const [liked, setLiked] = useState();
   const [isBuyModalVisible, setIsBuyModalVisible] = useState(false);
   const [isUnLikeModalVisible, setIsUnLikeModalVisible] = useState(false);
@@ -69,7 +69,28 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
     fetchUserInfo();
   }, []);
+  const fetchData = async () => {
+    // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
+    console.log(`${BASE_URL}carts/wishlist/user/${userInfo?.userId}`);
+    
+    const apiUrl = `${BASE_URL}carts/wishlist/user/${userInfo?.userId}`;
+    try {
+      const response = await axios.get(apiUrl);
+      const userData = response.data.data.cartItem;
 
+      setCartDataUser(userData);
+      const isLiked = userData.some((item) => item.productId === id);
+      setLiked(isLiked); // Cập nhật trạng thái liked
+      // Tìm các size đã chọn từ danh sách cartDataUser
+      const matchingSizes = userData
+        .filter((item) => item.productId === id) // Chỉ giữ lại sản phẩm có id khớp size
+        .map((item) => item.productSize); // Lấy tên size
+
+      setSelectedSizes(matchingSizes); // Cập nhật trạng thái các size được chọn
+    } catch (error) {
+      // console.log('Error fetching data:', error);
+    }
+  };
   const handleSelectSize = (sizeName) => {
     setSelectedSizes((prevSelectedSizes) => {
       if (prevSelectedSizes.includes(sizeName)) {
@@ -172,6 +193,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
           console.log("Xoá Yêu Thích Thành Công", response.data.message);
 
           closeModalUnLike();
+          setLiked(null)
         } else {
           // console.error("Không thể xoá:", response.data.message || "Lỗi không xác định");
           setAlertType('error')
@@ -184,6 +206,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
         setAlertVisible(true)
         setTitleAlert('Không thể thêm sản phẩm vào giỏ hàng')
       }
+
     });
 
     // Đợi tất cả yêu cầu xóa hoàn tất
@@ -191,6 +214,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
     // Xóa các size đã chọn khỏi trạng thái
     fetchData();
+
     setSelectedSizes([]);
     setAlertType('success');
     setAlertVisible(true);
@@ -227,26 +251,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
     onActionComplete?.();
     fetchData();
   };
-  const fetchData = async () => {
-    // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
-    const apiUrl = `${BASE_URL}carts/wishlist/user/${userInfo?.userId}`;
-    try {
-      const response = await axios.get(apiUrl);
-      const userData = response.data.data.cartItem;
 
-      setCartDataUser(userData);
-      const isLiked = userData.some((item) => item.productId === id );      
-      setLiked(isLiked); // Cập nhật trạng thái liked
-      // Tìm các size đã chọn từ danh sách cartDataUser
-      const matchingSizes = userData
-        .filter((item) => item.productId === id) // Chỉ giữ lại sản phẩm có id khớp size
-        .map((item) => item.productSize); // Lấy tên size
-
-      setSelectedSizes(matchingSizes); // Cập nhật trạng thái các size được chọn
-    } catch (error) {
-      // console.log('Error fetching data:', error);
-    }
-  };
   // useEffect(() => {
   //   fetchData();
   // }, [userInfo?.userId]);
@@ -315,7 +320,7 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                         <Icon name="heart" size={18} color="#3669c9" />
                       </Text>
                     </TouchableOpacity>)
-                  : (<TouchableOpacity onPress={ userInfo != null ? openModalBuy : openModalLogin}>
+                  : (<TouchableOpacity onPress={userInfo != null ? openModalBuy : openModalLogin}>
                     <Text style={styles.heart}>
                       <Icon name="heart-outline" size={18} color="#3669c9" />
                     </Text>
@@ -344,8 +349,8 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
 
               <View style={styles.rate}>
                 <Text style={styles.rating}>
-                <Text style={styles.star}>⭐</Text>
-                {rating}
+                  <Text style={styles.star}>⭐</Text>
+                  {rating}
                 </Text>
                 {liked ?
                   Array.isArray(size) ? (
@@ -527,8 +532,8 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
           </View>
         </View>
       </Modal>
-       {/* No Login */}
-       <Modal visible={isLoginModalVisible} animationType="slide"
+      {/* No Login */}
+      <Modal visible={isLoginModalVisible} animationType="slide"
         transparent={true}
         onRequestClose={closeModalLogin}>
         <TouchableWithoutFeedback onPress={closeModalLogin}>

@@ -17,10 +17,11 @@ export const chatDiscussion = async (question) => {
 };
 
 export const generateContent = async (prompt, productId1, productId2) => {
+  console.log(prompt, productId1, productId2);
+  
   try {
     const response = await axios.post(`${API_BASE_URL}/chat/compare`, null, {
       params: { 
-        prompt, 
         productIds: productId1,
         productIds: productId2 },
     });

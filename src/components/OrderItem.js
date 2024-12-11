@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, FlatList } from 'react-native';
+import { View, Text, Image, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, FlatList, Keyboard  } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -9,7 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 
-const OrderItem = ({ order, setLoading }) => {
+const OrderItem = ({ order, setLoading, onAction }) => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [step, setStep] = useState(1);
@@ -104,7 +104,7 @@ const OrderItem = ({ order, setLoading }) => {
   };
 
   const closeModalRate = () => {
-    // setModalVisible(false);
+    setModalVisible(false);
     setStep(1);
     setSelectedProduct(null);
     setRating(0);
@@ -225,6 +225,8 @@ const OrderItem = ({ order, setLoading }) => {
     } finally {
       setLoading(false)
     }
+    onAction?.()
+
   };
 
   const handleConfirmOrder = async () => {
@@ -249,6 +251,7 @@ const OrderItem = ({ order, setLoading }) => {
       setLoading(false)
 
     }
+    onAction?.()
   };
   const handleConfirmCompleteOrder = async () => {
     setLoading(true)
@@ -447,7 +450,7 @@ const OrderItem = ({ order, setLoading }) => {
 
                   </TouchableOpacity>
                 )}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(item) => item.productId.toString()}
                 ListEmptyComponent={<Text style={styles.noReviewText}>Không có sản phẩm để đánh giá</Text>}
               />
 

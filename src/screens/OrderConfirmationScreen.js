@@ -234,6 +234,7 @@ function OrderConfirmationScreen({ navigation, route }) {
               <Text style={styles.label}>Email: {orderDetails.userEmail}</Text>
               <Text style={styles.label}>Số Điện Thoại: {orderDetails.userPhone}</Text>
               <Text style={[styles.label, styles.addressText]}>{orderDetails.orderAddress}</Text>
+              <Text style={styles.label}>Tình Trạng: {orderDetails.orderPayment == 1 ? "Chưa Thanh Toán" : "Đã Thanh Toán"}</Text>
             </View>
             <Text style={styles.sectionHeader}>Đơn Hàng Sản Phẩm</Text>
             {orderDetails.items.length > 0 ? (
