@@ -302,7 +302,6 @@ const ProductItem = ({ id, image, name, price, oldPrice, rating, review, sale, s
                 <Text style={styles.rating}>
                   <Image source={require('../assets/star.png')} style={styles.icon} /> {rating}
                 </Text>
-                <Text style={styles.review}>{review} Review</Text>
                 {liked ?
                   Array.isArray(size) ? (
                     (<TouchableOpacity onPress={openModalUnLike}>

@@ -5,7 +5,7 @@ import axios from 'axios';
 import { BASE_URL } from '../api/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const PaymentWebViewScreen = ({ route, navigation }) => {
-  const { url, orderData, orderId } = route?.params; // Nhận dữ liệu URL và orderData
+  const { url, orderData, orderId, payment } = route?.params; // Nhận dữ liệu URL và orderData
   const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -31,19 +31,37 @@ const PaymentWebViewScreen = ({ route, navigation }) => {
       if (responseCode === '00') {
         // Thanh toán thành công, gọi API đặt hàng
         if (userInfo) {
-          try {
-            const response = await axios.post(`${BASE_URL}order/user`, orderData);
+          if (payment === 'BuyNow') {
+            try {
+              const response = await axios.post(`${BASE_URL}order/user/buynow`, orderData);
 
-            if (response.status === 200 || response.status === 201) {
-              // Alert.alert('Success', 'Đơn hàng đã được đặt thành công!');
-              navigation.navigate('OrderConfirmationScreen', { orderId: orderId });
-            } else {
-              Alert.alert('Error', 'Không thể đặt đơn hàng. Vui lòng thử lại.');
+              if (response.status === 200 || response.status === 201) {
+                // Alert.alert('Success', 'Đơn hàng đã được đặt thành công!');
+                navigation.navigate('OrderConfirmationScreen', { orderId: orderId });
+              } else {
+                Alert.alert('Error', 'Không thể đặt đơn hàng. Vui lòng thử lại.');
+              }
+            } catch (error) {
+              console.log('Error placing order:', error);
+              //   Alert.alert('Error', 'Đã xảy ra lỗi khi đặt đơn hàng.');
             }
-          } catch (error) {
-            console.log('Error placing order:', error);
-            //   Alert.alert('Error', 'Đã xảy ra lỗi khi đặt đơn hàng.');
           }
+          else {
+            try {
+              const response = await axios.post(`${BASE_URL}order/user`, orderData);
+
+              if (response.status === 200 || response.status === 201) {
+                // Alert.alert('Success', 'Đơn hàng đã được đặt thành công!');
+                navigation.navigate('OrderConfirmationScreen', { orderId: orderId });
+              } else {
+                Alert.alert('Error', 'Không thể đặt đơn hàng. Vui lòng thử lại.');
+              }
+            } catch (error) {
+              console.log('Error placing order:', error);
+              //   Alert.alert('Error', 'Đã xảy ra lỗi khi đặt đơn hàng.');
+            }
+          }
+
         } else {
           try {
             const response = await axios.post(`${BASE_URL}order/guest`, orderData);

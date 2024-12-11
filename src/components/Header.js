@@ -28,7 +28,7 @@ const Header = () => {
   const hasRole = (role) => Object.keys(userData).length !== 0 ? userData?.includes(role) : null
   const navigation = useNavigation();
   return (
-    <View style={ hasRole("ROLE_ADMIN") ? styles.headerContainerAdmin : styles.headerContainer}>
+    <View style={ userData ? hasRole("ROLE_ADMIN") ? styles.headerContainerAdmin : styles.headerContainer : styles.headerContainer}>
       {/* Logo */}
       <TouchableOpacity onPress={() => navigation.navigate('Home')}>
         <Text style={styles.logo}>Mega Mall</Text>

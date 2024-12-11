@@ -381,6 +381,11 @@ function HomeStack({ onScroll, setIsFooterVisible }) {
         headerShown: false,
       },
     },
+    {
+      name: 'CreateAddressScreen',
+      component: CreateAddressScreen,
+      showFooter: false,
+    },
   ];
 
   return (
@@ -447,17 +452,9 @@ function HaveLoginHome() {
 
 function HaveLoginStack({ onScroll, setIsFooterVisible }) {
   const screens = [
-    // { name: "CompletedOrderConfirmationScreen" ,component : CompletedOrderConfirmationScreen},
-    // { name: "RejectOrderConfirmationScreen" ,component : RejectOrderConfirmationScreen},
-    // { name: "OrderConfirmationScreen" ,component : OrderConfirmationScreen},
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
     { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
     { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
-    {
-      name: 'CreateAddressScreen',
-      component: CreateAddressScreen,
-      showFooter: false,
-    },
     {
       name: 'EditIdCardScreen',
       component: EditIdCardScreen,

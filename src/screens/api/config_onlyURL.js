@@ -1,2 +1,2 @@
 import { url } from "./url";
-export const SOCKET_URL = `https://${url}`;
+export const SOCKET_URL = `http://${url}`;

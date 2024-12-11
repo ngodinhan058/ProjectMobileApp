@@ -249,24 +249,27 @@ const ProfileScreen = ({ navigation, route }) => {
                 {user?.userFirstName} {user?.userLastName}
               </Text>
               <Text style={styles.email}>{user?.userEmail}</Text>
-              <Text style={styles.balance}>0đ</Text>
+              {/* <Text style={styles.balance}>0đ</Text> */}
             </View>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.editIcon}
               onPress={() =>
                 navigation.navigate('BioDataScreen', { userData: user })
               }
             >
               <Icon name="pencil" size={20} color="#fff" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
         {/* <View style={styles.line}></View> */}
         <View style={styles.containerRow}>
-          <TouchableOpacity style={styles.row}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => navigation.navigate('BioDataScreen', { userData: user })}
+          >
             <View style={styles.row}>
-              <IconI name="settings-outline" size={22} color="#000" />
-              <Text style={styles.textPro}>Settings</Text>
+              <IconI name="pencil-outline" size={22} color="#000" />
+              <Text style={styles.textPro}>Sửa Thông Tin</Text>
             </View>
             <Icon name="angle-right" size={32} color="#000" />
           </TouchableOpacity>
