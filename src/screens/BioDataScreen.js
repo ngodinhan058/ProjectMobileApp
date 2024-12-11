@@ -24,116 +24,158 @@ import UploadImage from '../components/Up_Image';
 
 const BiodataScreen = ({ navigation, route }) => {
   const { userData } = route.params;
+  const [formData, setFormData] = useState({
+    userPhone: '',
+    userBirthday: '',
+    userLastName: '',
+    userFirstName: '',
+    userAddress: 'Loading...',
+  });
 
-  const [userPhone, setUserPhone] = useState(userData.userPhone);
-  const [userBirthday, setUserBirthday] = useState(
-    new Date(userData.userBirthday)
-  );
-  const [userLastName, setUserLastName] = useState(userData.userLastName);
-  const [userFirstName, setUserFirstName] = useState(userData.userFirstName);
-  const [userImagePath, setUserImagePath] = useState(
-    'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/avatar-facebook-dep/Avatar%20Doremon%20cute-doi-mu.jpg'
-  );
+  const [avatar, setAvatar] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [user, setUser] = useState({}); // Để lưu thông tin user (bao gồm token)
   const [selectedImage, setSelectedImage] = useState(userData?.userImagePath);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const fetchUserInfo = async () => {
       try {
-        const savedCart = await AsyncStorage.getItem('userData');
-        if (savedCart) {
-          const { username, token } = JSON.parse(savedCart);
-          setUser({ username, token });
+        const userData = await AsyncStorage.getItem('userData');
+        if (!userData) throw new Error('No user token found');
+
+        const { token } = JSON.parse(userData);
+        const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const userInfo = await response.json();
+          const userData = userInfo.data;
+
+          setFormData({
+            userPhone: userData.userPhone,
+            userBirthday: userData.userBirthday
+              ? new Date(userData.userBirthday).toISOString().slice(0, 10)
+              : '',
+            userLastName: userData.userLastName,
+            userFirstName: userData.userFirstName,
+            userAddress: userData.address
+              ? `${userData.address.addressName}, ${userData.address.ward}, ${userData.address.district}, ${userData.address.city}`
+              : 'No Address Found',
+          });
+
+          setAvatar(userData.userImagePath || null);
+        } else {
+          Alert.alert('Error', 'Failed to fetch user information');
         }
       } catch (error) {
-        console.error('Error loading user data from AsyncStorage:', error);
+        console.error('Failed to fetch user info:', error);
+        Alert.alert('Error', 'Failed to fetch user information');
       }
     };
 
-    loadUser();
+    fetchUserInfo();
   }, []);
 
-  const onDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || userBirthday;
-    setShowDatePicker(false);
-    setUserBirthday(currentDate);
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const callApiUpdate = async (token, formData) => {
+  const handleSave = async () => {
     try {
       setLoading(true);
+      const userData = await AsyncStorage.getItem('userData');
+      if (!userData) throw new Error('No user token found');
+
+      const { token } = JSON.parse(userData);
+
+      const formDataToSend = new FormData();
+
+      const requestPayload = {
+        userPhone: formData.userPhone,
+        userBirthday: formData.userBirthday,
+        userLastName: formData.userLastName,
+        userFirstName: formData.userFirstName,
+      };
+      formDataToSend.append('request', JSON.stringify(requestPayload));
+
+      if (selectedImage) {
+        const fileType = selectedImage.split('.').pop();
+
+        const newFile = {
+          uri: selectedImage,
+          name: `user-image.${fileType}`,
+          type: `image/${fileType}`,
+        };
+        formDataToSend.append('image', newFile);
+      }
+
       const response = await axios.put(
         `${BASE_URL}auth/customer/myInfo`,
-        formData,
+        formDataToSend,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data', // Token được lấy từ AsyncStorage
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
-      Alert.alert('Success', 'Profile updated successfully.');
-      navigation.goBack();
+
+      if (response.status === 200) {
+        Alert.alert('Success', 'Profile updated successfully!');
+        navigation.goBack();
+      } else {
+        console.error('Response error data:', response.data);
+        Alert.alert(
+          'Error',
+          `Failed to update profile. Status: ${response.status}`
+        );
+      }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      console.error('Error:', error.message);
+      if (error.response) {
+        console.error('Response error:', error.response.data);
+      }
+      Alert.alert('Error', 'Unable to update profile due to a network error.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateProfile = () => {
-    if (!selectedImage) {
-      Alert.alert('Error', 'images is required.');
-      return;
-    }
-    const formData = new FormData();
-
-    const formattedDate = userBirthday.toISOString().split('T')[0];
-
-    const fileType = selectedImage.split('.').pop();
-
-    const newFile = {
-      uri: selectedImage,
-      name: `user-image.${fileType}`,
-      type: `image/${fileType}`,
-    };
-
-    formData.append('image', newFile);
-
-    const userData = {
-      userPhone: userPhone,
-      userBirthday: formattedDate,
-      userLastName: userLastName,
-      userFirstName: userFirstName,
-      userPassword: '12345678', // Replace with the real password or hashed password
-    };
-    // const url = `https://rsapi.goong.io/Direction?origin=${origin}&destination=${destination}&vehicle=car&api_key=${apiKey}`;
-
-    formData.append('request', JSON.stringify(userData));
-
-    if (!user.token) {
-      Alert.alert('Error', 'User token is missing. Please log in again.');
-      return;
-    }
-
-    callApiUpdate(user.token, formData);
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || userBirthday;
+    setShowDatePicker(false);
+    handleInputChange('userBirthday', currentDate);
   };
+
+  console.log(userData?.roles.filter((r) => r.roleName === 'SHIPPER'));
+
+  const hasPermission = (role) =>
+    userData?.roles.filter((r) => r.roleName === role);
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.iconHeader}>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="angle-left" size={35} color="#000" />
-        </Pressable>
-        <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
-      </View>
+
+      {hasPermission('SHIPPER').length === 0 ? (
+        <View style={styles.iconHeader}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="angle-left" size={35} color="#000" />
+          </Pressable>
+          <Text style={styles.textHeader}>Thông Tin Của Bạn</Text>
+        </View>
+      ) : (
+        <View style={{ paddingTop: 20 }}></View>
+      )}
 
       {/* Avatar */}
       <View style={styles.avatarContainer}>
@@ -142,7 +184,7 @@ const BiodataScreen = ({ navigation, route }) => {
           image={selectedImage}
         />
 
-        <Text style={styles.nameText}>{user.username || 'Tên người dùng'}</Text>
+        {/* <Text style={styles.nameText}>{formData.username || 'Tên người dùng'}</Text> */}
       </View>
 
       <ScrollView style={{ flex: 1, marginTop: 30, marginHorizontal: 2 }}>
@@ -159,8 +201,8 @@ const BiodataScreen = ({ navigation, route }) => {
             <TextInput
               style={styles.input}
               placeholder="Nhập Họ và Tên Đệm"
-              value={userFirstName}
-              onChangeText={setUserFirstName}
+              value={formData.userFirstName}
+              onChangeText={(text) => handleInputChange('userLastName', text)}
             />
           </View>
 
@@ -170,8 +212,8 @@ const BiodataScreen = ({ navigation, route }) => {
             <TextInput
               style={styles.input}
               placeholder="Nhập Tên Của Bạn"
-              value={userLastName}
-              onChangeText={setUserLastName}
+              value={formData.userLastName}
+              onChangeText={(text) => handleInputChange('userFirstName', text)}
             />
           </View>
         </View>
@@ -181,8 +223,8 @@ const BiodataScreen = ({ navigation, route }) => {
         <TextInput
           style={styles.input}
           placeholder="Nhập Số Điện Thoại Của Bạn"
-          value={userPhone}
-          onChangeText={setUserPhone}
+          value={formData.userPhone}
+          onChangeText={(text) => handleInputChange('userPhone', text)}
           keyboardType="phone-pad"
         />
 
@@ -196,8 +238,8 @@ const BiodataScreen = ({ navigation, route }) => {
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
           >
             <Text>
-              {userBirthday
-                ? userBirthday.toISOString().split('T')[0]
+              {formData.userBirthday
+                ? new Date(formData.userBirthday).toISOString().split('T')[0]
                 : 'Nhập Ngày Sinh Của Bạn'}
             </Text>
             <IconI name="calendar-outline" size={22} color="#000" />
@@ -206,7 +248,7 @@ const BiodataScreen = ({ navigation, route }) => {
 
         {showDatePicker && (
           <DateTimePicker
-            value={userBirthday}
+            value={formData.userBirthday}
             mode="date"
             display="default"
             onChange={onDateChange}
@@ -215,10 +257,7 @@ const BiodataScreen = ({ navigation, route }) => {
       </ScrollView>
 
       {/* Update Button */}
-      <TouchableOpacity
-        style={styles.updateButton}
-        onPress={handleUpdateProfile}
-      >
+      <TouchableOpacity style={styles.updateButton} onPress={handleSave}>
         <Text style={styles.updateButtonText}>Sửa Thông Tin Của Bạn</Text>
       </TouchableOpacity>
 

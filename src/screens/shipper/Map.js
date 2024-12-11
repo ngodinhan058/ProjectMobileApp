@@ -222,16 +222,6 @@ const Map = ({ navigation, route: router }) => {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Destination Address"
-        value={address}
-        onChangeText={setAddress}
-      />
-      <TouchableOpacity style={styles.button} onPress={handleSearchAddress}>
-        <Text style={styles.buttonText}>Search Destination</Text>
-      </TouchableOpacity>
-
       <MapView
         style={styles.map}
         provider="google"
