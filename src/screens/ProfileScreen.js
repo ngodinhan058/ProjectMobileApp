@@ -7,7 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
-  FlatList,
+  ActivityIndicator,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -27,6 +27,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [user, setUser] = useState({});
   const [userImg, setUserImg] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   const getItem = async () => {
     try {
@@ -47,6 +48,7 @@ const ProfileScreen = ({ navigation, route }) => {
   }, []);
 
   const loadUserInfo = async () => {
+    setIsLoading(true)
     if (user) {
       try {
         const response = await fetch(`${BASE_URL}auth/users/myInfo`, {
@@ -79,6 +81,8 @@ const ProfileScreen = ({ navigation, route }) => {
         }
       } catch (error) {
         // console.error('Error fetching user info:', error);
+      } finally {
+        setIsLoading(false)
       }
     }
   };
@@ -277,11 +281,23 @@ const ProfileScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#3669c9" />
+        </View>
+      )}
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

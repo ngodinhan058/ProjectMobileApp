@@ -426,7 +426,7 @@ function AddToCartScreen({ route, navigation }) {
     <FlatList
       data={couponAll}
       renderItem={renderCoupon}
-      keyExtractor={(item) => item.couponId}
+      keyExtractor={(item) => item?.couponId.toString()}
     />
   );
 
@@ -434,7 +434,7 @@ function AddToCartScreen({ route, navigation }) {
     <FlatList
       data={shipperCoupons}
       renderItem={renderCoupon}
-      keyExtractor={(item) => item.couponId}
+      keyExtractor={(item) => item?.couponId.toString()}
     />
   );
   const [index, setIndex] = useState(0);

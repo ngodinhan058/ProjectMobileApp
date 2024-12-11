@@ -450,7 +450,7 @@ const AddProductScreen = ({ route, navigation }) => {
                         }}
                     />
                     <Text style={styles.label}>Coupon: </Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 15,}}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 15, }}>
                         <TouchableOpacity
                             style={styles.radioButton}
                             onPress={() => setProductCoupon(NO_COUPON)}

@@ -683,6 +683,12 @@ function AdminDrawerNavigator() {
   return (
     <Drawer.Navigator>
       <Drawer.Screen name="Trang Chủ Admin" component={AdminHome} />
+      <Drawer.Screen name="Chọn Đề Tài Slide" component={ContentAdmin} />
+          <Drawer.Screen name="Sản Phẩm" component={ProductAdmin} />
+          <Drawer.Screen name="Màu" component={SizeAdmin} />
+          <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
+        <Drawer.Screen name="Nhập Hàng" component={ShipmentAdmin} />
+        <Drawer.Screen name="Slide Show" component={SlideAdmin} />
       {hasPermission('PERMISSION_PRODUCTS') && (
         <>
           <Drawer.Screen name="Chọn Đề Tài Slide" component={ContentAdmin} />

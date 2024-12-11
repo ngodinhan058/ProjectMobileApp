@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, FlatList } from 'react-native';
+import { View, Text, Image, StyleSheet, TextInput, Alert, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, FlatList, Keyboard  } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -104,7 +104,7 @@ const OrderItem = ({ order, setLoading }) => {
   };
 
   const closeModalRate = () => {
-    // setModalVisible(false);
+    setModalVisible(false);
     setStep(1);
     setSelectedProduct(null);
     setRating(0);
@@ -447,7 +447,7 @@ const OrderItem = ({ order, setLoading }) => {
 
                   </TouchableOpacity>
                 )}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(item) => item.productId.toString()}
                 ListEmptyComponent={<Text style={styles.noReviewText}>Không có sản phẩm để đánh giá</Text>}
               />
 
