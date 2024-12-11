@@ -449,6 +449,7 @@ function HaveLoginHome() {
     </Tab.Navigator>
   );
 }
+
 function HaveLoginStack({ onScroll, setIsFooterVisible }) {
   const screens = [
     { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
@@ -699,7 +700,10 @@ function AdminDrawerNavigator() {
         <>
           <Drawer.Screen name="Người Dùng" component={UserAdmin} />
           <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
-          <Drawer.Screen name="Cho Phép Chức Năng" component={PermissionAdmin} />
+          <Drawer.Screen
+            name="Cho Phép Chức Năng"
+            component={PermissionAdmin}
+          />
         </>
       )}
       {hasPermission('PERMISSION_SHIPMENT') && (
@@ -715,7 +719,11 @@ function AdminDrawerNavigator() {
         <Drawer.Screen name="Tồn Kho" component={InventoryAdmin} />
       )}
       <Drawer.Screen name="Trang Chủ User" component={HaveLoginHome} />
-      <Drawer.Screen name="Trang Chủ Shipper" component={ShipperDrawerNavigator} options={{ headerShown: false }} />
+      <Drawer.Screen
+        name="Trang Chủ Shipper"
+        component={ShipperDrawerNavigator}
+        options={{ headerShown: false }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -765,6 +773,52 @@ function InventoryReturnOrder() {
 {
   /* Shipper Invetory ReturnOrder*/
 }
+
+const screens = [
+  // { name: "CompletedOrderConfirmationScreen" ,component : CompletedOrderConfirmationScreen},
+  // { name: "RejectOrderConfirmationScreen" ,component : RejectOrderConfirmationScreen},
+  // { name: "OrderConfirmationScreen" ,component : OrderConfirmationScreen},
+  { name: 'ProfileScreen', component: ProfileScreen, showFooter: true },
+  { name: 'BioDataScreen', component: BioDataScreen, showFooter: false },
+  { name: 'MyOrderScreen', component: MyOrderScreen, showFooter: false },
+  {
+    name: 'CreateAddressScreen',
+    component: CreateAddressScreen,
+    showFooter: false,
+  },
+  {
+    name: 'EditIdCardScreen',
+    component: EditIdCardScreen,
+    showFooter: false,
+  },
+];
+function PersonalInfoStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="PersonalInfo"
+        component={ProfileScreen}
+        options={{ headerShown: false }} // Hide the header for this screen
+      />
+      <Stack.Screen
+        name="BioDataScreen"
+        component={BioDataScreen}
+        options={{ headerShown: false }} // Hide the header for this screen
+      />
+      <Stack.Screen
+        name="CreateAddressScreen"
+        component={CreateAddressScreen}
+        options={{ headerShown: false }} // Hide the header for this screen
+      />
+      <Stack.Screen
+        name="EditIdCardScreen"
+        component={EditIdCardScreen}
+        options={{ headerShown: false }} // Hide the header for this screen
+      />
+    </Stack.Navigator>
+  );
+}
+
 function ShipperDrawerNavigator() {
   return (
     <Drawer.Navigator
@@ -814,7 +868,7 @@ function ShipperDrawerNavigator() {
       />
       <Drawer.Screen
         name="Thông Tin Cá Nhân"
-        component={ShipperInformation}
+        component={PersonalInfoStack}
         options={{
           drawerIcon: ({ color, size }) => (
             <Icon name="user" size={size} color={color} />
@@ -974,6 +1028,7 @@ export default function App() {
       // Check if guestId exists in AsyncStorage
       let storedUUID = await AsyncStorage.getItem('guestId');
       if (!storedUUID) {
+        x;
         // If not, generate a new one
         storedUUID = UUID.v4();
         await AsyncStorage.setItem('guestId', storedUUID);
@@ -985,12 +1040,16 @@ export default function App() {
   };
   const handleStateChange = async (state) => {
     const currentRoute = state.routes[state.index];
+
+    console.log(currentRoute.name);
+
     // console.log('Current Route:', currentRoute.name);
 
     // If you want to fetch user data each time the navigation state changes
     if (
       currentRoute.name === 'Mega Mall' ||
-      currentRoute.name === 'Trang Chủ Admin'
+      currentRoute.name === 'Trang Chủ Admin' ||
+      currentRoute.name === 'Trang Chủ'
     ) {
       try {
         getItem();
