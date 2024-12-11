@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, StyleSheet, TextInput, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TextInput, Modal, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -7,36 +7,99 @@ import { BASE_URL } from '../screens/api/config';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 
-const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, createdAt, isLikedByCurrentUser, children, userId }) => {
+const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, reviewImg, createdAt, isLikedByCurrentUser, children, userId, review, onActionComplete, openLogin }) => {
   const [userData, setUserData] = useState({});
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState();
   const [replyModalVisible, setReplyModalVisible] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [commentAdmin, setComment] = useState('');
   const [selectedReview, setSelectedReview] = useState(null);
+  const [expandedReplies, setExpandedReplies] = useState({});
+  const [reviews, setReviews] = useState(review || []);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await AsyncStorage.getItem('userData');
-        const userInfo = await AsyncStorage.getItem('userInfo');
-        console.log(userInfo);
-
-        if (!userData) throw new Error('No user token found');
+        // if (!userData) throw new Error('No user token found');
 
         const { token, role } = JSON.parse(userData);
         setUserData(role)
-        setUser(userInfo)
+        const response = await axios.get(`${BASE_URL}auth/users/myInfo`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const userInfo = response.data.data;
+
+        setUser({
+          userId: userInfo.userId,
+          name: `${userInfo.userLastName} ${userInfo.userFirstName}`,
+        });
       } catch (error) {
-        console.error('Failed to fetch user data:', error);
+        console.log('Failed to fetch user data123:', error);
       }
     };
 
     fetchUserData();
   }, []);
   const hasRole = (role) => Object.keys(userData).length !== 0 ? userData?.includes(role) : null
+  const handleLikeToggle = async (reviewId, isCurrentlyLiked) => {
+    if (user) {
+      try {
+        const userData = await AsyncStorage.getItem("userData");
+        if (!userData) throw new Error("No user token found");
 
-  const handleDeleteReview = async (reviewId) => {
+        const { token } = JSON.parse(userData);
+
+        const apiUrl = `${BASE_URL}auth/review-like`;
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        if (isCurrentlyLiked) {
+          // Gửi request DELETE để bỏ thích
+          await axios.delete(apiUrl, {
+            headers,
+            params: {
+              reviewId,
+              userId: user.userId, // Giả sử bạn đã lưu userId trong state user
+            },
+          });
+        } else {
+          // Gửi request POST để thích
+          await axios.post(
+            apiUrl,
+            {
+              reviewId,
+              userId: user.userId, // Giả sử bạn đã lưu userId trong state user
+            },
+            { headers }
+          );
+        }
+        const updatedReviews = reviews.map((review) => {
+          if (review.reviewId === reviewId) {
+            return {
+              ...review,
+              isLikedByCurrentUser: !isCurrentlyLiked,
+              totalLike: isCurrentlyLiked
+                ? review.totalLike - 1
+                : review.totalLike + 1,
+            };
+          }
+          return review;
+        });
+        onActionComplete?.();
+        setReviews(updatedReviews);
+      } catch (error) {
+        console.error("Failed to toggle like:", error);
+        Alert.alert("Lỗi", "Không thể cập nhật trạng thái thích.");
+      }
+    } else {
+      openLogin?.();
+    }
+
+  };
+  const handleDeleteReview = async () => {
     try {
       const userData = await AsyncStorage.getItem("userData");
       if (!userData) throw new Error("No user token found");
@@ -48,7 +111,7 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
       });
 
       setReviews((prevReviews) => prevReviews.filter((review) => review.reviewId !== reviewId));
-
+      onActionComplete?.();
       Alert.alert("Thành công", "Bài đánh giá đã được xóa.");
     } catch (error) {
       console.error("Lỗi khi xóa bài đánh giá:", error);
@@ -65,6 +128,7 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
       const userData = await AsyncStorage.getItem('userData');
       if (!userData) throw new Error('No user token found');
       const { token } = JSON.parse(userData);
+      console.log(token);
 
       const formData = new FormData();
       if (uploadedImage) {
@@ -76,9 +140,10 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
       }
       formData.append('request', JSON.stringify({
         parentId: selectedReview,
-        userId: user.userId,
-        commentAdmin,
+        userId: user?.userId,
+        comment: commentAdmin,
       }));
+      console.log(formData);
 
       await axios.post(`${BASE_URL}auth/reviews/reply`, formData, {
         headers: {
@@ -88,10 +153,11 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
       });
 
       Alert.alert('Thành công', 'Phản hồi đã được gửi!');
+      onActionComplete?.();
       setReplyModalVisible(false);
       setComment('');
       setUploadedImage(null);
-      fetchProductReviews(id);
+      // fetchProductReviews(id);
     } catch (error) {
       console.error('Lỗi gửi phản hồi:', error);
       Alert.alert('Lỗi', 'Không thể gửi phản hồi.');
@@ -124,7 +190,24 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
       console.error('Error picking an image:', error);
     }
   };
-  const isReviewOwner = (reviewUserId) => reviewUserId === user.userId;
+  const showDeleteAlert = () => {
+    Alert.alert(
+      "Xác nhận xóa",
+      "Bạn có chắc chắn muốn xóa review này không?",
+      [
+        {
+          text: "Hủy",
+          onPress: () => console.log("Hủy hành động xóa"),
+          style: "cancel"
+        },
+        {
+          text: "Xóa",
+          onPress: () => handleDeleteReview(),
+        }
+      ]
+    );
+  };
+  const isReviewOwner = (reviewUserId) => reviewUserId === user?.userId;
   return (
     <>
       <View style={styles.card}>
@@ -135,6 +218,12 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
           </Text>
         </View>
         <View style={styles.cardContent}>
+          {reviewImg && (
+            <Image
+              style={{ width: 100, height: 100, marginBottom: 10 }}
+              source={{ uri: reviewImg }}
+            />
+          )}
           <View style={styles.ratingContainer}>
             <Text style={styles.ratingText}>Lượt đánh giá: </Text>
             {Array.from({ length: Math.round(rating) }).map((_, index) => (
@@ -144,18 +233,6 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
           </View>
           <Text style={styles.reviewComment}>Nội dung: {comment}</Text>
           <View style={styles.likesContainer}>
-            {/* <TouchableOpacity
-              onPress={() => handleLikeToggle(reviewId, isLikedByCurrentUser)}
-            >
-              <Text
-                style={[
-                  styles.likeText,
-                  isLikedByCurrentUser ? styles.liked : styles.unliked,
-                ]}
-              >
-                Thích: {totalLike}
-              </Text>
-            </TouchableOpacity> */}
             {hasRole("ROLE_ADMIN") ? (<TouchableOpacity
               onPress={() => {
                 setSelectedReview(reviewId);
@@ -164,7 +241,8 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
               style={styles.replyButton}
             >
               <Text style={styles.replyButtonText}>Phản hồi</Text>
-            </TouchableOpacity>) : (<TouchableOpacity></TouchableOpacity>)}
+            </TouchableOpacity>) : null}
+
 
             {isLikedByCurrentUser ? <TouchableOpacity
               style={{
@@ -193,6 +271,8 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
                   style={{ width: 20, height: 20, tintColor: '#fff' }}
                   source={require('../assets/heart.png')}
                 />
+                <Text style={{ color: '#FFF', }}>{totalLike}</Text>
+
               </View>
             </TouchableOpacity>
               : <TouchableOpacity
@@ -220,25 +300,26 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
 
                   </Text>
                   <Image
-                    style={{ width: 20, height: 20, tintColor: '#3669c9' }}
+                    style={{ width: 20, height: 20, tintColor: '#3669c9', }}
                     source={require('../assets/heart.png')}
                   />
                   <Text>{totalLike}</Text>
                 </View>
               </TouchableOpacity>}
+            {isReviewOwner(userId) && (
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={showDeleteAlert}
+                >
+                  <Ionicons name="trash-outline" size={20} color="red" />
+                </TouchableOpacity>
+              </View>
+            )}
 
 
           </View>
-          {/* {isReviewOwner(userId) && (
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeleteReview(reviewId)}
-              >
-                <Ionicons name="trash-outline" size={20} color="red" />
-              </TouchableOpacity>
-            </View>
-          )} */}
+
 
 
         </View>
@@ -246,13 +327,11 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
         {/* Hiển thị phản hồi */}
         {children && children.length > 0 && (
           <View style={styles.repliesContainer}>
-            <Text style={styles.repliesTitle}>Phản hồi:</Text>
-
             {/* Giới hạn hiển thị phản hồi đầu tiên */}
             {expandedReplies[reviewId] ? (
               children.map((reply) => (
                 <View key={reply.reviewId} style={styles.replyCard}>
-                  <Text style={styles.replyUser}>Name: Chăm sóc khách hàng</Text>
+                  <Text style={styles.replyUser}>Phản hồi từ: Chăm sóc khách hàng</Text>
                   {reply.reviewImagePath && (
                     <Image
                       style={{ width: 100, height: 100, marginTop: 5 }}
@@ -267,7 +346,7 @@ const CommentItem = ({ reviewId, comment, rating, totalLike, userFullName, creat
               ))
             ) : (
               <View style={styles.replyCard}>
-                <Text style={styles.replyUser}>Name: Chăm sóc khách hàng</Text>
+                <Text style={styles.replyUser}>Phản hồi từ: Chăm sóc khách hàng</Text>
                 {children[0].reviewImagePath && (
                   <Image
                     style={{ width: 100, height: 100, marginTop: 5 }}
@@ -354,7 +433,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 15,
-    marginVertical: 10,
+    marginVertical: 15,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 5 },
@@ -613,10 +692,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     marginTop: 10,
   },
-  deleteButton: {
-    padding: 10,
-    marginLeft: 10,
-  },
+
 
 });
 

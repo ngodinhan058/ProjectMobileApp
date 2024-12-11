@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  TextInput,
-
+  TouchableWithoutFeedback,
+  RefreshControl,
 } from 'react-native';
 import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
 import axios from 'axios';
@@ -18,24 +18,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from './api/config';
 import * as ImagePicker from 'expo-image-picker';
 import CommentItem from '../components/CommentItem';
-
-
-
-function ReviewProductScreen({ route }) {
-  const { productId } = route.params;
+import { ScrollView } from 'react-native-gesture-handler';
+function ReviewProductScreen({ navigation, route }) {
+  const { productId, userInfo } = route.params;
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [expandedReplies, setExpandedReplies] = useState({});
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
-  const [comment, setComment] = useState('');
-  const [uploadedImage, setUploadedImage] = useState(null);
   const [ratings, setRatings] = useState({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
   const [totalReviews, setTotalReviews] = useState(0);
   const [selectedRating, setSelectedRating] = useState(null);
+  const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
 
-
+  const openModalLogin = () => {
+    setIsLoginModalVisible(true);
+  };
+  const closeModalLogin = () => setIsLoginModalVisible(false);
   useEffect(() => {
     if (reviews.length > 0) {
       const ratingsCount = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -49,31 +47,7 @@ function ReviewProductScreen({ route }) {
   }, [reviews]);
 
   const [userData, setUserData] = useState({});
-  useEffect(() => {
-    const fetchReviews = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(`${BASE_URL}auth/reviews/product/${productId}`);
-        const reviewsData = response.data;
-
-        if (!Array.isArray(reviewsData)) {
-          throw new Error("Dữ liệu đánh giá không hợp lệ");
-        }
-
-        // Không thêm giá trị mặc định `isLikedByCurrentUser`
-        setReviews(reviewsData);
-      } catch (error) {
-        console.error("Lỗi khi lấy đánh giá sản phẩm:", error);
-        Alert.alert("Lỗi", "Không thể tải đánh giá sản phẩm.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-
-
-    fetchReviews();
-  }, [productId]);
+  const [userDataToken, setUserDataToken] = useState({});
 
 
 
@@ -81,10 +55,11 @@ function ReviewProductScreen({ route }) {
     const fetchUserData = async () => {
       try {
         const userData = await AsyncStorage.getItem('userData');
-        if (!userData) throw new Error('No user token found');
+        // if (!userData) throw new Error('No user token found');
 
         const { token, role } = JSON.parse(userData);
         setUserData(role)
+        setUserDataToken(token)
         const response = await axios.get(`${BASE_URL}auth/users/myInfo`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -96,142 +71,60 @@ function ReviewProductScreen({ route }) {
           name: `${userInfo.userLastName} ${userInfo.userFirstName}`,
         });
       } catch (error) {
-        console.error('Failed to fetch user data:', error);
+        console.log('Failed to fetch user data:', error);
       }
     };
 
     fetchUserData();
   }, []);
-
-  const hasRole = (role) => Object.keys(userData).length !== 0 ? userData?.includes(role) : null
-
-  //thich
-  const handleLikeToggle = async (reviewId, isCurrentlyLiked) => {
+  const fetchReviews = async () => {
+    setLoading(true);
     try {
-      const userData = await AsyncStorage.getItem("userData");
-      if (!userData) throw new Error("No user token found");
-
-      const { token } = JSON.parse(userData);
-
-      const apiUrl = `${BASE_URL}auth/review-like`;
-      const headers = { Authorization: `Bearer ${token}` };
-
-      if (isCurrentlyLiked) {
-        await axios.delete(apiUrl, {
-          headers,
-          params: {
-            reviewId,
-            userId: user.id, // Đảm bảo user.id đã được set trước đó
-          },
-        });
-      } else {
-        await axios.post(
-          apiUrl,
-          { reviewId, userId: user.id },
-          { headers }
+      if (userInfo) {
+        const response = await axios.get(
+          `${BASE_URL}auth/reviews/product/${productId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${userDataToken}`, // Gắn token vào header
+            },
+          }
         );
-      }
+        const reviewsData = response.data.data;
+        setReviews(reviewsData);
 
-      // Cập nhật trực tiếp trạng thái reviews
-      const updatedReviews = reviews.map((review) => {
-        if (review.reviewId === reviewId) {
-          return {
-            ...review,
-            isLikedByCurrentUser: !isCurrentlyLiked,
-            totalLike: isCurrentlyLiked ? review.totalLike - 1 : review.totalLike + 1,
-          };
-        }
-        return review;
-      });
-
-      console.log("Updated Reviews:", updatedReviews);
-      setReviews(updatedReviews);
-    } catch (error) {
-      console.error("Failed to toggle like:", error);
-      Alert.alert("Lỗi", "Không thể cập nhật trạng thái thích.");
-    }
-  };
-
-
-
-
-  const openImagePicker = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        Alert.alert('Permission required', 'You need to grant permission to access the gallery.');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 1,
-      });
-
-      console.log('ImagePicker Result:', result);
-
-      if (!result.canceled) {
-        setUploadedImage(result.assets[0].uri); // Đảm bảo truy cập đúng `uri`
       } else {
-        console.error('Image selection was canceled');
+        const response = await axios.get(`${BASE_URL}auth/reviews/product/${productId}`);
+        const reviewsData = response.data.data;
+        setReviews(reviewsData);
       }
     } catch (error) {
-      console.error('Error picking an image:', error);
+      console.log("Lỗi khi lấy đánh giá sản phẩm:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
-
-
-  const handleReply = async () => {
-    try {
-      const userData = await AsyncStorage.getItem('userData');
-      if (!userData) throw new Error('No user token found');
-
-      const { token } = JSON.parse(userData);
-
-      const formData = new FormData();
-      if (uploadedImage) {
-        formData.append('image', {
-          uri: uploadedImage,
-          type: 'image/jpeg',
-          name: 'reply.jpg',
-        });
-      }
-
-      const requestPayload = {
-        parentId: selectedReview.reviewId,
-        userId: user.id,
-        comment,
-      };
-
-      formData.append('request', JSON.stringify(requestPayload));
-
-      const response = await axios.post(`${BASE_URL}auth/reviews/reply`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      Alert.alert('Success', 'Reply submitted successfully!');
-      setModalVisible(false);
-      setComment('');
-      setUploadedImage(null);
-    } catch (error) {
-      console.error('Error submitting reply:', error);
-      Alert.alert('Error', 'Failed to submit the reply.');
-    }
-  };
-
+  useEffect(() => {
+    fetchReviews();
+  }, [productId, userDataToken]); // Thêm token vào dependency nếu cần
   //fiter rating 
   const handleFilterByRating = async (rating) => {
     try {
       setLoading(true);
 
       if (selectedRating === rating) {
-        setSelectedRating(null); // Xóa bộ lọc nếu nhấn lại vào cùng một sao
-        const response = await axios.get(`${BASE_URL}auth/reviews/product/${productId}`);
-        const reviewsData = response.data;
+        // Xóa bộ lọc nếu nhấn lại vào cùng một sao
+        setSelectedRating(null);
+
+        const response = await axios.get(
+          `${BASE_URL}auth/reviews/product/${productId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${userDataToken}`, // Gắn token vào header
+            },
+          }
+        );
+        const reviewsData = response.data.data;
 
         // Thêm trạng thái "like" vào từng đánh giá
         const updatedReviews = await Promise.all(
@@ -244,9 +137,16 @@ function ReviewProductScreen({ route }) {
 
         setReviews(updatedReviews); // Hiển thị tất cả đánh giá
       } else {
-        setSelectedRating(rating); // Lưu bộ lọc mức sao được chọn
+        // Lưu bộ lọc mức sao được chọn
+        setSelectedRating(rating);
+
         const response = await axios.get(
-          `${BASE_URL}auth/reviews/${productId}/rating?rating=${rating}`
+          `${BASE_URL}auth/reviews/${productId}/rating?rating=${rating}`,
+          {
+            headers: {
+              Authorization: `Bearer ${userDataToken}`,
+            },
+          }
         );
 
         const reviewsData = response.data?.data || [];
@@ -263,242 +163,130 @@ function ReviewProductScreen({ route }) {
           })
         );
 
-        setReviews(filteredReviews); // Hiển thị đánh giá đã lọc
+        setReviews(filteredReviews);
       }
     } catch (error) {
-      console.error('Lỗi khi lọc đánh giá theo sao:', error);
+      console.log('Lỗi khi lọc đánh giá theo sao:', error);
       Alert.alert('Lỗi', 'Không thể lọc đánh giá.');
     } finally {
-      setLoading(false); // Đảm bảo trạng thái loading luôn tắt
+      setLoading(false);
     }
   };
-
-
-
-
-  const renderReviewItem = ({ item }) => {
-    const isOwner = user && user.id === item.userId;
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.reviewerName}>Người đánh giá: {item.userFullName}</Text>
-          <Text style={styles.reviewDate}>
-            Thời gian: {new Date(item.createdAt).toLocaleDateString('vi-VN')}
-          </Text>
-        </View>
-        <View style={styles.cardContent}>
-          <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>Lượt đánh giá: </Text>
-            {Array.from({ length: Math.round(item.rating) }).map((_, index) => (
-              <Image
-                key={index}
-                style={styles.starIcon}
-                source={require('../assets/star.png')}
-              />
-            ))}
-          </View>
-          <Text style={styles.reviewComment}>Nội dung: {item.comment}</Text>
-          <View style={styles.likesContainer}>
-            <TouchableOpacity
-              onPress={() => handleLikeToggle(item.reviewId, item.isLikedByCurrentUser)}
-            >
-              <Text
-                style={[
-                  styles.likeText,
-                  item.isLikedByCurrentUser ? styles.liked : styles.unliked, // Đảm bảo logic điều kiện này
-                ]}
-              >
-                Thích: {item.totalLike}
-              </Text>
-            </TouchableOpacity>
-
-
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedReview(item);
-                setModalVisible(true);
-              }}
-              style={styles.replyButton}
-            >
-              {hasRole("ROLE_ADMIN") && (<Text style={styles.replyButtonText}>Phản hồi</Text>)}
-
-            </TouchableOpacity>
-
-            {isOwner && (
-              <View style={styles.ownerActions}>
-                <TouchableOpacity
-                  onPress={() => handleDeleteReview(item.reviewId)}
-                  style={styles.deleteButton}
-                >
-                  <FontAwesomeIcon name="trash" size={24} color="red" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedReview(item);
-                    setModalVisible(true);
-                  }}
-                  style={styles.updateButton}
-                >
-                  <FontAwesomeIcon name="edit" size={24} color="blue" />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
-        {item.children && item.children.length > 0 && (
-          <View style={styles.repliesContainer}>
-            <Text style={styles.repliesTitle}>Phản hồi:</Text>
-
-            {/* Giới hạn hiển thị phản hồi đầu tiên */}
-            {expandedReplies[item.reviewId] ? (
-              item.children.map((reply, index) => (
-                <View key={reply.reviewId} style={styles.replyCard}>
-                  <Text style={styles.replyUser}>Name: Chăm sóc khách hàng</Text>
-                  {reply.reviewImagePath && (
-                    <Image
-                      style={{ width: 100, height: 100, marginTop: 5 }}
-                      source={{ uri: reply.reviewImagePath }}
-                    />
-                  )}
-                  <Text style={styles.replyContent}>Nội dung: {reply.reviewComment}</Text>
-                  <Text style={styles.replyDate}>
-                    Thời gian: {new Date(reply.createdAt).toLocaleDateString('vi-VN')}
-                  </Text>
-                </View>
-              ))
-            ) : (
-              <View style={styles.replyCard}>
-                <Text style={styles.replyUser}>Name: Chăm sóc khách hàng</Text>
-                {item.children[0].reviewImagePath && (
-                  <Image
-                    style={{ width: 100, height: 100, marginTop: 5 }}
-                    source={{ uri: item.children[0].reviewImagePath }}
-                  />
-                )}
-                <Text style={styles.replyContent}>Nội dung: {item.children[0].reviewComment}</Text>
-                <Text style={styles.replyDate}>
-                  Thời gian: {new Date(item.children[0].createdAt).toLocaleDateString('vi-VN')}
-                </Text>
-              </View>
-            )}
-
-            {/* Nút xem thêm/thu lại */}
-            {item.children.length > 1 && (
-              <TouchableOpacity
-                onPress={() =>
-                  setExpandedReplies((prev) => ({
-                    ...prev,
-                    [item.reviewId]: !prev[item.reviewId],
-                  }))
-                }
-              >
-                <Text style={styles.toggleButtonText}>
-                  {expandedReplies[item.reviewId] ? 'Thu lại' : 'Xem thêm'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-      </View>
-    );
-  };
-
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setLoading(true);
+    fetchReviews();
+  }, []);
   return (
-    <View style={styles.reviewContainer}>
-      <Text style={styles.reviewTitle}>Đánh Giá Sản Phẩm</Text>
-      <View style={styles.ratingStats}>
-        {[5, 4, 3, 2, 1].map((star) => (
-          <TouchableOpacity
-            key={star}
-            onPress={() => handleFilterByRating(star)}
-            style={[
-              styles.ratingRow,
-              selectedRating === star && styles.selectedRatingRow,
-            ]}
-          >
-            <View style={styles.starRow}>
-              {[...Array(star)].map((_, index) => (
-                <Text key={index} style={styles.star}>⭐</Text>
-              ))}
-            </View>
-            <View style={styles.progressBar}>
-              <View
-                style={{
-                  ...styles.progress,
-                  width: `${(ratings[star] / totalReviews) * 100 || 0}%`,
-                }}
-              />
-            </View>
-            <Text style={styles.ratingCount}>{ratings[star]?.toString() || '0'}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#3669C9" />
-      ) : reviews.length > 0 ? (
-        <>
-          {selectedRating && (
-            <Text style={styles.selectedRatingTitle}>
-              Hiển thị đánh giá với {selectedRating} ⭐
-            </Text>
-          )}
-          {/* <FlatList
-          data={reviews}
-          extraData={reviews} // Buộc render lại khi reviews thay đổi
-          keyExtractor={(item) => item.reviewId.toString()}
-          renderItem={renderReviewItem}
-        /> */}
-          {reviews.length > 0 ? (
-            reviews?.map((item) => {
-              return (
-                <CommentItem
-                  key={item?.reviewId}
-                  reviewId={item?.reviewId}
-                  comment={item?.comment}
-                  rating={item?.rating}
-                  totalLike={item?.totalLike}
-                  userFullName={item?.userFullName}
-                  createdAt={item?.createdAt}
-                  isLikedByCurrentUser={item?.isLikedByCurrentUser}
-                  children={item?.children}
-
+    <>
+      <View style={styles.reviewContainer} >
+        {/* <Text style={styles.reviewTitle}>Đánh Giá Sản Phẩm</Text> */}
+        <View style={styles.ratingStats}>
+          {[5, 4, 3, 2, 1].map((star) => (
+            <TouchableOpacity
+              key={star}
+              onPress={() => handleFilterByRating(star)}
+              style={[
+                styles.ratingRow,
+                selectedRating === star && styles.selectedRatingRow,
+              ]}
+            >
+              <View style={styles.starRow}>
+                {[...Array(star)].map((_, index) => (
+                  <Text key={index} style={styles.star}>⭐</Text>
+                ))}
+              </View>
+              <View style={styles.progressBar}>
+                <View
+                  style={{
+                    ...styles.progress,
+                    width: `${(ratings[star] / totalReviews) * 100 || 0}%`,
+                  }}
                 />
-              );
-            })
-          ) : null}
-
-        </>
-      ) : (
-        <Text>Chưa có đánh giá nào cho sản phẩm này.</Text>
-      )}
+              </View>
+              <Text style={styles.ratingCount}>{ratings[star]?.toString() || '0'}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
 
+        {loading ? (
+          <View style={styles.overlay}>
+            <ActivityIndicator size="large" color="#3669c9" />
+          </View>
+        ) :
+          <ScrollView refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3669c9']} />
+          }>
+            {selectedRating && (
+              <Text style={styles.selectedRatingTitle}>
+                Hiển thị đánh giá với {selectedRating} ⭐
+              </Text>
+            )}
+            {reviews.length > 0 ? (
+              reviews?.map((item) => {
+                return (
+                  <CommentItem
+                    key={item?.reviewId}
+                    reviewId={item?.reviewId}
+                    comment={item?.comment}
+                    rating={item?.rating}
+                    totalLike={item?.totalLike}
+                    userFullName={item?.userFullName}
+                    reviewImg={item?.reviewImg}
+                    createdAt={item?.createdAt}
+                    isLikedByCurrentUser={item?.isLikedByCurrentUser}
+                    children={item?.children}
+                    userId={item?.userId}
+                    review={reviews}
+                    onActionComplete={() => fetchProductReviews()}
+                    openLogin={openModalLogin}
 
-      <Modal visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalContent}>
-          <TextInput
-            placeholder="Nhập phản hồi của bạn..."
-            value={comment}
-            onChangeText={setComment}
-            style={styles.input}
-          />
-          <TouchableOpacity onPress={openImagePicker} style={styles.uploadButton}>
-            <Text>Upload Hình</Text>
-          </TouchableOpacity>
-          {uploadedImage && <Image source={{ uri: uploadedImage }} style={styles.imagePreview} />}
-          <TouchableOpacity onPress={handleReply} style={styles.submitButton}>
-            <Text>Gửi phản hồi</Text>
-          </TouchableOpacity>
+                  />
+                );
+              })
+            ) : <Text style={styles.emptyText}>Chưa có đánh giá nào.</Text>}
+
+          </ScrollView>
+        }
+      </View>
+      {/* No Login */}
+      <Modal visible={isLoginModalVisible} animationType="slide"
+        transparent={true}
+        onRequestClose={closeModalLogin}>
+        <TouchableWithoutFeedback onPress={closeModalLogin}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalContainerLogin}>
+          <View style={styles.content}>
+            <Text style={styles.title}>Đăng Nhập tài Khoản</Text>
+            <View style={styles.line}></View>
+
+            <Image source={require("../assets/hello.png")} style={{ width: 50, height: 50, marginVertical: 5 }} />
+            <Text style={styles.message}>
+              Chào Mừng Bạn Mới
+            </Text>
+            <Text style={styles.subMessage}>
+              Có vẻ nhưng bạn chưa đăng nhập? Hãy đăng nhập hoặc đăng ký để có thể nhận thông báo về cái ưa đãi khủng
+            </Text>
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Đăng Nhập')}>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
   reviewContainer: {
     padding: 10,
     backgroundColor: '#f8f8f8',
@@ -509,6 +297,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
+    textAlign: 'center',
   },
   card: {
     backgroundColor: '#fff',
@@ -758,6 +547,70 @@ const styles = StyleSheet.create({
   },
   unliked: {
     color: "black",
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#666',
+    marginTop: 30,
+    fontStyle: 'italic',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'relative',
+  },
+  modalContainerLogin: {
+    position: 'absolute',
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#FFF',
+    height: '45%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  content: {
+    padding: 20,
+    alignItems: "center",
+
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  emoji: {
+    fontSize: 40,
+    marginBottom: 15,
+  },
+  message: {
+    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  subMessage: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#888",
+    marginBottom: 20,
+  },
+  loginButton: {
+    width: "100%",
+    backgroundColor: "#3669C9",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

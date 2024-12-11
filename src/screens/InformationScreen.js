@@ -21,7 +21,7 @@ import AlertComponent from '../components/AlertComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const InformationScreen = ({ route, navigation }) => {
-  const { guestInfo } = route?.params
+  const { guestInfo } = route?.params || []
   const [email, setEmail] = useState(guestInfo?.userEmail|| '');
   const [firstName, setFirstname] = useState(guestInfo?.userName.split(' ')[0] || '');
   const [lastName, setLastname] = useState(guestInfo?.userName.split(' ')[1] || '');
