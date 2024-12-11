@@ -426,7 +426,10 @@ function AddToCartScreen({ route, navigation }) {
     <FlatList
       data={couponAll}
       renderItem={renderCoupon}
-      keyExtractor={(item) => item.couponId}
+      keyExtractor={(item) => item?.couponId.toString()}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
 
@@ -434,7 +437,10 @@ function AddToCartScreen({ route, navigation }) {
     <FlatList
       data={shipperCoupons}
       renderItem={renderCoupon}
-      keyExtractor={(item) => item.couponId}
+      keyExtractor={(item) => item?.couponId.toString()}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
   const [index, setIndex] = useState(0);
@@ -498,9 +504,6 @@ function AddToCartScreen({ route, navigation }) {
     }
     toggleCouponModal(); // Đóng modal sau khi chọn
   };
-
-
-
 
   useEffect(() => {
     if (selectedCoupon != null && total) {
@@ -1191,7 +1194,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
-
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#666',
+    marginTop: 30,
+    fontStyle: 'italic',
+  },
   couponItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',

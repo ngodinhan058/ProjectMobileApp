@@ -17,57 +17,59 @@ const MyOrderScreen = ({ route, navigation }) => {
   const [orders, setOrders] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const userInfoString = await AsyncStorage.getItem('userInfo');
-        if (userInfoString) {
-          let userInfoData = JSON.parse(userInfoString);
+  const fetchUserInfo = async () => {
+    try {
+      const userInfoString = await AsyncStorage.getItem('userInfo');
+      if (userInfoString) {
+        let userInfoData = JSON.parse(userInfoString);
 
-          if (!userInfoData.cartId) {
-            userInfoData = await createCartForUser(userInfoData);
-          }
-
-          setUserInfo(userInfoData);
-          await fetchOrderDetails(userInfoData.userId);
+        if (!userInfoData.cartId) {
+          userInfoData = await createCartForUser(userInfoData);
         }
-      } catch (error) {
-        console.log('Error fetching user info from AsyncStorage:', error);
-      } finally {
-        setLoading(false);
+
+        setUserInfo(userInfoData);
+        await fetchOrderDetails(userInfoData.userId);
       }
-    };
-    fetchUserInfo();
-  }, []);
+    } catch (error) {
+      console.log('Error fetching user info from AsyncStorage:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+    }, [])
+  );
   const flatListRef = useRef(null);
 
-  const wsUrl = `${WS_URL}/ws`;
+  // const wsUrl = `${WS_URL}/ws`;
 
-  const handleOrderUpdate = (updatedOrder) => {
-    setOrders((prevOrders) => {
-      if (updatedOrder.orderId) {
-        // Check if the order already exists
-        const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
+  // const handleOrderUpdate = (updatedOrder) => {
+  //   setOrders((prevOrders) => {
+  //     if (updatedOrder.orderId) {
+  //       // Check if the order already exists
+  //       const orderIndex = prevOrders.findIndex(order => order.orderId === updatedOrder.orderId);
 
-        if (orderIndex !== -1) {
-          // Update the existing order
-          const newOrders = [...prevOrders];
-          newOrders[orderIndex] = updatedOrder;
-          return newOrders;
-        } else {
-          // Add the new order
-          return [...prevOrders, updatedOrder];
-        }
-      } else {
-        console.log(updatedOrder);
-        // Handle order deletion by `orderId`
-        return prevOrders.filter(order => order.orderId !== updatedOrder);
-      }
-    });
-  };
+  //       if (orderIndex !== -1) {
+  //         // Update the existing order
+  //         const newOrders = [...prevOrders];
+  //         newOrders[orderIndex] = updatedOrder;
+  //         return newOrders;
+  //       } else {
+  //         // Add the new order
+  //         return [...prevOrders, updatedOrder];
+  //       }
+  //     } else {
+  //       console.log(updatedOrder);
+  //       // Handle order deletion by `orderId`
+  //       return prevOrders.filter(order => order.orderId !== updatedOrder);
+  //     }
+  //   });
+  // };
 
 
-  const { client } = useWebSocket(wsUrl, handleOrderUpdate);
+  // const { client } = useWebSocket(wsUrl, handleOrderUpdate);
   const getItemLayout = (data, index) => ({
     length: 30, // Chiều cao của mỗi item (cần thay đổi theo chiều cao thực tế của item)
     offset: 150 * index, // Offset dựa trên index của item
@@ -107,11 +109,7 @@ const MyOrderScreen = ({ route, navigation }) => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchOrderDetails();
-    }, [])
-  );
+
 
   const filterByStatus = (statuses) => {
     if (!orders) return [];
@@ -127,7 +125,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const PendingConfirmationRoute = () => (
     <FlatList
       data={filterByStatus([0])}
-      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -139,7 +137,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const PreparingRoute = () => (
     <FlatList
       data={filterByStatus([1])}
-      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -150,7 +148,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const PreparedRoute = () => (
     <FlatList
       data={filterByStatus([2])}
-      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -162,7 +160,7 @@ const MyOrderScreen = ({ route, navigation }) => {
     return (
       <FlatList
         data={filterByStatus([3])}
-        renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
+        renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
         keyExtractor={(item) => item.orderId.toString()}
         style={{ marginTop: 40 }}
         ListEmptyComponent={
@@ -175,7 +173,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const SuccessRoute = () => (
     <FlatList
       data={filterByStatus([4])}
-      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={
@@ -186,7 +184,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const CompleteRoute = () => (
     <FlatList
       data={filterByStatus([5])}
-      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} />}
+      renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
       ListEmptyComponent={

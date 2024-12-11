@@ -239,7 +239,7 @@ function ReviewProductScreen({ navigation, route }) {
                     children={item?.children}
                     userId={item?.userId}
                     review={reviews}
-                    onActionComplete={() => fetchProductReviews()}
+                    onActionComplete={() => fetchReviews()}
                     openLogin={openModalLogin}
 
                   />

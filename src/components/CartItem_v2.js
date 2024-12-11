@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     },
     quantityInput: {
         width: 50,
-        height: 30,
+        height: 40,
         borderColor: '#ccc',
         borderWidth: 1,
         textAlign: 'center',

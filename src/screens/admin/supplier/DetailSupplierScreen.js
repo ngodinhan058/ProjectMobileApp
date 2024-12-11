@@ -111,17 +111,7 @@ function DetailScreen({ route, navigation }) {
                 <TouchableOpacity
                     style={styles.iconButton}
                     onPress={() => {
-                        const { postName, postContent, postImagePath, postType, postStatus } = productsState.post || {};
-                        navigation.navigate('EditProductScreen', {
-                            product: productsState,
-                            postDTO: {
-                                postName,
-                                postContent,
-                                postImagePath,
-                                postType,
-                                postStatusId: postStatus?.postStatusId
-                            }
-                        });
+                        navigation.navigate('EditSupplierScreen', {id: id, name: name, image: image});
                     }}
                 >
                     <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.iconButtonGradient}>
@@ -140,7 +130,7 @@ function DetailScreen({ route, navigation }) {
                                 text: "Huỷ",
                                 style: "cancel"
                             },
-                            { text: "Có", onPress: deleteProduct }
+                            { text: "Có", onPress: deleteSize }
                         ]
                     );
                 }}>

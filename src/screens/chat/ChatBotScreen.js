@@ -13,6 +13,7 @@ import CompareModal from "../../components/CompareModal";
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import { BASE_URL } from '../api/config';
+import UUID from 'react-native-uuid';
 
 const ChatScreen = ({ route }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,11 +44,11 @@ const ChatScreen = ({ route }) => {
 
   const [messages, setMessages] = useState([
     {
-      id: '1',
+      id: UUID.v4(),
       text: 'Xin Chào',
       isSender: false,
     },
-    { id: '2', text: 'Hãy cho tôi 2 sản phẩm và tôi sẽ so sánh giúp bạn', isSender: false },
+    { id: UUID.v4(), text: 'Hãy cho tôi 2 sản phẩm và tôi sẽ so sánh giúp bạn', isSender: false },
   ]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef(null);
@@ -55,7 +56,7 @@ const ChatScreen = ({ route }) => {
   // Hàm gửi tin nhắn so sánh sản phẩm
   const sendMessageCompa = async (message, productId) => {
     const comparingMessage = {
-      id: Date.now().toString(),
+      id: UUID.v4(),
       text: 'Hãy so sánh 2 sản phẩm trên',
       isSender: true,
     };
@@ -63,7 +64,7 @@ const ChatScreen = ({ route }) => {
     try {
       const responseText = await generateContent(message, productId[0], productId[1]);
       const botMessage = {
-        id: (Date.now() + 1).toString(),
+        id: UUID.v4(),
         text: responseText,
         isSender: false,
       };
@@ -71,7 +72,7 @@ const ChatScreen = ({ route }) => {
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = {
-        id: (Date.now() + 2).toString(),
+        id: UUID.v4(),
         text: 'Lỗi khi gửi tin nhắn. Vui lòng thử lại.',
         isSender: false,
       };
@@ -81,18 +82,20 @@ const ChatScreen = ({ route }) => {
 
   // Hàm gửi tin nhắn thông thường
   const sendMessage = async () => {
-    if (inputText.trim()) {
+    if (inputText) {
       const userMessage = {
-        id: Date.now().toString(),
-        text: inputText.trim(),
+        id: UUID.v4(),
+        text: inputText,
         isSender: true,
       };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
       try {
-        const responseText = await chatDiscussion(inputText.trim());
+        const responseText = await chatDiscussion(inputText);
+        console.log('Response Text:', responseText);
+
         const botMessage = {
-          id: (Date.now() + 1).toString(),
+          id: UUID.v4(),
           text: responseText,
           isSender: false,
         };
@@ -100,7 +103,7 @@ const ChatScreen = ({ route }) => {
       } catch (error) {
         console.error('Error sending message:', error);
         const errorMessage = {
-          id: (Date.now() + 2).toString(),
+          id: UUID.v4(),
           text: 'Lỗi khi gửi tin nhắn. Vui lòng thử lại.',
           isSender: false,
         };
@@ -113,25 +116,34 @@ const ChatScreen = ({ route }) => {
   // Hiển thị từng chữ cho tin nhắn của chatbot
   const TypingMessage = React.memo(({ text }) => {
     const [displayedText, setDisplayedText] = useState('');
-    const typingSpeed = 10;
-
+    const typingSpeed = 1;
+  
     useEffect(() => {
       let index = 0;
-      setDisplayedText(''); // Reset text mỗi khi nhận được text mới
-      const interval = setInterval(() => {
-        if (index < text.length) {
-          setDisplayedText((prev) => prev + text[index]);
-          index++;
-        } else {
-          clearInterval(interval);
-        }
-      }, typingSpeed);
-
-      return () => clearInterval(interval); // Cleanup interval khi component unmount
-    }, [text]);
-
+      let interval;
+  
+      const startTyping = () => {
+        setDisplayedText(''); // Reset text
+        interval = setInterval(() => {
+          setDisplayedText((prev) => {
+            const nextText = text.slice(0, index + 1); // Lấy phần text tiếp theo
+            index++;
+            if (index >= text.length) {
+              clearInterval(interval); // Ngừng typing khi hoàn thành
+            }
+            return nextText;
+          });
+        }, typingSpeed);
+      };
+  
+      startTyping();
+  
+      return () => clearInterval(interval); // Cleanup khi unmount hoặc text thay đổi
+    }, [text, typingSpeed]);
+  
     return <Text>{displayedText}</Text>;
   });
+  
 
 
   // Render từng tin nhắn
