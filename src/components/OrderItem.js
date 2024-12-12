@@ -274,6 +274,7 @@ const OrderItem = ({ order, setLoading, onAction }) => {
       setLoading(false)
 
     }
+    onAction?.()
   };
 
   const [statusName, setStatusName] = useState('');

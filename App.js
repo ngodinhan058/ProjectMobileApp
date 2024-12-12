@@ -212,6 +212,15 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
+const linking = {
+  prefixes: ['https://www.yourwebsite.com'],
+  config: {
+    screens: {
+      DeepLinkScreen: 'specialpage', 
+    },
+  },
+}
+
 function LoginStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -228,6 +237,7 @@ function LoginStack() {
     </Stack.Navigator>
   );
 }
+
 
 function NoLoginHome() {
   const [isFooterVisible, setIsFooterVisible] = useState(true);
@@ -683,6 +693,7 @@ function AdminDrawerNavigator() {
   const hasPermission = (role) => user?.role?.includes(role);
   return (
     <Drawer.Navigator>
+
       <Drawer.Screen name="Trang Chủ Admin" component={AdminHome} />
       {hasPermission('PERMISSION_PRODUCTS') && (
         <>
@@ -691,19 +702,18 @@ function AdminDrawerNavigator() {
           <Drawer.Screen name="Màu" component={SizeAdmin} />
           <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
           <Drawer.Screen name="Slide Show" component={SlideAdmin} />
+          <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
+
         </>
-      )}
-      {hasPermission('PERMISSION_CATEGORIES') && (
-        <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
       )}
       {hasPermission('PERMISSION_USERS') && (
         <>
           <Drawer.Screen name="Người Dùng" component={UserAdmin} />
           <Drawer.Screen name="Quyền Người Dùng" component={RoleAdmin} />
-          <Drawer.Screen
+          {/* <Drawer.Screen
             name="Cho Phép Chức Năng"
             component={PermissionAdmin}
-          />
+          /> */}
         </>
       )}
       {hasPermission('PERMISSION_SHIPMENT') && (

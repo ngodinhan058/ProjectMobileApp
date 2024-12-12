@@ -120,6 +120,7 @@ function OrderConfirmationScreen({ navigation, route }) {
       };
       const response = await axios.put(`${BASE_URL}order/change`, requestBody);
       if (response.status === 200) {
+        clearTimeout(timerRef.current); // Clear the timer
         // Alert.alert('Order Cancelled', 'Your order has been cancelled successfully');
         navigation.navigate('RejectOrderConfirmationScreen', { orderDetails });
       } else {

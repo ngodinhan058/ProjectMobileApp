@@ -1,16 +1,84 @@
-import React, { useEffect } from 'react';
-import { Alert, Linking, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Linking, Text, View } from 'react-native';
 import axios from 'axios';
-import { BASE_URL } from '../api/config';
+import { BASE_URL } from '../api/config'; // Replace with your API base URL
+import { set } from 'lodash';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PaymentScreen = ({ route, navigation }) => {
-    const { url, orderData, transId } = route.params;
+    const { url, orderDataPay, transId, orderId, payment } = route?.params;
+    const [paymentStatus, setPaymentStatus] = useState(false);
+    const [userInfo, setUserInfo] = useState(null);
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const userInfoString = await AsyncStorage.getItem('userInfo');
+                if (userInfoString) {
+                    let userInfoData = JSON.parse(userInfoString);
+                    setUserInfo(userInfoData);
+                }
+            } catch (error) {
+                console.error('Error fetching user info from AsyncStorage:', error);
+            }
+        };
+        fetchUserInfo();
+    }, []);
+    
+    // Function to check payment status
+    const checkPaymentStatus = async (transId, userInfo) => {        
+        try {
+            const response = await axios.post(`https://5282-2405-4802-9154-3a80-c804-4289-b671-2550.ngrok-free.app/check-status-order`, {
+                app_trans_id: transId,
+            });
+
+            if (response.data.return_code === 1) {
+                setPaymentStatus(true)
+                if (payment === 'BuyNow') {
+                    const response = await axios.post(`${BASE_URL}order/user/buynow`, orderDataPay);
+
+                    if (response.status === 200 || response.status === 201) {
+                        // Alert.alert('Success', 'Đơn hàng đã được đặt thành công!');
+                        navigation.navigate('OrderConfirmationScreen', { orderId: orderId });
+                    } else {
+                        Alert.alert('Error', 'Không thể đặt đơn hàng. Vui lòng thử lại.');
+                    }
+                } else {
+                    if (userInfo) {
+                        const response = await axios.post(`${BASE_URL}order/user`, orderDataPay);
+
+                        if (response.status === 200 || response.status === 201) {
+                            // Alert.alert('Success', 'Đơn hàng đã được đặt thành công!');
+                            navigation.navigate('OrderConfirmationScreen', { orderId: orderId });
+                        } else {
+                            Alert.alert('Error', 'Không thể đặt đơn hàng. Vui lòng thử lại.');
+                        }
+                    }
+                    else {
+                        const response = await axios.post(`${BASE_URL}order/guest`, orderDataPay);
+
+                        if (response.status === 200 || response.status === 201) {
+                            // Alert.alert('Success', 'Đơn hàng đã được đặt thành công!');
+                            navigation.navigate('OrderConfirmationScreen', { orderId: orderId });
+                        } else {
+                            Alert.alert('Error', 'Không thể đặt đơn hàng. Vui lòng thử lại.');
+                        }
+                    }
+                }
+            } else {
+                setPaymentStatus(false);
+            }
+        } catch (error) {
+            console.error("Error checking payment status:", error);
+            setPaymentStatus('Error checking payment status');
+        }
+    };
 
     useEffect(() => {
+        // Open ZaloPay URL
         const openZaloPay = async () => {
             try {
                 const supported = await Linking.canOpenURL(url);
-                
+
                 if (supported) {
                     await Linking.openURL(url);
                 } else {
@@ -24,49 +92,25 @@ const PaymentScreen = ({ route, navigation }) => {
 
         openZaloPay();
     }, [url]);
-
-
     useEffect(() => {
-        const handleReturnFromZaloPay = async (event) => {
-            console.log('Event URL:', event.url);
-            const returnUrl = `http://192.168.1.6:3000/zalo-pay-callback`;
-            
-            if (event.url.startsWith(returnUrl)) {
-                const params = new URLSearchParams(event.url.split('?')[1]);
-                const returnCode = params.get('return_code');
-    
-                if (returnCode === '1') {
-                    try {
-                        const response = await axios.post(`${BASE_URL}order`, orderData);
-                        if (response.status === 200 || response.status === 201) {
-                            console.log('Navigating to OrderConfirmationScreen');
-                            Alert.alert('Success', 'Đặt hàng thành công!');
-                            navigation.navigate('OrderConfirmationScreen', { transId });
-                        } else {
-                            Alert.alert('Error', 'Không thể đặt đơn hàng.');
-                        }
-                    } catch (error) {
-                        console.error('Error placing order:', error);
-                        Alert.alert('Error', 'Đã xảy ra lỗi khi đặt đơn hàng.');
-                    }
-                } else {
-                    Alert.alert('Error', 'Thanh toán thất bại.');
-                    navigation.goBack();
-                }
+        if (transId) {
+            const interval = setInterval(() => {
+                checkPaymentStatus(transId, userInfo);
+            }, 1000); // Poll every 5 seconds
+            if (paymentStatus) {
+                clearInterval(interval);
             }
-        };
-    
-        const subscription = Linking.addEventListener('url', handleReturnFromZaloPay);
-    
-        return () => {
-            subscription.remove();
-        };
-    }, [orderData, transId]);
-    
+            return () => clearInterval(interval);
+        }
+
+    }, [transId, paymentStatus, userInfo]);
 
 
-
-    return null;
-}
+    return (
+        <View>
+            <Text>{paymentStatus ? paymentStatus : 'Checking payment status...'}</Text>
+        </View>
+    );
+};
 
 export default PaymentScreen;

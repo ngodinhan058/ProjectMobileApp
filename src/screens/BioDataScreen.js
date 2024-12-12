@@ -202,7 +202,7 @@ const BiodataScreen = ({ navigation, route }) => {
               style={styles.input}
               placeholder="Nhập Họ và Tên Đệm"
               value={formData.userFirstName}
-              onChangeText={(text) => handleInputChange('userLastName', text)}
+              onChangeText={(text) => handleInputChange('userFirstName', text)}
             />
           </View>
 
@@ -213,7 +213,7 @@ const BiodataScreen = ({ navigation, route }) => {
               style={styles.input}
               placeholder="Nhập Tên Của Bạn"
               value={formData.userLastName}
-              onChangeText={(text) => handleInputChange('userFirstName', text)}
+              onChangeText={(text) => handleInputChange('userLastName', text)}
             />
           </View>
         </View>

@@ -180,8 +180,6 @@ const ProfileScreen = ({ navigation, route }) => {
     }
     try {
       setIsLoading(true);
-      console.log(1111111, userInfo?.token);
-
       const response = await fetch(`${BASE_URL}auth/myInfo/change-password`, {
         method: 'PUT',
         headers: {
@@ -193,8 +191,8 @@ const ProfileScreen = ({ navigation, route }) => {
           userPassword: newPassword,
         }),
       });
+      console.log(oldPassword, newPassword);
 
-      console.log(response);
 
       if (response.ok) {
         Alert.alert('Thành công', 'Mật khẩu đã được cập nhật.');
