@@ -153,40 +153,6 @@ function ShipperHomeScreen({ navigation }) {
           </View>
         </View>
       </View>
-
-      {/* Quick Navigation Section */}
-      <View style={styles.quickNavContainer}>
-        <View style={styles.quickNav}>
-          <TouchableOpacity style={styles.quickNavItem}>
-            <Image
-              style={styles.quickNavIcon}
-              source={require("../../assets/checkrate.png")}
-            />
-            <Text style={styles.quickNavText}>Check Rate</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.quickNavItem}>
-            <Image
-              style={styles.quickNavIcon}
-              source={require("../../assets/pickup.png")}
-            />
-            <Text style={styles.quickNavText}>Pick Up</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.quickNavItem}>
-            <Image
-              style={styles.quickNavIcon}
-              source={require("../../assets/dropoff.png")}
-            />
-            <Text style={styles.quickNavText}>Drop Off</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.quickNavItem}>
-            <Image
-              style={styles.quickNavIcon}
-              source={require("../../assets/history.png")}
-            />
-            <Text style={styles.quickNavText}>History</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
       <ScrollView style={styles.shipments}>
       {/* Đơn hàng hôm nay */}
       <View>
@@ -201,10 +167,10 @@ function ShipperHomeScreen({ navigation }) {
                 Địa chỉ: {order.orderAddress}
               </Text>
               <Text style={styles.shipmentPrice}>
-                  Giá: {new Intl.NumberFormat('vi-VN').format(order.orderPayment === 0 ? 0 : order.orderTotal)}đ
+                  Giá: {new Intl.NumberFormat('vi-VN').format(order.orderPayment === 1 ? order.orderTotal : 0)}đ
               </Text>
               <Text style={styles.pay}>
-                  {order.orderPayment === 0 ? "Đã thanh toán" : "Chưa thanh toán"}
+                  {order.orderPayment === 1  ? "Chưa thanh toán" : "Đã thanh toán" }
               </Text>
             {/* Text để mở rộng/thu gọn */}
               <TouchableOpacity onPress={() => toggleOrderExpansion(order.orderId)}>

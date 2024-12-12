@@ -695,7 +695,6 @@ function AdminDrawerNavigator() {
           <Drawer.Screen name="Thương Hiệu" component={SupplierAdmin} />
           <Drawer.Screen name="Slide Show" component={SlideAdmin} />
           <Drawer.Screen name="Danh Mục" component={CategoryAdmin} />
-
         </>
       )}
       {hasPermission('PERMISSION_USERS') && (
@@ -849,16 +848,6 @@ function ShipperDrawerNavigator() {
         }}
       />
       <Drawer.Screen
-        name="Lịch Sử Giao Hàng"
-        component={HistoryShipping}
-        options={{
-          drawerIcon: ({ color, size }) => (
-            <Icon name="history" size={size} color={color} />
-          ),
-          headerTitle: 'Lịch Sử Giao Hàng',
-        }}
-      />
-      <Drawer.Screen
         name="Đang Chờ Giao"
         component={WaitingShippingScreen}
         options={{
@@ -881,7 +870,6 @@ function ShipperDrawerNavigator() {
     </Drawer.Navigator>
   );
 }
-
 function ShipperHome() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
