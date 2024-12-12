@@ -154,8 +154,6 @@ const BiodataScreen = ({ navigation, route }) => {
     handleInputChange('userBirthday', currentDate);
   };
 
-  console.log(userData?.roles.filter((r) => r.roleName === 'SHIPPER'));
-
   const hasPermission = (role) =>
     userData?.roles.filter((r) => r.roleName === role);
 
@@ -239,7 +237,7 @@ const BiodataScreen = ({ navigation, route }) => {
           >
             <Text>
               {formData.userBirthday
-                ? new Date(formData.userBirthday).toISOString().split('T')[0]
+                ? new Date(formData?.userBirthday).toISOString().split('T')[0]
                 : 'Nhập Ngày Sinh Của Bạn'}
             </Text>
             <IconI name="calendar-outline" size={22} color="#000" />
@@ -248,7 +246,7 @@ const BiodataScreen = ({ navigation, route }) => {
 
         {showDatePicker && (
           <DateTimePicker
-            value={formData.userBirthday}
+            value={new Date(formData?.userBirthday)}
             mode="date"
             display="default"
             onChange={onDateChange}
