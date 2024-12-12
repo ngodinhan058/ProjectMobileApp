@@ -26,6 +26,7 @@ function WaitingShippingScreen({ navigation }) {
   const [selectedReason, setSelectedReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const cancelReasons = ['Khách hàng không nhận', 'Giao hàng thất bại', 'Khác'];
+  const [expandedOrders, setExpandedOrders] = useState([]);
 
   // Fetch orders based on status
   const fetchOrders = async (status) => {
@@ -155,6 +156,15 @@ function WaitingShippingScreen({ navigation }) {
       Alert.alert('Lỗi', 'Không thể cập nhật đơn hàng');
     }
   };
+  //thu gon
+  const toggleOrderExpansion = (orderId) => {
+    setExpandedOrders((prevExpandedOrders) =>
+      prevExpandedOrders.includes(orderId)
+        ? prevExpandedOrders.filter((id) => id !== orderId) // Thu gọn nếu đã mở
+        : [...prevExpandedOrders, orderId] // Mở rộng nếu chưa mở
+    );
+  };
+  
 
   const filteredOrders = orders.filter((order) =>
     order.orderId.toLowerCase().includes(searchQuery.toLowerCase())
@@ -198,7 +208,7 @@ function WaitingShippingScreen({ navigation }) {
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
             <View key={order.orderId} style={styles.shipmentCard}>
-              <Text style={styles.shipmentId}>Mã đơn: {order.orderId}</Text>
+              <Text style={styles.shipmentId}>Mã đơn: {order.orderId.substring(0, 8)}</Text>
               <Text style={styles.shipmentStatus}>
                 Trạng thái:{' '}
                 {currentStatus === 3
@@ -212,7 +222,19 @@ function WaitingShippingScreen({ navigation }) {
               <Text style={styles.shipmentRoute}>
                 Địa chỉ: {order.orderAddress}
               </Text>
-              {currentStatus === 3 && (
+              <Text style={styles.shipmentPrice}>
+                  Giá: {new Intl.NumberFormat('vi-VN').format(order.orderPayment === 0 ? 0 : order.orderTotal)}đ
+              </Text>
+              <Text style={styles.pay}>
+                  {order.orderPayment === 0 ? "Đã thanh toán" : "Chưa thanh toán"}
+              </Text>
+              <TouchableOpacity onPress={() => toggleOrderExpansion(order.orderId)}>
+                <Text style={styles.toggleText}>
+                  {expandedOrders.includes(order.orderId) ? 'Thu gọn' : 'Xem chi tiết'}
+                </Text>
+              </TouchableOpacity>
+            {/* Chỉ hiển thị sản phẩm nếu đơn hàng đang mở rộng và trạng thái là 3 */}
+              {expandedOrders.includes(order.orderId) && currentStatus === 3 && (
                 <View>
                   {order.items.map((item, itemIndex) =>
                     item.cartItem.map((product, productIndex) => (
@@ -283,125 +305,135 @@ function WaitingShippingScreen({ navigation }) {
                 </View>
               )}
 
-              {currentStatus === 4 ? (
+              {currentStatus === 4 && (
                 <View>
-                  {order.items.map((item, itemIndex) =>
-                    item.cartItem.map((product, productIndex) => (
-                      <View
-                        key={`${order.orderId}-${itemIndex}-${productIndex}`}
-                        style={styles.productRow}
+                  {/* Hiển thị chi tiết chỉ khi mở rộng */}
+                  {expandedOrders.includes(order.orderId) && (
+                    <>
+                      {order.items.map((item, itemIndex) =>
+                        item.cartItem.map((product, productIndex) => (
+                          <View
+                            key={`${order.orderId}-${itemIndex}-${productIndex}`}
+                            style={styles.productRow}
+                          >
+                            <Image
+                              source={{ uri: product.productImage }}
+                              style={styles.productImage}
+                            />
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.productName}>{product.productName}</Text>
+                              <Text style={styles.productDetails}>
+                                Kích thước: {product.productSize}
+                              </Text>
+                              <Text style={styles.productDetails}>
+                                Số lượng: {product.productQuantity}
+                              </Text>
+                            </View>
+                          </View>
+                        ))
+                      )}
+
+                      <TouchableOpacity
+                        style={styles.mapButton}
+                        onPress={() =>
+                          handleUpdateOrderStatus(order.orderId, 5, order.orderAddress)
+                        }
                       >
-                        <Image
-                          source={{ uri: product.productImage }}
-                          style={styles.productImage}
-                        />
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.productName}>
-                            {product.productName}
-                          </Text>
-                          <Text style={styles.productDetails}>
-                            Kích thước: {product.productSize}
-                          </Text>
-                          <Text style={styles.productDetails}>
-                            Số lượng: {product.productQuantity}
-                          </Text>
-                        </View>
+                        <Icon name="map" size={20} color="#fff" style={styles.mapIcon} />
+                        <Text style={styles.mapButtonText}>Chỉ đường</Text>
+                      </TouchableOpacity>
+
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <TouchableOpacity
+                          style={styles.confirmButton}
+                          onPress={() =>
+                            Alert.alert(
+                              'Xác nhận',
+                              'Bạn có muốn xác nhận đơn hàng này không?',
+                              [
+                                { text: 'Hủy', style: 'cancel' },
+                                {
+                                  text: 'Xác nhận',
+                                  onPress: () => handleUpdateOrderStatus(order.orderId, 5),
+                                },
+                              ]
+                            )
+                          }
+                        >
+                          <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.cancelButton}
+                          onPress={() => {
+                            setSelectedOrderId(order.orderId);
+                            setCancelModalVisible(true);
+                          }}
+                        >
+                          <Text style={styles.cancelButtonText}>Hủy hàng</Text>
+                        </TouchableOpacity>
                       </View>
-                    ))
-                  )}
-
-                  {currentStatus === 4 && (
-                    <TouchableOpacity
-                      style={styles.mapButton}
-                      onPress={() =>
-                        handleUpdateOrderStatus(
-                          order.orderId,
-                          5,
-                          order.orderAddress
-                        )
-                      }
-                    >
-                      <Icon
-                        name="map"
-                        size={20}
-                        color="#fff"
-                        style={styles.mapIcon}
-                      />
-                      <Text style={styles.mapButtonText}>Chỉ đường</Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Hiển thị nút Xác nhận và Hủy hàng */}
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    {/* Nút Xác nhận */}
-                    <TouchableOpacity
-                      style={styles.confirmButton}
-                      onPress={() =>
-                        Alert.alert(
-                          'Xác nhận',
-                          'Bạn có muốn xác nhận đơn hàng này không?',
-                          [
-                            {
-                              text: 'Hủy',
-                              style: 'cancel',
-                            },
-                            {
-                              text: 'Xác nhận',
-                              onPress: () =>
-                                handleUpdateOrderStatus(order.orderId, 5),
-                            },
-                          ]
-                        )
-                      }
-                    >
-                      <Text style={styles.confirmButtonText}>Xác nhận</Text>
-                    </TouchableOpacity>
-
-                    {/* Nút Hủy hàng */}
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={() => {
-                        setSelectedOrderId(order.orderId); // Đặt ID của đơn hàng được chọn
-                        setCancelModalVisible(true); // Hiển thị Modal
-                      }}
-                    >
-                      <Text style={styles.cancelButtonText}>Hủy hàng</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : currentStatus === 5 ? (
-                <View>
-                  {order.items.map((item, itemIndex) =>
-                    item.cartItem.map((product, productIndex) => (
-                      <View
-                        key={`${order.orderId}-${itemIndex}-${productIndex}`}
-                        style={styles.productRow}
-                      >
-                        <Image
-                          source={{ uri: product.productImage }}
-                          style={styles.productImage}
-                        />
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.productName}>
-                            {product.productName}
-                          </Text>
-                          <Text style={styles.productDetails}>
-                            Kích thước: {product.productSize}
-                          </Text>
-                          <Text style={styles.productDetails}>
-                            Số lượng: {product.productQuantity}
-                          </Text>
-                        </View>
-                      </View>
-                    ))
+                    </>
                   )}
                 </View>
-              ) : null}
+              )}
+
+              {currentStatus === 5 && (
+                <View>
+                  {expandedOrders.includes(order.orderId) &&
+                    order.items.map((item, itemIndex) =>
+                      item.cartItem.map((product, productIndex) => (
+                        <View
+                          key={`${order.orderId}-${itemIndex}-${productIndex}`}
+                          style={styles.productRow}
+                        >
+                          <Image
+                            source={{ uri: product.productImage }}
+                            style={styles.productImage}
+                          />
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.productName}>{product.productName}</Text>
+                            <Text style={styles.productDetails}>
+                              Kích thước: {product.productSize}
+                            </Text>
+                            <Text style={styles.productDetails}>
+                              Số lượng: {product.productQuantity}
+                            </Text>
+                          </View>
+                        </View>
+                      ))
+                    )}
+                </View>
+              )}
+
+              {currentStatus === 8 && (
+                <View>
+                  {expandedOrders.includes(order.orderId) &&
+                    order.items.map((item, itemIndex) =>
+                      item.cartItem.map((product, productIndex) => (
+                        <View
+                          key={`${order.orderId}-${itemIndex}-${productIndex}`}
+                          style={styles.productRow}
+                        >
+                          <Image
+                            source={{ uri: product.productImage }}
+                            style={styles.productImage}
+                          />
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.productName}>{product.productName}</Text>
+                            <Text style={styles.productDetails}>
+                              Kích thước: {product.productSize}
+                            </Text>
+                            <Text style={styles.productDetails}>
+                              Số lượng: {product.productQuantity}
+                            </Text>
+                          </View>
+                        </View>
+                      ))
+                    )}
+                </View>
+              )}
+
             </View>
           ))
         ) : (
@@ -499,7 +531,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    height: 150,
+    height: 100,
   },
   headerTitle: {
     color: '#fff',
@@ -577,6 +609,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     marginHorizontal: 5,
+  },
+  shipmentPrice: {
+    color: "black",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
   confirmButtonText: {
     color: '#fff',
@@ -696,6 +734,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
   },
+  pay: {
+    color: "black",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  toggleText: {
+    color: '#3669C9',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+    marginTop: 10,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+  
 });
 
 export default WaitingShippingScreen;
