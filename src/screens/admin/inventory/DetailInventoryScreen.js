@@ -265,7 +265,7 @@ function DetailScreen({ navigation, route }) {
                     </TouchableOpacity>
                 </Animated.View>
 
-                <Animated.View style={[styles.subButton, { bottom: position1 }]}>
+                {/* <Animated.View style={[styles.subButton, { bottom: position1 }]}>
                     <TouchableOpacity style={styles.iconButton} onPress={() => {
                         Alert.alert(
                             "Xác Nhận!!!",
@@ -283,7 +283,7 @@ function DetailScreen({ navigation, route }) {
                             <Icon name="trash" size={20} color="#fff" />
                         </LinearGradient>
                     </TouchableOpacity>
-                </Animated.View>
+                </Animated.View> */}
 
 
 

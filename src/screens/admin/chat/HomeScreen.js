@@ -134,15 +134,6 @@ const HomeAdminScreen = ({ navigation }) => {
                     <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
                   }
             />
-            {/* Add Button */}
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => navigation.navigate('AdduserScreen')}
-            >
-                <LinearGradient colors={['#4CAF50', '#388E3C']} style={styles.addButtonGradient}>
-                    <Icon name="add-circle" size={40} color="#fff" />
-                </LinearGradient>
-            </TouchableOpacity>
             {isLoading && (
                 <View style={styles.overlay}>
                     <ActivityIndicator size="large" color="#3669c9" />

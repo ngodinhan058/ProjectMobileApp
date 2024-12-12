@@ -164,7 +164,7 @@ function DetailScreen({ route, navigation }) {
                     <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold', }}>Ngày Nhập: {shipmentData.shipmentDate}</Text>
                     <View style={{ width: '100%', height: 1, backgroundColor: '#ccc', marginVertical: 20 }}></View>
                     <Text style={styles.shipmentDiscount}>Giảm giá vận chuyển: {shipmentData.shipmentDiscount}%</Text>
-                    <Text style={styles.shipmentShipCost}>Chi phí vận chuyển: {shipmentData.shipmentShipCost} VND</Text>
+                    <Text style={styles.shipmentShipCost}>Chi phí vận chuyển: {Number(shipmentData.shipmentShipCost).toLocaleString('vi-VN')} ₫</Text>
 
                     <View style={styles.supplierInfo}>
                         <Text style={styles.supplierTitle}>Hãng: {shipmentData.productSupplier?.productSupplierName}</Text>
@@ -214,7 +214,7 @@ function DetailScreen({ route, navigation }) {
                                                     <Text style={styles.productCode}>Tổng SL:</Text>
                                                 </View>
                                                 <View>
-                                                    <Text style={styles.productCode}>{item.shipmentProductPrice} ₫</Text>
+                                                    <Text style={styles.productCode}>{Number(item.shipmentProductPrice).toLocaleString('vi-VN')} ₫</Text>
                                                 </View>
                                             </View>
                                         </View>
