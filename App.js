@@ -212,14 +212,6 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-const linking = {
-  prefixes: ['https://www.yourwebsite.com'],
-  config: {
-    screens: {
-      DeepLinkScreen: 'specialpage', 
-    },
-  },
-}
 
 function LoginStack() {
   return (
