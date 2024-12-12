@@ -22,6 +22,7 @@ export const generateContent = async (prompt, productId1, productId2) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/chat/compare`, null, {
       params: { 
+        prompt: "Hãy so sánh hai sản phẩm theo 2 id mà tôi đã gửi",
         productIds: productId1,
         productIds: productId2 },
     });
