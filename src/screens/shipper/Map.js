@@ -19,7 +19,9 @@ import axios from 'axios';
 const { width, height } = Dimensions.get('window');
 
 const Map = ({ navigation, route: router }) => {
-  const { orderAddress } = router?.params;
+  const { orderAdrress } = router?.params;
+
+  console.log(orderAdrress);
 
   const [route, setRoute] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ const Map = ({ navigation, route: router }) => {
     latitude: 21.046666732000062,
     longitude: 105.79016956900006,
   });
-  const [address, setAddress] = useState(orderAddress ? orderAddress : '');
+  const [address, setAddress] = useState(orderAdrress ? orderAdrress : '');
   const [mapRegion, setMapRegion] = useState({
     latitude: 21.046666732000062,
     longitude: 105.79016956900006,
@@ -261,7 +263,7 @@ const Map = ({ navigation, route: router }) => {
                 name="motorcycle" // Use the FontAwesome motorcycle icon
                 type="font-awesome" // Specify the icon type (FontAwesome)
                 color="#fff" // Icon color (white for contrast)
-                size={20} // Size of the icon
+                size={10} // Size of the icon
               />
             </View>
           </Marker>

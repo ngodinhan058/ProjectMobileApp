@@ -127,7 +127,11 @@ function WaitingShippingScreen({ navigation }) {
   }, [currentStatus]);
 
   // Handle order status updates
-  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+  const handleUpdateOrderStatus = async (
+    orderId,
+    newStatus,
+    orderAdrress = ''
+  ) => {
     try {
       const userData = await AsyncStorage.getItem('userData');
       if (!userData) throw new Error('No user token found');
@@ -151,6 +155,9 @@ function WaitingShippingScreen({ navigation }) {
       );
 
       setOrders(orders.filter((order) => order.orderId !== orderId));
+      if (currentStatus === 4) {
+        navigation.navigate('Map', { orderAdrress });
+      }
     } catch (error) {
       console.error('Không thể cập nhật đơn hàng:', error);
       Alert.alert('Lỗi', 'Không thể cập nhật đơn hàng');
@@ -158,17 +165,19 @@ function WaitingShippingScreen({ navigation }) {
   };
   //thu gon
   const toggleOrderExpansion = (orderId) => {
-    setExpandedOrders((prevExpandedOrders) =>
-      prevExpandedOrders.includes(orderId)
-        ? prevExpandedOrders.filter((id) => id !== orderId) // Thu gọn nếu đã mở
-        : [...prevExpandedOrders, orderId] // Mở rộng nếu chưa mở
+    setExpandedOrders(
+      (prevExpandedOrders) =>
+        prevExpandedOrders.includes(orderId)
+          ? prevExpandedOrders.filter((id) => id !== orderId) // Thu gọn nếu đã mở
+          : [...prevExpandedOrders, orderId] // Mở rộng nếu chưa mở
     );
   };
-  
 
   const filteredOrders = orders.filter((order) =>
     order.orderId.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  console.log('Order', orders);
 
   return (
     <View style={styles.container}>
@@ -208,7 +217,9 @@ function WaitingShippingScreen({ navigation }) {
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
             <View key={order.orderId} style={styles.shipmentCard}>
-              <Text style={styles.shipmentId}>Mã đơn: {order.orderId.substring(0, 8)}</Text>
+              <Text style={styles.shipmentId}>
+                Mã đơn: {order.orderId.substring(0, 8)}
+              </Text>
               <Text style={styles.shipmentStatus}>
                 Trạng thái:{' '}
                 {currentStatus === 3
@@ -223,87 +234,96 @@ function WaitingShippingScreen({ navigation }) {
                 Địa chỉ: {order.orderAddress}
               </Text>
               <Text style={styles.shipmentPrice}>
-                  Giá: {new Intl.NumberFormat('vi-VN').format(order.orderPayment === 0 ? 0 : order.orderTotal)}đ
+                Giá:{' '}
+                {new Intl.NumberFormat('vi-VN').format(
+                  order.orderPayment === 0 ? 0 : order.orderTotal
+                )}
+                đ
               </Text>
               <Text style={styles.pay}>
-                  {order.orderPayment === 0 ? "Đã thanh toán" : "Chưa thanh toán"}
+                {order.orderPayment === 0 ? 'Đã thanh toán' : 'Chưa thanh toán'}
               </Text>
-              <TouchableOpacity onPress={() => toggleOrderExpansion(order.orderId)}>
+              <TouchableOpacity
+                onPress={() => toggleOrderExpansion(order.orderId)}
+              >
                 <Text style={styles.toggleText}>
-                  {expandedOrders.includes(order.orderId) ? 'Thu gọn' : 'Xem chi tiết'}
+                  {expandedOrders.includes(order.orderId)
+                    ? 'Thu gọn'
+                    : 'Xem chi tiết'}
                 </Text>
               </TouchableOpacity>
-            {/* Chỉ hiển thị sản phẩm nếu đơn hàng đang mở rộng và trạng thái là 3 */}
-              {expandedOrders.includes(order.orderId) && currentStatus === 3 && (
-                <View>
-                  {order.items.map((item, itemIndex) =>
-                    item.cartItem.map((product, productIndex) => (
-                      <View
-                        key={`${order.orderId}-${itemIndex}-${productIndex}`}
-                        style={styles.productRow}
-                      >
-                        <Image
-                          source={{ uri: product.productImage }}
-                          style={styles.productImage}
-                        />
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.productName}>
-                            {product.productName}
-                          </Text>
-                          <Switch
-                            value={
-                              productStatus[
-                                `${order.orderId}-${product.productId}`
-                              ]
-                            }
-                            onValueChange={() =>
-                              handleToggleProduct(
-                                order.orderId,
-                                product.productId
-                              )
-                            }
-                            thumbColor={
-                              productStatus[
-                                `${order.orderId}-${product.productId}`
-                              ]
-                                ? '#4CAF50'
-                                : '#D9534F'
-                            }
-                            trackColor={{ false: '#D3D3D3', true: '#90EE90' }}
+              {/* Chỉ hiển thị sản phẩm nếu đơn hàng đang mở rộng và trạng thái là 3 */}
+              {expandedOrders.includes(order.orderId) &&
+                currentStatus === 3 && (
+                  <View>
+                    {order.items.map((item, itemIndex) =>
+                      item.cartItem.map((product, productIndex) => (
+                        <View
+                          key={`${order.orderId}-${itemIndex}-${productIndex}`}
+                          style={styles.productRow}
+                        >
+                          <Image
+                            source={{ uri: product.productImage }}
+                            style={styles.productImage}
                           />
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.productName}>
+                              {product.productName}
+                            </Text>
+                            <Switch
+                              value={
+                                productStatus[
+                                  `${order.orderId}-${product.productId}`
+                                ]
+                              }
+                              onValueChange={() =>
+                                handleToggleProduct(
+                                  order.orderId,
+                                  product.productId
+                                )
+                              }
+                              thumbColor={
+                                productStatus[
+                                  `${order.orderId}-${product.productId}`
+                                ]
+                                  ? '#4CAF50'
+                                  : '#D9534F'
+                              }
+                              trackColor={{ false: '#D3D3D3', true: '#90EE90' }}
+                            />
+                          </View>
                         </View>
-                      </View>
-                    ))
-                  )}
+                      ))
+                    )}
 
-                  <TouchableOpacity
-                    style={[
-                      styles.confirmButton,
-                      !areAllProductsToggled(order) && styles.disabledButton,
-                    ]}
-                    disabled={!areAllProductsToggled(order)}
-                    onPress={() =>
-                      Alert.alert(
-                        'Xác nhận',
-                        'Bạn có muốn cập nhật trạng thái đơn hàng không?',
-                        [
-                          {
-                            text: 'Hủy',
-                            style: 'cancel',
-                          },
-                          {
-                            text: 'Xác nhận',
-                            onPress: () =>
-                              handleUpdateOrderStatus(order.orderId, 4),
-                          },
-                        ]
-                      )
-                    }
-                  >
-                    <Text style={styles.confirmButtonText}>Cập nhật</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+                    <TouchableOpacity
+                      style={[
+                        styles.confirmButton,
+                        !areAllProductsToggled(order) && styles.disabledButton,
+                      ]}
+                      disabled={!areAllProductsToggled(order)}
+                      onPress={() =>
+                        Alert.alert(
+                          'Xác nhận',
+                          'Bạn có muốn cập nhật trạng thái đơn hàng không?',
+                          [
+                            {
+                              text: 'Hủy',
+                              style: 'cancel',
+                            },
+                            {
+                              text: 'Xác nhận',
+                              onPress: () =>
+                                handleUpdateOrderStatus(order.orderId, 4),
+                            },
+                          ]
+                        )
+                      }
+                    >
+                      <Text style={styles.confirmButtonText}>Cập nhật</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
 
               {currentStatus === 4 && (
                 <View>
@@ -321,7 +341,9 @@ function WaitingShippingScreen({ navigation }) {
                               style={styles.productImage}
                             />
                             <View style={{ flex: 1 }}>
-                              <Text style={styles.productName}>{product.productName}</Text>
+                              <Text style={styles.productName}>
+                                {product.productName}
+                              </Text>
                               <Text style={styles.productDetails}>
                                 Kích thước: {product.productSize}
                               </Text>
@@ -336,14 +358,28 @@ function WaitingShippingScreen({ navigation }) {
                       <TouchableOpacity
                         style={styles.mapButton}
                         onPress={() =>
-                          handleUpdateOrderStatus(order.orderId, 5, order.orderAddress)
+                          handleUpdateOrderStatus(
+                            order.orderId,
+                            5,
+                            order.orderAddress
+                          )
                         }
                       >
-                        <Icon name="map" size={20} color="#fff" style={styles.mapIcon} />
+                        <Icon
+                          name="map"
+                          size={20}
+                          color="#fff"
+                          style={styles.mapIcon}
+                        />
                         <Text style={styles.mapButtonText}>Chỉ đường</Text>
                       </TouchableOpacity>
 
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                        }}
+                      >
                         <TouchableOpacity
                           style={styles.confirmButton}
                           onPress={() =>
@@ -354,7 +390,8 @@ function WaitingShippingScreen({ navigation }) {
                                 { text: 'Hủy', style: 'cancel' },
                                 {
                                   text: 'Xác nhận',
-                                  onPress: () => handleUpdateOrderStatus(order.orderId, 5),
+                                  onPress: () =>
+                                    handleUpdateOrderStatus(order.orderId, 5),
                                 },
                               ]
                             )
@@ -392,7 +429,9 @@ function WaitingShippingScreen({ navigation }) {
                             style={styles.productImage}
                           />
                           <View style={{ flex: 1 }}>
-                            <Text style={styles.productName}>{product.productName}</Text>
+                            <Text style={styles.productName}>
+                              {product.productName}
+                            </Text>
                             <Text style={styles.productDetails}>
                               Kích thước: {product.productSize}
                             </Text>
@@ -420,7 +459,9 @@ function WaitingShippingScreen({ navigation }) {
                             style={styles.productImage}
                           />
                           <View style={{ flex: 1 }}>
-                            <Text style={styles.productName}>{product.productName}</Text>
+                            <Text style={styles.productName}>
+                              {product.productName}
+                            </Text>
                             <Text style={styles.productDetails}>
                               Kích thước: {product.productSize}
                             </Text>
@@ -433,7 +474,6 @@ function WaitingShippingScreen({ navigation }) {
                     )}
                 </View>
               )}
-
             </View>
           ))
         ) : (
@@ -611,9 +651,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   shipmentPrice: {
-    color: "black",
+    color: 'black',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   confirmButtonText: {
@@ -735,9 +775,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   pay: {
-    color: "black",
+    color: 'black',
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   toggleText: {
@@ -749,7 +789,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignSelf: 'flex-start',
   },
-  
 });
 
 export default WaitingShippingScreen;
