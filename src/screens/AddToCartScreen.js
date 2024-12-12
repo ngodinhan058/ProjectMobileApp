@@ -21,9 +21,9 @@ import { useWindowDimensions } from 'react-native';
 import CartItem from '../components/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { BASE_URL } from './api/config';
+import { BASE_URL, ZALO_URL } from './api/config';
 import AlertComponent from '../components/AlertComponent';
-
+import moment from 'moment';
 
 function AddToCartScreen({ route, navigation }) {
   const layout = useWindowDimensions(); // Lấy thông tin kích thước màn hình
@@ -72,6 +72,7 @@ function AddToCartScreen({ route, navigation }) {
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
     { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
+    { label: 'ZaloPay', icon: require('../assets/zaloPay.png'), use: true, value: 2 },
 
   ];
 
@@ -604,16 +605,13 @@ function AddToCartScreen({ route, navigation }) {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
-    const apiPaymentUrlZalo = `http://192.168.1.6:3000/payment`;
-    // console.log("discountShip",discountShip <= 0 ? shippingFee : discountShip);
-
+    const apiPaymentUrlZalo = `${ZALO_URL}/payment`;
     const orderData = {
       user: userInfo?.userId,
       orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
       orderNote: orderNote,
       orderPayment: selectedPaymentMethod,
       feeShip: discountShip == 0 ? shippingFee : shippingFee - discountShip,
-
       totalPrice: finalTotal,
     };
 
@@ -636,17 +634,23 @@ function AddToCartScreen({ route, navigation }) {
       } finally {
         setIsLoading(false);
       }
-    } else if (selectedPaymentMethod === 2) { // ZaloPay Payment
+    } 
+    else if (selectedPaymentMethod === 2) {
+      const transID = Math.floor(Math.random() * 1000000);
+      const app_trans = `${moment().format('YYMMDD')}_${transID}`
       try {
         const paymentResponse = await axios.post(apiPaymentUrlZalo, {
           amount: finalTotal,
           bankCode: "zalopayapp",
           user: userInfo?.userId,
+          transID: app_trans
         });
 
         if (paymentResponse.status === 200) {
-          const { order_url, trans_id } = paymentResponse.data;
-          navigation.navigate('PaymentScreen', { url: order_url, orderData, transId: trans_id });
+          const { order_url } = paymentResponse.data;
+          // console.log("dẩ", order_url, transID);
+
+          navigation.navigate('PaymentScreen', { url: order_url, orderDataPay: orderData, transId: app_trans, orderId: idCart, payment: 'AddToCart' });
         } else {
           Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
         }
@@ -680,6 +684,7 @@ function AddToCartScreen({ route, navigation }) {
   const handlePlaceOrder = async () => {
     const apiUrl = `${BASE_URL}order/guest`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
+    const apiPaymentUrlZalo = `http://192.168.1.6:3000/payment`;
 
     const orderData = {
       cart: idCart,
@@ -716,6 +721,32 @@ function AddToCartScreen({ route, navigation }) {
         Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);
+      }
+    } else if (selectedPaymentMethod === 2) {
+      const transID = Math.floor(Math.random() * 1000000);
+      const app_trans = `${moment().format('YYMMDD')}_${transID}`
+      try {
+        const paymentResponse = await axios.post(apiPaymentUrlZalo, {
+          amount: finalTotal,
+          bankCode: "zalopayapp",
+          user: userInfo?.userId,
+          transID: app_trans
+        });
+
+        if (paymentResponse.status === 200) {
+          const { order_url } = paymentResponse.data;
+          // console.log("dẩ", order_url, transID);
+
+          navigation.navigate('PaymentScreen', { url: order_url, orderDataPay: orderData, transId: app_trans, orderId: idCart });
+        } else {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
+        }
+      } catch (error) {
+        console.error('Error creating ZaloPay transaction:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
+
       }
     }
     else {
@@ -763,7 +794,7 @@ function AddToCartScreen({ route, navigation }) {
             }
 
 
-            <TouchableOpacity onPress={() => userInfo ? navigation.navigate('CreateAddressScreen') : navigation.navigate('InformationScreen', {guestInfo: guestInfo})}>
+            <TouchableOpacity onPress={() => userInfo ? navigation.navigate('CreateAddressScreen') : navigation.navigate('InformationScreen', { guestInfo: guestInfo })}>
               <Icon name="edit" size={18} color="#3669C9" />
             </TouchableOpacity>
           </View>
