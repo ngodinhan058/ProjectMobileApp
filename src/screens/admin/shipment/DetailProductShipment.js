@@ -167,80 +167,79 @@ function DetailScreen({ route, navigation }) {
                     <Text style={styles.shipmentShipCost}>Chi phí vận chuyển: {shipmentData.shipmentShipCost} VND</Text>
 
                     <View style={styles.supplierInfo}>
-                        <Text style={styles.supplierTitle}>Hãng:</Text>
-                        <Text style={styles.supplierName}>{shipmentData.productSupplier?.productSupplierName}</Text>
+                        <Text style={styles.supplierTitle}>Hãng: {shipmentData.productSupplier?.productSupplierName}</Text>
                         {/* <Image source={{ uri: firstShipment.productSupplier?.productSupplierLogo }} style={styles.supplierLogo} /> */}
                     </View>
                     <View style={{ width: '100%', height: 1, backgroundColor: '#ccc', marginVertical: 20 }}></View>
                 </View>
 
                 {/* Shipment Products */}
-                <View style={{ paddingHorizontal: 20, height: '64%'}}>
+                <View style={{ paddingHorizontal: 20, height: '64%' }}>
                     <Text style={styles.sectionTitle}>Tất Cả Sản Phẩm: </Text>
-                        <FlatList
+                    <FlatList
                         style={{}}
-                            data={shipmentProducts}
-                            keyExtractor={(item) => `${item.productId}`}
-                            renderItem={({ item }) => {
-                                const productDetails = productsState.find((product) => product.productId === item.productId);
-                                const isExpanded = expandedItem === item.productId;
+                        data={shipmentProducts}
+                        keyExtractor={(item) => `${item.productId}`}
+                        renderItem={({ item }) => {
+                            const productDetails = productsState.find((product) => product.productId === item.productId);
+                            const isExpanded = expandedItem === item.productId;
 
-                                return (
-                                    <TouchableOpacity
-                                        style={styles.productItem}
-                                        onPress={() => toggleExpand(item.productId)}
-                                    >
-                                        <View style={{
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                        }}>
-                                            <View style={{ marginRight: 20 }}>
-                                                <Image
-                                                    source={{ uri: productDetails?.productImages[0]?.productImagePath }}
-                                                    style={styles.productIcon}
-                                                />
-                                            </View>
-                                            <View style={{ flex: 1 }}>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                                    <View style={styles.productDetails}>
-                                                        <Text style={styles.productCode}>{productDetails?.productName}</Text>
-                                                    </View>
-                                                    <Pressable>
-                                                        <Icon name={isExpanded ? "angle-down" : "angle-right"} size={25} color="#000" />
-                                                    </Pressable>
+                            return (
+                                <TouchableOpacity
+                                    style={styles.productItem}
+                                    onPress={() => toggleExpand(item.productId)}
+                                >
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                    }}>
+                                        <View style={{ marginRight: 20 }}>
+                                            <Image
+                                                source={{ uri: productDetails?.productImages[0]?.productImagePath }}
+                                                style={styles.productIcon}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                <View style={styles.productDetails}>
+                                                    <Text style={styles.productCode}>{productDetails?.productName}</Text>
                                                 </View>
+                                                <Pressable>
+                                                    <Icon name={isExpanded ? "angle-down" : "angle-right"} size={25} color="#000" />
+                                                </Pressable>
+                                            </View>
 
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, }}>
-                                                    <View style={styles.productDetails}>
-                                                        <Text style={styles.productCode}>Tổng SL:</Text>
-                                                    </View>
-                                                    <View>
-                                                        <Text style={styles.productCode}>{item.shipmentProductPrice} ₫</Text>
-                                                    </View>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, }}>
+                                                <View style={styles.productDetails}>
+                                                    <Text style={styles.productCode}>Tổng SL:</Text>
+                                                </View>
+                                                <View>
+                                                    <Text style={styles.productCode}>{item.shipmentProductPrice} ₫</Text>
                                                 </View>
                                             </View>
                                         </View>
-                                        {isExpanded && (
-                                            <View style={{ flexDirection: 'row', marginTop: 5 }}>
-                                                <View>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Màu:</Text>
-                                                    <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Số Lượng:</Text>
-                                                </View>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                                    {item?.sizesProduct.map((sizeItem) => (
-                                                        <View key={sizeItem.sizeId.toString()}>
-                                                            <Text style={{ marginLeft: 10,fontSize: 16 }}>{sizeItem.productQuantity}</Text>
-                                                            <Text style={{ marginLeft: 10, fontSize: 16 }}>{sizeItem.productQuantity}</Text>
-                                                        </View>
-                                                    ))}
-                                                    <Text style={styles.productCode}></Text>
-                                                </View>
+                                    </View>
+                                    {isExpanded && (
+                                        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+                                            <View>
+                                                <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Màu:</Text>
+                                                <Text style={{ fontWeight: 'bold', fontSize: 16 }}>Số Lượng:</Text>
                                             </View>
-                                        )}
-                                    </TouchableOpacity>
-                                );
-                            }}
-                        />
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                                {item?.sizesProduct.map((sizeItem) => (
+                                                    <View key={sizeItem.sizeId.toString()}>
+                                                        <Text style={{ marginLeft: 10, fontSize: 16 }}>{sizeItem.productQuantity}</Text>
+                                                        <Text style={{ marginLeft: 10, fontSize: 16 }}>{sizeItem.productQuantity}</Text>
+                                                    </View>
+                                                ))}
+                                                <Text style={styles.productCode}></Text>
+                                            </View>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            );
+                        }}
+                    />
                 </View>
             </View>
 
@@ -336,7 +335,7 @@ const styles = StyleSheet.create({
     },
     shipmentDiscount: { fontSize: 16, marginBottom: 5 },
     shipmentShipCost: { fontSize: 16, marginBottom: 5 },
-    supplierInfo: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+    supplierInfo: { marginTop: 10 },
     supplierTitle: { fontSize: 16, fontWeight: 'bold' },
     supplierName: { fontSize: 16, marginLeft: 5 },
     supplierLogo: { width: 40, height: 40, borderRadius: 20, marginLeft: 10 },

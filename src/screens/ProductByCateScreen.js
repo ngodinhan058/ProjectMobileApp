@@ -12,7 +12,7 @@ const ProductByCateScreen = ({ route, navigation, onScroll }) => {
   const [loading, setLoading] = useState();
   const { query = '' } = route?.params || {};
   const { id, image, name } = route.params;
-  const [searchQuery, setSearchQuery] = useState(query); // Lưu trữ trạng thái cho thanh tìm kiếm
+  const [searchQuery, setSearchQuery] = useState(query);
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [productsState, setProductsState] = useState([]); // Dữ liệu sản phẩm
   const [minPrice, setMinPrice] = useState();

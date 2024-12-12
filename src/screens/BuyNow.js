@@ -20,9 +20,10 @@ import { useWindowDimensions } from 'react-native';
 
 import CartItem from '../components/CartItem_v2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from './api/config';
+import { BASE_URL, ZALO_URL } from './api/config';
 import axios from 'axios';
 import AlertComponent from '../components/AlertComponent';
+import moment from 'moment';
 
 
 function BuyNow({ route, navigation }) {
@@ -71,6 +72,8 @@ function BuyNow({ route, navigation }) {
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
     { label: 'VnPay', icon: require('../assets/vnPay.png'), use: true, value: 0 },
+    { label: 'ZaloPay', icon: require('../assets/zaloPay.png'), use: true, value: 2 },
+
   ];
   const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
@@ -359,7 +362,10 @@ function BuyNow({ route, navigation }) {
     <FlatList
       data={couponAll}
       renderItem={renderCoupon}
-      keyExtractor={(item) => item.couponId}
+      keyExtractor={(item) => item?.couponId.toString()}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
 
@@ -367,7 +373,10 @@ function BuyNow({ route, navigation }) {
     <FlatList
       data={shipperCoupons}
       renderItem={renderCoupon}
-      keyExtractor={(item) => item.couponId}
+      keyExtractor={(item) => item?.couponId.toString()}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>Không Có Đơn Hàng Nào.</Text>
+      }
     />
   );
   const [index, setIndex] = useState(0);
@@ -535,6 +544,8 @@ function BuyNow({ route, navigation }) {
     setIsLoading(true);
     const apiUrl = `${BASE_URL}order/user/buynow`;
     const apiPaymentUrl = `${BASE_URL}payment/vn-pay?amount=${finalTotal}&bankCode=NCB`;
+    const apiPaymentUrlZalo = `${ZALO_URL}/payment`;
+
     const orderData = {
       user: userInfo?.userId,
       orderCoupon: selectedCoupon ? [selectedCoupon.couponId] : [],
@@ -559,6 +570,32 @@ function BuyNow({ route, navigation }) {
         navigation.navigate('PaymentWebViewScreen', { url: paymentUrl, orderData, orderId: idCart, payment: 'BuyNow' });
       } catch (error) {
         console.error('Error:', error);
+        Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
+      } finally {
+        setIsLoading(false);
+      }
+    } 
+    else if (selectedPaymentMethod === 2) {
+      const transID = Math.floor(Math.random() * 1000000);
+      const app_trans = `${moment().format('YYMMDD')}_${transID}`
+      try {
+        const paymentResponse = await axios.post(apiPaymentUrlZalo, {
+          amount: finalTotal,
+          bankCode: "zalopayapp",
+          user: userInfo?.userId,
+          transID: app_trans
+        });
+
+        if (paymentResponse.status === 200) {
+          const { order_url } = paymentResponse.data;
+          // console.log("dẩ", order_url, transID);
+
+          navigation.navigate('PaymentScreen', { url: order_url, orderDataPay: orderData, transId: app_trans, orderId: idCart, payment: 'BuyNow' });
+        } else {
+          Alert.alert('Error', 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
+        }
+      } catch (error) {
+        console.error('Error creating ZaloPay transaction:', error);
         Alert.alert('Error', 'Đã xảy ra lỗi. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);
@@ -968,6 +1005,13 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     color: '#000',
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#666',
+    marginTop: 30,
+    fontStyle: 'italic',
   },
   noteInput: {
     backgroundColor: '#eee',

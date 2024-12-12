@@ -27,6 +27,8 @@ const WishListScreen = ({ route }) => {
   const navigation = useNavigation();
   // Kiểm tra nếu route.params tồn tại và lấy giá trị query, nếu không có thì để là chuỗi rỗng
   const { query = '' } = route?.params || {};
+  const [searchQuery, setSearchQuery] = useState(query || '');
+
   const [refreshing, setRefreshing] = React.useState(false);
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
@@ -39,9 +41,7 @@ const WishListScreen = ({ route }) => {
   const [alertType, setAlertType] = useState('success');
   const [titleAlert, setTitleAlert] = useState('');
 
-  // const filteredProducts = (cartDataUser || []).filter(product =>
-  //   product?.productName.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
+
 
   const toggleFilterModal = () => {
     setIsFilterModalVisible(!isFilterModalVisible);
@@ -75,9 +75,7 @@ const WishListScreen = ({ route }) => {
       console.error('Error fetching user info from AsyncStorage:', error);
     }
   };
-  useEffect(() => {
 
-  }, []);
   const fetchData = async () => {
     // Lấy dữ liệu giỏ hàng từ API nếu userId tồn tại
     setIsLoading(true);
@@ -106,7 +104,10 @@ const WishListScreen = ({ route }) => {
       fetchData();
     }, [userInfo?.userId])
   );
-
+  const filteredProducts = (cartDataUser || []).filter(product =>
+    product?.productName?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
   // console.log(cartDataUser);
   const onRefresh = React.useCallback(() => {
     fetchData();
@@ -120,6 +121,8 @@ const WishListScreen = ({ route }) => {
           <TextInput
             style={styles.searchInput}
             placeholder="Search Product Name"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
           <TouchableOpacity>
             <Image
@@ -144,7 +147,7 @@ const WishListScreen = ({ route }) => {
         {/* Danh sách sản phẩm dạng lưới */}
         {cartDataUser.length > 0 ? (
           <View style={styles.listContent}>
-            {cartDataUser
+            {filteredProducts
               .reduce((result, _, index, array) => {
                 // Nhóm các sản phẩm thành từng nhóm 2 phần tử
                 if (index % 2 === 0) result.push(array.slice(index, index + 2));
