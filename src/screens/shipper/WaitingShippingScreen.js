@@ -391,7 +391,7 @@ function WaitingShippingScreen({ navigation }) {
                                 {
                                   text: 'Xác nhận',
                                   onPress: () =>
-                                    handleUpdateOrderStatus(order.orderId, 5),
+                                    handleUpdateOrderStatus(order.orderId, 7),
                                 },
                               ]
                             )
