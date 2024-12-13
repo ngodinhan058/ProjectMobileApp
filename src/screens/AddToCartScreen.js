@@ -17,6 +17,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { useWindowDimensions } from 'react-native';
+import { LogBox } from 'react-native';
+
 
 import CartItem from '../components/CartItem';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -67,7 +69,7 @@ function AddToCartScreen({ route, navigation }) {
   const [distance, setDistance] = useState(null);
   const [total, setTotal] = useState();
 
-  const GOONG_API_KEY = "7d6NMyBGea1uqvClvnSeN9WC4ywy3hzbhoT0pwFI";
+  const GOONG_API_KEY = "8AySms5wrLNdxbET5xRQz8GWDKrCNcVWrJRWLIGu";
 
   const paymentOptions = [
     { label: 'Tiền mặt', icon: require('../assets/wallet.png'), use: true, value: 1 },
@@ -75,7 +77,9 @@ function AddToCartScreen({ route, navigation }) {
     { label: 'ZaloPay', icon: require('../assets/zaloPay.png'), use: true, value: 2 },
 
   ];
-
+  useEffect(() => {
+    LogBox.ignoreAllLogs(); 
+  }, []);
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
