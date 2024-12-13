@@ -190,7 +190,7 @@ function WaitingShippingScreen({ navigation }) {
         {[
           { label: 'Lấy hàng', status: 3 },
           { label: 'Giao hàng', status: 4 },
-          { label: 'Thành công', status: 5 },
+          { label: 'Thành công', status: 7 },
           { label: 'Trả hàng', status: 8 },
         ].map((tab) => (
           <TouchableOpacity
@@ -226,7 +226,7 @@ function WaitingShippingScreen({ navigation }) {
                   ? 'Lấy hàng'
                   : currentStatus === 4
                   ? 'Giao hàng'
-                  : currentStatus === 5
+                  : currentStatus === 7
                   ? 'Thành công'
                   : 'Hủy hàng'}
               </Text>
@@ -360,7 +360,7 @@ function WaitingShippingScreen({ navigation }) {
                         onPress={() =>
                           handleUpdateOrderStatus(
                             order.orderId,
-                            5,
+                            7,
                             order.orderAddress
                           )
                         }
@@ -415,7 +415,7 @@ function WaitingShippingScreen({ navigation }) {
                 </View>
               )}
 
-              {currentStatus === 5 && (
+              {currentStatus === 7 && (
                 <View>
                   {expandedOrders.includes(order.orderId) &&
                     order.items.map((item, itemIndex) =>

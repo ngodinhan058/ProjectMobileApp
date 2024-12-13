@@ -289,10 +289,10 @@ const OrderItem = ({ order, setLoading, onAction }) => {
     else if (order?.orderStatus === 2) {
       setStatusName('Đã Đóng Gói, Chờ Lấy Hàng');
     }
-    else if (order?.orderStatus === 3) {
+    else if (order?.orderStatus === 3 || 4) {
       setStatusName('Đang Giao Hàng');
     }
-    else if (order?.orderStatus === 4) {
+    else if (order?.orderStatus === 7) {
       setStatusName('Đã Giao Hàng, Chờ Xác Nhận');
     }
     else if (order?.orderStatus === 5) {
@@ -373,7 +373,7 @@ const OrderItem = ({ order, setLoading, onAction }) => {
               </TouchableOpacity>
             </View>
           </View>
-        ) : order.orderStatus === 3 ? (
+        ) : order.orderStatus === 3 || 4 ? (
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
               <TouchableOpacity
@@ -384,7 +384,7 @@ const OrderItem = ({ order, setLoading, onAction }) => {
               </TouchableOpacity>
             </View>
           </View>
-        ) : order.orderStatus === 4 ? (
+        ) : order.orderStatus === 7 ? (
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
             </View>
