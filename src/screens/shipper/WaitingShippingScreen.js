@@ -155,13 +155,14 @@ function WaitingShippingScreen({ navigation }) {
       );
 
       setOrders(orders.filter((order) => order.orderId !== orderId));
-      if (currentStatus === 4) {
-        navigation.navigate('Map', { orderAdrress });
-      }
     } catch (error) {
       console.error('Không thể cập nhật đơn hàng:', error);
       Alert.alert('Lỗi', 'Không thể cập nhật đơn hàng');
     }
+  };
+
+  const handleMapView = (orderAdrress) => {
+    navigation.navigate('Map', { orderAdrress });
   };
   //thu gon
   const toggleOrderExpansion = (orderId) => {
@@ -357,13 +358,7 @@ function WaitingShippingScreen({ navigation }) {
 
                       <TouchableOpacity
                         style={styles.mapButton}
-                        onPress={() =>
-                          handleUpdateOrderStatus(
-                            order.orderId,
-                            7,
-                            order.orderAddress
-                          )
-                        }
+                        onPress={() => handleMapView(order.orderAddress)}
                       >
                         <Icon
                           name="map"
