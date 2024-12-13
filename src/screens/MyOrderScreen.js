@@ -159,7 +159,7 @@ const MyOrderScreen = ({ route, navigation }) => {
   const ShippingRoute = () => {
     return (
       <FlatList
-        data={filterByStatus([3])}
+        data={filterByStatus([3, 4])}
         renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
         keyExtractor={(item) => item.orderId.toString()}
         style={{ marginTop: 40 }}
@@ -172,7 +172,7 @@ const MyOrderScreen = ({ route, navigation }) => {
 
   const SuccessRoute = () => (
     <FlatList
-      data={filterByStatus([4])}
+      data={filterByStatus([7])}
       renderItem={({ item }) => <OrderItem order={item} setLoading={setLoading} onAction={() => fetchUserInfo()}/>}
       keyExtractor={(item) => item.orderId.toString()}
       style={{ marginTop: 40 }}
